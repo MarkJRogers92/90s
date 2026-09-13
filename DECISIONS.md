@@ -10,3 +10,5 @@
 - Keep the debug snapshot opt-in for development/browser tests and absent from ordinary production runtime.
 - The fresh clone and feature branch are sufficient isolation for an empty repository; no second linked worktree is needed.
 - Local commits are authorized by the build handoff. Push, deployment, and publication are not authorized.
+- Reuse one Phaser RunScene for restarts while replacing the authoritative RunState; a development-only generation counter proves ten restarts do not create extra canvases, HUDs, or loops.
+- Keep the browser debug bridge read-only. The restart-proof fixture is selected by URL only when both Vite development mode and the explicit debug flag are active.

@@ -11,3 +11,5 @@
 | M6-M10 | Depth, production presentation, repeatable game, content freeze, release candidate |
 
 Current authorization ends at M1. Do not begin M2 until the M1 checkpoint is handed off.
+
+Status on 2026-09-13: M0 and M1 are implemented and automatically verified; the M1 combat feel gate awaits user playtest. M2-M10 are not started.
