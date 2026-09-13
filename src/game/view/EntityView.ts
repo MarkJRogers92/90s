@@ -7,6 +7,7 @@ import type {
   RunState,
   SurfacePatchState,
 } from '../../sim/model';
+import { latestConductiveFeedback, shouldDrawDirectAttackArc } from './visualState';
 
 /** Cosmetic duration of the conductive feedback flash, in rendered frames. */
 const CONDUCTIVE_FEEDBACK_FRAMES = 40;
@@ -119,7 +120,12 @@ export class EntityView {
     graphics.fillStyle(0xf6d365, 1);
     graphics.fillRect(state.player.x - 10, state.player.y - 23, 20, 5);
 
-    if (state.player.attackActiveTicks > 0) {
+    if (
+      shouldDrawDirectAttackArc(
+        state.player.attackActiveTicks,
+        state.compiledLoadout.primary.delivery,
+      )
+    ) {
       const facingAngle = Math.atan2(state.player.facing.y, state.player.facing.x);
       graphics.lineStyle(9, 0x8bc9b8, 0.25);
       graphics.beginPath();
@@ -298,31 +304,12 @@ export class EntityView {
   }
 
   private noteConductiveFeedback(state: RunState): void {
-    let key = '';
-    let targetIds: number[] = [];
-    for (const line of state.behaviorTrace) {
-      const chain = /conductive chain \(root r\d+\): visited \[([0-9,\s]*)\]/.exec(line);
-      if (chain && chain[1] !== undefined) {
-        const ids = chain[1]
-          .split(',')
-          .map((value) => Number.parseInt(value.trim(), 10))
-          .filter((value) => Number.isFinite(value));
-        if (ids.length > 0) {
-          key = `chain:${ids.join(',')}:${line.length}`;
-          targetIds = ids;
-        }
-      }
-      const discharge = /weak discharge on target (\d+)/.exec(line);
-      if (discharge && discharge[1] !== undefined) {
-        key = `discharge:${discharge[1]}:${line.length}`;
-        targetIds = [Number.parseInt(discharge[1], 10)];
-      }
-    }
-    if (key.length === 0 || key === this.lastConductiveKey) {
+    const feedback = latestConductiveFeedback(state.behaviorTrace);
+    if (feedback === null || feedback.key === this.lastConductiveKey) {
       return;
     }
-    this.lastConductiveKey = key;
-    this.conductiveTargetIds = targetIds;
+    this.lastConductiveKey = feedback.key;
+    this.conductiveTargetIds = [...feedback.targetIds];
     this.conductiveFeedbackFrames = CONDUCTIVE_FEEDBACK_FRAMES;
   }
 
