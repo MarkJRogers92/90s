@@ -1,6 +1,12 @@
 import type { InputFrame, RunState } from '../model';
 import { normalizedDirection } from '../core/geometry';
-import { hasLineOfSight } from './collision';
+
+/**
+ * Direct-attack geometry.
+ *
+ * The mop itself is resolved by `resolvePrimaryAttack` in ../effects/resolveAttack,
+ * which reads these constants through the compiled primary's attack descriptor.
+ */
 
 export const MOP_RANGE = 70;
 export const MOP_HALF_ANGLE_RADIANS = (40 * Math.PI) / 180;
@@ -45,34 +51,5 @@ export function updatePlayerFacing(state: RunState, input: InputFrame): void {
   const direction = normalizedDirection(input.aimX - state.player.x, input.aimY - state.player.y);
   if (direction.x !== 0 || direction.y !== 0) {
     state.player.facing = direction;
-  }
-}
-
-export function performMopAttack(state: RunState, input: InputFrame): void {
-  if (!input.fire || state.player.attackCooldownTicks > 0) {
-    return;
-  }
-
-  state.player.attackCooldownTicks = MOP_COOLDOWN_TICKS;
-  state.player.attackActiveTicks = 6;
-
-  for (const enemy of state.enemies) {
-    if (
-      enemy.health > 0 &&
-      inAttackCone(
-        state.player.x,
-        state.player.y,
-        input.aimX,
-        input.aimY,
-        enemy.x,
-        enemy.y,
-        enemy.radius,
-        MOP_RANGE,
-        MOP_HALF_ANGLE_RADIANS,
-      ) &&
-      hasLineOfSight(state.player.x, state.player.y, enemy.x, enemy.y, state.walls)
-    ) {
-      enemy.health -= MOP_DAMAGE;
-    }
   }
 }

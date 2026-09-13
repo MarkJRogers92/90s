@@ -1,6 +1,7 @@
 import type { RunState } from '../model';
 import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
-import { moveCircle } from './movement';
+import { effectiveSpeedMultiplier } from '../effects/statuses';
+import { moveCircle, scaleMovementDelta } from './movement';
 import {
   circlesOverlap,
   sweptCircleIntersectsCircle,
@@ -45,13 +46,14 @@ export function updateEnemies(state: RunState): void {
 
     if (enemy.kind === 'hanger') {
       const direction = normalizedDirection(state.player.x - enemy.x, state.player.y - enemy.y);
-      const next = moveCircle(
-        enemy,
-        enemy.radius,
+      // Sticky only slows pursuit. Spitter telegraph and firing timings are
+      // untouched because they never read a movement multiplier.
+      const movement = scaleMovementDelta(
         direction.x * HANGER_SPEED_PER_TICK,
         direction.y * HANGER_SPEED_PER_TICK,
-        state.walls,
+        effectiveSpeedMultiplier(enemy),
       );
+      const next = moveCircle(enemy, enemy.radius, movement.x, movement.y, state.walls);
       enemy.x = next.x;
       enemy.y = next.y;
       continue;

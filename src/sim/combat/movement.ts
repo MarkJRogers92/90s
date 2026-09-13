@@ -47,3 +47,19 @@ export function movePlayer(state: RunState, moveX: number, moveY: number): void 
   state.player.x = next.x;
   state.player.y = next.y;
 }
+
+/**
+ * Applies a semantic speed multiplier to a per-tick movement delta.
+ *
+ * Gameplay owns the multiplier (see `effectiveSpeedMultiplier` in
+ * ../effects/statuses); movement only applies it, so a status can never change
+ * how movement itself resolves.
+ */
+export function scaleMovementDelta(
+  deltaX: number,
+  deltaY: number,
+  speedMultiplier: number,
+): Vec2 {
+  const multiplier = Number.isFinite(speedMultiplier) && speedMultiplier > 0 ? speedMultiplier : 1;
+  return { x: deltaX * multiplier, y: deltaY * multiplier };
+}

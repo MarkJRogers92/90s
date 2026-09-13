@@ -1,6 +1,33 @@
+import { createEnemyStatusState } from './effects/statuses';
+import { ITEM_CATALOG } from './items/catalog';
+import { compileLoadout } from './items/compileLoadout';
+import type { ItemInstance } from './items/types';
 import type { RunState } from './model';
 
-export function createRun(seed: number): RunState {
+/** The M1 encounter's primary. The interaction lab overrides it explicitly. */
+export const DEFAULT_PRIMARY_ITEM_ID = 'janitor_mop';
+
+/**
+ * The interaction lab passes the owned item definition IDs and which one is the
+ * selected primary. The normal Start shift run owns only the mop.
+ */
+export type CreateRunOptions = {
+  readonly itemIds?: readonly string[];
+  readonly selectedItemId?: string;
+};
+
+function buildInventory(options: CreateRunOptions): ItemInstance[] {
+  const itemIds =
+    options.itemIds && options.itemIds.length > 0 ? options.itemIds : [DEFAULT_PRIMARY_ITEM_ID];
+  return itemIds.map((itemId) => ({ instanceId: itemId, itemId }));
+}
+
+export function createRun(seed: number, options: CreateRunOptions = {}): RunState {
+  const inventory = buildInventory(options);
+  const selectedPrimaryInstanceId =
+    options.selectedItemId ?? inventory[0]?.instanceId ?? DEFAULT_PRIMARY_ITEM_ID;
+  const compiledLoadout = compileLoadout(ITEM_CATALOG, inventory, selectedPrimaryInstanceId);
+
   return {
     seed,
     tick: 0,
@@ -29,6 +56,7 @@ export function createRun(seed: number): RunState {
         cooldownTicks: 0,
         telegraphAimX: 0,
         telegraphAimY: 0,
+        statuses: createEnemyStatusState(),
       },
       {
         id: 2,
@@ -42,6 +70,7 @@ export function createRun(seed: number): RunState {
         cooldownTicks: 0,
         telegraphAimX: 0,
         telegraphAimY: 0,
+        statuses: createEnemyStatusState(),
       },
     ],
     projectiles: [],
@@ -52,5 +81,22 @@ export function createRun(seed: number): RunState {
     nextEntityId: 3,
     roomWasPopulated: true,
     rewardGranted: false,
+    inventory,
+    selectedPrimaryInstanceId,
+    compiledLoadout,
+    surfaces: [],
+    eventQueue: [],
+    counters: {
+      rootActions: 0,
+      gameplayEvents: 0,
+      childEventsThisRoot: 0,
+      currentRootActionId: null,
+      droppedEvents: 0,
+      drainedEvents: 0,
+    },
+    nextEventSequence: 1,
+    limitDiagnostics: [],
+    recentChange: '',
+    behaviorTrace: [],
   };
 }
