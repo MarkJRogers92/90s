@@ -77,14 +77,42 @@ export class RunScene extends Phaser.Scene {
 
   private createInitialRun(): RunState {
     const run = createRun(1997);
-    if (
-      import.meta.env.DEV &&
-      import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true' &&
-      new URLSearchParams(window.location.search).get('fixture') === 'restart-proof'
-    ) {
-      for (const enemy of run.enemies) {
-        enemy.health = 0;
+    if (!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true')) {
+      return run;
+    }
+
+    const fixture = new URLSearchParams(window.location.search).get('fixture');
+    if (fixture === 'pointer-proof') {
+      const hanger = run.enemies.find((enemy) => enemy.kind === 'hanger');
+      const spitter = run.enemies.find((enemy) => enemy.kind === 'spitter');
+      if (hanger) {
+        hanger.x = 800;
+        hanger.y = 400;
       }
+      if (spitter) {
+        spitter.x = 300;
+        spitter.y = 240;
+        spitter.phase = 'recover';
+        spitter.phaseTicks = 600;
+      }
+    } else if (fixture === 'restart-proof') {
+      run.player.x = 300;
+      const hanger = run.enemies.find((enemy) => enemy.kind === 'hanger');
+      const spitter = run.enemies.find((enemy) => enemy.kind === 'spitter');
+      if (hanger) {
+        hanger.x = 370;
+        hanger.y = 240;
+        hanger.health = 4;
+      }
+      if (spitter) {
+        spitter.x = 230;
+        spitter.y = 240;
+        spitter.health = 4;
+        spitter.phase = 'recover';
+        spitter.phaseTicks = 600;
+      }
+    } else if (fixture === 'death-proof' && this.generation === 1) {
+      run.player.health = 0;
     }
     return run;
   }

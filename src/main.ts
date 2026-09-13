@@ -17,6 +17,9 @@ let game: Phaser.Game | undefined;
 startButton.addEventListener(
   'click',
   () => {
+    if (game) {
+      return;
+    }
     startButton.disabled = true;
     startupStatus.textContent = 'Clocking in…';
     startScreen.hidden = true;
@@ -52,5 +55,4 @@ startButton.addEventListener(
       game = undefined;
     }
   },
-  { once: true },
 );

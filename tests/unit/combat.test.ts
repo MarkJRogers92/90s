@@ -99,6 +99,17 @@ describe('mop resolution', () => {
     tickRun(state, fireFrame(400, 160));
     expect(state.enemies[0]?.health).toBe(12);
   });
+
+  it('accepts an attack from the pre-movement player position', () => {
+    const state = emptyFixture();
+    state.enemies = [enemy({ x: 383 })];
+    state.roomWasPopulated = true;
+
+    tickRun(state, { ...fireFrame(500, 160), moveX: 1 });
+
+    expect(state.player.x).toBeGreaterThan(300);
+    expect(state.enemies[0]?.health).toBe(12);
+  });
 });
 
 describe('enemy damage and phases', () => {

@@ -13,8 +13,8 @@ export function tickRun(state: RunState, input: InputFrame): void {
   state.player.attackActiveTicks = Math.max(0, state.player.attackActiveTicks - 1);
   state.player.invulnerableTicks = Math.max(0, state.player.invulnerableTicks - 1);
   updatePlayerFacing(state, input);
-  movePlayer(state, input.moveX, input.moveY);
   performMopAttack(state, input);
+  movePlayer(state, input.moveX, input.moveY);
   updateEnemies(state);
   resolveEnemyDamage(state);
   updateProjectiles(state);

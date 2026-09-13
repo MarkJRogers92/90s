@@ -11,12 +11,19 @@ type DebugSnapshot = {
     attackCooldownTicks: number;
     attackActiveTicks: number;
   };
-  enemies: Array<{ id: number; kind: 'hanger' | 'spitter'; health: number; phase: string }>;
+  enemies: Array<{
+    id: number;
+    kind: 'hanger' | 'spitter';
+    x: number;
+    y: number;
+    health: number;
+    phase: string;
+  }>;
   projectiles: Array<{ id: number }>;
 };
 
-async function startShift(page: Page): Promise<void> {
-  await page.goto('/');
+async function startShift(page: Page, path = '/'): Promise<void> {
+  await page.goto(path);
   await page.getByRole('button', { name: 'Start shift', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.getByTestId('run-hud')).toBeVisible();
@@ -50,8 +57,23 @@ test('real keyboard input moves the authoritative visible run', async ({ page })
   expect(pageErrors).toEqual([]);
 });
 
-test('real pointer input aims and starts one mop cooldown', async ({ page }) => {
-  await startShift(page);
+test('scaled canvas pointer aim damages only the intended enemy', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await startShift(page, '/?fixture=pointer-proof');
+
+  await page.keyboard.down('d');
+  await expect.poll(() => snapshot(page).then((state) => state.player.x)).toBeGreaterThan(215);
+  await page.keyboard.up('d');
+
+  const before = await snapshot(page);
+  const target = before.enemies.find((enemy) => enemy.kind === 'spitter');
+  const outsideCone = before.enemies.find((enemy) => enemy.kind === 'hanger');
+  expect(target).toBeDefined();
+  expect(outsideCone).toBeDefined();
+  if (!target || !outsideCone) {
+    return;
+  }
+
   const canvas = page.locator('canvas');
   const box = await canvas.boundingBox();
   expect(box).not.toBeNull();
@@ -59,12 +81,24 @@ test('real pointer input aims and starts one mop cooldown', async ({ page }) => 
     return;
   }
 
-  await page.mouse.move(box.x + box.width * 0.75, box.y + box.height * 0.5);
+  await page.mouse.move(
+    box.x + (target.x / 960) * box.width,
+    box.y + (target.y / 480) * box.height,
+  );
   await page.mouse.down();
   await expect
-    .poll(() => snapshot(page).then((state) => state.player.attackCooldownTicks))
-    .toBeGreaterThan(0);
+    .poll(() =>
+      snapshot(page).then(
+        (state) => state.enemies.find((enemy) => enemy.id === target.id)?.health ?? 0,
+      ),
+    )
+    .toBeLessThan(target.health);
   await page.mouse.up();
+
+  const after = await snapshot(page);
+  expect(after.enemies.find((enemy) => enemy.id === outsideCone.id)?.health).toBe(
+    outsideCone.health,
+  );
 });
 
 test('Escape and blur pause without replaying held input or a time backlog', async ({ page }) => {
