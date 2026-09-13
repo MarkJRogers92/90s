@@ -18,7 +18,7 @@ import {
   clampSuspicion,
   findStore,
 } from './types';
-import type { ShopOfferRuntime, StoreDefinition, WingState } from './types';
+import type { ShopOfferRuntime, StoreDefinition, WingCommandResult, WingState } from './types';
 
 const TICKS_PER_SECOND = 60;
 
@@ -113,28 +113,39 @@ function advanceSecuritySweeps(state: WingState): void {
   }
 }
 
-function publishFeedback(state: WingState, feedback: string): void {
-  state.recentChange = feedback;
+function publishFeedback(state: WingState, feedback: string, updateRecentChange = true): void {
+  if (updateRecentChange) {
+    state.recentChange = feedback;
+  }
   state.behaviorTrace.push(`[t${state.tick}] ${feedback}`);
+}
+
+function preserveRejectedActionFeedback(state: WingState, result: WingCommandResult): boolean {
+  if (result.accepted) {
+    return false;
+  }
+  publishFeedback(state, result.reason);
+  return true;
 }
 
 function resolveContextualAction(
   state: WingState,
   interactPressed: boolean,
   stealPressed: boolean,
-): void {
+): boolean {
   const offer = nearestAvailableOffer(state);
   if (interactPressed) {
     if (offer) {
-      buyOffer(state, offer.id);
+      return preserveRejectedActionFeedback(state, buyOffer(state, offer.id));
     } else if (isNearMallExit(state)) {
-      leaveWing(state);
+      return preserveRejectedActionFeedback(state, leaveWing(state));
     }
-    return;
+    return false;
   }
   if (stealPressed && offer) {
-    beginTheft(state, offer.id);
+    return preserveRejectedActionFeedback(state, beginTheft(state, offer.id));
   }
+  return false;
 }
 
 function secureCrossedTheft(state: WingState, previousPosition: Vec2): void {
@@ -152,7 +163,7 @@ function secureCrossedTheft(state: WingState, previousPosition: Vec2): void {
   }
 }
 
-function updateSecurity(state: WingState): void {
+function updateSecurity(state: WingState, preserveActionFeedback: boolean): void {
   const carried = state.carried;
   if (!carried) {
     state.suspicion = 0;
@@ -166,10 +177,10 @@ function updateSecurity(state: WingState): void {
   if (canSecuritySeePlayer(state, store)) {
     const gain = 0.5 * (1 + state.heat / 100);
     state.suspicion = clampSuspicion(state.suspicion + gain);
-    publishFeedback(state, 'Seen by security.');
+    publishFeedback(state, 'Seen by security.', !preserveActionFeedback);
   } else {
     state.suspicion = clampSuspicion(state.suspicion - 0.75);
-    publishFeedback(state, 'Hidden from security.');
+    publishFeedback(state, 'Hidden from security.', !preserveActionFeedback);
   }
 
   if (state.suspicion >= MAX_SUSPICION) {
@@ -210,7 +221,7 @@ export function tickWingRun(state: WingState, input: WingInputFrame): void {
   state.player.y = nextPosition.y;
 
   advanceSecuritySweeps(state);
-  resolveContextualAction(state, interactPressed, stealPressed);
+  const preserveActionFeedback = resolveContextualAction(state, interactPressed, stealPressed);
   secureCrossedTheft(state, previousPosition);
-  updateSecurity(state);
+  updateSecurity(state, preserveActionFeedback);
 }

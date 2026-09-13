@@ -60,6 +60,56 @@ describe('authoritative wing tick', () => {
     expect(state.cash).toBe(20);
   });
 
+  it('publishes rejected contextual reasons without letting security erase them', () => {
+    const insufficientCash = createWingRun(7);
+    insufficientCash.cash = 0;
+    insufficientCash.player.x = 140;
+    insufficientCash.player.y = 150;
+
+    tickWingRun(insufficientCash, wingFrame(0, 0, true));
+
+    expect(insufficientCash.cash).toBe(0);
+    expect(insufficientCash.inventory).toEqual([]);
+    expect(insufficientCash.offers.find((offer) => offer.id === 'homestyle-mop')?.status).toBe(
+      'available',
+    );
+    expect(insufficientCash.recentChange).toBe('Not enough cash.');
+    expect(insufficientCash.behaviorTrace.at(-1)).toBe('[t1] Not enough cash.');
+
+    const carrying = createWingRun(7);
+    expect(beginTheft(carrying, 'homestyle-gel-pens').accepted).toBe(true);
+    carrying.player.x = 480;
+    carrying.player.y = 450;
+    const before = JSON.stringify({
+      cash: carrying.cash,
+      offers: carrying.offers,
+      inventory: carrying.inventory,
+      carried: carrying.carried,
+      heat: carrying.heat,
+      suspicion: carrying.suspicion,
+      player: carrying.player,
+      status: carrying.status,
+    });
+
+    tickWingRun(carrying, wingFrame(0, 0, true));
+
+    expect(JSON.stringify({
+      cash: carrying.cash,
+      offers: carrying.offers,
+      inventory: carrying.inventory,
+      carried: carrying.carried,
+      heat: carrying.heat,
+      suspicion: carrying.suspicion,
+      player: carrying.player,
+      status: carrying.status,
+    })).toBe(before);
+    expect(carrying.recentChange).toBe('Secure the carried item before leaving.');
+    expect(carrying.behaviorTrace.slice(-2)).toEqual([
+      '[t1] Secure the carried item before leaving.',
+      '[t1] Hidden from security.',
+    ]);
+  });
+
   it('only secures a carried theft through its actual source exit before detection', () => {
     const state = createWingRun(7);
     const homestyle = store('homestyle');
@@ -153,7 +203,7 @@ describe('authoritative wing tick', () => {
     });
   });
 
-  it('replays the same input frames to an identical final state', () => {
+  it('replays identical inputs exactly and distinguishes divergent inputs', () => {
     const inputs = [
       wingFrame(1, 0),
       wingFrame(1, 0),
@@ -165,5 +215,13 @@ describe('authoritative wing tick', () => {
     ];
 
     expect(replayWing(1997, inputs)).toEqual(replayWing(1997, inputs));
+
+    const walkToExit = Array.from({ length: 17 }, () => wingFrame(0, 1));
+    const left = replayWing(1997, [...walkToExit, wingFrame(0, 0, true)]);
+    const stayed = replayWing(1997, [...walkToExit, wingFrame()]);
+
+    expect(left.status).toBe('left');
+    expect(stayed.status).toBe('shopping');
+    expect(left).not.toEqual(stayed);
   });
 });
