@@ -143,8 +143,9 @@ export class WingHud {
       this.suspicion.textContent = '';
     }
 
-    const recent = state.recentChange.length > 0 ? state.recentChange : 'none yet';
-    const feedbackText = `RECENT: ${recent}`;
+    const recent = state.recentChange.length > 0 ? state.recentChange : state.behaviorTrace.at(-1) ?? 'none yet';
+    const visibleRecent = recent.replace(/\bconfiscated\b/g, 'Confiscated');
+    const feedbackText = `RECENT: ${visibleRecent}`;
     if (this.feedback.textContent !== feedbackText) {
       this.feedback.textContent = feedbackText;
     }

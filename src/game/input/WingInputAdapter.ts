@@ -15,14 +15,22 @@ export class WingInputAdapter {
   private readonly keys: WingMovementKeys;
   private readonly onPauseToggle: () => void;
   private readonly onBlurPause: () => void;
+  private pendingInteract = false;
+  private pendingSteal = false;
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (event.code !== 'Escape' || event.repeat) {
+    if (event.repeat) {
       return;
     }
-    event.preventDefault();
-    this.clearHeld();
-    this.onPauseToggle();
+    if (event.code === 'KeyE') {
+      this.pendingInteract = true;
+    } else if (event.code === 'KeyF') {
+      this.pendingSteal = true;
+    } else if (event.code === 'Escape') {
+      event.preventDefault();
+      this.clearHeld();
+      this.onPauseToggle();
+    }
   };
 
   private readonly handleBlur = (): void => {
@@ -57,12 +65,15 @@ export class WingInputAdapter {
   }
 
   public readFrame(): WingInputFrame {
-    return {
+    const frame = {
       moveX: Number(this.keys.right.isDown) - Number(this.keys.left.isDown),
       moveY: Number(this.keys.down.isDown) - Number(this.keys.up.isDown),
-      interact: this.keys.interact.isDown,
-      steal: this.keys.steal.isDown,
+      interact: this.keys.interact.isDown || this.pendingInteract,
+      steal: this.keys.steal.isDown || this.pendingSteal,
     };
+    this.pendingInteract = false;
+    this.pendingSteal = false;
+    return frame;
   }
 
   public clearHeld(): void {
@@ -72,6 +83,8 @@ export class WingInputAdapter {
     this.keys.right.reset();
     this.keys.interact.reset();
     this.keys.steal.reset();
+    this.pendingInteract = false;
+    this.pendingSteal = false;
   }
 
   public destroy(): void {

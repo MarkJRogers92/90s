@@ -78,7 +78,7 @@ test('launches the shoplifting loop with one canvas, one HUD, two stores, eight 
 });
 
 test('real keyboard purchase deducts cash and records provenance', async ({ page }) => {
-  collectErrors(page);
+  const errors = collectErrors(page);
   await launchShop(page, '/?fixture=m3-buy-proof');
   const before = await wingSnapshot(page);
   expect(before.cash).toBe(30);
@@ -92,11 +92,13 @@ test('real keyboard purchase deducts cash and records provenance', async ({ page
   expect(after.inventory[0]?.acquisitionKind).toBe('purchased');
   await expect(page.getByTestId('wing-hud')).toContainText(`$${after.cash}`);
   await expect(page.getByTestId('wing-hud')).toContainText('PURCHASED 1');
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('real keyboard theft and store exit secures the item and raises Heat', async ({ page }) => {
   test.setTimeout(60_000);
-  collectErrors(page);
+  const errors = collectErrors(page);
   await launchShop(page, '/?fixture=m3-steal-proof');
   await page.keyboard.press('f');
   await expect.poll(() => wingSnapshot(page).then((state) => state.carried)).not.toBeNull();
@@ -116,11 +118,13 @@ test('real keyboard theft and store exit secures the item and raises Heat', asyn
   expect(secured.inventory[0]?.acquisitionKind).toBe('stolen');
   expect(secured.heat).toBe(heatBefore + 15);
   await expect(page.getByTestId('wing-hud')).toContainText(`HEAT ${secured.heat}`);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('confiscation raises Heat, restores the offer, and continues the run', async ({ page }) => {
   test.setTimeout(60_000);
-  collectErrors(page);
+  const errors = collectErrors(page);
   await launchShop(page, '/?fixture=m3-caught-proof');
   await expect.poll(() => wingSnapshot(page).then((state) => state.carried)).not.toBeNull();
   await expect
@@ -140,10 +144,12 @@ test('confiscation raises Heat, restores the offer, and continues the run', asyn
     .poll(() => wingSnapshot(page).then((state) => state.player.x))
     .toBeGreaterThan(xBefore + 5);
   await page.keyboard.up('d');
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('mall exit shows an accurate purchased, stolen, cash, and Heat summary', async ({ page }) => {
-  collectErrors(page);
+  const errors = collectErrors(page);
   await launchShop(page, '/?fixture=m3-exit-proof');
   const before = await wingSnapshot(page);
   expect(before.status).toBe('shopping');
@@ -164,6 +170,8 @@ test('mall exit shows an accurate purchased, stolen, cash, and Heat summary', as
     await expect(page.getByTestId('wing-summary')).toContainText('stolen');
     expect(item.itemDefinitionId.length).toBeGreaterThan(0);
   }
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('ten restarts keep one canvas, one HUD, and clean state', async ({ page }) => {
