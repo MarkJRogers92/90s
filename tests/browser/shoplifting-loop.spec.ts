@@ -75,6 +75,7 @@ test('launches the shoplifting loop with one canvas, one HUD, two stores, eight 
   expect(state.heat).toBe(0);
   expect(state.status).toBe('shopping');
   expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('real keyboard purchase deducts cash and records provenance', async ({ page }) => {
@@ -107,6 +108,7 @@ test('real keyboard theft and store exit secures the item and raises Heat', asyn
   await page.keyboard.down('a');
   await page.waitForTimeout(500);
   await page.keyboard.up('a');
+  await expect(page.getByTestId('wing-hud')).toContainText('Hidden');
   await page.keyboard.down('s');
   await page.waitForTimeout(2000);
   await page.keyboard.up('s');
@@ -170,13 +172,18 @@ test('mall exit shows an accurate purchased, stolen, cash, and Heat summary', as
     await expect(page.getByTestId('wing-summary')).toContainText('stolen');
     expect(item.itemDefinitionId.length).toBeGreaterThan(0);
   }
+  const terminal = await wingSnapshot(page);
+  await page.keyboard.press('Escape');
+  await page.evaluate(() => window.dispatchEvent(new Event('blur')));
+  await page.waitForTimeout(100);
+  expect(await wingSnapshot(page)).toEqual(terminal);
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });
 
 test('ten restarts keep one canvas, one HUD, and clean state', async ({ page }) => {
   test.setTimeout(90_000);
-  collectErrors(page);
+  const errors = collectErrors(page);
   await launchShop(page);
   for (let generation = 1; generation <= 10; generation += 1) {
     await expect.poll(() => wingSnapshot(page).then((state) => state.generation)).toBe(generation);
@@ -193,10 +200,12 @@ test('ten restarts keep one canvas, one HUD, and clean state', async ({ page }) 
       await page.getByRole('button', { name: 'Restart loop', exact: true }).click();
     }
   }
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('800 by 600 has no overflow and keeps the loop readable', async ({ page }) => {
-  collectErrors(page);
+  const errors = collectErrors(page);
   await page.setViewportSize({ width: 800, height: 600 });
   await launchShop(page);
   await expect(page.locator('canvas')).toBeVisible();
@@ -209,10 +218,15 @@ test('800 by 600 has no overflow and keeps the loop readable', async ({ page }) 
     clientWidth: document.documentElement.clientWidth,
   }));
   expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+  const restart = page.getByRole('button', { name: 'Restart loop', exact: true });
+  await restart.scrollIntoViewIfNeeded();
+  await expect(restart).toBeInViewport();
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('pause and blur clear held input without replaying a backlog', async ({ page }) => {
-  collectErrors(page);
+  const errors = collectErrors(page);
   await launchShop(page);
   await page.keyboard.down('d');
   await expect
@@ -232,10 +246,12 @@ test('pause and blur clear held input without replaying a backlog', async ({ pag
   await page.waitForTimeout(200);
   const settled = await wingSnapshot(page);
   expect(Math.abs(settled.player.x - resumedX)).toBeLessThan(8);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('return to title restores the start screen with all actions enabled', async ({ page }) => {
-  collectErrors(page);
+  const errors = collectErrors(page);
   await launchShop(page);
   await page.getByRole('button', { name: 'Return to title', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Start shift', exact: true })).toBeVisible();
@@ -245,6 +261,8 @@ test('return to title restores the start screen with all actions enabled', async
   await expect(page.getByRole('button', { name: 'Start shift', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Interaction Lab', exact: true })).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Shoplifting Loop', exact: true })).toBeEnabled();
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
 });
 
 test('M1 Start shift still launches its preserved room', async ({ page }) => {

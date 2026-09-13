@@ -253,7 +253,7 @@ export function confiscateTheft(state: WingState): WingCommandResult {
   const event = publish(
     state,
     'theft_confiscated',
-    `${name} was confiscated back to ${store.name} (+${CONFISCATION_HEAT} Heat).`,
+    `Confiscated ${name} back to ${store.name} (+${CONFISCATION_HEAT} Heat).`,
     { offerId: runtime.id, storeId: store.id, instanceId: null },
   );
   return { accepted: true, event };

@@ -339,6 +339,7 @@ describe('confiscateTheft', () => {
     }
     expect(confiscated.event).toMatchObject({
       kind: 'theft_confiscated',
+      description: 'Confiscated Gel Pen Pack back to Homestyle Goods (+25 Heat).',
       offerId: 'homestyle-gel-pens',
       storeId: 'homestyle',
       instanceId: null,

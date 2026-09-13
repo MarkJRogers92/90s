@@ -50,7 +50,10 @@ export function nearestAvailableOffer(state: WingState): ShopOfferRuntime | unde
     .sort((first, second) => {
       const distanceDifference =
         distanceToPoint(state.player, first.position) - distanceToPoint(state.player, second.position);
-      return distanceDifference !== 0 ? distanceDifference : first.id.localeCompare(second.id);
+      if (distanceDifference !== 0) {
+        return distanceDifference;
+      }
+      return first.id < second.id ? -1 : first.id > second.id ? 1 : 0;
     })[0];
 }
 

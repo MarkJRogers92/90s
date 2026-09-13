@@ -77,6 +77,9 @@ export class WingScene extends Phaser.Scene {
   }
 
   private setPaused(paused: boolean): void {
+    if (this.wing.status !== 'shopping') {
+      return;
+    }
     this.wing.paused = paused;
     this.accumulator = 0;
     this.inputAdapter?.clearHeld();

@@ -48,6 +48,25 @@ describe('authoritative wing tick', () => {
     expect(nearestAvailableOffer(tiedState)?.id).toBe('a-offer');
   });
 
+  it('uses locale-independent ordinal offer ids to break distance ties', () => {
+    const state = createWingRun(7);
+    state.player.x = 240;
+    state.player.y = 150;
+    const tiedState = { ...state, offers: [...state.offers] };
+    tiedState.offers[0] = {
+      ...tiedState.offers[0]!,
+      id: 'a_thing',
+      position: { x: 220, y: 150 },
+    };
+    tiedState.offers[1] = {
+      ...tiedState.offers[1]!,
+      id: 'a-thing',
+      position: { x: 260, y: 150 },
+    };
+
+    expect(nearestAvailableOffer(tiedState)?.id).toBe('a-thing');
+  });
+
   it('edge-triggers a nearby purchase once while an interaction key is held', () => {
     const state = createWingRun(7);
     state.player.x = 140;
@@ -176,7 +195,7 @@ describe('authoritative wing tick', () => {
     expect(state.suspicion).toBe(0);
     expect(state.player).toMatchObject(homestyle.resetPoint);
     expect(state.heldActions).toEqual({ interact: false, steal: false });
-    expect(state.recentChange).toContain('confiscated');
+    expect(state.recentChange).toContain('Confiscated');
   });
 
   it('leaves only on an interaction edge, freezes terminal state, and restarts cleanly', () => {
