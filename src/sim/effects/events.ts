@@ -177,6 +177,7 @@ export function drainChildEvents(state: RunState): number {
  */
 export function clearTransientRoomState(state: RunState): void {
   state.surfaces = [];
+  state.projectiles = [];
   state.eventQueue = [];
   state.counters.currentRootActionId = null;
   state.counters.childEventsThisRoot = 0;

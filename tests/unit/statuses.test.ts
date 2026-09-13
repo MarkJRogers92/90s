@@ -28,6 +28,7 @@ import { tickRun } from '../../src/sim/tickRun';
 import type {
   EnemyState,
   GameplayEvent,
+  ProjectileState,
   RunState,
   SurfacePatchState,
 } from '../../src/sim/model';
@@ -195,7 +196,7 @@ describe('Sticky movement application', () => {
 });
 
 describe('transient room cleanup', () => {
-  it('removes surfaces and queued events while preserving enemy statuses', () => {
+  it('removes surfaces, projectiles, and queued events while preserving enemy statuses', () => {
     const state = idleFixture();
     const enemy = state.enemies[0] as EnemyState;
     applyWet(enemy, WET_DURATION_TICKS);
@@ -211,13 +212,29 @@ describe('transient room cleanup', () => {
       sourceItemIds: ['bubble_bath'],
     };
     state.surfaces = [patch];
+    const waterShot: ProjectileState = {
+      id: 91,
+      x: 420,
+      y: 200,
+      previousX: 412,
+      previousY: 200,
+      velocityX: 8,
+      velocityY: 0,
+      radius: 10,
+      remainingTicks: 90,
+      faction: 'player',
+      damage: 3,
+    };
+    state.projectiles = [waterShot];
     const root = beginRootAction(state, { originKind: 'surface', sourceItemIds: ['bubble_bath'] });
     queueChildEvent(state, childRequest(root, 1));
     expect(state.surfaces).toHaveLength(1);
+    expect(state.projectiles).toHaveLength(1);
     expect(state.eventQueue).toHaveLength(1);
 
     clearTransientRoomState(state);
     expect(state.surfaces).toEqual([]);
+    expect(state.projectiles).toEqual([]);
     expect(state.eventQueue).toEqual([]);
     expect(state.counters.currentRootActionId).toBeNull();
     expect(ensureEnemyStatuses(enemy).wetTicks).toBe(WET_DURATION_TICKS);
