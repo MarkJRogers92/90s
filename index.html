@@ -16,6 +16,9 @@
           <button id="interaction-lab-launch" class="secondary-action" type="button">
             Interaction Lab
           </button>
+          <button id="shoplifting-loop-launch" class="secondary-action" type="button">
+            Shoplifting Loop
+          </button>
         </div>
         <p id="startup-status" role="status" aria-live="polite"></p>
       </section>
@@ -39,6 +42,40 @@
           <div id="end-state" class="end-state" hidden>
             <h2 id="end-title">Shift complete</h2>
             <button id="restart-shift" type="button">Restart shift</button>
+          </div>
+        </aside>
+        <aside id="wing-hud" class="wing-hud" data-testid="wing-hud" hidden>
+          <div class="hud-row">
+            <span class="hud-label">ORCHARD GATE // CASH</span>
+            <strong id="wing-cash">$30</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">SECURITY HEAT</span>
+            <strong id="wing-heat">HEAT 0</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">SECURED GOODS</span>
+            <strong id="wing-inventory">PURCHASED 0 · STOLEN 0</strong>
+          </div>
+          <p id="wing-nearby" class="wing-nearby" role="status" aria-live="polite">NEARBY: —</p>
+          <p id="wing-prompt" class="wing-prompt">WASD MOVE · E BUY · F STEAL · ESC PAUSE</p>
+          <p id="wing-carried" class="wing-carried" hidden></p>
+          <p id="wing-suspicion" class="wing-suspicion" hidden></p>
+          <p id="wing-feedback" class="wing-feedback" role="status" aria-live="polite">RECENT: none yet</p>
+          <div id="wing-stores" class="wing-stores">
+            <section class="wing-store" aria-labelledby="wing-store-homestyle-title">
+              <h3 id="wing-store-homestyle-title" class="wing-store-name">Homestyle</h3>
+              <ul id="wing-store-homestyle-offers" class="wing-offer-list" aria-labelledby="wing-store-homestyle-title"></ul>
+            </section>
+            <section class="wing-store" aria-labelledby="wing-store-future-title">
+              <h3 id="wing-store-future-title" class="wing-store-name">Future Hobby</h3>
+              <ul id="wing-store-future-offers" class="wing-offer-list" aria-labelledby="wing-store-future-title"></ul>
+            </section>
+          </div>
+          <div id="wing-summary" class="wing-summary" data-testid="wing-summary" hidden></div>
+          <div class="wing-actions">
+            <button id="restart-loop" type="button">Restart loop</button>
+            <button id="return-to-title" class="secondary-action" type="button">Return to title</button>
           </div>
         </aside>
         <div id="game-host"></div>

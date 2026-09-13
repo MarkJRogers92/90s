@@ -1,7 +1,8 @@
 import type { RunState } from '../sim/model';
 import type { CompiledPrimary } from '../sim/items/types';
+import type { WingState } from '../sim/shop/types';
 
-export type DebugMode = 'shift' | 'lab';
+export type DebugMode = 'shift' | 'lab' | 'shop';
 
 export type DebugSnapshot = {
   mode: DebugMode;
@@ -23,10 +24,34 @@ export type DebugSnapshot = {
   limitDiagnostics: readonly string[];
 };
 
+export type WingDebugSnapshot = {
+  mode: 'shop';
+  generation: number;
+  tick: number;
+  paused: boolean;
+  status: WingState['status'];
+  player: { x: number; y: number };
+  cash: number;
+  startingCash: number;
+  heat: number;
+  suspicion: number;
+  carried: WingState['carried'];
+  inventory: WingState['inventory'];
+  offers: Array<{
+    id: string;
+    status: string;
+    price: number;
+    itemDefinitionId: string;
+  }>;
+  recentChange: string;
+  behaviorTrace: readonly string[];
+  summary: WingState['summary'];
+};
+
 declare global {
   interface Window {
     __DEAD_MALL_DEBUG__?: {
-      snapshot(): DebugSnapshot;
+      snapshot(): DebugSnapshot | WingDebugSnapshot;
     };
   }
 }
@@ -59,6 +84,47 @@ export function installDebugBridge(
           recentChange: state.recentChange,
           behaviorTrace: [...state.behaviorTrace],
           limitDiagnostics: [...state.limitDiagnostics],
+        };
+      },
+    },
+  });
+
+  return () => {
+    delete window.__DEAD_MALL_DEBUG__;
+  };
+}
+
+export function installWingDebugBridge(
+  getWing: () => WingState,
+  getGeneration: () => number,
+): () => void {
+  Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
+    configurable: true,
+    value: {
+      snapshot: (): WingDebugSnapshot => {
+        const state = getWing();
+        return {
+          mode: 'shop',
+          generation: getGeneration(),
+          tick: state.tick,
+          paused: state.paused,
+          status: state.status,
+          player: { x: state.player.x, y: state.player.y },
+          cash: state.cash,
+          startingCash: state.startingCash,
+          heat: state.heat,
+          suspicion: state.suspicion,
+          carried: state.carried ? structuredClone(state.carried) : null,
+          inventory: structuredClone(state.inventory),
+          offers: state.offers.map((offer) => ({
+            id: offer.id,
+            status: offer.status,
+            price: offer.price,
+            itemDefinitionId: offer.itemDefinitionId,
+          })),
+          recentChange: state.recentChange,
+          behaviorTrace: [...state.behaviorTrace],
+          summary: state.summary ? structuredClone(state.summary) : null,
         };
       },
     },
