@@ -73,6 +73,7 @@ h1 {
 }
 
 .run-shell {
+  position: relative;
   width: 100vw;
   min-height: 100vh;
   background: #111517;
@@ -104,6 +105,57 @@ h1 {
   max-height: 100%;
   image-rendering: pixelated;
   box-shadow: 0 0 0 2px #4d5147, 0 20px 80px rgb(0 0 0 / 65%);
+}
+
+.run-hud {
+  position: absolute;
+  z-index: 2;
+  top: 46px;
+  left: 14px;
+  width: min(330px, calc(100vw - 28px));
+  padding: 10px 12px;
+  border: 2px solid rgb(246 211 101 / 70%);
+  color: #f4edd8;
+  background: rgb(9 11 13 / 86%);
+  box-shadow: 4px 4px 0 rgb(92 41 54 / 80%);
+  pointer-events: none;
+}
+
+.hud-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.hud-label,
+.controls {
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+}
+
+.health-track {
+  height: 7px;
+  margin: 6px 0 8px;
+  background: #322f2b;
+}
+
+#health-fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: #d85c54;
+}
+
+.run-status {
+  margin: 0;
+  color: #f6d365;
+  font-weight: 700;
+}
+
+.controls {
+  margin: 7px 0 0;
+  color: #aeb8ad;
 }
 
 [hidden] {

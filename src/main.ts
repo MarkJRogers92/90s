@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { BootScene } from './game/scenes/BootScene';
+import { RunScene } from './game/scenes/RunScene';
 import './styles.css';
 
 const startButton = document.querySelector<HTMLButtonElement>('#start-shift');
@@ -37,7 +38,7 @@ startButton.addEventListener(
           mode: Phaser.Scale.FIT,
           autoCenter: Phaser.Scale.CENTER_BOTH,
         },
-        scene: [BootScene],
+        scene: [BootScene, RunScene],
       });
 
       startupStatus.textContent = '';
