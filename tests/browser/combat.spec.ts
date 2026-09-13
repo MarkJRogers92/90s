@@ -20,6 +20,7 @@ async function startShift(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Start shift', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible();
   await expect(page.getByTestId('run-hud')).toBeVisible();
+  await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
 }
 

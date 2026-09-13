@@ -158,6 +158,25 @@ h1 {
   color: #aeb8ad;
 }
 
+.end-state {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgb(246 211 101 / 50%);
+  pointer-events: auto;
+}
+
+.end-state h2 {
+  margin: 0 0 12px;
+  color: #f4edd8;
+  font-size: 1.35rem;
+  letter-spacing: 0.04em;
+}
+
+.end-state button {
+  padding: 0.65rem 0.8rem;
+  font-size: 0.75rem;
+}
+
 [hidden] {
   display: none !important;
 }

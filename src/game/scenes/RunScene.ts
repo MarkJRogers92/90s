@@ -14,6 +14,7 @@ export class RunScene extends Phaser.Scene {
   public static readonly KEY = 'RunScene';
 
   private run: RunState = createRun(1997);
+  private generation = 1;
   private accumulator = 0;
   private inputAdapter: InputAdapter | undefined;
   private entityView: EntityView | undefined;
@@ -25,7 +26,8 @@ export class RunScene extends Phaser.Scene {
   }
 
   public create(): void {
-    this.run = createRun(1997);
+    this.generation = 1;
+    this.run = this.createInitialRun();
     this.accumulator = 0;
     this.inputAdapter = new InputAdapter(
       this,
@@ -33,10 +35,13 @@ export class RunScene extends Phaser.Scene {
       () => this.setPaused(true),
     );
     this.entityView = new EntityView(this);
-    this.hud = new Hud();
+    this.hud = new Hud(this.restartRun);
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
-      this.removeDebugBridge = installDebugBridge(() => this.run);
+      this.removeDebugBridge = installDebugBridge(
+        () => this.run,
+        () => this.generation,
+      );
     }
 
     this.syncView();
@@ -70,6 +75,28 @@ export class RunScene extends Phaser.Scene {
     this.syncView();
   }
 
+  private createInitialRun(): RunState {
+    const run = createRun(1997);
+    if (
+      import.meta.env.DEV &&
+      import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true' &&
+      new URLSearchParams(window.location.search).get('fixture') === 'restart-proof'
+    ) {
+      for (const enemy of run.enemies) {
+        enemy.health = 0;
+      }
+    }
+    return run;
+  }
+
+  private readonly restartRun = (): void => {
+    this.generation += 1;
+    this.run = this.createInitialRun();
+    this.accumulator = 0;
+    this.inputAdapter?.clearHeld();
+    this.syncView();
+  };
+
   private syncView(): void {
     this.entityView?.sync(this.run);
     this.hud?.sync(this.run);
@@ -80,6 +107,7 @@ export class RunScene extends Phaser.Scene {
     this.inputAdapter = undefined;
     this.entityView?.destroy();
     this.entityView = undefined;
+    this.hud?.destroy();
     this.hud = undefined;
     this.removeDebugBridge?.();
     this.removeDebugBridge = undefined;

@@ -66,6 +66,15 @@ export class EntityView {
         graphics.fillStyle(0xc984d8, 1);
         graphics.fillRect(enemy.x - 6, enemy.y - 5, 12, 8);
       }
+      graphics.fillStyle(0x2a2424, 0.9);
+      graphics.fillRect(enemy.x - 15, enemy.y - enemy.radius - 12, 30, 4);
+      graphics.fillStyle(0xd85c54, 1);
+      graphics.fillRect(
+        enemy.x - 15,
+        enemy.y - enemy.radius - 12,
+        30 * Math.max(0, Math.min(1, enemy.health / 8)),
+        4,
+      );
     }
 
     for (const projectile of state.projectiles) {
@@ -75,7 +84,7 @@ export class EntityView {
       graphics.strokeCircle(projectile.x, projectile.y, projectile.radius + 2);
     }
 
-    const flicker = state.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
+    const flicker = state.player.invulnerableTicks > 0 && Math.floor(state.tick / 12) % 2 === 0;
     graphics.fillStyle(flicker ? 0xdce8c8 : 0x2f5f62, 1);
     graphics.fillRect(state.player.x - 9, state.player.y - 12, 18, 24);
     graphics.fillStyle(0xf0d0a2, 1);
