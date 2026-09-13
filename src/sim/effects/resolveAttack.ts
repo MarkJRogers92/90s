@@ -1,4 +1,9 @@
-import type { AttackDelivery, CompiledPrimary } from '../items/types';
+import type {
+  AttackDelivery,
+  CompiledPrimary,
+  ItemEffectSpec,
+  StatusModifierEffect,
+} from '../items/types';
 import { inAttackCone } from '../combat/attack';
 import { hasLineOfSight } from '../combat/collision';
 import type { EnemyState, GameplayEvent, InputFrame, RunState } from '../model';
@@ -6,7 +11,7 @@ import { ATTACK_ACTIVE_TICKS, DIRECT_HIT_WET_TICKS } from './constants';
 import { reactionEffectsOf, resolveWetHitReaction } from './conduction';
 import { beginRootAction, recordBehaviorTrace, setRecentChange } from './events';
 import { spawnPlayerProjectile } from './playerProjectiles';
-import { applyWet } from './statuses';
+import { applySticky, applyWet, ensureEnemyStatuses } from './statuses';
 
 /**
  * The capability view of a primary attack.
@@ -66,24 +71,56 @@ function directHitTargets(
 }
 
 /**
- * Applies direct damage, then Wet, then the reusable reaction stage.
+ * The compiled status modifiers a direct hit applies, filtered by the
+ * discriminated effect kind.
  *
- * Wet is applied before the reaction stage runs so every reaction can branch on
- * an already-Wet target.
+ * Filtering by kind (rather than matching an item definition ID or name) is
+ * what makes the stage generic: any authored item that declares a
+ * `status_modifier` gets the same treatment without a resolver change.
+ */
+function statusModifierEffectsOf(
+  effects: readonly ItemEffectSpec[],
+): StatusModifierEffect[] {
+  return effects.filter(
+    (effect): effect is StatusModifierEffect => effect.kind === 'status_modifier',
+  );
+}
+
+/** Applies compiled status modifiers by their discriminated status kind. */
+function applyStatusModifierEffects(
+  target: EnemyState,
+  effects: readonly StatusModifierEffect[],
+): void {
+  for (const effect of effects) {
+    if (effect.status === 'sticky') {
+      applySticky(target, effect.ticks, effect.slowMultiplier, effect.slowFloor);
+    }
+  }
+}
+
+/**
+ * Applies direct damage, then Wet, then every compatible compiled
+ * status_modifier, then the reusable reaction stage.
+ *
+ * Wet and the status modifiers are applied before the reaction stage runs so
+ * every reaction can branch on an already-Wet target with its statuses already
+ * in place.
  */
 function resolveDirectHit(
   state: RunState,
   root: GameplayEvent,
   target: EnemyState,
   descriptor: AttackDescriptor,
+  statusEffects: readonly StatusModifierEffect[],
 ): void {
   target.health -= descriptor.damage;
   applyWet(target, DIRECT_HIT_WET_TICKS);
+  applyStatusModifierEffects(target, statusEffects);
+  const statuses = ensureEnemyStatuses(target);
   recordBehaviorTrace(
     state,
-    `root ${root.eventId}: target ${target.id} took ${descriptor.damage} damage, Wet ${
-      target.statuses?.wetTicks ?? 0
-    }`,
+    `root ${root.eventId}: target ${target.id} took ${descriptor.damage} damage, ` +
+      `Wet ${statuses.wetTicks}, Sticky ${statuses.stickyTicks}`,
   );
   runReactionStage(state, root, target);
 }
@@ -149,8 +186,9 @@ export function resolvePrimaryAttack(state: RunState, input: InputFrame): Gamepl
     return root;
   }
 
+  const statusEffects = statusModifierEffectsOf(state.compiledLoadout.effects);
   for (const target of targets) {
-    resolveDirectHit(state, root, target, descriptor);
+    resolveDirectHit(state, root, target, descriptor, statusEffects);
   }
   setRecentChange(
     state,

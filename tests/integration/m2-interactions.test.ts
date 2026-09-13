@@ -4,8 +4,13 @@ import { ITEM_CATALOG } from '../../src/sim/items/catalog';
 import type { ItemDefinition } from '../../src/sim/items/types';
 import { validateCatalog } from '../../src/sim/items/validateCatalog';
 import { createRun } from '../../src/sim/createRun';
+import { WET_DURATION_TICKS } from '../../src/sim/effects/constants';
 import { clearTransientRoomState } from '../../src/sim/effects/events';
-import { ensureEnemyStatuses } from '../../src/sim/effects/statuses';
+import {
+  applyWet,
+  effectiveSpeedMultiplier,
+  ensureEnemyStatuses,
+} from '../../src/sim/effects/statuses';
 import { tickRun } from '../../src/sim/tickRun';
 import type { EnemyState, InputFrame, RunState } from '../../src/sim/model';
 import { emptyFixture, frame } from '../helpers';
@@ -77,6 +82,9 @@ function runMopGlobeFixture(): { chainedTargetDamage: number; struckTargetDamage
   const struck = sentry(20, 350, 160);
   const chained = sentry(21, 430, 160);
   state.enemies = [struck, chained];
+  // A conductive chain may only continue through targets already Wet when the
+  // hop chooses them; the mop's own hit only wets the struck target.
+  applyWet(chained, WET_DURATION_TICKS);
 
   tickRun(state, { moveX: 0, moveY: 0, aimX: 500, aimY: 160, fire: true });
 
@@ -113,6 +121,9 @@ function runSoakerGlobeCordFixture(): { visitedIds: number[]; chainRange: number
     sentry(12, 610, 160),
     sentry(13, 700, 160),
   ];
+  for (const enemy of state.enemies.slice(1)) {
+    applyWet(enemy, WET_DURATION_TICKS);
+  }
 
   for (let tick = 0; tick < 80; tick += 1) {
     tickRun(state, tick === 0 ? fireAt() : frame());
@@ -158,6 +169,9 @@ type AllModifierResult = {
 function runAllModifierFixture(): AllModifierResult {
   const state = labRun(['pump_soaker', ...SOAKER_MODIFIERS], 'pump_soaker');
   state.enemies = [sentry(10, 400, 160), sentry(11, 520, 160), sentry(12, 640, 160)];
+  for (const enemy of state.enemies.slice(1)) {
+    applyWet(enemy, WET_DURATION_TICKS);
+  }
 
   for (let tick = 0; tick < 200; tick += 1) {
     tickRun(state, tick % 30 === 0 ? fireAt() : frame());
@@ -217,6 +231,9 @@ function runPickupPermutations(): string[] {
   for (const order of PICKUP_ORDERS) {
     const state = labRun(order, 'pump_soaker');
     state.enemies = [sentry(10, 400, 160), sentry(11, 520, 160), sentry(12, 640, 160)];
+    for (const enemy of state.enemies.slice(1)) {
+      applyWet(enemy, WET_DURATION_TICKS);
+    }
     for (let tick = 0; tick < 150; tick += 1) {
       tickRun(state, tick % 40 === 0 ? fireAt() : frame());
     }
@@ -231,6 +248,22 @@ describe('mop and conductive globe', () => {
 
     expect(result.chainedTargetDamage).toBeGreaterThan(0);
     expect(result.struckTargetDamage).toBe(4);
+  });
+
+  it('leaves a dry nearby enemy undamaged and unwetted', () => {
+    const state = labRun(['janitor_mop', 'plasma_globe'], 'janitor_mop');
+    const struck = sentry(20, 350, 160);
+    const dry = sentry(21, 430, 160);
+    state.enemies = [struck, dry];
+
+    tickRun(state, { moveX: 0, moveY: 0, aimX: 500, aimY: 160, fire: true });
+
+    expect(struck.health).toBe(40 - 4);
+    expect(dry.health).toBe(40);
+    expect(dry.statuses?.wetTicks ?? 0).toBe(0);
+    // The chain ran from the Wet struck target but reached no one: a hop can
+    // never wet a dry enemy and then continue through it.
+    expect(chainVisitedIds(state)).toEqual([20]);
   });
 });
 
@@ -340,6 +373,7 @@ describe('authored synthetic definition', () => {
   it('executes through the unchanged central tick', () => {
     const state = emptyFixture();
     state.enemies = [sentry(10, 400, 160), sentry(11, 500, 160)];
+    applyWet(state.enemies[1] as EnemyState, WET_DURATION_TICKS);
     state.inventory = [{ instanceId: 'foam-a', itemId: 'synthetic_foam_gun' }];
     state.selectedPrimaryInstanceId = 'foam-a';
     state.compiledLoadout = compileLoadout(
@@ -358,6 +392,62 @@ describe('authored synthetic definition', () => {
     expect(struck?.statuses?.wetTicks).toBeGreaterThan(0);
     expect(chained?.health).toBe(40 - 2);
     expect(state.limitDiagnostics).toEqual([]);
+  });
+});
+
+describe('authored synthetic direct status modifier', () => {
+  const syntheticTarBat: ItemDefinition = {
+    id: 'synthetic_tar_bat',
+    name: 'Synthetic Tar Bat',
+    summary: 'Test-only direct attack that reuses the existing status_modifier kind.',
+    base: {
+      delivery: 'direct',
+      damage: 3,
+      cooldownTicks: 10,
+      range: 100,
+      halfAngleRadians: 0.6,
+      speed: 0,
+    },
+    effects: [
+      {
+        kind: 'status_modifier',
+        stage: 'status',
+        priority: 0,
+        sourceItemId: 'synthetic_tar_bat',
+        label: 'tar (Sticky 45 ticks at 0.75 movement)',
+        status: 'sticky',
+        ticks: 45,
+        slowMultiplier: 0.75,
+        slowFloor: 0.5,
+      },
+    ],
+  };
+
+  it('applies any compiled status_modifier to a direct primary without an item-ID branch', () => {
+    expect(() => validateCatalog([...ITEM_CATALOG, syntheticTarBat])).not.toThrow();
+
+    const state = emptyFixture();
+    state.enemies = [sentry(10, 350, 160)];
+    state.inventory = [{ instanceId: 'bat-a', itemId: 'synthetic_tar_bat' }];
+    state.selectedPrimaryInstanceId = 'bat-a';
+    state.compiledLoadout = compileLoadout(
+      [...ITEM_CATALOG, syntheticTarBat],
+      state.inventory,
+      'bat-a',
+    );
+
+    tickRun(state, { moveX: 0, moveY: 0, aimX: 500, aimY: 160, fire: true });
+
+    const struck = state.enemies.find((enemy) => enemy.id === 10) as EnemyState;
+    expect(struck.health).toBe(40 - 3);
+    const statuses = ensureEnemyStatuses(struck);
+    expect(statuses.wetTicks).toBe(WET_DURATION_TICKS);
+    expect(statuses.stickyTicks).toBe(45);
+    expect(statuses.stickyMultiplier).toBe(0.75);
+    expect(effectiveSpeedMultiplier(struck)).toBe(0.75);
+    expect(state.compiledLoadout.effects.map((effect) => effect.kind)).toEqual([
+      'status_modifier',
+    ]);
   });
 });
 

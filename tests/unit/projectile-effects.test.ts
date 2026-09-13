@@ -228,6 +228,8 @@ describe('ordinary projectile impact', () => {
     const struck = sentry(20, 400, 160);
     const chained = sentry(21, 470, 160);
     state.enemies = [struck, chained];
+    // The chain may only continue through an already-Wet neighbouring target.
+    applyWet(chained, WET_DURATION_TICKS);
 
     let tick = 0;
     do {
@@ -469,6 +471,8 @@ describe('conduction', () => {
     state.enemies = [struck, first, second];
     const root = rootOf(state);
     applyWet(struck, WET_DURATION_TICKS);
+    applyWet(first, WET_DURATION_TICKS);
+    applyWet(second, WET_DURATION_TICKS);
 
     resolveConductiveReaction(state, reactionRequest(state, root, struck));
 
@@ -492,6 +496,8 @@ describe('conduction', () => {
     state.enemies = [struck, nearerHighId, fartherLowId];
     const root = rootOf(state);
     applyWet(struck, WET_DURATION_TICKS);
+    applyWet(nearerHighId, WET_DURATION_TICKS);
+    applyWet(fartherLowId, WET_DURATION_TICKS);
 
     resolveConductiveReaction(state, reactionRequest(state, root, struck));
 
@@ -506,12 +512,14 @@ describe('conduction', () => {
     applyWet(withoutCord.enemies[0] as EnemyState, WET_DURATION_TICKS);
     resolveConductiveReaction(withoutCord, reactionRequest(withoutCord, firstRoot, withoutCord.enemies[0] as EnemyState));
     expect(farTarget.health).toBe(40);
+    expect(farTarget.statuses?.wetTicks ?? 0).toBe(0);
 
     const withCord = labRun(['janitor_mop', 'plasma_globe', 'extension_cord'], 'janitor_mop');
     const farTargetWithCord = sentry(11, 500, 160);
     withCord.enemies = [sentry(10, 340, 160), farTargetWithCord];
     const secondRoot = rootOf(withCord);
     applyWet(withCord.enemies[0] as EnemyState, WET_DURATION_TICKS);
+    applyWet(farTargetWithCord, WET_DURATION_TICKS);
     resolveConductiveReaction(withCord, reactionRequest(withCord, secondRoot, withCord.enemies[0] as EnemyState));
     expect(farTargetWithCord.health).toBe(40 - CONDUCTIVE_CHAIN_DAMAGE);
     expect(withCord.behaviorTrace.join('\n')).toMatch(/range 220/);
@@ -539,6 +547,7 @@ describe('conduction', () => {
     state.enemies = [struck, farTarget];
     const root = rootOf(state);
     applyWet(struck, WET_DURATION_TICKS);
+    applyWet(farTarget, WET_DURATION_TICKS);
 
     resolveConductiveReaction(state, reactionRequest(state, root, struck));
 
@@ -561,11 +570,27 @@ describe('conduction', () => {
     expect(state.eventQueue).toEqual([]);
   });
 
+  it('never wets or damages a dry nearby enemy that a chain hop could reach', () => {
+    const state = labRun(['janitor_mop', 'plasma_globe'], 'janitor_mop');
+    const struck = sentry(10, 340, 160);
+    const dry = sentry(11, 420, 160);
+    state.enemies = [struck, dry];
+    const root = rootOf(state);
+    applyWet(struck, WET_DURATION_TICKS);
+
+    resolveConductiveReaction(state, reactionRequest(state, root, struck));
+
+    expect(dry.health).toBe(40);
+    expect(dry.statuses?.wetTicks ?? 0).toBe(0);
+    expect(state.behaviorTrace.join('\n')).toMatch(/visited \[10\]/);
+  });
+
   it('does not invoke the primary impact hook from chain hits', () => {
     const state = labRun(['janitor_mop', 'plasma_globe'], 'janitor_mop');
     const struck = sentry(10, 350, 160);
     const chained = sentry(11, 430, 160);
     state.enemies = [struck, chained];
+    applyWet(chained, WET_DURATION_TICKS);
 
     tickRun(state, { moveX: 0, moveY: 0, aimX: 500, aimY: 160, fire: true });
 
@@ -625,5 +650,33 @@ describe('Wet surfaces', () => {
     clearTransientRoomState(state);
 
     expect(state.surfaces).toEqual([]);
+  });
+});
+
+describe('direct status modifiers', () => {
+  it('applies damage, then Wet, then compiled Sticky before the reaction stage', () => {
+    const state = labRun(['janitor_mop', 'gel_pens', 'plasma_globe'], 'janitor_mop');
+    const struck = sentry(20, 350, 160);
+    const chained = sentry(21, 430, 160);
+    state.enemies = [struck, chained];
+    // The chain may only continue through an already-Wet target.
+    applyWet(chained, WET_DURATION_TICKS);
+
+    tickRun(state, { moveX: 0, moveY: 0, aimX: 500, aimY: 160, fire: true });
+
+    expect(struck.health).toBe(40 - 4);
+    const statuses = ensureEnemyStatuses(struck);
+    expect(statuses.wetTicks).toBe(WET_DURATION_TICKS);
+    expect(statuses.stickyTicks).toBe(STICKY_DURATION_TICKS);
+    expect(statuses.stickyMultiplier).toBe(STICKY_SLOW_MULTIPLIER);
+    expect(effectiveSpeedMultiplier(struck)).toBe(0.65);
+    expect(chained.health).toBe(40 - CONDUCTIVE_CHAIN_DAMAGE);
+
+    const trace = state.behaviorTrace.join('\n');
+    const appliedIndex = trace.search(/target 20 took/);
+    const reactionIndex = trace.search(/reaction stage after target 20/);
+    expect(appliedIndex).toBeGreaterThanOrEqual(0);
+    expect(reactionIndex).toBeGreaterThan(appliedIndex);
+    expect(trace).toMatch(/took 4 damage, Wet 180, Sticky 90/);
   });
 });

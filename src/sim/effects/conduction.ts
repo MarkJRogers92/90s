@@ -182,7 +182,15 @@ export type ConductiveReactionRequest = {
   readonly capabilityEvents?: Readonly<Record<string, GameplayEvent>>;
 };
 
-/** Eligible targets by distance from the current node, then stable entity ID. */
+/**
+ * The next chain hop: the nearest already-Wet enemy that is inside range and
+ * has not been visited yet, choosing by distance and then stable entity ID.
+ *
+ * Eligibility is decided from the target's state *before* this hop resolves,
+ * so a hop can only continue through Wet targets that already existed when it
+ * was selected. A dry enemy is never eligible, which stops a chain from
+ * Wetting a new target and then continuing through it.
+ */
 function nearestEligibleTarget(
   state: RunState,
   from: EnemyState,
@@ -193,6 +201,9 @@ function nearestEligibleTarget(
   let bestDistance = Number.POSITIVE_INFINITY;
   for (const enemy of state.enemies) {
     if (enemy.health <= 0 || enemy.id === from.id || visited.includes(enemy.id)) {
+      continue;
+    }
+    if ((enemy.statuses?.wetTicks ?? 0) <= 0) {
       continue;
     }
     const distance = Math.hypot(enemy.x - from.x, enemy.y - from.y);
@@ -211,11 +222,12 @@ function nearestEligibleTarget(
  * Resolves the single bounded reaction for one eligible Wet hit.
  *
  * The Plasma Globe capability starts one chain per root action: it hops to at
- * most `maxAdditionalTargets` other living enemies, choosing by distance then
- * stable entity ID, visiting each target once, and rendering each visited
- * target Wet. The Extension Cord capability only widens the reach of that one
- * reaction; on its own it applies one weak discharge to the struck Wet target.
- * Chain hops never invoke the primary impact hook or the reaction stage again.
+ * most `maxAdditionalTargets` other living enemies that are already Wet when
+ * the hop selects them, choosing by distance then stable entity ID, visiting
+ * each target once, and refreshing the Wet it qualified with. The Extension
+ * Cord capability only widens the reach of that one reaction; on its own it
+ * applies one weak discharge to the struck Wet target. Chain hops never invoke
+ * the primary impact hook or the reaction stage again.
  */
 export function resolveConductiveReaction(
   state: RunState,
