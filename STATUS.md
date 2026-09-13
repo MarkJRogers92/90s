@@ -1,27 +1,29 @@
 # Status
 
-**Current milestone:** M2 interaction lab implemented and verified locally; ready for user playtest.
+**Current milestone:** M3 Shoplifting Loop implemented and verified locally; ready for user playtest.
 
-**Playable result:** Normal Start shift still runs the M1 Janitor combat room. Interaction Lab launches a separate deterministic run with all eight M2 item cards, two curated builds, owned-item toggles, primary selection, applicability notes, recent-change text, and a readable behavior trace. The live canvas renders water shots, bubbles, outbound/return direction, Wet/Sticky markers, conductive feedback, and Wet patches.
+**Playable result:** The title screen now launches three separate modes. **Start shift** preserves the M1 combat room, **Interaction Lab** preserves the M2 item sandbox, and **Shoplifting Loop** launches M3's deterministic two-store wing. M3 supports buying, theft, security sight and suspicion, confiscation, store-exit securing, persistent Heat, factual item provenance, restart, return to title, and an intentional purchased/stolen/cash/Heat summary.
 
-**Latest verification (2026-09-13):**
+Shopping, economy, provenance, security, and transition rules remain renderer-independent under `src/sim/shop`. Phaser collects input, advances the fixed-step loop, and presents authoritative state.
+
+**Latest verification (2026-09-13) from implementation checkpoint `32873ec58355f8e4ad512d29a7dfcdef098980f3`:**
 
 - `npm run typecheck` — exit 0.
-- `npm test` — 9 files, 123 tests passed.
-- `npm run test:browser` — 12 Chromium tests passed, including five Interaction Lab flows and all seven M1 regressions.
-- `npm run build` — exit 0; Vite production output created in `dist/`.
-- Production JavaScript scan — no debug bridge, debug flag, installer, or development fixture names outside source maps.
-- Production preview smoke — one canvas, one HUD, one lab panel, eight item cards, meaningful content, no overlay, no page/console errors, and only local-origin requests.
-- Actual preview screenshot — `artifacts/m2-interaction-lab.png`.
+- `npm test` — exit 0; 13 files and 196 tests passed.
+- `npx playwright test tests/browser/shoplifting-loop.spec.ts` — exit 0; 11 targeted Chromium tests passed.
+- `npm run test:browser` — exit 0; 23 Chromium tests passed, including all M1-M3 browser flows.
+- `npm run build` — exit 0; Vite transformed 43 modules and created production output in `dist/`.
+- Production JavaScript scan for the debug bridge, debug flag, and all four M3 fixture names — no matches outside source maps.
+- Independent GPT actual-diff review and post-fix re-review — no unresolved Critical or Important finding.
 
-**Published repository:** <https://github.com/MarkJRogers92/90s>
+**Direct production inspection:**
 
-**Branch:** `codex/m2-interaction-lab`
+- At 1440×900, a real keyboard purchase changed cash from `$30` to `$18`, marked one item purchased, consumed the correct offer, and showed the authoritative recent event. The page had one canvas, one HUD, eight offer cards, no horizontal overflow, no debug bridge, no page/console errors, and requests only to `http://127.0.0.1:4173`.
+- At 800×600, the page remained exactly 800 pixels wide with one canvas and eight offers. The 486-pixel HUD intentionally scrolls its 796-pixel contents; direct inspection reached both action buttons, with no page/console errors and only local-origin requests.
+- Screenshots: `artifacts/m3-shoplifting-loop.png`, `artifacts/m3-shoplifting-loop-800x600.png`, and the supporting scrolled view `artifacts/m3-shoplifting-loop-800x600-scrolled.png`.
 
-**Cloud continuation:** The exact milestone HEAD is also published on `main`; no merge, deployment, or release has been performed.
+**Repository state:** Branch `codex/m3-shoplifting-loop` is local only. Nothing from M3 has been pushed, merged, published, deployed, or released.
 
-**Latest implementation checkpoint:** `848bd693876c23ecf5f10a320140d2b9c68be75c`
+**Known uncertainty:** Prices, sight timing, Heat escalation, and the buy-versus-steal decision still require the user's hands-on feel playtest. The graybox/vector presentation is not a production-art pass. WebKit, Safari, Windows/device coverage, audio, and physical-device performance were not run. Custom catalogs passed to `createWingRun()` are expected to remain immutable; the production catalog is deep-frozen.
 
-**Known uncertainty:** The art remains deliberate graybox/vector work, there is no sound, WebKit/Safari/physical-device coverage was not run, and both combat feel and item-combination feel still need the user's hands-on playtest.
-
-**Next:** Stop at M2. M3 Shoplifting Loop is not authorized.
+**Next:** Stop at M3. Run a hands-on Shoplifting Loop playtest; do not begin M4 without new authorization.

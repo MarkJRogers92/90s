@@ -1,27 +1,26 @@
 # Next session
 
-M0-M2 is implemented on `codex/m2-interaction-lab` through implementation checkpoint `848bd693876c23ecf5f10a320140d2b9c68be75c`. The milestone is published at <https://github.com/MarkJRogers92/90s>, with the exact continuation HEAD mirrored on `main`. Verify the actual branch and working tree before trusting this note.
+M0-M3 is implemented in the local linked worktree `/Users/markrogers/Documents/Github Code/90s/.worktrees/m3-shoplifting-loop` on branch `codex/m3-shoplifting-loop`. The reviewed gameplay implementation checkpoint is `32873ec58355f8e4ad512d29a7dfcdef098980f3`. Verify the actual branch, HEAD, and working tree before trusting this note.
 
 Run it locally:
 
     npm install
     npm run dev
 
-Open `http://127.0.0.1:5173`. Choose **Start shift** for the preserved M1 room or **Interaction Lab** for M2. In the lab, try the curated builds, toggle owned items, select Mop or Soaker as primary, then use WASD, pointer aim, primary click, and Escape.
+Open `http://127.0.0.1:5173`. Choose **Shoplifting Loop** for M3; **Start shift** and **Interaction Lab** preserve M1 and M2. In M3, use WASD to enter either store, approach an offer, press E to buy or F to steal, cross the source-store doorway to secure a theft, and deliberately use E at the Orchard Gate exit to finish the run.
 
-M2 includes immutable definitions, item instances, validated/stage-sorted compilation, Wet/Sticky, player projectiles, bubbles, surfaces, already-Wet conductive chains, one sampled-path return pass, ancestry, and bounded generation. `src/sim` remains authoritative and central behavior has no item-name branches.
-
-Do not begin M3 Shoplifting Loop without new user authorization. The next useful action is hands-on playtesting of combat feel, item readability, and whether the two curated combinations are fun and understandable.
+M3 keeps shopping rules under `src/sim/shop`: validated fixed content, pure buying/theft/secure/confiscate/leave commands, deterministic movement and sweeping sight, stable ordinal offer selection, suspicion, Heat, factual provenance, terminal freeze, and replay coverage. Phaser owns only input cadence and presentation.
 
 Last full gate:
 
     npm run typecheck
     npm test
+    npx playwright test tests/browser/shoplifting-loop.spec.ts
     npm run test:browser
     npm run build
 
-Result: typecheck and build passed; 123 unit/integration tests and 12 Chromium browser tests passed. Production preview inspection found one canvas, one HUD, one lab panel, eight item cards, no overlay, no page/console errors, and no external requests.
+Result: typecheck and build passed; 196 unit/integration tests, 11 targeted M3 Chromium tests, and 23 full Chromium tests passed. The production bundle excludes the debug bridge and all M3 fixture names. Direct production inspection at 1440×900 and 800×600 found one canvas, one HUD, eight offers, no horizontal overflow, no page/console errors, and only local-origin requests. At 800×600, scroll the HUD to reach the remaining offers and action buttons.
 
-Screenshot: `artifacts/m2-interaction-lab.png`.
+Screenshots: `artifacts/m3-shoplifting-loop.png`, `artifacts/m3-shoplifting-loop-800x600.png`, and `artifacts/m3-shoplifting-loop-800x600-scrolled.png`.
 
-No code blocker. DeepSeek access for this repository is now allowlisted and verified through the isolated `agent_bridge.deepseek_worker` route. The linked milestone worktree is intentionally separate from the M1 checkout. The milestone has been pushed to its continuation branch and mirrored to `main`; it has not been merged, deployed, or released.
+Nothing from M3 has been pushed, merged, published, deployed, or released. The continuation point is a hands-on M3 feel/readability playtest. Stop at M3 and do not begin M4 without explicit authorization.
