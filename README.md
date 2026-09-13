@@ -13,6 +13,6 @@ Open `http://127.0.0.1:5173`, then choose **Start shift** for M1 or **Interactio
 
 ## Continue in the cloud
 
-The milestone is published in the private repository at <https://github.com/MarkJRogers92/90s>. The continuation branch is `codex/m2-interaction-lab`; the same milestone HEAD is also available from `main` for a simple cloud checkout. Verify the branch and working tree before making changes. M3 Shoplifting Loop still requires new user authorization.
+The milestone is published in the repository at <https://github.com/MarkJRogers92/90s>. The continuation branch is `codex/m2-interaction-lab`; the same milestone HEAD is also available from `main` for a simple cloud checkout. Verify the branch and working tree before making changes. M3 Shoplifting Loop still requires new user authorization.
 
 See `NEXT_SESSION.md`, `STATUS.md`, and `TEST_EVIDENCE.md` for the current milestone, verification evidence, and next playtest focus.
