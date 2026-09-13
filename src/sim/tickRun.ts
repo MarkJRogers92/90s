@@ -1,4 +1,4 @@
-import type { InputFrame, RunState } from './model';
+import type { InputFrame, PrimaryAttackContext, RunState } from './model';
 import { updatePlayerFacing } from './combat/attack';
 import { resolveEnemyDamage, updateEnemies, updateProjectiles } from './combat/enemies';
 import { movePlayer } from './combat/movement';
@@ -22,7 +22,11 @@ import { updateSurfaces } from './effects/surfaces';
  * resolved by their own stage, so a shot moves exactly once per tick and an
  * outbound expiry can start a return pass instead of destroying the shot.
  */
-export function tickRun(state: RunState, input: InputFrame): void {
+export function tickRun(
+  state: RunState,
+  input: InputFrame,
+  attackContext: PrimaryAttackContext = {},
+): void {
   if (state.paused || state.status !== 'playing') {
     return;
   }
@@ -35,19 +39,28 @@ export function tickRun(state: RunState, input: InputFrame): void {
   updateSurfaces(state);
   updatePlayerFacing(state, input);
   rememberActiveRootEventAllowance(state);
-  resolvePrimaryAttack(state, input);
+  const stagedPlayerProjectiles = state.projectiles.filter(isPlayerProjectile);
+  if (stagedPlayerProjectiles.length > 0) {
+    state.projectiles = state.projectiles.filter(
+      (projectile) => !isPlayerProjectile(projectile),
+    );
+  }
+  resolvePrimaryAttack(state, input, attackContext);
   movePlayer(state, input.moveX, input.moveY);
   updateEnemies(state);
   resolveEnemyDamage(state);
 
-  const playerProjectiles = state.projectiles.filter(isPlayerProjectile);
-  if (playerProjectiles.length > 0) {
+  // Shots spawned this tick hold their origin until the next tick, so an
+  // explicit firing origin stays observable and every pellet starts staged.
+  const freshShots = state.projectiles.filter(isPlayerProjectile);
+  if (freshShots.length > 0) {
     state.projectiles = state.projectiles.filter(
       (projectile) => !isPlayerProjectile(projectile),
     );
   }
   updateProjectiles(state);
-  state.projectiles.push(...updatePlayerProjectiles(state, playerProjectiles));
+  state.projectiles.push(...updatePlayerProjectiles(state, stagedPlayerProjectiles));
+  state.projectiles.push(...freshShots);
 
   drainChildEvents(state);
   state.enemies = state.enemies.filter((enemy) => enemy.health > 0);

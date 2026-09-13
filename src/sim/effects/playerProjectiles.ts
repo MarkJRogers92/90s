@@ -19,6 +19,7 @@ import type {
   PlayerProjectileState,
   ProjectileState,
   RunState,
+  Vec2,
 } from '../model';
 import { reactionEffectsOf, resolveWetHitReaction, withOwningRoot } from './conduction';
 import { queueChildEvent, recordBehaviorTrace, setRecentChange } from './events';
@@ -65,10 +66,13 @@ export function buildPlayerProjectileSpec(
     return null;
   }
 
-  const conversion = effects.find(
-    (effect): effect is ProjectileConversionEffect =>
-      effect.kind === 'projectile_conversion' && effect.converts === 'water_projectile',
-  );
+  const conversion =
+    payload.payloadKind === 'water'
+      ? effects.find(
+          (effect): effect is ProjectileConversionEffect =>
+            effect.kind === 'projectile_conversion' && effect.converts === 'water_projectile',
+        )
+      : undefined;
   const geometryEffects = effects.filter(
     (effect): effect is ProjectileGeometryEffect => effect.kind === 'projectile_geometry',
   );
@@ -117,6 +121,8 @@ export function buildPlayerProjectileSpec(
 
   return freezeDeep({
     delivery,
+    payloadKind: payload.payloadKind,
+    angularOffsetsRadians: [...payload.angularOffsetsRadians],
     damage: payload.damage,
     speed,
     radius,
@@ -162,16 +168,18 @@ export function buildPlayerProjectileSpec(
 
 export type PlayerProjectileSpawnRequest = {
   readonly root: GameplayEvent;
+  readonly origin: Vec2;
   readonly aimX: number;
   readonly aimY: number;
 };
 
 function aimDirection(
   state: RunState,
+  origin: Vec2,
   aimX: number,
   aimY: number,
 ): { x: number; y: number } {
-  const toAim = normalizedDirection(aimX - state.player.x, aimY - state.player.y);
+  const toAim = normalizedDirection(aimX - origin.x, aimY - origin.y);
   if (toAim.x !== 0 || toAim.y !== 0) {
     return toAim;
   }
@@ -179,18 +187,29 @@ function aimDirection(
   return facing.x === 0 && facing.y === 0 ? { x: 1, y: 0 } : facing;
 }
 
+/** Rotates a unit vector by an authored pattern offset in radians. */
+function rotated(direction: Vec2, angleRadians: number): Vec2 {
+  const cosine = Math.cos(angleRadians);
+  const sine = Math.sin(angleRadians);
+  return {
+    x: direction.x * cosine - direction.y * sine,
+    y: direction.x * sine + direction.y * cosine,
+  };
+}
+
 /**
- * Spawns the authoritative player projectile for an accepted attack.
+ * Spawns the authoritative player projectiles for an accepted attack.
  *
- * Everything the shot will ever do is resolved here: the compiled payload, the
- * outbound phase, the sampled path origin, the empty per-pass hit ledgers, the
- * ancestry it continues, and its terminal-burst flag. Returns `null` when the
- * compiled loadout authors no compatible projectile payload.
+ * One frozen spec is built for the trigger, then the origin-to-pointer unit
+ * vector is rotated by every authored offset and one pellet is appended per
+ * offset in stable catalog order. All pellets share the root action but
+ * receive distinct entity IDs. Returns an empty array when the compiled
+ * loadout authors no compatible projectile payload.
  */
-export function spawnPlayerProjectile(
+export function spawnPlayerProjectiles(
   state: RunState,
   request: PlayerProjectileSpawnRequest,
-): PlayerProjectileState | null {
+): PlayerProjectileState[] {
   const spec = buildPlayerProjectileSpec(state.compiledLoadout.effects);
   if (!spec) {
     recordBehaviorTrace(
@@ -198,77 +217,82 @@ export function spawnPlayerProjectile(
       `root ${request.root.eventId}: no compatible projectile payload to fire`,
     );
     setRecentChange(state, 'no compatible projectile payload');
-    return null;
+    return [];
   }
 
-  const direction = aimDirection(state, request.aimX, request.aimY);
-  const projectile: PlayerProjectileState = {
-    id: state.nextEntityId,
-    x: state.player.x,
-    y: state.player.y,
-    previousX: state.player.x,
-    previousY: state.player.y,
-    velocityX: direction.x * spec.speed,
-    velocityY: direction.y * spec.speed,
-    radius: spec.radius,
-    remainingTicks: spec.lifetimeTicks,
-    faction: 'player',
-    damage: spec.damage,
-    payload: spec,
-    phase: 'outbound',
-    sampledPath: [{ x: state.player.x, y: state.player.y }],
-    sampledPathIndex: 0,
-    hitLedger: { outbound: [], return: [] },
-    ancestry: {
-      rootActionId: request.root.rootActionId,
-      parentEventId: request.root.eventId,
-      generationDepth: request.root.generationDepth,
-      procCoefficient: request.root.procCoefficient,
-    },
-    hasBurst: false,
-  };
-  state.nextEntityId += 1;
-  state.projectiles.push(projectile);
-  recordBehaviorTrace(
-    state,
-    `root ${request.root.eventId}: projectile ${projectile.id} spawned (${spec.delivery}, speed ${spec.speed}, radius ${spec.radius}, lifetime ${spec.lifetimeTicks})`,
-  );
+  const baseDirection = aimDirection(state, request.origin, request.aimX, request.aimY);
+  const spawned: PlayerProjectileState[] = [];
+  for (const offset of spec.angularOffsetsRadians) {
+    const direction = rotated(baseDirection, offset);
+    const projectile: PlayerProjectileState = {
+      id: state.nextEntityId,
+      x: request.origin.x,
+      y: request.origin.y,
+      previousX: request.origin.x,
+      previousY: request.origin.y,
+      velocityX: direction.x * spec.speed,
+      velocityY: direction.y * spec.speed,
+      radius: spec.radius,
+      remainingTicks: spec.lifetimeTicks,
+      faction: 'player',
+      damage: spec.damage,
+      payload: spec,
+      phase: 'outbound',
+      sampledPath: [{ x: request.origin.x, y: request.origin.y }],
+      sampledPathIndex: 0,
+      hitLedger: { outbound: [], return: [] },
+      ancestry: {
+        rootActionId: request.root.rootActionId,
+        parentEventId: request.root.eventId,
+        generationDepth: request.root.generationDepth,
+        procCoefficient: request.root.procCoefficient,
+      },
+      hasBurst: false,
+    };
+    state.nextEntityId += 1;
+    state.projectiles.push(projectile);
+    spawned.push(projectile);
+    recordBehaviorTrace(
+      state,
+      `root ${request.root.eventId}: projectile ${projectile.id} spawned (${spec.delivery}, speed ${spec.speed}, radius ${spec.radius}, lifetime ${spec.lifetimeTicks})`,
+    );
 
-  if (spec.conversionEffect) {
-    const conversionEvent = queueChildEvent(state, {
-      rootActionId: projectile.ancestry.rootActionId,
-      parentEventId: projectile.ancestry.parentEventId,
-      generationDepth: projectile.ancestry.generationDepth + 1,
-      originKind: 'conversion',
-      sourceItemIds: [spec.conversionEffect.sourceItemId],
-      procCoefficient: request.root.procCoefficient,
-      description: 'water projectile converted to a drifting bubble',
-    });
-    if (conversionEvent) {
-      // The conversion is the event that produced this shot, so everything the
-      // projectile does next continues from it.
-      projectile.ancestry = {
-        rootActionId: conversionEvent.rootActionId,
-        parentEventId: conversionEvent.eventId,
-        generationDepth: conversionEvent.generationDepth,
-        procCoefficient: conversionEvent.procCoefficient,
-      };
+    if (spec.conversionEffect) {
+      const conversionEvent = queueChildEvent(state, {
+        rootActionId: projectile.ancestry.rootActionId,
+        parentEventId: projectile.ancestry.parentEventId,
+        generationDepth: projectile.ancestry.generationDepth + 1,
+        originKind: 'conversion',
+        sourceItemIds: [spec.conversionEffect.sourceItemId],
+        procCoefficient: request.root.procCoefficient,
+        description: 'water projectile converted to a drifting bubble',
+      });
+      if (conversionEvent) {
+        // The conversion is the event that produced this shot, so everything the
+        // projectile does next continues from it.
+        projectile.ancestry = {
+          rootActionId: conversionEvent.rootActionId,
+          parentEventId: conversionEvent.eventId,
+          generationDepth: conversionEvent.generationDepth,
+          procCoefficient: conversionEvent.procCoefficient,
+        };
+      }
+    }
+
+    if (spec.returnPasses > 0 && spec.replayEffect) {
+      queueChildEvent(state, {
+        rootActionId: projectile.ancestry.rootActionId,
+        parentEventId: projectile.ancestry.parentEventId,
+        generationDepth: projectile.ancestry.generationDepth + 1,
+        originKind: 'trajectory',
+        sourceItemIds: [spec.replayEffect.sourceItemId],
+        procCoefficient: request.root.procCoefficient,
+        description: 'replay armed: one return pass for this root',
+      });
     }
   }
 
-  if (spec.returnPasses > 0 && spec.replayEffect) {
-    queueChildEvent(state, {
-      rootActionId: projectile.ancestry.rootActionId,
-      parentEventId: projectile.ancestry.parentEventId,
-      generationDepth: projectile.ancestry.generationDepth + 1,
-      originKind: 'trajectory',
-      sourceItemIds: [spec.replayEffect.sourceItemId],
-      procCoefficient: request.root.procCoefficient,
-      description: 'replay armed: one return pass for this root',
-    });
-  }
-
-  return projectile;
+  return spawned;
 }
 
 function describe(value: number): string {

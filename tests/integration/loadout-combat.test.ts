@@ -293,3 +293,31 @@ describe('terminal ordering', () => {
     expect(JSON.stringify(state)).toBe(terminal);
   });
 });
+
+describe('explicit projectile origins', () => {
+  it('fires an authored spread from the supplied origin on one root action', () => {
+    const run = createRun(1997, {
+      itemIds: ['party_popper'],
+      selectedItemId: 'party_popper',
+    });
+    const context = { projectileOrigin: { x: 420, y: 210 } };
+    tickRun(run, { moveX: 0, moveY: 0, aimX: 620, aimY: 210, fire: true }, context);
+    expect(run.projectiles).toHaveLength(3);
+    expect(run.projectiles.map(({ x, y }) => ({ x, y }))).toEqual([
+      { x: 420, y: 210 },
+      { x: 420, y: 210 },
+      { x: 420, y: 210 },
+    ]);
+    expect(run.counters.rootActions).toBe(1);
+    expect(run.projectiles.map((shot) => shot.ancestry?.rootActionId)).toEqual([1, 1, 1]);
+  });
+
+  it('keeps direct mop attacks on the player position with existing cone behavior', () => {
+    const state = labFixture(['janitor_mop']);
+    state.enemies = [hangerAt(350, 160, { id: 42 })];
+    tickRun(state, fireFrame(400, 160), { projectileOrigin: { x: 700, y: 400 } });
+    expect(state.enemies[0]?.health).toBe(8);
+    expect(state.enemies[0]?.statuses?.wetTicks).toBe(WET_DURATION_TICKS);
+    expect(state.counters.rootActions).toBe(1);
+  });
+});

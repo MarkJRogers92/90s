@@ -6,11 +6,17 @@ import type {
 } from '../items/types';
 import { inAttackCone } from '../combat/attack';
 import { hasLineOfSight } from '../combat/collision';
-import type { EnemyState, GameplayEvent, InputFrame, RunState } from '../model';
+import type {
+  EnemyState,
+  GameplayEvent,
+  InputFrame,
+  PrimaryAttackContext,
+  RunState,
+} from '../model';
 import { ATTACK_ACTIVE_TICKS, DIRECT_HIT_WET_TICKS } from './constants';
 import { reactionEffectsOf, resolveWetHitReaction } from './conduction';
 import { beginRootAction, recordBehaviorTrace, setRecentChange } from './events';
-import { spawnPlayerProjectile } from './playerProjectiles';
+import { spawnPlayerProjectiles } from './playerProjectiles';
 import { applySticky, applyWet, ensureEnemyStatuses } from './statuses';
 
 /**
@@ -148,7 +154,11 @@ function runReactionStage(state: RunState, root: GameplayEvent, target: EnemySta
  *
  * Returns the root gameplay event, or `null` when the attack was not accepted.
  */
-export function resolvePrimaryAttack(state: RunState, input: InputFrame): GameplayEvent | null {
+export function resolvePrimaryAttack(
+  state: RunState,
+  input: InputFrame,
+  attackContext: PrimaryAttackContext = {},
+): GameplayEvent | null {
   if (!input.fire || state.player.attackCooldownTicks > 0) {
     return null;
   }
@@ -168,12 +178,13 @@ export function resolvePrimaryAttack(state: RunState, input: InputFrame): Gamepl
   );
 
   if (descriptor.delivery !== 'direct') {
-    const projectile = spawnPlayerProjectile(state, {
+    const projectiles = spawnPlayerProjectiles(state, {
       root,
+      origin: attackContext.projectileOrigin ?? state.player,
       aimX: input.aimX,
       aimY: input.aimY,
     });
-    if (projectile) {
+    if (projectiles.length > 0) {
       setRecentChange(state, `${descriptor.name} fired`);
     }
     return root;

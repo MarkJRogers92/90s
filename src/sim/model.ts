@@ -3,6 +3,7 @@ import type {
   ConductiveRangeEffect,
   ConductiveReactionEffect,
   ItemInstance,
+  ProjectilePayloadKind,
   StatusModifierEffect,
   WetPatchSpec,
 } from './items/types';
@@ -101,6 +102,10 @@ export type ReactionEffectSpec = ConductiveReactionEffect | ConductiveRangeEffec
  */
 export type PlayerProjectileSpec = {
   readonly delivery: 'water_projectile' | 'drifting_bubble';
+  /** Generic water/physical kind from the authored payload; never an item ID. */
+  readonly payloadKind: ProjectilePayloadKind;
+  /** Authored fan offsets in radians, relative to aim, in stable catalog order. */
+  readonly angularOffsetsRadians: readonly number[];
   readonly damage: number;
   /** World units per tick after conversion and geometry stages. */
   readonly speed: number;
@@ -252,6 +257,17 @@ export type RootEffectLedger = {
   childEventsByRoot: Record<string, number>;
   /** Conductive chains started so far, keyed by root action ID. */
   chainStartsByRoot: Record<string, number>;
+};
+
+/**
+ * Generic caller-supplied attack context threaded through the shared tick.
+ *
+ * `projectileOrigin` overrides where projectile shots start; direct attacks
+ * always originate from the player. Deep renderers (RC-car control in a later
+ * task) supply an explicit origin, while ordinary play omits it.
+ */
+export type PrimaryAttackContext = {
+  readonly projectileOrigin?: Vec2;
 };
 
 export type RunState = {

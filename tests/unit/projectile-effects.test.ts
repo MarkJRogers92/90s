@@ -184,6 +184,12 @@ describe('spawn-time player projectile descriptor', () => {
     tickRun(plain, fireAt());
     tickRun(widened, fireAt());
 
+    // Fresh shots hold their origin on the spawn tick, then travel normally.
+    expect(shotOf(plain).x).toBe(300);
+    expect(shotOf(widened).x).toBe(300);
+    tickRun(plain, frame());
+    tickRun(widened, frame());
+
     expect(shotOf(plain).payload.radius).toBe(6);
     expect(shotOf(plain).payload.speed).toBe(3.2);
     expect(shotOf(widened).payload.radius).toBe(10);
@@ -332,7 +338,10 @@ describe('VHS rewind', () => {
       if (!shot) {
         break;
       }
-      positions.push(shot.x);
+      // The spawn tick holds the origin, so travel samples start next tick.
+      if (tick > 0) {
+        positions.push(shot.x);
+      }
       if (shot.phase === 'return') {
         sawReturn = true;
       }
@@ -678,5 +687,93 @@ describe('direct status modifiers', () => {
     expect(appliedIndex).toBeGreaterThanOrEqual(0);
     expect(reactionIndex).toBeGreaterThan(appliedIndex);
     expect(trace).toMatch(/took 4 damage, Wet 180, Sticky 90/);
+  });
+});
+
+describe('projectile origins and authored patterns', () => {
+  const degreesToRadians = Math.PI / 180;
+
+  it('fires an authored spread from an explicit origin on one shared root action', () => {
+    const state = labRun(['party_popper'], 'party_popper');
+    tickRun(
+      state,
+      { moveX: 0, moveY: 0, aimX: 620, aimY: 160, fire: true },
+      { projectileOrigin: { x: 420, y: 210 } },
+    );
+    const shots = playerShots(state);
+    expect(shots).toHaveLength(3);
+    expect(shots.map(({ x, y }) => ({ x, y }))).toEqual([
+      { x: 420, y: 210 },
+      { x: 420, y: 210 },
+      { x: 420, y: 210 },
+    ]);
+    expect(state.counters.rootActions).toBe(1);
+    expect(shots.map((shot) => shot.ancestry.rootActionId)).toEqual([1, 1, 1]);
+    expect(new Set(shots.map((shot) => shot.id)).size).toBe(3);
+  });
+
+  it('keeps an ordinary Soaker shot to one projectile at the player position', () => {
+    const state = labRun(['pump_soaker'], 'pump_soaker');
+    tickRun(state, fireAt());
+    const shots = playerShots(state);
+    expect(shots).toHaveLength(1);
+    expect({ x: shots[0]?.x, y: shots[0]?.y }).toEqual({ x: 300, y: 160 });
+    expect(state.counters.rootActions).toBe(1);
+  });
+
+  it('aims Party Popper pellets along stable minus-eight, zero, plus-eight degree headings', () => {
+    const state = labRun(['party_popper'], 'party_popper');
+    tickRun(state, { moveX: 0, moveY: 0, aimX: 900, aimY: 160, fire: true });
+    const shots = playerShots(state);
+    expect(shots).toHaveLength(3);
+    const headings = shots.map((shot) => Math.atan2(shot.velocityY, shot.velocityX));
+    expect(headings[0]).toBeCloseTo(-8 * degreesToRadians, 10);
+    expect(headings[1]).toBeCloseTo(0, 10);
+    expect(headings[2]).toBeCloseTo(8 * degreesToRadians, 10);
+    expect(shots[0]?.payload.payloadKind).toBe('physical');
+    expect(shots[0]?.payload.angularOffsetsRadians).toEqual([
+      -8 * degreesToRadians,
+      0,
+      8 * degreesToRadians,
+    ]);
+  });
+
+  it('never applies Wet from a physical pellet impact', () => {
+    const state = labRun(['party_popper'], 'party_popper');
+    state.enemies = [sentry(20, 420, 160)];
+    tickRun(state, { moveX: 0, moveY: 0, aimX: 900, aimY: 160, fire: true });
+    expect(playerShots(state)).toHaveLength(3);
+    for (const shot of playerShots(state)) {
+      expect(shot.payload.onHitWetTicks).toBe(0);
+    }
+    advance(state, frame(), 40);
+    const target = state.enemies[0];
+    expect(target?.health).toBeLessThan(40);
+    expect(target?.statuses?.wetTicks ?? 0).toBe(0);
+  });
+
+  it('never converts a physical pattern into a drifting bubble', () => {
+    const state = labRun(['party_popper', 'bubble_bath'], 'party_popper');
+    tickRun(state, fireAt());
+    const shots = playerShots(state);
+    expect(shots).toHaveLength(3);
+    for (const shot of shots) {
+      expect(shot.payload.delivery).toBe('water_projectile');
+      expect(shot.payload.penetrates).toBe(false);
+      expect(shot.payload.terminalWetPatch).toBeNull();
+    }
+    expect(state.eventQueue.some((event) => event.originKind === 'conversion')).toBe(false);
+  });
+
+  it('still applies Wide-Bore geometry and the Rewinder return pass to a physical pattern', () => {
+    const patterned = labRun(['party_popper', 'wide_nozzle', 'vhs_rewinder'], 'party_popper');
+    tickRun(patterned, fireAt());
+    const shots = playerShots(patterned);
+    expect(shots).toHaveLength(3);
+    for (const shot of shots) {
+      expect(shot.payload.radius).toBe(8);
+      expect(shot.payload.speed).toBeCloseTo(4.2 * 0.8, 10);
+      expect(shot.payload.returnPasses).toBe(1);
+    }
   });
 });
