@@ -14,9 +14,11 @@
 - Production preview smoke — one canvas, one HUD, one lab panel, eight item cards, meaningful content, no overlay, no page/console errors, and only local-origin requests.
 - Actual preview screenshot — `artifacts/m2-interaction-lab.png`.
 
-**Workspace:** `/Users/markrogers/Documents/Github Code/90s/.worktrees/m2-interaction-lab`
+**Published repository:** <https://github.com/MarkJRogers92/90s>
 
 **Branch:** `codex/m2-interaction-lab`
+
+**Cloud continuation:** The exact milestone HEAD is also published on `main`; no merge, deployment, or release has been performed.
 
 **Latest implementation checkpoint:** `848bd693876c23ecf5f10a320140d2b9c68be75c`
 

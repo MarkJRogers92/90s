@@ -1,6 +1,6 @@
 # Next session
 
-M0-M2 is implemented on `codex/m2-interaction-lab` through implementation checkpoint `848bd693876c23ecf5f10a320140d2b9c68be75c`. Verify the actual branch and working tree before trusting this note.
+M0-M2 is implemented on `codex/m2-interaction-lab` through implementation checkpoint `848bd693876c23ecf5f10a320140d2b9c68be75c`. The milestone is published at <https://github.com/MarkJRogers92/90s>, with the exact continuation HEAD mirrored on `main`. Verify the actual branch and working tree before trusting this note.
 
 Run it locally:
 
@@ -24,4 +24,4 @@ Result: typecheck and build passed; 123 unit/integration tests and 12 Chromium b
 
 Screenshot: `artifacts/m2-interaction-lab.png`.
 
-No code blocker. DeepSeek access for this repository is now allowlisted and verified through the isolated `agent_bridge.deepseek_worker` route. The linked milestone worktree is intentionally separate from the M1 checkout. Nothing has been pushed, merged, published, or deployed.
+No code blocker. DeepSeek access for this repository is now allowlisted and verified through the isolated `agent_bridge.deepseek_worker` route. The linked milestone worktree is intentionally separate from the M1 checkout. The milestone has been pushed to its continuation branch and mirrored to `main`; it has not been merged, deployed, or released.
