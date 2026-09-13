@@ -7,17 +7,19 @@
 **Latest verification (2026-09-13):**
 
 - npm run typecheck — exit 0.
-- npm test — 3 files, 19 tests passed.
-- npm run test:browser — 6 Chromium tests passed, including real keyboard/pointer input and ten UI restarts.
+- npm test — 3 files, 20 tests passed.
+- npm run test:browser — 7 Chromium tests passed, including scaled pointer targeting, real combat, both terminal outcomes, and ten UI restarts.
 - npm run build — exit 0; Vite production output created in dist/.
 - Direct Playwright visual inspection — one canvas and one HUD, no page/console errors, no Vite overlay, and no external requests observed.
-- Production JavaScript scan — no __DEAD_MALL_DEBUG__ global in built JavaScript.
+- Production preview smoke — one canvas and HUD, no debug bridge, no overlay, and no page/console errors.
+- Production JavaScript scan — no debug bridge or test-fixture names in built JavaScript.
+- Independent fix re-review — all five final-review findings addressed; no new breakage.
 
 **Workspace:** /Users/markrogers/Documents/Github Code/90s
 
 **Branch:** codex/m0-m1-combat-room
 
-**Local source checkpoint:** a0f49f0
+**Latest implementation checkpoint:** 12b2e21
 
 **Known uncertainty:** The art is deliberately authored graybox/vector work, there is no sound, WebKit/Safari/device coverage was not run, and the combat feel/fun gate still needs the user's hands-on playtest.
 

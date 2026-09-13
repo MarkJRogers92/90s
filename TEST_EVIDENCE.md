@@ -43,3 +43,20 @@ Visual inspection:
 - Direct Playwright observation at 1440 by 900 reported one canvas, one HUD, tick 25, an active mop cooldown/sweep, two live enemy types, no Vite overlay, no page/console errors, and no external requests.
 
 Coverage not run: WebKit, Safari, Windows browser/device, physical-device performance, audio, or user feel/playtest. The graybox/vector art is not the production pixel-art pass.
+
+## 2026-09-13 — M1 final review closure
+
+Red proof:
+
+- npm test -- --run tests/unit/combat.test.ts — the new simultaneous move/fire boundary test failed because movement incorrectly extended mop reach before attack acceptance.
+- npx playwright test tests/browser/combat.spec.ts tests/browser/restart.spec.ts — three expected failures showed that scaled pointer targeting, a live restart encounter, and the loss/restart branch were not yet exercised.
+
+Final automated gate after the fixes:
+
+- npm run typecheck — exit 0.
+- npm test — exit 0; 3 files and 20 tests passed.
+- npm run test:browser — exit 0; 7 Chromium tests passed.
+- npm run build — exit 0; Vite 8.3.0 created production output in dist/.
+- rg scan of production JavaScript for the debug global and all three test-fixture names — no matches.
+
+The browser suite now proves scaled canvas-to-world pointer mapping and directional damage, ten generations of defeating and restoring a live two-enemy encounter through real input, and the Shift ended/full-health restart branch. A scoped independent re-review found all five review findings addressed and no new breakage. A production preview smoke reported one canvas, one HUD, no debug bridge, no error overlay, and no page or console errors.

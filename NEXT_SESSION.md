@@ -1,6 +1,6 @@
 # Next session
 
-M0-M1 is implemented on codex/m0-m1-combat-room through source checkpoint a0f49f0. Verify the actual branch and working tree before trusting this note.
+M0-M1 is implemented on codex/m0-m1-combat-room through implementation checkpoint 12b2e21. Verify the actual branch and working tree before trusting this note.
 
 Run it locally:
 
@@ -17,5 +17,7 @@ Last full gate:
     npm test
     npm run test:browser
     npm run build
+
+Result: typecheck and build passed; 20 unit/integration tests and 7 Chromium browser tests passed. The final review fix round received a clean scoped re-review.
 
 No code blocker. DeepSeek delegation from the originating chat could not use this newly cloned repo because it was absent from that bridge session's startup allowlist; a fresh Work task opened from this repository should load the exact allowlist.
