@@ -80,9 +80,37 @@ export function moveCarrierToward(state: BenchRunState, targetX: number, targetY
     state.combat.walls,
   );
   const settled = clampToRoom(next.x, next.y, carrier.radius);
-  const releashed = clampToLeash(player.x, player.y, settled.x, settled.y);
-  carrier.x = releashed.x;
-  carrier.y = releashed.y;
+  carrier.x = settled.x;
+  carrier.y = settled.y;
+}
+
+/**
+ * Restores the leash after the shared combat tick moves the player.
+ *
+ * The correction is at most one player step during ordinary play. It goes
+ * through the same axis-separated wall solver as every other carrier move, so
+ * enforcing the leash cannot place the car inside authored solid geometry.
+ */
+export function enforceCarrierLeash(state: BenchRunState): void {
+  const carrier = state.carrier;
+  const player = state.combat.player;
+  const deltaX = player.x - carrier.x;
+  const deltaY = player.y - carrier.y;
+  const distance = Math.hypot(deltaX, deltaY);
+  if (distance <= CAR_LEASH || distance === 0) {
+    return;
+  }
+  const correction = distance - CAR_LEASH;
+  const next = moveCircle(
+    carrier,
+    carrier.radius,
+    (deltaX / distance) * correction,
+    (deltaY / distance) * correction,
+    state.combat.walls,
+  );
+  const settled = clampToRoom(next.x, next.y, carrier.radius);
+  carrier.x = settled.x;
+  carrier.y = settled.y;
 }
 
 function carrierTouchesEnemy(state: BenchRunState, enemy: EnemyState): boolean {

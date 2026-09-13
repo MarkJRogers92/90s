@@ -303,3 +303,45 @@ describe('deterministic bench car simulation', () => {
     expect(createBenchRun('clean-soaker').fusion.cash).toBe(10);
   });
 });
+
+describe('bench runtime invariants', () => {
+  it('keeps the emitter inside the owner leash after WASD moves the player away', () => {
+    const state = createBenchRun('clean-soaker');
+    state.combat.walls = [];
+    setEnemies(state, []);
+    fuseCleanSoaker(state);
+    state.combat.player.x = 160;
+    state.combat.player.y = 240;
+    state.carrier.x = 160 + CAR_LEASH;
+    state.carrier.y = 240;
+
+    tickBenchRun(state, {
+      ...baseFrame(),
+      moveX: -1,
+      aimX: 900,
+      aimY: 240,
+    });
+
+    expect(
+      Math.hypot(
+        state.carrier.x - state.combat.player.x,
+        state.carrier.y - state.combat.player.y,
+      ),
+    ).toBeLessThanOrEqual(CAR_LEASH + 1e-6);
+  });
+
+  it('freezes wrapper and carrier state after the combat run is terminal', () => {
+    const state = createBenchRun('clean-soaker');
+    state.combat.status = 'dead';
+    const before = structuredClone(state);
+
+    tickBenchRun(state, {
+      ...baseFrame(),
+      moveX: 1,
+      aimX: 900,
+      recall: true,
+    });
+
+    expect(state).toEqual(before);
+  });
+});

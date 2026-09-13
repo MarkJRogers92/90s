@@ -1,9 +1,12 @@
 import { tickRun } from '../tickRun';
-import { updateEmitterCarrier, updateIndependentCarrier } from './car';
+import { enforceCarrierLeash, updateEmitterCarrier, updateIndependentCarrier } from './car';
 import { openFusionPreview, transferBenchRoom } from './commands';
 import type { BenchInputFrame, BenchRunState } from './types';
 
 export function tickBenchRun(state: BenchRunState, input: BenchInputFrame): void {
+  if (state.combat.status !== 'playing') {
+    return;
+  }
   if (state.paused || state.preview !== null) {
     state.heldActions = { interact: input.interact, recall: input.recall };
     return;
@@ -53,6 +56,7 @@ export function tickBenchRun(state: BenchRunState, input: BenchInputFrame): void
     },
     attackContext,
   );
+  enforceCarrierLeash(state);
 
   if (state.combat.status !== 'playing') {
     state.recentChange = 'The bench run ended.';
