@@ -112,6 +112,20 @@ test('launches the interaction lab from its own visible action on one canvas and
   expect(errors.consoleErrors).toEqual([]);
 });
 
+test('the interaction lab stays frozen to the original eight item cards', async ({ page }) => {
+  const errors = collectErrors(page);
+  await launchInteractionLab(page);
+  const lab = page.getByRole('region', { name: 'Interaction Lab' });
+
+  await expect(lab.locator('[data-item-id]')).toHaveCount(8);
+  for (const m4Id of ['receipt_wallet', 'fanny_pack', 'rc_car', 'party_popper']) {
+    await expect(lab.locator(`[data-item-id="${m4Id}"]`)).toHaveCount(0);
+  }
+  expect(await page.locator('canvas').count()).toBe(1);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
 test('Soaker + Bath + Rewinder fires one authoritative outbound/return burst from the canvas', async ({
   page,
 }) => {

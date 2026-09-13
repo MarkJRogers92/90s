@@ -8,7 +8,7 @@
  * sweeps. The wing is deep-frozen and validated at module load so a bad
  * definition fails immediately instead of reaching the authoritative state.
  */
-import { ITEM_CATALOG } from '../items/catalog';
+import { M2_M3_ITEM_CATALOG } from '../items/catalog';
 import { freezeDeep } from '../items/types';
 import type { Rect } from '../model';
 import type { MallExitDefinition, StoreDefinition, WingDefinition } from './types';
@@ -132,4 +132,4 @@ export const M3_WING: WingDefinition = freezeDeep({
 } satisfies WingDefinition);
 
 // Fail fast: authored content is validated once, before any run exists.
-validateWing(M3_WING, ITEM_CATALOG);
+validateWing(M3_WING, M2_M3_ITEM_CATALOG);

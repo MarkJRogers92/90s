@@ -335,6 +335,8 @@ describe('authored synthetic definition', () => {
         priority: 0,
         sourceItemId: 'synthetic_foam_gun',
         label: 'foam projectile (Wet 180 ticks on hit)',
+        payloadKind: 'water',
+        angularOffsetsRadians: [0],
         damage: 3,
         speed: 2,
         radius: 5,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_CATALOG } from '../../src/sim/items/catalog';
+import { ITEM_CATALOG, M2_M3_ITEM_CATALOG } from '../../src/sim/items/catalog';
 import { compileLoadout } from '../../src/sim/items/compileLoadout';
 import { validateCatalog } from '../../src/sim/items/validateCatalog';
 import type {
@@ -17,6 +17,21 @@ const M2_ITEM_IDS = [
   'extension_cord',
   'gel_pens',
   'wide_nozzle',
+];
+
+const M4_ITEM_IDS = [
+  'janitor_mop',
+  'pump_soaker',
+  'bubble_bath',
+  'plasma_globe',
+  'vhs_rewinder',
+  'extension_cord',
+  'gel_pens',
+  'wide_nozzle',
+  'receipt_wallet',
+  'fanny_pack',
+  'rc_car',
+  'party_popper',
 ];
 
 function owned(entries: readonly (readonly [string, string])[]): ItemInstance[] {
@@ -40,10 +55,20 @@ function compile(instances: readonly ItemInstance[], selected: string) {
 }
 
 describe('item catalog', () => {
-  it('defines exactly the eight M2 items', () => {
-    expect(ITEM_CATALOG.map((definition) => definition.id).sort()).toEqual(
-      [...M2_ITEM_IDS].sort(),
+  it('defines the twelve-item M4 roster in author order', () => {
+    expect(ITEM_CATALOG.map((definition) => definition.id)).toEqual(M4_ITEM_IDS);
+  });
+
+  it('freezes the M2/M3 subset to the original eight items', () => {
+    expect(M2_M3_ITEM_CATALOG).toHaveLength(8);
+    expect(M2_M3_ITEM_CATALOG.map((definition) => definition.id)).toEqual(M2_ITEM_IDS);
+    expect(M2_M3_ITEM_CATALOG.map((definition) => definition.id)).toEqual(
+      ITEM_CATALOG.slice(0, 8).map((definition) => definition.id),
     );
+    expect(Object.isFrozen(M2_M3_ITEM_CATALOG)).toBe(true);
+    for (const definition of M2_M3_ITEM_CATALOG) {
+      expect(Object.isFrozen(definition)).toBe(true);
+    }
   });
 
   it('freezes the catalog, every definition, and every nested effect', () => {
@@ -79,6 +104,58 @@ describe('item catalog', () => {
       sourceItemId: 'pump_soaker',
       onHit: { status: 'wet', ticks: 180 },
     });
+  });
+});
+
+describe('M4 payload schema', () => {
+  it('tags the soaker payload as a single straight water shot', () => {
+    const soaker = definitionOf('pump_soaker');
+    expect(soaker.effects[0]).toMatchObject({
+      kind: 'projectile_payload',
+      payloadKind: 'water',
+      angularOffsetsRadians: [0],
+      onHit: { status: 'wet', ticks: 180 },
+    });
+  });
+
+  it('declares emitter_carrier only on the RC Car', () => {
+    const carriers = ITEM_CATALOG.filter((definition) =>
+      (definition.capabilities ?? []).includes('emitter_carrier'),
+    ).map((definition) => definition.id);
+    expect(carriers).toEqual(['rc_car']);
+  });
+
+  it('keeps the wallet and fanny pack free of combat effects', () => {
+    for (const itemId of ['receipt_wallet', 'fanny_pack', 'rc_car']) {
+      expect(definitionOf(itemId).effects).toEqual([]);
+    }
+  });
+
+  it('defines the party popper as a three-prong physical projectile primary', () => {
+    const popper = definitionOf('party_popper');
+    expect(popper.base).toMatchObject({
+      delivery: 'projectile',
+      damage: 2,
+      cooldownTicks: 30,
+      speed: 4.2,
+    });
+    const degreesToRadians = Math.PI / 180;
+    expect(popper.effects[0]).toMatchObject({
+      kind: 'projectile_payload',
+      payloadKind: 'physical',
+      damage: 2,
+      speed: 4.2,
+      radius: 4,
+      lifetimeTicks: 55,
+      onHit: null,
+    });
+    const offsets = (popper.effects[0] as { angularOffsetsRadians: readonly number[] })
+      .angularOffsetsRadians;
+    expect([...offsets]).toEqual([
+      -8 * degreesToRadians,
+      0,
+      8 * degreesToRadians,
+    ]);
   });
 });
 
@@ -124,6 +201,52 @@ describe('catalog validation', () => {
     const wrongStage = structuredClone(definitionOf('wide_nozzle')) as ItemDefinition;
     (wrongStage.effects[0] as { stage: string }).stage = 'status';
     expect(() => validateCatalog([wrongStage])).toThrow(/wide_nozzle/);
+  });
+
+  it('rejects an empty projectile pattern', () => {
+    const empty = structuredClone(definitionOf('pump_soaker')) as ItemDefinition;
+    (empty.effects[0] as { angularOffsetsRadians: unknown }).angularOffsetsRadians = [];
+    expect(() => validateCatalog([empty])).toThrow(/pump_soaker/);
+  });
+
+  it('rejects a projectile pattern with more than 16 offsets', () => {
+    const crowded = structuredClone(definitionOf('pump_soaker')) as ItemDefinition;
+    (crowded.effects[0] as { angularOffsetsRadians: unknown }).angularOffsetsRadians =
+      new Array(17).fill(0);
+    expect(() => validateCatalog([crowded])).toThrow(/pump_soaker/);
+  });
+
+  it('rejects a projectile pattern with non-finite offsets', () => {
+    const skewed = structuredClone(definitionOf('pump_soaker')) as ItemDefinition;
+    (skewed.effects[0] as { angularOffsetsRadians: unknown }).angularOffsetsRadians = [
+      0,
+      Number.NaN,
+    ];
+    expect(() => validateCatalog([skewed])).toThrow(/pump_soaker/);
+  });
+
+  it('rejects a physical payload that applies Wet', () => {
+    const soggy = structuredClone(definitionOf('party_popper')) as ItemDefinition;
+    (soggy.effects[0] as { onHit: unknown }).onHit = { status: 'wet', ticks: 180 };
+    expect(() => validateCatalog([soggy])).toThrow(/party_popper/);
+  });
+
+  it('rejects an invalid Wet duration', () => {
+    const endless = structuredClone(definitionOf('pump_soaker')) as ItemDefinition;
+    (endless.effects[0] as { onHit: { ticks: number } }).onHit.ticks = 0;
+    expect(() => validateCatalog([endless])).toThrow(/pump_soaker/);
+  });
+
+  it('rejects unknown item capabilities', () => {
+    const strange = structuredClone(definitionOf('rc_car')) as ItemDefinition;
+    (strange as { capabilities: unknown }).capabilities = ['flies'];
+    expect(() => validateCatalog([strange])).toThrow(/rc_car/);
+  });
+
+  it('rejects duplicate item capabilities', () => {
+    const doubled = structuredClone(definitionOf('rc_car')) as ItemDefinition;
+    (doubled as { capabilities: unknown }).capabilities = ['emitter_carrier', 'emitter_carrier'];
+    expect(() => validateCatalog([doubled])).toThrow(/rc_car/);
   });
 });
 

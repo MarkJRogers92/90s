@@ -33,11 +33,30 @@ const soakerPayload: ProjectilePayloadEffect = {
   priority: 0,
   sourceItemId: 'pump_soaker',
   label: 'water projectile (Wet 180 ticks on hit)',
+  payloadKind: 'water',
+  angularOffsetsRadians: [0],
   damage: 2,
   speed: 3.2,
   radius: 6,
   lifetimeTicks: 80,
   onHit: { status: 'wet', ticks: WET_TICKS },
+};
+
+const DEGREES_TO_RADIANS = Math.PI / 180;
+
+const popperPayload: ProjectilePayloadEffect = {
+  kind: 'projectile_payload',
+  stage: 'projectile',
+  priority: 0,
+  sourceItemId: 'party_popper',
+  label: 'physical burst (three prongs, no status)',
+  payloadKind: 'physical',
+  angularOffsetsRadians: [-8 * DEGREES_TO_RADIANS, 0, 8 * DEGREES_TO_RADIANS],
+  damage: 2,
+  speed: 4.2,
+  radius: 4,
+  lifetimeTicks: 55,
+  onHit: null,
 };
 
 const bubbleConversion: ProjectileConversionEffect = {
@@ -111,8 +130,9 @@ const nozzleGeometry: ProjectileGeometryEffect = {
 };
 
 /**
- * The eight M2 items. Immutable definitions only: runtime behavior comes from
- * the compiled effect kinds, never from these IDs.
+ * The twelve M4 definitions. Immutable authored data only: runtime behavior
+ * comes from the compiled effect kinds, never from these IDs. M2 and M3 stay
+ * frozen to the eight-item M2_M3_ITEM_CATALOG subset below.
  */
 export const ITEM_CATALOG: readonly ItemDefinition[] = freezeDeep([
   {
@@ -179,4 +199,46 @@ export const ITEM_CATALOG: readonly ItemDefinition[] = freezeDeep([
     summary: 'Widens and slows compatible projectiles without touching the player hitbox.',
     effects: [nozzleGeometry],
   } satisfies ItemDefinition,
+  {
+    id: 'receipt_wallet',
+    name: 'Receipt Wallet',
+    summary: 'Thick wallet for keeping every receipt. No combat effect.',
+    effects: [],
+  } satisfies ItemDefinition,
+  {
+    id: 'fanny_pack',
+    name: 'Reinforced Fanny Pack',
+    summary: 'Reinforced carry-all. No combat effect.',
+    effects: [],
+  } satisfies ItemDefinition,
+  {
+    id: 'rc_car',
+    name: 'RC Car',
+    summary: 'Remote-control car that can carry an emitter. No combat effect of its own.',
+    capabilities: ['emitter_carrier'],
+    effects: [],
+  } satisfies ItemDefinition,
+  {
+    id: 'party_popper',
+    name: 'Party Popper',
+    summary: 'Fires a three-prong physical burst that applies no status.',
+    base: {
+      delivery: 'projectile',
+      damage: popperPayload.damage,
+      cooldownTicks: 30,
+      range: 0,
+      halfAngleRadians: 0,
+      speed: popperPayload.speed,
+    },
+    effects: [popperPayload],
+  } satisfies ItemDefinition,
 ]);
+
+/**
+ * The frozen M2/M3 subset: the original eight definitions in catalog order.
+ * The Interaction Lab and the M3 wing consume this export explicitly, so later
+ * roster growth never leaks into completed modes.
+ */
+export const M2_M3_ITEM_CATALOG: readonly ItemDefinition[] = freezeDeep(
+  ITEM_CATALOG.slice(0, 8),
+);

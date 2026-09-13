@@ -119,16 +119,99 @@ function validateBaseAttack(
   }
 }
 
-function validateOnHit(
+const PAYLOAD_KINDS: readonly string[] = ['water', 'physical'];
+const ITEM_CAPABILITIES: readonly string[] = ['emitter_carrier'];
+const MAX_PATTERN_OFFSETS = 16;
+
+function validateCapabilities(
+  capabilities: unknown,
+  contentId: string,
+  issues: IssueSink,
+): void {
+  if (capabilities === undefined) {
+    return;
+  }
+  if (!Array.isArray(capabilities)) {
+    issues.push({
+      code: 'invalid_definition',
+      contentId,
+      message: 'item definition capabilities must be an array',
+    });
+    return;
+  }
+  const seen = new Set<string>();
+  for (const capability of capabilities) {
+    if (typeof capability !== 'string' || !ITEM_CAPABILITIES.includes(capability)) {
+      issues.push({
+        code: 'invalid_value',
+        contentId,
+        message: `unknown item capability ${describe(capability)}`,
+      });
+      continue;
+    }
+    if (seen.has(capability)) {
+      issues.push({
+        code: 'invalid_value',
+        contentId,
+        message: `duplicate item capability "${capability}"`,
+      });
+    }
+    seen.add(capability);
+  }
+}
+
+function validatePattern(
+  pattern: unknown,
+  context: { contentId: string; describe: string; issues: IssueSink },
+): void {
+  if (!Array.isArray(pattern) || pattern.length === 0) {
+    context.issues.push({
+      code: 'invalid_value',
+      contentId: context.contentId,
+      message: `${context.describe} angularOffsetsRadians must list 1 to ${MAX_PATTERN_OFFSETS} offsets`,
+    });
+    return;
+  }
+  if (pattern.length > MAX_PATTERN_OFFSETS) {
+    context.issues.push({
+      code: 'invalid_value',
+      contentId: context.contentId,
+      message: `${context.describe} angularOffsetsRadians must list at most ${MAX_PATTERN_OFFSETS} offsets`,
+    });
+  }
+  for (const offset of pattern) {
+    if (typeof offset !== 'number' || !Number.isFinite(offset)) {
+      context.issues.push({
+        code: 'invalid_value',
+        contentId: context.contentId,
+        message: `${context.describe} angularOffsetsRadians offsets must be finite numbers`,
+      });
+      return;
+    }
+  }
+}
+
+function validatePayloadOnHit(
+  payloadKind: unknown,
   onHit: unknown,
   context: { contentId: string; describe: string; issues: IssueSink },
 ): void {
+  if (onHit === null) {
+    return;
+  }
   if (!isRecord(onHit)) {
     missing(context.issues, context.contentId, `${context.describe} onHit`);
     return;
   }
   checkEnum(onHit, 'status', ['wet'], context);
   checkNumber(onHit, 'ticks', context, 0, false);
+  if (payloadKind === 'physical') {
+    context.issues.push({
+      code: 'invalid_value',
+      contentId: context.contentId,
+      message: `${context.describe} physical payloads cannot carry a Wet onHit`,
+    });
+  }
 }
 
 function validateWetPatch(
@@ -150,11 +233,13 @@ function validateEffectNumbers(
 ): void {
   switch (kind) {
     case 'projectile_payload':
+      checkEnum(effect, 'payloadKind', PAYLOAD_KINDS, context);
+      validatePattern(effect.angularOffsetsRadians, context);
       checkNumber(effect, 'damage', context, 0, true);
       checkNumber(effect, 'speed', context, 0, false);
       checkNumber(effect, 'radius', context, 0, false);
       checkNumber(effect, 'lifetimeTicks', context, 0, false);
-      validateOnHit(effect.onHit, context);
+      validatePayloadOnHit(effect.payloadKind, effect.onHit, context);
       return;
     case 'projectile_conversion':
       checkEnum(effect, 'converts', ['water_projectile'], context);
@@ -320,6 +405,8 @@ export function findCatalogIssues(definitions: unknown): CatalogIssue[] {
         });
       }
     }
+
+    validateCapabilities(definition.capabilities, id, issues);
 
     validateBaseAttack(definition.base, id, issues);
 

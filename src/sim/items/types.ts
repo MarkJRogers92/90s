@@ -88,15 +88,25 @@ export type WetPatchSpec = {
   readonly ticks: number;
 };
 
-/** A compatible water projectile: the spawn-time payload the soaker fires. */
+/** Water shots interact with conversion and conduction; physical shots do not. */
+export type ProjectilePayloadKind = 'water' | 'physical';
+
+/** Optional definition-level capability. Only the RC Car declares one in M4. */
+export type ItemCapability = 'emitter_carrier';
+
+/** A spawn-time payload: the soaker fires water, the popper fires physical. */
 export type ProjectilePayloadEffect = EffectBase & {
   readonly kind: 'projectile_payload';
   readonly stage: 'projectile';
+  readonly payloadKind: ProjectilePayloadKind;
+  /** Fan offsets in radians, relative to aim. The soaker fires a single straight shot. */
+  readonly angularOffsetsRadians: readonly number[];
   readonly damage: number;
   readonly speed: number;
   readonly radius: number;
   readonly lifetimeTicks: number;
-  readonly onHit: WetStatusApplication;
+  /** Water payloads may carry Wet or nothing; a physical payload never carries Wet. */
+  readonly onHit: WetStatusApplication | null;
 };
 
 /** Bubble Bath: converts compatible water projectiles into drifting bubbles. */
@@ -182,6 +192,8 @@ export type ItemDefinition = {
   readonly id: ItemId;
   readonly name: string;
   readonly summary: string;
+  /** Optional definition-level capabilities. Absent unless the item declares one. */
+  readonly capabilities?: readonly ItemCapability[];
   /**
    * Base attack used only when this definition is the selected primary. Items
    * without a base attack are modifiers and cannot be selected as a primary.

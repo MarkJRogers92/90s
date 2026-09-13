@@ -1,4 +1,4 @@
-import { ITEM_CATALOG } from '../../sim/items/catalog';
+import { M2_M3_ITEM_CATALOG } from '../../sim/items/catalog';
 import type { CompiledPrimary, ItemDefinition } from '../../sim/items/types';
 import type { RunState } from '../../sim/model';
 
@@ -55,7 +55,7 @@ export function defaultLabSelection(): LabLoadoutSelection {
 /** Catalog order keeps a selection deterministic no matter how it was built. */
 function orderedItemIds(itemIds: Iterable<string>): string[] {
   const requested = new Set(itemIds);
-  return ITEM_CATALOG.filter((definition) => requested.has(definition.id)).map(
+  return M2_M3_ITEM_CATALOG.filter((definition) => requested.has(definition.id)).map(
     (definition) => definition.id,
   );
 }
@@ -66,7 +66,7 @@ function orderedItemIds(itemIds: Iterable<string>): string[] {
  */
 function normalizeSelection(itemIds: Iterable<string>, selectedPrimaryId: string): LabLoadoutSelection {
   const owned = new Set(itemIds);
-  const selectable = ITEM_CATALOG.filter((definition) => definition.base).map(
+  const selectable = M2_M3_ITEM_CATALOG.filter((definition) => definition.base).map(
     (definition) => definition.id,
   );
   const primary = selectable.includes(selectedPrimaryId) ? selectedPrimaryId : selectable[0];
@@ -244,7 +244,7 @@ export class InteractionLab {
   private buildItemCards(): void {
     this.itemList.replaceChildren();
     this.cards.length = 0;
-    for (const definition of ITEM_CATALOG) {
+    for (const definition of M2_M3_ITEM_CATALOG) {
       this.cards.push(this.createItemCard(definition));
     }
   }

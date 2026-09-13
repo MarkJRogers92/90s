@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_CATALOG } from '../../src/sim/items/catalog';
+import { ITEM_CATALOG, M2_M3_ITEM_CATALOG } from '../../src/sim/items/catalog';
 import { M3_WING } from '../../src/sim/shop/catalog';
 import type {
   ShopOfferDefinition,
@@ -119,9 +119,16 @@ describe('M3 wing content', () => {
     expect([...M3_WING.offers.map((offer) => offer.itemDefinitionId)].sort()).toEqual(
       [...M2_ITEM_IDS].sort(),
     );
-    expect([...ITEM_CATALOG.map((definition) => definition.id)].sort()).toEqual(
+    expect([...M2_M3_ITEM_CATALOG.map((definition) => definition.id)].sort()).toEqual(
       [...M2_ITEM_IDS].sort(),
     );
+    expect(M2_M3_ITEM_CATALOG.map((definition) => definition.id)).toEqual(
+      ITEM_CATALOG.slice(0, 8).map((definition) => definition.id),
+    );
+  });
+
+  it('keeps M3 validated against the frozen eight-item subset', () => {
+    expect(() => validateWing(M3_WING, M2_M3_ITEM_CATALOG)).not.toThrow();
   });
 
   it('authors the exact merchandise prices in store order', () => {
@@ -205,41 +212,41 @@ describe('M3 wing content', () => {
       ['janitor_mop', 10], ['bubble_bath', 14], ['extension_cord', 12], ['gel_pens', 8],
       ['pump_soaker', 18], ['plasma_globe', 22], ['vhs_rewinder', 24], ['wide_nozzle', 16],
     ]);
-    expect(() => validateWing({ ...M3_WING, offers: [...M3_WING.offers, M3_WING.offers[0]!] }, ITEM_CATALOG)).toThrow(/homestyle-mop/);
-    expect(() => validateWing(wingWithUnknownItem('missing-item'), ITEM_CATALOG)).toThrow(/missing-item/);
-    expect(() => validateWing(wingWithSightZoneOutsideStore('homestyle'), ITEM_CATALOG)).toThrow(/homestyle/);
+    expect(() => validateWing({ ...M3_WING, offers: [...M3_WING.offers, M3_WING.offers[0]!] }, M2_M3_ITEM_CATALOG)).toThrow(/homestyle-mop/);
+    expect(() => validateWing(wingWithUnknownItem('missing-item'), M2_M3_ITEM_CATALOG)).toThrow(/missing-item/);
+    expect(() => validateWing(wingWithSightZoneOutsideStore('homestyle'), M2_M3_ITEM_CATALOG)).toThrow(/homestyle/);
   });
 });
 
 describe('validateWing', () => {
   it('accepts the authored wing against the M2 item catalog', () => {
-    expect(() => validateWing(M3_WING, ITEM_CATALOG)).not.toThrow();
+    expect(() => validateWing(M3_WING, M2_M3_ITEM_CATALOG)).not.toThrow();
   });
 
   it('rejects a duplicate offer id and names it', () => {
     expect(() =>
       validateWing(
         { ...M3_WING, offers: [...M3_WING.offers, M3_WING.offers[0]!] },
-        ITEM_CATALOG,
+        M2_M3_ITEM_CATALOG,
       ),
     ).toThrow(/homestyle-mop/);
   });
 
   it('rejects an unknown item reference and names it', () => {
-    expect(() => validateWing(wingWithUnknownItem('missing-item'), ITEM_CATALOG)).toThrow(
+    expect(() => validateWing(wingWithUnknownItem('missing-item'), M2_M3_ITEM_CATALOG)).toThrow(
       /missing-item/,
     );
   });
 
   it('rejects a sight zone that leaves its store and names the store', () => {
-    expect(() => validateWing(wingWithSightZoneOutsideStore('homestyle'), ITEM_CATALOG)).toThrow(
+    expect(() => validateWing(wingWithSightZoneOutsideStore('homestyle'), M2_M3_ITEM_CATALOG)).toThrow(
       /homestyle/,
     );
   });
 
   it('rejects a sight zone origin outside its store', () => {
     expect(() =>
-      validateWing(wingWithSightZoneOriginOutsideStore('future'), ITEM_CATALOG),
+      validateWing(wingWithSightZoneOriginOutsideStore('future'), M2_M3_ITEM_CATALOG),
     ).toThrow(/future/);
   });
 
@@ -250,39 +257,39 @@ describe('validateWing', () => {
           ...M3_WING,
           stores: [...M3_WING.stores, { ...storeById('homestyle') }],
         },
-        ITEM_CATALOG,
+        M2_M3_ITEM_CATALOG,
       ),
     ).toThrow(/homestyle/);
   });
 
   it('rejects a wing that omits an item and names the missing item', () => {
-    expect(() => validateWing(wingWithoutOffer(3), ITEM_CATALOG)).toThrow(/gel_pens/);
+    expect(() => validateWing(wingWithoutOffer(3), M2_M3_ITEM_CATALOG)).toThrow(/gel_pens/);
   });
 
   it('rejects offering the same item twice', () => {
     expect(() =>
-      validateWing(wingWithOfferOverride({ itemDefinitionId: 'janitor_mop' }, 1), ITEM_CATALOG),
+      validateWing(wingWithOfferOverride({ itemDefinitionId: 'janitor_mop' }, 1), M2_M3_ITEM_CATALOG),
     ).toThrow(/janitor_mop/);
   });
 
   it('rejects an invalid non-positive price', () => {
-    expect(() => validateWing(wingWithOfferOverride({ price: 0 }), ITEM_CATALOG)).toThrow(
+    expect(() => validateWing(wingWithOfferOverride({ price: 0 }), M2_M3_ITEM_CATALOG)).toThrow(
       /homestyle-mop/,
     );
-    expect(() => validateWing(wingWithOfferOverride({ price: Number.NaN }), ITEM_CATALOG)).toThrow(
+    expect(() => validateWing(wingWithOfferOverride({ price: Number.NaN }), M2_M3_ITEM_CATALOG)).toThrow(
       /homestyle-mop/,
     );
   });
 
   it('rejects an offer that references an unknown store', () => {
-    expect(() => validateWing(wingWithOfferOverride({ storeId: 'kiosk' }), ITEM_CATALOG)).toThrow(
+    expect(() => validateWing(wingWithOfferOverride({ storeId: 'kiosk' }), M2_M3_ITEM_CATALOG)).toThrow(
       /homestyle-mop/,
     );
   });
 
   it('rejects an offer position outside its store bounds', () => {
     expect(() =>
-      validateWing(wingWithOfferOverride({ position: { x: 900, y: 440 } }), ITEM_CATALOG),
+      validateWing(wingWithOfferOverride({ position: { x: 900, y: 440 } }), M2_M3_ITEM_CATALOG),
     ).toThrow(/homestyle-mop/);
   });
 
@@ -292,7 +299,7 @@ describe('validateWing', () => {
         wingWithStoreOverride('homestyle', {
           offerIds: [...storeById('homestyle').offerIds, 'homestyle-chair'],
         }),
-        ITEM_CATALOG,
+        M2_M3_ITEM_CATALOG,
       ),
     ).toThrow(/homestyle/);
   });
@@ -303,7 +310,7 @@ describe('validateWing', () => {
         wingWithStoreOverride('homestyle', {
           offerIds: storeById('homestyle').offerIds.slice(0, 3),
         }),
-        ITEM_CATALOG,
+        M2_M3_ITEM_CATALOG,
       ),
     ).toThrow(/homestyle-gel-pens/);
   });
@@ -311,25 +318,25 @@ describe('validateWing', () => {
   it('rejects a wall outside the wing bounds', () => {
     const walls = [...M3_WING.walls];
     walls[0] = { x: -20, y: 60, width: 40, height: 40 };
-    expect(() => validateWing({ ...M3_WING, walls }, ITEM_CATALOG)).toThrow(/wall-0/);
+    expect(() => validateWing({ ...M3_WING, walls }, M2_M3_ITEM_CATALOG)).toThrow(/wall-0/);
   });
 
   it('rejects a wall that covers the player spawn', () => {
     expect(() =>
-      validateWing(wingWithExtraWall({ x: 470, y: 380, width: 40, height: 40 }), ITEM_CATALOG),
+      validateWing(wingWithExtraWall({ x: 470, y: 380, width: 40, height: 40 }), M2_M3_ITEM_CATALOG),
     ).toThrow(/orchard-gate-two-store-wing/);
   });
 
   it('rejects a store exit blocked by a wall', () => {
     const exit = storeById('homestyle').exit.bounds;
-    expect(() => validateWing(wingWithExtraWall({ ...exit }), ITEM_CATALOG)).toThrow(/homestyle/);
+    expect(() => validateWing(wingWithExtraWall({ ...exit }), M2_M3_ITEM_CATALOG)).toThrow(/homestyle/);
   });
 
   it('rejects a store reset point inside a wall', () => {
     expect(() =>
       validateWing(
         wingWithStoreOverride('homestyle', { resetPoint: { x: 100, y: 65 } }),
-        ITEM_CATALOG,
+        M2_M3_ITEM_CATALOG,
       ),
     ).toThrow(/homestyle/);
   });
@@ -341,14 +348,14 @@ describe('validateWing', () => {
           ...M3_WING,
           mallExit: { ...M3_WING.mallExit, bounds: { x: -20, y: 460, width: 100, height: 40 } },
         },
-        ITEM_CATALOG,
+        M2_M3_ITEM_CATALOG,
       ),
     ).toThrow(/orchard-gate-exit/);
   });
 
   it('rejects invalid wing geometry', () => {
-    expect(() => validateWing({ ...M3_WING, width: 0 }, ITEM_CATALOG)).toThrow(/width/);
-    expect(() => validateWing({ ...M3_WING, startingCash: -5 }, ITEM_CATALOG)).toThrow(
+    expect(() => validateWing({ ...M3_WING, width: 0 }, M2_M3_ITEM_CATALOG)).toThrow(/width/);
+    expect(() => validateWing({ ...M3_WING, startingCash: -5 }, M2_M3_ITEM_CATALOG)).toThrow(
       /startingCash/,
     );
   });

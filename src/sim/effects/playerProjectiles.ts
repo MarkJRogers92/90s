@@ -121,7 +121,7 @@ export function buildPlayerProjectileSpec(
     speed,
     radius,
     lifetimeTicks,
-    onHitWetTicks: payload.onHit.status === 'wet' ? payload.onHit.ticks : 0,
+    onHitWetTicks: payload.onHit?.status === 'wet' ? payload.onHit.ticks : 0,
     penetrates,
     terminalWetPatch,
     returnPasses: replayEffect ? replayEffect.returnPasses : 0,
@@ -131,7 +131,7 @@ export function buildPlayerProjectileSpec(
       speed: payload.speed,
       radius: payload.radius,
       lifetimeTicks: payload.lifetimeTicks,
-      onHitWetTicks: payload.onHit.status === 'wet' ? payload.onHit.ticks : 0,
+      onHitWetTicks: payload.onHit?.status === 'wet' ? payload.onHit.ticks : 0,
     },
     conversionEffect: conversion
       ? {

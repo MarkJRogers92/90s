@@ -5,7 +5,7 @@
  * suspicion start from zero, so restarting the loop is a fresh call rather than
  * a cleanup of mutated state.
  */
-import { ITEM_CATALOG } from '../items/catalog';
+import { M2_M3_ITEM_CATALOG } from '../items/catalog';
 import type { ItemDefinition } from '../items/types';
 import { M3_WING } from './catalog';
 import type { WingDefinition, WingState } from './types';
@@ -21,7 +21,7 @@ import { validateWing } from './validateWing';
 export function createWingRun(
   seed = 0,
   wing: WingDefinition = M3_WING,
-  itemDefinitions: readonly ItemDefinition[] = ITEM_CATALOG,
+  itemDefinitions: readonly ItemDefinition[] = M2_M3_ITEM_CATALOG,
 ): WingState {
   validateWing(wing, itemDefinitions);
 
