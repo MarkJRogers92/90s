@@ -40,3 +40,12 @@ export const MAX_CHILD_EVENTS_PER_ROOT = 64;
 /** Bounds for the diagnostics a run keeps and can show the player. */
 export const MAX_BEHAVIOR_TRACE_ENTRIES = 32;
 export const MAX_LIMIT_DIAGNOSTICS = 24;
+
+/**
+ * Damage one conductive chain hop deals to each additional Wet target, and the
+ * weaker discharge the Extension Cord applies on its own. Both are simulation
+ * constants rather than authored per-item numbers: any item that authors the
+ * `conductive_reaction` / `conductive_range` capability gets the same rule.
+ */
+export const CONDUCTIVE_CHAIN_DAMAGE = 2;
+export const CONDUCTIVE_WEAK_DISCHARGE_DAMAGE = 1;

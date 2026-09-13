@@ -3,7 +3,9 @@ import { inAttackCone } from '../combat/attack';
 import { hasLineOfSight } from '../combat/collision';
 import type { EnemyState, GameplayEvent, InputFrame, RunState } from '../model';
 import { ATTACK_ACTIVE_TICKS, DIRECT_HIT_WET_TICKS } from './constants';
-import { beginRootAction, queueChildEvent, recordBehaviorTrace, setRecentChange } from './events';
+import { reactionEffectsOf, resolveWetHitReaction } from './conduction';
+import { beginRootAction, recordBehaviorTrace, setRecentChange } from './events';
+import { spawnPlayerProjectile } from './playerProjectiles';
 import { applyWet } from './statuses';
 
 /**
@@ -89,40 +91,19 @@ function resolveDirectHit(
 /**
  * The reusable reaction stage.
  *
- * Task 2 only turns each compatible reaction capability into one bounded,
- * ancestried child event. Task 3 owns the authoritative reaction bodies
- * (conduction, range, discharge) that consume those events. Because a reaction
- * is only ever started from a root direct hit, a reaction-origin event can never
- * queue another reaction, so replay and chains cannot recurse.
+ * Direct hits and projectile impacts share this stage, so a mop swing and a
+ * water shot reach the same conduction rules. It never runs from a
+ * reaction-origin event, so a chain can never queue another reaction.
  */
 function runReactionStage(state: RunState, root: GameplayEvent, target: EnemyState): void {
-  const reactionEffects = state.compiledLoadout.effects.filter(
-    (effect) => effect.stage === 'reaction',
-  );
-  const wetTicks = target.statuses?.wetTicks ?? 0;
-  if (reactionEffects.length === 0) {
-    recordBehaviorTrace(
-      state,
-      `reaction stage after target ${target.id}: wet ${wetTicks}, no compatible reaction effect`,
-    );
-    return;
-  }
-
-  recordBehaviorTrace(
-    state,
-    `reaction stage after target ${target.id}: wet ${wetTicks}, ${reactionEffects.length} compatible effect(s)`,
-  );
-  for (const effect of reactionEffects) {
-    queueChildEvent(state, {
-      rootActionId: root.rootActionId,
-      parentEventId: root.eventId,
-      generationDepth: root.generationDepth + 1,
-      originKind: 'reaction',
-      sourceItemIds: [effect.sourceItemId],
-      procCoefficient: root.procCoefficient,
-      description: `${effect.kind} after Wet on target ${target.id}`,
-    });
-  }
+  resolveWetHitReaction(state, {
+    rootActionId: root.rootActionId,
+    parentEventId: root.eventId,
+    parentGenerationDepth: root.generationDepth,
+    parentProcCoefficient: root.procCoefficient,
+    target,
+    reactionEffects: reactionEffectsOf(state.compiledLoadout.effects),
+  });
 }
 
 /**
@@ -150,12 +131,14 @@ export function resolvePrimaryAttack(state: RunState, input: InputFrame): Gamepl
   );
 
   if (descriptor.delivery !== 'direct') {
-    // Task 3 owns the authoritative projectile spawn for projectile deliveries.
-    setRecentChange(state, `${descriptor.name} fired`);
-    recordBehaviorTrace(
-      state,
-      `root ${root.eventId}: projectile spawn and impact are owned by the projectile stage`,
-    );
+    const projectile = spawnPlayerProjectile(state, {
+      root,
+      aimX: input.aimX,
+      aimY: input.aimY,
+    });
+    if (projectile) {
+      setRecentChange(state, `${descriptor.name} fired`);
+    }
     return root;
   }
 
