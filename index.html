@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DEAD MALL</title>
+  </head>
+  <body>
+    <main id="app">
+      <section id="start-screen" class="start-screen" aria-labelledby="game-title">
+        <p class="eyebrow">CORPORATE FACILITIES // NIGHT SHIFT</p>
+        <h1 id="game-title">DEAD MALL</h1>
+        <p class="tagline">Steal the '90s. Void the warranty. Survive the return policy.</p>
+        <button id="start-shift" type="button">Start shift</button>
+        <p id="startup-status" role="status" aria-live="polite"></p>
+      </section>
+      <section id="run-shell" class="run-shell" aria-label="DEAD MALL game" hidden>
+        <div class="marquee" aria-hidden="true">
+          <span>ORCHARD GATE MALL</span>
+          <span>FACILITIES ACCESS: 11:47 PM</span>
+        </div>
+        <div id="game-host"></div>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

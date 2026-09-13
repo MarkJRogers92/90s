@@ -1,0 +1,24 @@
+{
+  "name": "dead-mall",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 5173 --strictPort",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:browser": "playwright test",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
+  },
+  "dependencies": {
+    "phaser": "4.2.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.0",
+    "vitest": "5.0.0"
+  }
+}

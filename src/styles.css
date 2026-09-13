@@ -1,0 +1,111 @@
+:root {
+  color: #f4edd8;
+  background: #090b0d;
+  font-family: "Courier New", Courier, monospace;
+  font-synthesis: none;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 20%, rgb(41 49 44 / 55%), transparent 38%),
+    repeating-linear-gradient(90deg, transparent 0 63px, rgb(255 255 255 / 2%) 64px),
+    #090b0d;
+}
+
+button {
+  border: 2px solid #f6d365;
+  border-radius: 0;
+  padding: 0.9rem 1.25rem;
+  color: #12130f;
+  background: #f6d365;
+  box-shadow: 5px 5px 0 #7a3c4a;
+  font: 700 1rem/1 "Courier New", monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+button:focus-visible {
+  outline: 3px solid #8bc9b8;
+  outline-offset: 5px;
+}
+
+.start-screen {
+  display: grid;
+  min-height: 100vh;
+  place-content: center;
+  justify-items: start;
+  padding: 2rem;
+}
+
+.eyebrow,
+.tagline {
+  max-width: 42rem;
+  color: #aeb8ad;
+  letter-spacing: 0.08em;
+}
+
+h1 {
+  margin: 0.2rem 0;
+  color: #f6d365;
+  font-size: clamp(3.5rem, 13vw, 8rem);
+  line-height: 0.85;
+  letter-spacing: -0.08em;
+  text-shadow: 7px 7px 0 #5c2936;
+}
+
+.tagline {
+  margin: 1.5rem 0 2.25rem;
+}
+
+#startup-status {
+  min-height: 1.25rem;
+  color: #ff8274;
+}
+
+.run-shell {
+  width: 100vw;
+  min-height: 100vh;
+  background: #111517;
+}
+
+.marquee {
+  display: flex;
+  min-height: 32px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 1rem;
+  border-bottom: 2px solid #766f5e;
+  color: #20231e;
+  background: #c7b97d;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+#game-host {
+  display: grid;
+  height: calc(100vh - 32px);
+  place-items: center;
+}
+
+#game-host canvas {
+  max-width: 100%;
+  max-height: 100%;
+  image-rendering: pixelated;
+  box-shadow: 0 0 0 2px #4d5147, 0 20px 80px rgb(0 0 0 / 65%);
+}
+
+[hidden] {
+  display: none !important;
+}
