@@ -14,7 +14,9 @@ export type InputFrame = {
 export type PlayerState = Vec2 & {
   health: number;
   radius: number;
+  facing: Vec2;
   attackCooldownTicks: number;
+  attackActiveTicks: number;
   invulnerableTicks: number;
 };
 
@@ -26,6 +28,8 @@ export type EnemyState = Vec2 & {
   phase: 'pursue' | 'telegraph' | 'recover';
   phaseTicks: number;
   cooldownTicks: number;
+  telegraphAimX: number;
+  telegraphAimY: number;
 };
 
 export type ProjectileState = Vec2 & {
