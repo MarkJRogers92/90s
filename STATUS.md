@@ -1,26 +1,25 @@
 # Status
 
-**Current milestone:** M1 combat room implemented and verified locally; ready for user playtest.
+**Current milestone:** M2 interaction lab implemented and verified locally; ready for user playtest.
 
-**Playable result:** Start a Janitor shift, move with WASD, aim with the pointer, hold primary click to swing the mop, avoid a pursuing Hanger and a telegraphing Spitter, take cooldown-limited damage, pause/resume with Escape, clear or lose the room, and restart from the terminal panel.
+**Playable result:** Normal Start shift still runs the M1 Janitor combat room. Interaction Lab launches a separate deterministic run with all eight M2 item cards, two curated builds, owned-item toggles, primary selection, applicability notes, recent-change text, and a readable behavior trace. The live canvas renders water shots, bubbles, outbound/return direction, Wet/Sticky markers, conductive feedback, and Wet patches.
 
 **Latest verification (2026-09-13):**
 
-- npm run typecheck — exit 0.
-- npm test — 3 files, 20 tests passed.
-- npm run test:browser — 7 Chromium tests passed, including scaled pointer targeting, real combat, both terminal outcomes, and ten UI restarts.
-- npm run build — exit 0; Vite production output created in dist/.
-- Direct Playwright visual inspection — one canvas and one HUD, no page/console errors, no Vite overlay, and no external requests observed.
-- Production preview smoke — one canvas and HUD, no debug bridge, no overlay, and no page/console errors.
-- Production JavaScript scan — no debug bridge or test-fixture names in built JavaScript.
-- Independent fix re-review — all five final-review findings addressed; no new breakage.
+- `npm run typecheck` — exit 0.
+- `npm test` — 9 files, 123 tests passed.
+- `npm run test:browser` — 12 Chromium tests passed, including five Interaction Lab flows and all seven M1 regressions.
+- `npm run build` — exit 0; Vite production output created in `dist/`.
+- Production JavaScript scan — no debug bridge, debug flag, installer, or development fixture names outside source maps.
+- Production preview smoke — one canvas, one HUD, one lab panel, eight item cards, meaningful content, no overlay, no page/console errors, and only local-origin requests.
+- Actual preview screenshot — `artifacts/m2-interaction-lab.png`.
 
-**Workspace:** /Users/markrogers/Documents/Github Code/90s
+**Workspace:** `/Users/markrogers/Documents/Github Code/90s/.worktrees/m2-interaction-lab`
 
-**Branch:** codex/m0-m1-combat-room
+**Branch:** `codex/m2-interaction-lab`
 
-**Latest implementation checkpoint:** 12b2e21
+**Latest implementation checkpoint:** `848bd693876c23ecf5f10a320140d2b9c68be75c`
 
-**Known uncertainty:** The art is deliberately authored graybox/vector work, there is no sound, WebKit/Safari/device coverage was not run, and the combat feel/fun gate still needs the user's hands-on playtest.
+**Known uncertainty:** The art remains deliberate graybox/vector work, there is no sound, WebKit/Safari/physical-device coverage was not run, and both combat feel and item-combination feel still need the user's hands-on playtest.
 
-**Next:** Stop at M1. When authorized, begin M2 with the eight-item interaction lab and renderer-independent behavior resolver.
+**Next:** Stop at M2. M3 Shoplifting Loop is not authorized.

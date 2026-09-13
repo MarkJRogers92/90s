@@ -10,6 +10,6 @@
 | M5 MVP | Short seeded wing, stores, boss, 24 items, checkpoint/restart |
 | M6-M10 | Depth, production presentation, repeatable game, content freeze, release candidate |
 
-Current authorization ends at M1. Do not begin M2 until the M1 checkpoint is handed off.
+Current authorization ends at M2. Do not begin M3 without a new user instruction.
 
-Status on 2026-09-13: M0 and M1 are implemented and automatically verified; the M1 combat feel gate awaits user playtest. M2-M10 are not started.
+Status on 2026-09-13: M0-M2 are implemented and automatically verified. The M1 combat feel and M2 interaction-lab feel gates await user playtest. M3-M10 are not started.
