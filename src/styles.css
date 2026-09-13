@@ -177,6 +177,213 @@ h1 {
   font-size: 0.75rem;
 }
 
+.start-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.secondary-action {
+  color: #f6d365;
+  background: #12130f;
+}
+
+.lab-feedback {
+  display: grid;
+  gap: 2px;
+  margin: 7px 0 0;
+  color: #8bc9b8;
+  font-size: 0.68rem;
+  letter-spacing: 0.03em;
+}
+
+/* The overlay HUD stays click-through; the lab panel owns its own hit area. */
+.interaction-lab {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 1rem;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 auto;
+  padding: 1rem clamp(0.75rem, 2vw, 1.5rem) 2.5rem;
+  border-top: 3px solid #766f5e;
+  background: #0d1012;
+  pointer-events: auto;
+}
+
+.lab-header,
+.lab-block {
+  display: grid;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.lab-header h2 {
+  margin: 0;
+  color: #f6d365;
+  font-size: 1.6rem;
+  letter-spacing: 0.04em;
+}
+
+.lab-header h3,
+.lab-block h3 {
+  margin: 0;
+  color: #c7b97d;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.lab-intro,
+.lab-primary,
+.lab-recent,
+.lab-limits {
+  margin: 0;
+  max-width: 60rem;
+  overflow-wrap: anywhere;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.lab-intro {
+  color: #aeb8ad;
+}
+
+.lab-primary {
+  color: #f4edd8;
+  font-weight: 700;
+}
+
+.lab-recent {
+  color: #8bc9b8;
+}
+
+.lab-limits {
+  color: #ff8274;
+}
+
+.lab-preset-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.lab-preset-list button[aria-pressed='true'] {
+  color: #12130f;
+  background: #8bc9b8;
+}
+
+.lab-list {
+  margin: 0;
+  padding-left: 1.2rem;
+  max-width: 70rem;
+  color: #cfd6c9;
+  font-size: 0.74rem;
+  line-height: 1.5;
+}
+
+.lab-list li {
+  overflow-wrap: anywhere;
+}
+
+.lab-trace {
+  max-height: 11rem;
+  overflow-y: auto;
+  border: 1px solid rgb(118 111 94 / 50%);
+  padding: 0.5rem 0.5rem 0.5rem 1.6rem;
+  background: rgb(9 11 13 / 70%);
+}
+
+.lab-empty {
+  color: #8b9287;
+}
+
+.lab-item-list {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  min-width: 0;
+}
+
+.lab-item {
+  display: grid;
+  gap: 0.4rem;
+  min-width: 0;
+  padding: 0.7rem;
+  border: 1px solid rgb(118 111 94 / 60%);
+  background: rgb(17 21 23 / 90%);
+}
+
+.lab-item-name {
+  margin: 0;
+  color: #f6d365;
+  font-size: 0.88rem;
+}
+
+.lab-item-summary,
+.lab-item-primary-note {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: #aeb8ad;
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
+.lab-item-primary-note {
+  color: #cfd6c9;
+}
+
+.lab-item-owned,
+.lab-item-primary {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: #f4edd8;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lab-item-lock {
+  color: #8bc9b8;
+  text-transform: none;
+}
+
+.interaction-lab input[type='checkbox'],
+.interaction-lab input[type='radio'] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0;
+  accent-color: #8bc9b8;
+}
+
+.interaction-lab button:focus-visible,
+.interaction-lab input:focus-visible,
+.interaction-lab label:focus-within {
+  outline: 3px solid #8bc9b8;
+  outline-offset: 3px;
+}
+
+/* Lab mode stacks the panel under the canvas and lets the page scroll to it. */
+body[data-mode='lab'] {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.run-shell[data-mode='lab'] {
+  width: 100%;
+}
+
+.run-shell[data-mode='lab'] #game-host {
+  height: min(58vh, calc(100vh - 32px));
+}
+
 [hidden] {
   display: none !important;
 }

@@ -1,14 +1,18 @@
 import Phaser from 'phaser';
-import { installDebugBridge } from '../../debug/DebugBridge';
+import { installDebugBridge, type DebugMode } from '../../debug/DebugBridge';
 import { createRun } from '../../sim/createRun';
 import { tickRun } from '../../sim/tickRun';
 import type { RunState } from '../../sim/model';
 import { InputAdapter } from '../input/InputAdapter';
 import { Hud } from '../ui/Hud';
+import { InteractionLab, defaultLabSelection, type LabLoadoutSelection } from '../ui/InteractionLab';
 import { EntityView } from '../view/EntityView';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
+
+/** One fixed seed keeps every lab selection deterministic. */
+const LAB_SEED = 1997;
 
 export class RunScene extends Phaser.Scene {
   public static readonly KEY = 'RunScene';
@@ -16,9 +20,12 @@ export class RunScene extends Phaser.Scene {
   private run: RunState = createRun(1997);
   private generation = 1;
   private accumulator = 0;
+  private mode: DebugMode = 'shift';
+  private labSelection: LabLoadoutSelection = defaultLabSelection();
   private inputAdapter: InputAdapter | undefined;
   private entityView: EntityView | undefined;
   private hud: Hud | undefined;
+  private interactionLab: InteractionLab | undefined;
   private removeDebugBridge: (() => void) | undefined;
 
   public constructor() {
@@ -27,6 +34,10 @@ export class RunScene extends Phaser.Scene {
 
   public create(): void {
     this.generation = 1;
+    this.mode = document.body.dataset.mode === 'lab' ? 'lab' : 'shift';
+    if (this.mode === 'lab') {
+      this.labSelection = defaultLabSelection();
+    }
     this.run = this.createInitialRun();
     this.accumulator = 0;
     this.inputAdapter = new InputAdapter(
@@ -35,12 +46,16 @@ export class RunScene extends Phaser.Scene {
       () => this.setPaused(true),
     );
     this.entityView = new EntityView(this);
-    this.hud = new Hud(this.restartRun);
+    this.hud = new Hud(this.restartRun, this.mode);
+    if (this.mode === 'lab') {
+      this.interactionLab = new InteractionLab(this.applyLabLoadout);
+    }
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
       this.removeDebugBridge = installDebugBridge(
         () => this.run,
         () => this.generation,
+        () => this.mode,
       );
     }
 
@@ -76,6 +91,13 @@ export class RunScene extends Phaser.Scene {
   }
 
   private createInitialRun(): RunState {
+    if (this.mode === 'lab') {
+      return createRun(LAB_SEED, {
+        itemIds: this.labSelection.itemIds,
+        selectedItemId: this.labSelection.selectedPrimaryId,
+      });
+    }
+
     const run = createRun(1997);
     if (!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true')) {
       return run;
@@ -117,6 +139,26 @@ export class RunScene extends Phaser.Scene {
     return run;
   }
 
+  /**
+   * Applies a lab loadout selection: one fresh deterministic run through the
+   * existing `createRun` options, with input, accumulator and transient state
+   * reset, and the controls re-rendered from the new authoritative state.
+   */
+  private readonly applyLabLoadout = (
+    itemIds: readonly string[],
+    selectedPrimaryId: string,
+  ): void => {
+    if (this.mode !== 'lab') {
+      return;
+    }
+    this.labSelection = { itemIds: [...itemIds], selectedPrimaryId };
+    this.generation += 1;
+    this.run = this.createInitialRun();
+    this.accumulator = 0;
+    this.inputAdapter?.clearHeld();
+    this.syncView();
+  };
+
   private readonly restartRun = (): void => {
     this.generation += 1;
     this.run = this.createInitialRun();
@@ -128,6 +170,7 @@ export class RunScene extends Phaser.Scene {
   private syncView(): void {
     this.entityView?.sync(this.run);
     this.hud?.sync(this.run);
+    this.interactionLab?.sync(this.run);
   }
 
   private readonly destroyRun = (): void => {
@@ -137,6 +180,8 @@ export class RunScene extends Phaser.Scene {
     this.entityView = undefined;
     this.hud?.destroy();
     this.hud = undefined;
+    this.interactionLab?.destroy();
+    this.interactionLab = undefined;
     this.removeDebugBridge?.();
     this.removeDebugBridge = undefined;
     this.accumulator = 0;

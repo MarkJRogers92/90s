@@ -11,7 +11,12 @@
         <p class="eyebrow">CORPORATE FACILITIES // NIGHT SHIFT</p>
         <h1 id="game-title">DEAD MALL</h1>
         <p class="tagline">Steal the '90s. Void the warranty. Survive the return policy.</p>
-        <button id="start-shift" type="button">Start shift</button>
+        <div class="start-actions">
+          <button id="start-shift" type="button">Start shift</button>
+          <button id="interaction-lab-launch" class="secondary-action" type="button">
+            Interaction Lab
+          </button>
+        </div>
         <p id="startup-status" role="status" aria-live="polite"></p>
       </section>
       <section id="run-shell" class="run-shell" aria-label="DEAD MALL game" hidden>
@@ -26,13 +31,53 @@
           </div>
           <div class="health-track" aria-hidden="true"><span id="health-fill"></span></div>
           <p id="run-status" class="run-status" role="status" aria-live="polite">SHIFT ACTIVE</p>
-          <p class="controls">WASD MOVE · POINTER AIM · HOLD CLICK MOP · ESC PAUSE</p>
+          <p id="run-controls" class="controls">WASD MOVE · POINTER AIM · HOLD CLICK MOP · ESC PAUSE</p>
+          <p id="lab-feedback" class="lab-feedback" hidden>
+            <span id="lab-feedback-recent">RECENT: none yet</span>
+            <span id="lab-feedback-trace">TRACE: none yet</span>
+          </p>
           <div id="end-state" class="end-state" hidden>
             <h2 id="end-title">Shift complete</h2>
             <button id="restart-shift" type="button">Restart shift</button>
           </div>
         </aside>
         <div id="game-host"></div>
+        <section id="interaction-lab" class="interaction-lab" aria-labelledby="interaction-lab-title" hidden>
+          <header class="lab-header">
+            <h2 id="interaction-lab-title">Interaction Lab</h2>
+            <p class="lab-intro">
+              Every preset, ownership toggle, or primary selection starts one fresh deterministic
+              lab run. The simulation stays authoritative; this panel only submits the loadout and
+              renders the result.
+            </p>
+          </header>
+          <div class="lab-block">
+            <h3 id="lab-presets-title">Curated builds</h3>
+            <div id="lab-preset-list" class="lab-preset-list" role="group" aria-labelledby="lab-presets-title"></div>
+          </div>
+          <div class="lab-block">
+            <h3>Selected primary</h3>
+            <p id="lab-primary" class="lab-primary" aria-live="polite"></p>
+            <p id="lab-recent" class="lab-recent" role="status" aria-live="polite"></p>
+            <p id="lab-limits" class="lab-limits" hidden></p>
+          </div>
+          <div class="lab-block">
+            <h3 id="lab-notes-title">Applicability</h3>
+            <ul id="lab-notes" class="lab-list lab-notes" aria-labelledby="lab-notes-title"></ul>
+          </div>
+          <div class="lab-block">
+            <h3 id="lab-compiled-title">Compiled behavior</h3>
+            <ol id="lab-compiled-trace" class="lab-list lab-trace" aria-labelledby="lab-compiled-title"></ol>
+          </div>
+          <div class="lab-block">
+            <h3 id="lab-behavior-title">Run trace</h3>
+            <ol id="lab-behavior-trace" class="lab-list lab-trace" aria-labelledby="lab-behavior-title"></ol>
+          </div>
+          <div class="lab-block">
+            <h3 id="lab-items-title">Item catalog</h3>
+            <ul id="lab-item-list" class="lab-item-list" aria-labelledby="lab-items-title"></ul>
+          </div>
+        </section>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>
