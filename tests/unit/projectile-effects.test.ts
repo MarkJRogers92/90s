@@ -19,6 +19,7 @@ import {
   queueChildEvent,
 } from '../../src/sim/effects/events';
 import {
+  buildPlayerProjectileSpec,
   isPlayerProjectile,
   updatePlayerProjectiles,
 } from '../../src/sim/effects/playerProjectiles';
@@ -225,6 +226,47 @@ describe('spawn-time player projectile descriptor', () => {
     expect(shot.payload.speed).toBeCloseTo(2.5 * 0.8, 10);
     expect(shot.payload.lifetimeTicks).toBe(90);
     expect(shot.payload.terminalWetPatch).toEqual({ radius: 48, ticks: WET_DURATION_TICKS });
+  });
+
+  it('subtracts authored geometry from a real loadout without touching the player hitbox', () => {
+    const state = labRun(['paint_marker', 'needle_nozzle'], 'paint_marker');
+
+    resolvePrimaryAttack(state, fireAt());
+
+    const shot = shotOf(state);
+    expect(shot.payload.radius).toBe(2);
+    expect(state.player.radius).toBe(10);
+  });
+
+  it('keeps a positive compiled hitbox when subtractive geometry outruns the payload', () => {
+    const spec = buildPlayerProjectileSpec([
+      {
+        kind: 'projectile_payload',
+        stage: 'projectile',
+        priority: 0,
+        sourceItemId: 'fixture_payload',
+        label: 'fixture payload',
+        payloadKind: 'physical',
+        angularOffsetsRadians: [0],
+        damage: 1,
+        speed: 4,
+        radius: 1,
+        lifetimeTicks: 30,
+        onHit: null,
+      },
+      {
+        kind: 'projectile_geometry',
+        stage: 'geometry',
+        priority: 0,
+        sourceItemId: 'fixture_shrink',
+        label: 'fixture shrink',
+        radiusBonus: -3,
+        speedMultiplier: 1,
+      },
+    ]);
+
+    expect(spec).not.toBeNull();
+    expect(spec?.radius).toBe(1);
   });
 });
 

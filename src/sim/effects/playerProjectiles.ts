@@ -26,6 +26,9 @@ import { queueChildEvent, recordBehaviorTrace, setRecentChange } from './events'
 import { applySticky, applyWet, ensureEnemyStatuses } from './statuses';
 import { createSurfacePatch } from './surfaces';
 
+/** Smallest legal compiled projectile hitbox after additive geometry. */
+export const MIN_PROJECTILE_RADIUS = 1;
+
 /**
  * True for a projectile that carries spawn-time compiled player behaviour.
  *
@@ -107,6 +110,11 @@ export function buildPlayerProjectileSpec(
     radius += geometry.radiusBonus;
     speed *= geometry.speedMultiplier;
   }
+  /**
+   * Geometry modifiers are additive and one authored modifier subtracts, so the
+   * compiled hitbox keeps a positive floor however the authored numbers combine.
+   */
+  radius = Math.max(MIN_PROJECTILE_RADIUS, radius);
 
   const sourceItemIds = Array.from(
     new Set([
