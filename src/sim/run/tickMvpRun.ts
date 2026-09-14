@@ -1,0 +1,424 @@
+/**
+ * The authoritative fixed-step update for the M5 MVP run.
+ *
+ * Deterministic tick stage order:
+ *   1. held-action update;
+ *   2. interaction/shopping;
+ *   3. transition check;
+ *   4. combat tick (delegated to the shared `RunState` tick);
+ *   5. store boundary evaluation (exit crossing secures carried thefts, then
+ *      the security sweep updates suspicion and may confiscate);
+ *   6. room-clear evaluation;
+ *   7. terminal evaluation.
+ *
+ * The run owns movement cadence, contextual commands, transitions, the
+ * economy, and the terminal outcome; Phaser only draws the result and converts
+ * input. Room-local enemies, projectiles, and surfaces are rebuilt from the
+ * seed whenever the room changes and never carry across a doorway.
+ */
+import { circleIntersectsRect } from '../core/geometry';
+import { freezeDeep } from '../items/types';
+import type { Rect, Vec2 } from '../model';
+import { crossedStoreExit } from '../shop/tickWingRun';
+import { tickRun } from '../tickRun';
+import type { WingDoorSide, WingRoomDefinition, WingStoreInstance } from '../wing/types';
+import { buildRoomCombatState, clearRoomEnemies, hasLivingEnemies } from './rooms';
+import {
+  RUN_INTERACTION_RANGE,
+  blockedRunReason,
+  beginRunTheft,
+  buyRunOffer,
+  itemDefinitionName,
+  publishRunFeedback,
+  runOfferPrice,
+  secureRunThefts,
+  storeDefinitionOf,
+  updateRunSuspicion,
+} from './economy';
+import type {
+  MvpCommandResult,
+  MvpInputFrame,
+  MvpInteraction,
+  MvpRunState,
+} from './types';
+
+const NOTHING_NEARBY_LABEL = 'Nothing to interact with here.';
+
+/** Clears persistent interaction levels after blur, pause, or a transition. */
+export function clearMvpHeldActions(state: MvpRunState): void {
+  state.heldActions = { interact: false, steal: false, recall: false };
+}
+
+function currentRoom(state: MvpRunState): WingRoomDefinition {
+  return state.wing.rooms[state.roomIndex]!;
+}
+
+function distanceToPoint(first: Vec2, second: Vec2): number {
+  return Math.hypot(second.x - first.x, second.y - first.y);
+}
+
+function distanceToRect(point: Vec2, rect: Rect): number {
+  const closestX = Math.max(rect.x, Math.min(point.x, rect.x + rect.width));
+  const closestY = Math.max(rect.y, Math.min(point.y, rect.y + rect.height));
+  return Math.hypot(point.x - closestX, point.y - closestY);
+}
+
+function rejected(reason: string): MvpCommandResult {
+  return { accepted: false, reason };
+}
+
+/** The nearest available offer in the current room, within interaction range. */
+export function nearestRunOffer(state: MvpRunState) {
+  const player = state.room.combat.player;
+  return currentRoom(state)
+    .offers.filter(
+      (offer) =>
+        (state.offerStatus[offer.id] ?? 'available') === 'available' &&
+        distanceToPoint(player, offer.position) <= RUN_INTERACTION_RANGE,
+    )
+    .sort((first, second) => {
+      const difference =
+        distanceToPoint(player, first.position) - distanceToPoint(player, second.position);
+      if (difference !== 0) {
+        return difference;
+      }
+      return first.id < second.id ? -1 : first.id > second.id ? 1 : 0;
+    })[0];
+}
+
+function doorwayLabel(state: MvpRunState, side: WingDoorSide): string {
+  const destinationIndex = side === 'east' ? state.roomIndex + 1 : state.roomIndex - 1;
+  const destination = state.wing.rooms[destinationIndex];
+  return destination ? `Door to the ${destination.name}` : 'Sealed doorway';
+}
+
+function doorwayLockReason(state: MvpRunState, side: WingDoorSide): string | null {
+  const room = currentRoom(state);
+  if (side === 'west' && room.id === 'security_office') {
+    return 'The office door sealed behind you.';
+  }
+  if (side === 'east' && hasLivingEnemies(state.room.combat)) {
+    return 'The door is locked until every enemy in the room is down.';
+  }
+  return null;
+}
+
+/**
+ * The single contextual interaction the run would act on: the nearest offer,
+ * doorway, or Bench Warrant kiosk inside interaction range, ordered by
+ * distance and then by a stable identifier.
+ */
+export function nearestMvpInteraction(state: MvpRunState): MvpInteraction {
+  const room = currentRoom(state);
+  const player = state.room.combat.player;
+  const candidates: { distance: number; key: string; interaction: MvpInteraction }[] = [];
+
+  const offer = nearestRunOffer(state);
+  if (offer) {
+    candidates.push({
+      distance: distanceToPoint(player, offer.position),
+      key: `offer:${offer.id}`,
+      interaction: {
+        kind: 'offer',
+        offerId: offer.id,
+        label: `${itemDefinitionName(offer.itemDefinitionId)} — $${runOfferPrice(state, offer)}`,
+      },
+    });
+  }
+
+  for (const doorway of room.doorways) {
+    const distance = distanceToRect(player, doorway.rect);
+    if (distance > RUN_INTERACTION_RANGE) {
+      continue;
+    }
+    const lockedReason = doorwayLockReason(state, doorway.side);
+    candidates.push({
+      distance,
+      key: `door:${doorway.side}`,
+      interaction: {
+        kind: 'door',
+        side: doorway.side,
+        label: doorwayLabel(state, doorway.side),
+        locked: lockedReason !== null,
+        lockedReason,
+      },
+    });
+  }
+
+  if (room.benchKiosk) {
+    const distance = distanceToPoint(player, room.benchKiosk);
+    if (distance <= RUN_INTERACTION_RANGE) {
+      candidates.push({
+        distance,
+        key: 'bench',
+        interaction: { kind: 'bench', label: 'Bench Warrant kiosk' },
+      });
+    }
+  }
+
+  if (candidates.length === 0) {
+    return { kind: 'none', label: NOTHING_NEARBY_LABEL };
+  }
+
+  candidates.sort((first, second) => {
+    if (first.distance !== second.distance) {
+      return first.distance - second.distance;
+    }
+    return first.key < second.key ? -1 : first.key > second.key ? 1 : 0;
+  });
+  return candidates[0]!.interaction;
+}
+
+/** Acts on the nearest contextual interaction, or rejects with the reason. */
+export function tryInteract(state: MvpRunState): MvpCommandResult {
+  const blocked = blockedRunReason(state);
+  if (blocked) {
+    return rejected(blocked);
+  }
+
+  const interaction = nearestMvpInteraction(state);
+  switch (interaction.kind) {
+    case 'offer':
+      return buyRunOffer(state, interaction.offerId);
+    case 'door':
+      return enterDoorway(state, interaction.side);
+    case 'bench': {
+      const message = 'The Bench Warrant kiosk is ready for Emitter Mount fusion.';
+      publishRunFeedback(state, message);
+      return { accepted: true, message };
+    }
+    default:
+      return rejected(NOTHING_NEARBY_LABEL);
+  }
+}
+
+/**
+ * Moves the run through one doorway.
+ *
+ * The east doorway of any room stays locked until every enemy in it is down,
+ * the west doorway is always usable except in the service corridor (no west
+ * door) and the security office (sealed permanently once entered), and the
+ * destination room is rebuilt deterministically with the player's health
+ * carried over.
+ */
+export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommandResult {
+  const blocked = blockedRunReason(state);
+  if (blocked) {
+    return rejected(blocked);
+  }
+
+  const room = currentRoom(state);
+  const doorway = room.doorways.find((entry) => entry.side === side);
+  if (!doorway) {
+    return rejected(`There is no ${side} door in the ${room.name}.`);
+  }
+  const lockedReason = doorwayLockReason(state, side);
+  if (lockedReason) {
+    return rejected(lockedReason);
+  }
+
+  const destinationIndex = side === 'east' ? state.roomIndex + 1 : state.roomIndex - 1;
+  const destination = state.wing.rooms[destinationIndex];
+  if (!destination) {
+    return rejected('That doorway does not lead anywhere.');
+  }
+
+  const enteringFrom = side === 'east' ? ('west' as const) : ('east' as const);
+  const health = state.room.combat.player.health;
+  const combat = buildRoomCombatState(
+    state.wing,
+    destinationIndex,
+    enteringFrom,
+    state.inventory,
+    state.seed,
+  );
+  combat.tick = state.tick;
+  combat.player.health = health;
+  combat.behaviorTrace = state.behaviorTrace;
+  if (state.clearedRooms.includes(destination.id)) {
+    clearRoomEnemies(combat);
+  }
+
+  state.roomIndex = destinationIndex;
+  state.room = {
+    roomId: destination.id,
+    variantId: destination.variantId,
+    combat,
+    cleared: !hasLivingEnemies(combat),
+    enteredFrom: enteringFrom,
+  };
+  state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
+  clearMvpHeldActions(state);
+
+  const message = `Entered the ${destination.name}.`;
+  publishRunFeedback(state, message);
+  return { accepted: true, message };
+}
+
+/**
+ * Walks the player through a doorway they have physically reached while moving
+ * toward it. A rejected crossing stays silent so the feedback line is not
+ * overwritten every tick by a locked door.
+ */
+function checkDoorwayCrossing(state: MvpRunState, input: MvpInputFrame): void {
+  if (input.moveX === 0) {
+    return;
+  }
+  const player = state.room.combat.player;
+  for (const doorway of currentRoom(state).doorways) {
+    const movingToward = doorway.side === 'east' ? input.moveX > 0 : input.moveX < 0;
+    if (!movingToward) {
+      continue;
+    }
+    if (!circleIntersectsRect(player.x, player.y, player.radius, doorway.rect)) {
+      continue;
+    }
+    enterDoorway(state, doorway.side);
+    return;
+  }
+}
+
+function evaluateStoreBoundary(
+  state: MvpRunState,
+  previousPosition: Vec2,
+  preserveActionFeedback: boolean,
+): void {
+  const store: WingStoreInstance | null = currentRoom(state).store;
+  let preserve = preserveActionFeedback;
+  if (store) {
+    const missing = state.carried.some((theft) => theft.sourceStoreId === store.templateId);
+    const player = state.room.combat.player;
+    if (
+      missing &&
+      crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store))
+    ) {
+      const secured = secureRunThefts(state, store);
+      preserve = preserve || secured.accepted;
+    }
+  }
+  updateRunSuspicion(state, preserve);
+}
+
+function evaluateRoomClear(state: MvpRunState): void {
+  if (hasLivingEnemies(state.room.combat)) {
+    return;
+  }
+  if (state.room.combat.status === 'won') {
+    // The room outcome belongs to the run, not to the wrapped combat state.
+    state.room.combat.status = 'playing';
+  }
+  if (!state.room.cleared) {
+    state.room.cleared = true;
+    if (state.room.roomId !== 'security_office') {
+      state.checkpoint = { roomIndex: state.roomIndex, tick: state.tick };
+    }
+  }
+  if (!state.clearedRooms.includes(state.room.roomId)) {
+    state.clearedRooms.push(state.room.roomId);
+  }
+}
+
+function publishSummary(state: MvpRunState, status: 'won' | 'dead'): void {
+  const leaves = state.inventory.inventory.flatMap((node) =>
+    node.kind === 'leaf' ? [node] : [node.primary, node.carrier],
+  );
+  state.status = status;
+  state.summary = freezeDeep({
+    seed: state.seed,
+    status,
+    roomIndex: state.roomIndex,
+    roomsCleared: state.clearedRooms.length,
+    purchasedInstanceIds: leaves
+      .filter((leaf) => leaf.acquisitionKind === 'purchased')
+      .map((leaf) => leaf.instanceId),
+    stolenInstanceIds: leaves
+      .filter((leaf) => leaf.acquisitionKind === 'stolen')
+      .map((leaf) => leaf.instanceId),
+    cash: state.cash,
+    heat: state.heat,
+    tick: state.tick,
+  });
+  const message =
+    status === 'won'
+      ? `Night shift survived with $${state.cash} and ${state.heat} Heat.`
+      : `The shift ended in the ${currentRoom(state).name}.`;
+  publishRunFeedback(state, message);
+}
+
+function evaluateTerminal(state: MvpRunState): void {
+  if (state.room.combat.player.health <= 0) {
+    if (state.status === 'playing') {
+      publishSummary(state, 'dead');
+    }
+    return;
+  }
+  if (state.room.roomId === 'security_office' && state.room.cleared) {
+    state.checkpoint = null;
+    if (state.status === 'playing') {
+      publishSummary(state, 'won');
+    }
+  }
+}
+
+/** Applies exactly one deterministic run tick. */
+export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
+  if (state.status !== 'playing') {
+    return;
+  }
+  if (state.paused) {
+    state.heldActions = {
+      interact: input.interact,
+      steal: input.steal,
+      recall: input.recall,
+    };
+    return;
+  }
+
+  state.tick += 1;
+
+  // 1. Held-action update.
+  const interactPressed = input.interact && !state.heldActions.interact;
+  const stealPressed = input.steal && !state.heldActions.steal;
+  state.heldActions = {
+    interact: input.interact,
+    steal: input.steal,
+    recall: input.recall,
+  };
+
+  // 2. Interaction and shopping.
+  state.recentChange = '';
+  let preserveActionFeedback = false;
+  if (interactPressed) {
+    preserveActionFeedback = !tryInteract(state).accepted;
+  } else if (stealPressed) {
+    const offer = nearestRunOffer(state);
+    if (offer) {
+      preserveActionFeedback = !beginRunTheft(state, offer.id).accepted;
+    }
+  }
+
+  // 3. Transition check.
+  checkDoorwayCrossing(state, input);
+
+  // 4. Combat tick.
+  const previousPosition = {
+    x: state.room.combat.player.x,
+    y: state.room.combat.player.y,
+  };
+  tickRun(state.room.combat, {
+    moveX: input.moveX,
+    moveY: input.moveY,
+    aimX: input.aimX,
+    aimY: input.aimY,
+    fire: input.fire,
+  });
+
+  // 5. Store boundary evaluation.
+  evaluateStoreBoundary(state, previousPosition, preserveActionFeedback);
+
+  // 6. Room-clear evaluation.
+  evaluateRoomClear(state);
+
+  // 7. Terminal evaluation.
+  evaluateTerminal(state);
+}

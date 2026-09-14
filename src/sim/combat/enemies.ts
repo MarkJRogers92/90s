@@ -1,4 +1,5 @@
 import type { RunState } from '../model';
+import { updateLpManager } from './boss';
 import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
 import { effectiveSpeedMultiplier } from '../effects/statuses';
 import { moveCircle, scaleMovementDelta } from './movement';
@@ -41,6 +42,11 @@ export function updateEnemies(state: RunState): void {
   for (let index = 0; index < state.enemies.length; index += 1) {
     const enemy = state.enemies[index];
     if (!enemy || enemy.health <= 0) {
+      continue;
+    }
+
+    if (enemy.kind === 'lp_manager') {
+      updateLpManager(state, index);
       continue;
     }
 

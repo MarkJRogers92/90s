@@ -9,7 +9,7 @@ import type {
 } from './items/types';
 
 export type RunStatus = 'playing' | 'won' | 'dead';
-export type EnemyKind = 'hanger' | 'spitter';
+export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager';
 export type Vec2 = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 
@@ -52,6 +52,26 @@ export type EnemyState = Vec2 & {
   cooldownTicks: number;
   telegraphAimX: number;
   telegraphAimY: number;
+  /**
+   * Loss Prevention Manager phase derived from current health: 1 above 66
+   * percent, 2 from 66 percent down to 34 percent inclusive, 3 below 34
+   * percent. Optional so hand-authored M1-M4 fixtures stay valid; the boss
+   * stage recomputes it deterministically every tick.
+   */
+  bossPhase?: 1 | 2 | 3;
+  /**
+   * Set once the boss summons its phase-3 Hangers. Optional so existing
+   * fixtures stay valid; prevents repeats even if health rises or is
+   * restored.
+   */
+  bossSummoned?: boolean;
+  /**
+   * Remaining ticks of the Loss Prevention Manager's volley wind-up. Set to
+   * `BOSS_VOLLEY_TELEGRAPH_TICKS` when the wind-up begins, counted down once
+   * per tick, and zero while no volley is charging. Optional so hand-authored
+   * M1-M4 fixtures stay valid; the boss stage keeps it current every tick.
+   */
+  bossVolleyTelegraphTicks?: number;
   /**
    * Optional so hand-authored M1 enemy fixtures stay valid: the status helpers
    * create it on first write and the central tick keeps it current afterwards.
