@@ -120,7 +120,11 @@ function validateBaseAttack(
 }
 
 const PAYLOAD_KINDS: readonly string[] = ['water', 'physical'];
-const ITEM_CAPABILITIES: readonly string[] = ['emitter_carrier'];
+const ITEM_CAPABILITIES: readonly string[] = [
+  'emitter_carrier',
+  'shop_discount',
+  'smuggle_pouch',
+];
 const MAX_PATTERN_OFFSETS = 16;
 
 function validateCapabilities(
@@ -283,7 +287,13 @@ function validateEffectNumbers(
       checkFlag(effect, 'activatesOncePerRoot', context);
       return;
     case 'projectile_geometry':
-      checkNumber(effect, 'radiusBonus', context, 0, false);
+      if (typeof effect.radiusBonus !== 'number' || !Number.isFinite(effect.radiusBonus)) {
+        context.issues.push({
+          code: 'invalid_value',
+          contentId: context.contentId,
+          message: `${context.describe} radiusBonus must be a finite number`,
+        });
+      }
       checkNumber(effect, 'speedMultiplier', context, 0, false);
       return;
     default:

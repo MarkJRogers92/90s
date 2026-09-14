@@ -91,8 +91,8 @@ export type WetPatchSpec = {
 /** Water shots interact with conversion and conduction; physical shots do not. */
 export type ProjectilePayloadKind = 'water' | 'physical';
 
-/** Optional definition-level capability. Only the RC Car declares one in M4. */
-export type ItemCapability = 'emitter_carrier';
+/** Optional definition-level capability. M5 shops consume shop_discount and smuggle_pouch. */
+export type ItemCapability = 'emitter_carrier' | 'shop_discount' | 'smuggle_pouch';
 
 /** A spawn-time payload: the soaker fires water, the popper fires physical. */
 export type ProjectilePayloadEffect = EffectBase & {

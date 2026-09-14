@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_CATALOG, M2_M3_ITEM_CATALOG } from '../../src/sim/items/catalog';
+import {
+  ITEM_CATALOG,
+  M2_M3_ITEM_CATALOG,
+  M4_ITEM_CATALOG,
+} from '../../src/sim/items/catalog';
 import { compileLoadout } from '../../src/sim/items/compileLoadout';
 import { validateCatalog } from '../../src/sim/items/validateCatalog';
 import type {
@@ -34,6 +38,22 @@ const M4_ITEM_IDS = [
   'party_popper',
 ];
 
+const M5_ITEM_IDS = [
+  ...M4_ITEM_IDS,
+  'bottle_rocket_pack',
+  'fire_extinguisher',
+  'paint_marker',
+  'foam_ball_blaster',
+  'slushie_cup',
+  'broken_broom_handle',
+  'box_cutter',
+  'grease_gun',
+  'anti_static_strap',
+  'car_battery',
+  'needle_nozzle',
+  'heavy_duty_spring',
+];
+
 function owned(entries: readonly (readonly [string, string])[]): ItemInstance[] {
   return entries.map(([instanceId, itemId]) => ({ instanceId, itemId }));
 }
@@ -55,8 +75,14 @@ function compile(instances: readonly ItemInstance[], selected: string) {
 }
 
 describe('item catalog', () => {
-  it('defines the twelve-item M4 roster in author order', () => {
-    expect(ITEM_CATALOG.map((definition) => definition.id)).toEqual(M4_ITEM_IDS);
+  it('defines the twenty-four-item M5 roster in author order', () => {
+    expect(ITEM_CATALOG.map((definition) => definition.id)).toEqual(M5_ITEM_IDS);
+  });
+
+  it('keeps unique definition IDs with the M4 roster first in stable order', () => {
+    const ids = ITEM_CATALOG.map((definition) => definition.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.slice(0, 12)).toEqual(M4_ITEM_IDS);
   });
 
   it('freezes the M2/M3 subset to the original eight items', () => {
@@ -67,6 +93,18 @@ describe('item catalog', () => {
     );
     expect(Object.isFrozen(M2_M3_ITEM_CATALOG)).toBe(true);
     for (const definition of M2_M3_ITEM_CATALOG) {
+      expect(Object.isFrozen(definition)).toBe(true);
+    }
+  });
+
+  it('freezes the M4 subset to the original twelve items', () => {
+    expect(M4_ITEM_CATALOG).toHaveLength(12);
+    expect(M4_ITEM_CATALOG.map((definition) => definition.id)).toEqual(M4_ITEM_IDS);
+    expect(M4_ITEM_CATALOG.map((definition) => definition.id)).toEqual(
+      ITEM_CATALOG.slice(0, 12).map((definition) => definition.id),
+    );
+    expect(Object.isFrozen(M4_ITEM_CATALOG)).toBe(true);
+    for (const definition of M4_ITEM_CATALOG) {
       expect(Object.isFrozen(definition)).toBe(true);
     }
   });
@@ -156,6 +194,244 @@ describe('M4 payload schema', () => {
       0,
       8 * degreesToRadians,
     ]);
+  });
+});
+
+describe('M5 capabilities', () => {
+  it('declares shop_discount only on the Receipt Wallet', () => {
+    expect(definitionOf('receipt_wallet').capabilities).toEqual(['shop_discount']);
+    const discounted = ITEM_CATALOG.filter((definition) =>
+      (definition.capabilities ?? []).includes('shop_discount'),
+    ).map((definition) => definition.id);
+    expect(discounted).toEqual(['receipt_wallet']);
+  });
+
+  it('declares smuggle_pouch only on the Reinforced Fanny Pack', () => {
+    expect(definitionOf('fanny_pack').capabilities).toEqual(['smuggle_pouch']);
+    const pouches = ITEM_CATALOG.filter((definition) =>
+      (definition.capabilities ?? []).includes('smuggle_pouch'),
+    ).map((definition) => definition.id);
+    expect(pouches).toEqual(['fanny_pack']);
+  });
+
+  it('keeps emitter_carrier only on the RC Car', () => {
+    const carriers = ITEM_CATALOG.filter((definition) =>
+      (definition.capabilities ?? []).includes('emitter_carrier'),
+    ).map((definition) => definition.id);
+    expect(carriers).toEqual(['rc_car']);
+  });
+
+  it('accepts the shipped catalog with all three capabilities', () => {
+    expect(() => validateCatalog(ITEM_CATALOG)).not.toThrow();
+  });
+
+  it('rejects an unknown capability while keeping the M5 capabilities valid', () => {
+    const strange = structuredClone(definitionOf('receipt_wallet')) as ItemDefinition;
+    (strange as { capabilities: unknown }).capabilities = ['flies'];
+    expect(() => validateCatalog([strange])).toThrow(/receipt_wallet/);
+  });
+});
+
+describe('M5 projectile primaries', () => {
+  it('defines the bottle rocket pack as a two-prong physical projectile primary', () => {
+    const pack = definitionOf('bottle_rocket_pack');
+    expect(pack.base).toMatchObject({
+      delivery: 'projectile',
+      damage: 3,
+      cooldownTicks: 36,
+      speed: 5.0,
+    });
+    expect(pack.effects[0]).toMatchObject({
+      kind: 'projectile_payload',
+      sourceItemId: 'bottle_rocket_pack',
+      payloadKind: 'physical',
+      damage: 3,
+      speed: 5.0,
+      radius: 3,
+      lifetimeTicks: 45,
+      onHit: null,
+    });
+    const offsets = (pack.effects[0] as { angularOffsetsRadians: readonly number[] })
+      .angularOffsetsRadians;
+    expect([...offsets]).toHaveLength(2);
+  });
+
+  it('defines the fire extinguisher as a water projectile that applies Wet 240', () => {
+    const extinguisher = definitionOf('fire_extinguisher');
+    expect(extinguisher.base).toMatchObject({
+      delivery: 'projectile',
+      damage: 1,
+      cooldownTicks: 30,
+      speed: 2.6,
+    });
+    expect(extinguisher.effects[0]).toMatchObject({
+      kind: 'projectile_payload',
+      sourceItemId: 'fire_extinguisher',
+      payloadKind: 'water',
+      damage: 1,
+      speed: 2.6,
+      radius: 10,
+      lifetimeTicks: 70,
+      onHit: { status: 'wet', ticks: 240 },
+    });
+  });
+
+  it('defines the paint marker as a single physical projectile primary', () => {
+    const marker = definitionOf('paint_marker');
+    expect(marker.base).toMatchObject({
+      delivery: 'projectile',
+      damage: 2,
+      cooldownTicks: 18,
+      speed: 6.0,
+    });
+    expect(marker.effects[0]).toMatchObject({
+      kind: 'projectile_payload',
+      sourceItemId: 'paint_marker',
+      payloadKind: 'physical',
+      damage: 2,
+      speed: 6.0,
+      radius: 3,
+      lifetimeTicks: 40,
+      onHit: null,
+    });
+    const offsets = (marker.effects[0] as { angularOffsetsRadians: readonly number[] })
+      .angularOffsetsRadians;
+    expect([...offsets]).toEqual([0]);
+  });
+
+  it('defines the foam ball blaster as a three-prong physical projectile with a 14-degree spread', () => {
+    const blaster = definitionOf('foam_ball_blaster');
+    expect(blaster.base).toMatchObject({
+      delivery: 'projectile',
+      damage: 1,
+      cooldownTicks: 20,
+      speed: 5.5,
+    });
+    expect(blaster.effects[0]).toMatchObject({
+      kind: 'projectile_payload',
+      sourceItemId: 'foam_ball_blaster',
+      payloadKind: 'physical',
+      damage: 1,
+      speed: 5.5,
+      radius: 3,
+      lifetimeTicks: 45,
+      onHit: null,
+    });
+    const degreesToRadians = Math.PI / 180;
+    const offsets = (blaster.effects[0] as { angularOffsetsRadians: readonly number[] })
+      .angularOffsetsRadians;
+    expect([...offsets]).toEqual([-14 * degreesToRadians, 0, 14 * degreesToRadians]);
+  });
+
+  it('defines the slushie cup as a water projectile that applies Wet 120', () => {
+    const cup = definitionOf('slushie_cup');
+    expect(cup.base).toMatchObject({
+      delivery: 'projectile',
+      damage: 2,
+      cooldownTicks: 26,
+      speed: 3.6,
+    });
+    expect(cup.effects[0]).toMatchObject({
+      kind: 'projectile_payload',
+      sourceItemId: 'slushie_cup',
+      payloadKind: 'water',
+      damage: 2,
+      speed: 3.6,
+      radius: 5,
+      lifetimeTicks: 60,
+      onHit: { status: 'wet', ticks: 120 },
+    });
+  });
+});
+
+describe('M5 direct primaries and modifiers', () => {
+  it('defines the broken broom handle as a direct primary', () => {
+    const broom = definitionOf('broken_broom_handle');
+    expect(broom.base).toMatchObject({
+      delivery: 'direct',
+      damage: 5,
+      cooldownTicks: 42,
+      range: 92,
+      speed: 0,
+    });
+    expect(broom.base?.halfAngleRadians).toBeCloseTo((30 * Math.PI) / 180, 10);
+    expect(broom.effects).toEqual([]);
+  });
+
+  it('defines the box cutter as a direct primary', () => {
+    const cutter = definitionOf('box_cutter');
+    expect(cutter.base).toMatchObject({
+      delivery: 'direct',
+      damage: 3,
+      cooldownTicks: 15,
+      range: 54,
+      speed: 0,
+    });
+    expect(cutter.base?.halfAngleRadians).toBeCloseTo((25 * Math.PI) / 180, 10);
+    expect(cutter.effects).toEqual([]);
+  });
+
+  it('defines the grease gun as a stronger Sticky modifier', () => {
+    const grease = definitionOf('grease_gun');
+    expect(grease.base).toBeUndefined();
+    expect(grease.effects[0]).toMatchObject({
+      kind: 'status_modifier',
+      sourceItemId: 'grease_gun',
+      status: 'sticky',
+      ticks: 150,
+      slowMultiplier: 0.45,
+      slowFloor: 0.4,
+    });
+  });
+
+  it('defines the anti-static strap as a heavier conductive reaction', () => {
+    const strap = definitionOf('anti_static_strap');
+    expect(strap.base).toBeUndefined();
+    expect(strap.effects[0]).toMatchObject({
+      kind: 'conductive_reaction',
+      sourceItemId: 'anti_static_strap',
+      chainStartsPerRoot: 2,
+      maxAdditionalTargets: 4,
+      baseRange: 110,
+      visitsEachTargetOnce: true,
+    });
+  });
+
+  it('defines the car battery as a longer conductive range with no weak discharge', () => {
+    const battery = definitionOf('car_battery');
+    expect(battery.base).toBeUndefined();
+    expect(battery.effects[0]).toMatchObject({
+      kind: 'conductive_range',
+      sourceItemId: 'car_battery',
+      range: 300,
+      weakDischarge: false,
+    });
+  });
+
+  it('defines the needle nozzle as a narrowing projectile geometry', () => {
+    const needle = definitionOf('needle_nozzle');
+    expect(needle.base).toBeUndefined();
+    expect(needle.effects[0]).toMatchObject({
+      kind: 'projectile_geometry',
+      sourceItemId: 'needle_nozzle',
+      radiusBonus: -1,
+      speedMultiplier: 1.35,
+    });
+  });
+
+  it('defines the heavy-duty spring as a widening projectile geometry', () => {
+    const spring = definitionOf('heavy_duty_spring');
+    expect(spring.base).toBeUndefined();
+    expect(spring.effects[0]).toMatchObject({
+      kind: 'projectile_geometry',
+      sourceItemId: 'heavy_duty_spring',
+      radiusBonus: 3,
+      speedMultiplier: 0.75,
+    });
+  });
+
+  it('accepts a negative geometry radius bonus from the shipped catalog', () => {
+    expect(() => validateCatalog([definitionOf('needle_nozzle')])).not.toThrow();
   });
 });
 

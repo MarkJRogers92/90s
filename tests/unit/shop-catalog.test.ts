@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { ITEM_CATALOG, M2_M3_ITEM_CATALOG } from '../../src/sim/items/catalog';
+import { validateCatalog } from '../../src/sim/items/validateCatalog';
+import type { ItemDefinition } from '../../src/sim/items/types';
 import { M3_WING } from '../../src/sim/shop/catalog';
 import type {
   ShopOfferDefinition,
@@ -362,5 +364,39 @@ describe('validateWing', () => {
 
   it('rejects a wing validated against an empty item catalog', () => {
     expect(() => validateWing(M3_WING, [])).toThrow(/item-catalog/);
+  });
+});
+
+describe('M5 shop capabilities', () => {
+  it('declares shop_discount on the Receipt Wallet for lawful purchases', () => {
+    const wallet = ITEM_CATALOG.find((definition) => definition.id === 'receipt_wallet');
+    expect(wallet?.capabilities).toEqual(['shop_discount']);
+    expect(() => validateCatalog(ITEM_CATALOG)).not.toThrow();
+  });
+
+  it('declares smuggle_pouch on the Reinforced Fanny Pack for unsecured thefts', () => {
+    const pouch = ITEM_CATALOG.find((definition) => definition.id === 'fanny_pack');
+    expect(pouch?.capabilities).toEqual(['smuggle_pouch']);
+    expect(() => validateCatalog(ITEM_CATALOG)).not.toThrow();
+  });
+
+  it('rejects an unknown item capability', () => {
+    const wallet = ITEM_CATALOG.find((definition) => definition.id === 'receipt_wallet');
+    if (!wallet) {
+      throw new Error('Missing test fixture definition receipt_wallet');
+    }
+    const strange = structuredClone(wallet) as ItemDefinition;
+    (strange as { capabilities: unknown }).capabilities = ['free_stuff'];
+    expect(() => validateCatalog([strange])).toThrow(/receipt_wallet/);
+  });
+
+  it('rejects a duplicate item capability', () => {
+    const pouch = ITEM_CATALOG.find((definition) => definition.id === 'fanny_pack');
+    if (!pouch) {
+      throw new Error('Missing test fixture definition fanny_pack');
+    }
+    const doubled = structuredClone(pouch) as ItemDefinition;
+    (doubled as { capabilities: unknown }).capabilities = ['smuggle_pouch', 'smuggle_pouch'];
+    expect(() => validateCatalog([doubled])).toThrow(/fanny_pack/);
   });
 });
