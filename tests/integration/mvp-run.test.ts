@@ -314,6 +314,26 @@ describe('room transitions', () => {
     expect(result.accepted).toBe(false);
     expect(state.roomIndex).toBe(0);
   });
+
+  it('crosses a doorway the player reaches while moving toward it', () => {
+    const state = createMvpRun(9);
+    const east = doorwayRectOf(state, 'east');
+    state.room.combat.player.x = east.x - 5;
+    state.room.combat.player.y = east.y + east.height / 2;
+
+    advance(state, 1, { moveX: 1, recall: true });
+
+    expect(state.roomIndex).toBe(1);
+    expect(state.room.roomId).toBe('storefront_a');
+    expect(state.heldActions).toEqual({ interact: false, steal: false, recall: false });
+
+    const west = doorwayRectOf(state, 'west');
+    state.room.combat.player.x = west.x + 5;
+    state.room.combat.player.y = west.y + west.height / 2;
+    advance(state, 1, { moveX: -1 });
+    expect(state.roomIndex).toBe(0);
+    expect(state.room.roomId).toBe('service_corridor');
+  });
 });
 
 describe('mvp interactions', () => {
@@ -343,6 +363,29 @@ describe('mvp interactions', () => {
     corridor.room.combat.player.y = kiosk.y;
     expect(nearestMvpInteraction(corridor)).toMatchObject({ kind: 'bench' });
     expect(tryInteract(corridor).accepted).toBe(true);
+
+    corridor.room.combat.player.x = 480;
+    corridor.room.combat.player.y = 240;
+    expect(nearestMvpInteraction(corridor)).toMatchObject({ kind: 'none' });
+    expect(tryInteract(corridor).accepted).toBe(false);
+  });
+
+  it('reports a locked doorway while the room still has enemies', () => {
+    const state = createMvpRun(9);
+    walkToRoom(state, 'food_court');
+    const east = doorwayRectOf(state, 'east');
+    state.room.combat.player.x = east.x - 20;
+    state.room.combat.player.y = east.y + east.height / 2;
+
+    const interaction = nearestMvpInteraction(state);
+
+    expect(interaction.kind).toBe('door');
+    if (interaction.kind === 'door') {
+      expect(interaction.side).toBe('east');
+      expect(interaction.locked).toBe(true);
+      expect(interaction.lockedReason).not.toBeNull();
+    }
+    expect(tryInteract(state).accepted).toBe(false);
   });
 });
 

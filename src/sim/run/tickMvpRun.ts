@@ -8,8 +8,8 @@
  *   4. combat tick (delegated to the shared `RunState` tick);
  *   5. store boundary evaluation (exit crossing secures carried thefts, then
  *      the security sweep updates suspicion and may confiscate);
- *   6. room-clear evaluation;
- *   7. terminal evaluation.
+ *   6. room-clear evaluation (marks the room cleared and checkpoints it);
+ *   7. terminal evaluation (publishes the win or death summary).
  *
  * The run owns movement cadence, contextual commands, transitions, the
  * economy, and the terminal outcome; Phaser only draws the result and converts
@@ -232,6 +232,8 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
     state.inventory,
     state.seed,
   );
+  // The wrapped room tracks the run's tick so a room boundary is exactly
+  // reproducible and a restored checkpoint resumes on the same tick.
   combat.tick = state.tick;
   combat.player.health = health;
   combat.behaviorTrace = state.behaviorTrace;
