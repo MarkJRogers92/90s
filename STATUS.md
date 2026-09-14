@@ -1,31 +1,26 @@
 # Status
 
-**Current milestone:** M4 Void the Warranty implemented and verified locally; ready for user playtest.
+**Current milestone:** M5 MVP run implemented and reviewed locally; ready for user playtest.
 
-**Playable result:** The title screen now launches four separate modes. **Start shift** preserves the M1 combat room, **Interaction Lab** preserves the M2 item sandbox, **Shoplifting Loop** preserves the M3 deterministic two-store wing, and **Void the Warranty** launches the M4 bench-fusion mode. M4 supports Clean soaker, Stolen popper, and Unsupported mop scenarios, Confirm and Cancel fusion, Acquire late pickup, Restart bench, and Return to title under the shared Emitter Mount rule.
+**Playable result:** The title screen now launches five modes. **Start shift** preserves the M1 combat room, **Interaction Lab** preserves the M2 item sandbox, **Shoplifting Loop** preserves the M3 deterministic two-store wing, **Void the Warranty** preserves the M4 bench-fusion mode, and **Night Shift** launches the M5 MVP run. **Continue run** is enabled only when a valid local checkpoint exists.
 
-Bench fusion rules remain renderer-independent under `src/sim/bench` and `src/sim/fusion`. Phaser collects input, advances the fixed-step loop, and presents authoritative state.
+Night Shift is one short seeded mall wing: a safe service corridor with the Bench Warrant kiosk, two seeded storefronts drawn from four authored templates, two combat rooms whose doorways stay locked until they are cleared, and a sealed security office holding the Loss Prevention Manager boss. The run carries one provenance-bearing inventory, compiles its loadout from purchases, thefts, and fusion, tracks cash, Heat, and suspicion, and writes a versioned checkpoint at every room boundary. Winning clears the checkpoint; dying keeps it so the shift can be retried from the last boundary.
 
-**Latest verification (2026-09-13) from implementation checkpoint `cd5f4c1d00bd72fe7b4c800455e5c922313e7c8f`:**
+Wing generation, run state, economy, transitions, the boss, and checkpoint validation remain renderer-independent under `src/sim/wing` and `src/sim/run`. Phaser collects input, advances the fixed-step loop, and presents authoritative state.
 
-- `npm run typecheck` — passed.
-- `npm test` — passed; 18 files and 289 tests.
-- `npx playwright test tests/browser/void-the-warranty.spec.ts` — passed; 7/7 Chromium tests.
-- `npm run test:browser` — passed; 31/31 Chromium tests.
-- `npm run build` — passed; Vite transformed 55 modules and emitted `dist/index.html` 9.81 kB (2.34 kB gzip), CSS 8.29 kB (2.27 kB gzip), and JavaScript 1,495.73 kB (390.82 kB gzip).
-- `rg -n --glob '*.js' --glob '!*.map' "__DEAD_MALL_DEBUG__|VITE_ENABLE_DEBUG_BRIDGE|bench-doorway" dist` — no matches.
-- `git diff --check` — passed.
-- Contributor Muse reviewed the actual range `10765d10fb4703ae8fe7bae34da24b8f173dfffa..cd5f4c1d00bd72fe7b4c800455e5c922313e7c8f` read-only at `xhigh`, reported no Critical or Important findings, and approved Task 6 documentation.
+**Latest verification (2026-09-13) from implementation checkpoint `c3a263b`:**
 
-**Direct production inspection:**
+- `npm run typecheck` — exit 0.
+- `npm test` — exit 0; 24 files and 431 tests passed.
+- `npx playwright test tests/browser/night-shift.spec.ts` — exit 0; 11 Chromium tests passed, including a real boss kill that publishes the terminal summary and clears the checkpoint.
+- `npm run test:browser` — exit 0; 42 Chromium tests passed across all six modes.
+- `npm run build` — exit 0; Vite production output created in `dist/`.
+- Production JavaScript scan for the debug bridge, debug flag, and every M5 fixture name — no matches outside source maps.
+- Direct production inspection at 1440x900 and 800x600 — one canvas, one run HUD, no horizontal overflow, no debug bridge, no page or console errors, and only local-origin requests. Screenshots: `artifacts/m5-mvp-run.png` and `artifacts/m5-mvp-run-800x600.png`.
+- Independent cross-family review — Muse reviewed the wing, run, economy, and checkpoint modules read-only at high reasoning, and DeepSeek reviewed the boss and presentation read-only at high reasoning. Every Critical and Important finding was repaired with a regression test in `c3a263b`.
 
-- The current `dist/` was served locally at `http://127.0.0.1:4174` because port 4173 was already occupied by an older unrelated preview and was left untouched. The production build was inspected with installed Playwright and the server was stopped afterward.
-- At 1440x900: one canvas and one visible Bench HUD; body width 1440 and scroll width 1440 with no horizontal overflow; production debug bridge absent; clean preview visible; HUD client height 786 and scroll height 1074; Clean soaker, Stolen popper, Unsupported mop, Confirm fusion, Cancel fusion, Acquire late pickup, Restart bench, and Return to title were all reachable; zero page errors, zero console errors, zero external-origin requests, and three local requests.
-- At 800x600: one canvas and one visible Bench HUD; body width 800 and scroll width 800 with no horizontal overflow; production debug bridge absent; clean preview visible; HUD client height 486 and scroll height 1074; all scenario and transaction controls above remained reachable by scrolling; zero page errors, zero console errors, zero external-origin requests, and three local requests.
-- Screenshots: `artifacts/m4-void-the-warranty.png` (1440x900, SHA-256 `9c615882c80f82b07f8872632758c05ec9a268d548a95e36e7f25e1ab815bd4a`) and `artifacts/m4-void-the-warranty-800x600.png` (800x600, SHA-256 `7f10a5f9efdf45252e6e6f08839da5ac160ba97318158ab889eedb7b8939ecbf`).
+**Repository state:** Branch `codex/m5-mvp` in the local linked worktree `/Users/markrogers/Documents/Github Code/90s/.worktrees/m5-mvp`, started from the M4 tip `ff2dcf5`. Nothing from M5 has been pushed, merged, published, deployed, or released.
 
-**Repository state:** Branch `codex/m4-void-the-warranty` in the local linked worktree `/Users/markrogers/Documents/Github Code/90s/.worktrees/m4-void-the-warranty`, backed up to the same branch on `origin`. The M4 implementation checkpoint is `cd5f4c1d00bd72fe7b4c800455e5c922313e7c8f` from branch start `10765d10fb4703ae8fe7bae34da24b8f173dfffa`. M4 has not been merged, published, deployed, or released.
+**Known uncertainty:** The art is deliberate graybox/vector work and there is no sound. Balance is unplayed: wing pacing, store placement, boss difficulty, and checkpoint cadence all need the user's hands. Phase-3 boss summons are allowed once per boss encounter rather than once per save slot, because checkpoints deliberately exclude room-local entity state. WebKit, Safari, Windows, device coverage, and physical-device performance were not run.
 
-**Known uncertainty:** Non-blocking review observations: the first-tick projectile hold is intentional so a fresh projectile can be observed before movement; a doorway transition tick can consume held fire once in the destination, but the scene immediately clears input and prevents multi-step leakage; the development-only `bench-doorway` fixture temporarily teleports the player without the carrier, and the authoritative leash correction closes the transient gap; the protected M2/M3 catalog subset uses the first eight definitions with exact-order regression coverage; browser origin proof uses a 48-unit deterministic allowance plus a closer-to-car-than-player assertion. Fusion balance and bench feel still require the user's hands-on playtest. The graybox/vector presentation is not a production-art pass. Disk durability is not claimed. WebKit, Safari, Windows/device coverage, audio, and physical-device performance were not run.
-
-**Next:** Stop at M4. Run a hands-on Void the Warranty playtest; do not begin M5 without new authorization.
+**Next:** Stop at M5. Run a hands-on Night Shift playtest; do not begin M6 without new authorization.

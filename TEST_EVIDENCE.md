@@ -141,3 +141,64 @@ Independent review: contributor Muse reviewed the actual range `10765d10fb4703ae
 Muse bridge health: the bridge originally accepted `reasoning_level: max` for contributor Muse even though that provider invocation exits before a turn begins. Minimal probes reproduced the zero-turn failure at `max` and succeeded at `xhigh`. A local bridge correction now advertises and accepts Muse levels through `xhigh` only, rejects `max` with a clear contract error, and leaves DeepSeek's `max` support unchanged. Host checks passed: 26/26 focused bridge tests, 191/191 full bridge tests, and `git diff --check`. The bridge repository was intentionally dirty before this work, so these changes remain unstaged and uncommitted. A fresh Work session is required to load the updated MCP schema.
 
 Coverage not run: WebKit, Safari, Windows browser/device, physical-device performance, audio, or human feel/playtest. Fusion balance and bench feel still require hands-on evaluation. The graybox/vector art is not the production-art pass. Disk durability, production art, audio, and M5 behavior are not claimed.
+
+## 2026-09-13 — M5 MVP run
+
+Final automated gate from implementation checkpoint `c3a263b` on branch
+`codex/m5-mvp` (branch start `ff2dcf5`, the M4 tip):
+
+- `npm run typecheck` — passed.
+- `npm test` — passed; 24 files and 431 tests.
+- `npx playwright test tests/browser/night-shift.spec.ts` — passed; 11/11 Chromium tests.
+- `npm run test:browser` — passed; 42/42 Chromium tests across all six modes. An earlier full run reported three load-related failures in the preserved M1/M3 specs while the machine was busy; those three specs passed 17/17 in isolation and the full suite then passed 42/42 on an idle machine, and the repair commit changed no M1-M4 simulation file.
+- `npm run build` — passed; Vite emitted `dist/index.html` 12.48 kB (2.71 kB gzip), CSS 10.35 kB (2.49 kB gzip), and JavaScript 1,561.24 kB (408.46 kB gzip).
+- `rg -n --glob '*.js' --glob '*.html' --glob '!*.map' "__DEAD_MALL_DEBUG__|VITE_ENABLE_DEBUG_BRIDGE|mvp-storefront|mvp-boss-entry|mvp-boss-win" dist` — no matches.
+
+Direct production inspection of the current `dist/`, served locally at
+`http://127.0.0.1:4176` after the repair round (server stopped afterward):
+
+- 1440x900: one canvas and one visible run HUD, no other mode HUD visible, body width 1440 and scroll width 1440 so no horizontal overflow, production debug bridge absent, HUD client height 476 with no scroll needed, Restart run and Return to title reachable, zero page errors, zero console errors, zero external-origin requests.
+- 800x600: one canvas and one visible run HUD, no other mode HUD visible, body width 800 and scroll width 800 so no horizontal overflow, production debug bridge absent, Restart run and Return to title reachable, zero page errors, zero console errors, zero external-origin requests.
+- Screenshots: `artifacts/m5-mvp-run.png` (1440x900, SHA-256 `db21057a20c8c80896c2f93ebb5aedb810daabcb25873397cc46d46186e8e5d1`) and `artifacts/m5-mvp-run-800x600.png` (800x600, SHA-256 `a21ecae07a6130086477ff67122eb2ec52bfea77b68e7770f88eccefd83cc2b7`).
+
+Browser acceptance exercised real keyboard and pointer input for: launching
+Night Shift with one canvas and one HUD; identical offers for a repeated seed
+and different offers across seeds; a real purchase spending cash and recording
+purchased provenance; a real theft secured at the store exit raising Heat by 15;
+Continue run resuming the saved seed and boundary; an invalid checkpoint
+disabling Continue run without breaking startup; ten restarts keeping one canvas
+and one HUD; the security office spawning the Loss Prevention Manager; a real
+boss kill publishing the terminal summary and clearing the checkpoint, after
+which Continue run is disabled; the sealed boss-room doorway reported to the
+player; and the run HUD fitting 800x600 without horizontal overflow.
+
+Independent cross-family review (both read-only, high reasoning) before the
+repair round:
+
+- Muse reviewed the wing, run, economy, and checkpoint modules and reported three
+  Critical findings (theft banked without crossing the store exit, checkpoint
+  cash divergence that refunded the fusion fee, and a crafted checkpoint that
+  listed the boss room as cleared) and several Important findings (suspicion
+  frozen for a theft carried out of its source store, a combat room's west
+  doorway opening while enemies lived, a boss-room door opening for an unknown
+  item id, checkpoint restore always entering from the west, and three
+  under-asserted tests).
+- DeepSeek reviewed the boss and presentation and reported one Critical finding
+  (killing the boss did not win while its phase-3 Hangers lived) and Important
+  findings (two phase-3 Hangers able to share one position, summon-once state
+  lost across checkpoint retries, a failed checkpoint clear leaving Continue run
+  enabled, missing browser acceptance coverage, and stale milestone docs) plus
+  minor HUD and view inconsistencies.
+
+All Critical and Important findings were repaired in `c3a263b` with a regression
+test each, and the parent verified every fix marker, the full unit/integration
+suite, the full Chromium suite, the production scan, and the production
+inspection afterward. The once-per-encounter boss summon is recorded as an
+explicit decision rather than a defect, because checkpoints deliberately exclude
+room-local entity state.
+
+Coverage not run: WebKit, Safari, Windows browser/device, physical-device
+performance, audio, and human feel/playtest. Wing pacing, store placement, boss
+difficulty, and checkpoint cadence still require hands-on evaluation. The
+graybox/vector art is not the production-art pass. Push, merge, publish, deploy,
+and release are not claimed.

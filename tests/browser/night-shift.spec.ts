@@ -247,3 +247,90 @@ test('the security office spawns the Loss Prevention Manager', async ({ page }) 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });
+
+test('winning the boss run publishes the summary and clears the checkpoint', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-boss-win&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId)).toBe('security_office');
+
+  const canvas = page.locator('canvas');
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) {
+    return;
+  }
+  // Aim to the right of the player, close the gap, and swing for real.
+  await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.5);
+  await page.keyboard.down('d');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('d');
+
+  for (let swing = 0; swing < 12; swing += 1) {
+    await page.mouse.down();
+    await page.waitForTimeout(120);
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+    if ((await runSnapshot(page)).status === 'won') {
+      break;
+    }
+  }
+
+  const state = await runSnapshot(page);
+  expect(state.status).toBe('won');
+  expect(state.summary?.status).toBe('won');
+  expect(state.checkpoint).toBeNull();
+  await expect(page.getByTestId('mvp-run-summary')).toBeVisible();
+  await expect(page.locator('#mvp-run-summary')).toContainText(/WON|Shift/i);
+
+  await page.getByRole('button', { name: 'Return to title', exact: true }).click();
+  await expect(page.locator('#start-screen')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Continue run', exact: true })).toBeDisabled();
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('a sealed boss-room door is reported to the player', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-boss-entry&seed=77');
+
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId)).toBe('security_office');
+  // The entry anchor sits inside the room, so walk back to the west doorway the
+  // player came through and read the lock state the HUD reports there.
+  await page.keyboard.down('a');
+  await expect
+    .poll(() => page.locator('#mvp-run-controls').innerText(), { timeout: 20_000 })
+    .toMatch(/sealed/i);
+  await page.keyboard.up('a');
+  await expect(page.locator('#mvp-run-nearby')).toContainText(/door/i);
+  await expect(page.locator('#mvp-run-controls')).toContainText(/sealed/i);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 800, height: 600 });
+  await launchRun(page);
+
+  const layout = await page.evaluate(() => {
+    const hud = document.querySelector('#mvp-run-hud') as HTMLElement | null;
+    return {
+      bodyWidth: document.body.scrollWidth,
+      viewportWidth: window.innerWidth,
+      hudVisible: Boolean(hud) && !hud!.hidden,
+      hudScrolls: hud ? hud.scrollHeight > hud.clientHeight : false,
+    };
+  });
+
+  expect(layout.hudVisible).toBe(true);
+  expect(layout.bodyWidth).toBeLessThanOrEqual(layout.viewportWidth);
+  await expect(page.locator('canvas')).toHaveCount(1);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});

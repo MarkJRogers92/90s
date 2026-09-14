@@ -1,6 +1,9 @@
-# 90s — M4 Void the Warranty
+# 90s — M5 MVP run
 
-This repository contains the M0–M4 playable prototype for the 90s game, including the preserved M1 Janitor combat room, the deterministic M2 Interaction Lab, the M3 Shoplifting Loop, and the M4 Void the Warranty bench-fusion mode.
+This repository contains the M0–M5 playable prototype for the 90s game: the
+preserved M1 Janitor combat room, the deterministic M2 Interaction Lab, the M3
+Shoplifting Loop, the M4 Void the Warranty bench-fusion mode, and the M5 Night
+Shift MVP run.
 
 ## Run locally
 
@@ -9,10 +12,36 @@ npm install
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173`, then choose **Start shift** for M1, **Interaction Lab** for M2, **Shoplifting Loop** for M3, or **Void the Warranty** for M4. In the bench, try the Clean soaker, Stolen popper, and Unsupported mop scenarios, Confirm and Cancel fusion, Acquire late pickup, Restart bench, and Return to title.
+Open `http://127.0.0.1:5173`, then choose:
+
+- **Start shift** for the M1 combat room;
+- **Interaction Lab** for the M2 item sandbox;
+- **Shoplifting Loop** for the M3 two-store wing;
+- **Void the Warranty** for the M4 bench;
+- **Night Shift** for the M5 MVP run, or **Continue run** to resume the last
+  saved room boundary.
+
+In Night Shift, move with WASD, aim with the pointer, attack with the primary
+mouse button, press E to buy an offer, use a door, or open the Bench Warrant
+kiosk, press F to steal, press R to recall a fused carrier, and press Escape to
+pause. `?seed=12345` replays one specific wing; the run seed is always shown in
+the HUD.
+
+## What M5 adds
+
+One short seeded mall wing with a safe entry corridor, two seeded storefronts
+drawn from four authored templates, two combat rooms whose doorways stay locked
+until they are cleared, and a sealed security office holding the Loss Prevention
+Manager boss. The run owns one provenance-bearing inventory of 24 catalogued
+items, reuses the M3 shopping and Heat rules, reuses M4 Emitter Mount fusion at
+the in-run bench, and writes a versioned local checkpoint at every room
+boundary. Winning clears the checkpoint; dying keeps it.
 
 ## Continue in the cloud
 
-The milestone is saved in the repository at <https://github.com/MarkJRogers92/90s> on continuation branch `codex/m4-void-the-warranty`. It has not been merged to `main`, published, deployed, or released. Verify the branch and working tree before making changes. M5 MVP still requires new user authorization.
+The milestone is saved locally on branch `codex/m5-mvp` in the linked worktree
+`.worktrees/m5-mvp`. It has not been merged to `main`, pushed, published,
+deployed, or released. M6 still requires new user authorization.
 
-See `NEXT_SESSION.md`, `STATUS.md`, and `TEST_EVIDENCE.md` for the current milestone, verification evidence, and next playtest focus.
+See `NEXT_SESSION.md`, `STATUS.md`, and `TEST_EVIDENCE.md` for the current
+milestone, verification evidence, and the next playtest focus.

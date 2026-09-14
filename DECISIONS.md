@@ -29,3 +29,22 @@
 - Correct the local Muse bridge to advertise and accept Muse reasoning levels through `xhigh` only, rejecting `max` with a clear contract error while leaving DeepSeek `max` support unchanged; the fix remains unstaged and uncommitted in the bridge repository and requires a fresh Work session to load the updated MCP schema.
 - M4 uses original local graybox/vector presentation. Disk durability, production art, audio, M5 content, WebKit/Safari/Windows/device coverage, and physical-device performance remain out of scope.
 - M4 may be committed and the branch may be pushed to `origin` for GitHub backup and continuation. Do not merge, publish, deploy, release, or begin M5.
+
+## 2026-09-13 — M5 MVP run
+
+- Build M5 as one short seeded run that connects the proven systems instead of replacing them: M3 shopping, security, and provenance; M4 inventory and Emitter Mount; M2 loadout compilation; M1 combat, movement, statuses, and terminal rules.
+- Isolate M5 in linked worktree `.worktrees/m5-mvp` on branch `codex/m5-mvp`, started from the M4 tip `ff2dcf5`.
+- Fix the wing shape as a six-room chain — service corridor, storefront A, food court, storefront B, back hall, security office — with authored room and store templates and a bounded seeded selection; never free-form procedural geometry.
+- Keep the service corridor a safe entry room with the Bench Warrant kiosk, and the security office the last room with a single boss; the run's generator and validator treat an authored enemy band of zero as a safe room that must carry no spawns.
+- Lock both doorways of a room that authors enemy spawns until the room is cleared, and seal the security office permanently on entry.
+- Own one provenance-bearing fusion inventory at the run level and rebuild room-local enemies, projectiles, and surfaces from the seed on every transition.
+- Allow the boss's phase-3 Hanger summon once per boss encounter rather than once per save file, because the checkpoint deliberately stores run-level state only and never room-local entity state.
+- Win the run when the Loss Prevention Manager dies, even if the Hangers it summoned are still alive.
+- Grow the catalog to 24 definitions while keeping the frozen eight-definition M2/M3 subset and the twelve-definition M4 roster as explicit exports, and make `shop_discount` (Receipt Wallet) and `smuggle_pouch` (Fanny Pack) operational in M5 shops.
+- Allow authored projectile geometry to subtract, so the compiled projectile hitbox has a positive floor (`MIN_PROJECTILE_RADIUS` in `src/sim/effects/playerProjectiles.ts`).
+- Checkpoint only run-level state — seed, next room index, entry side, tick, cash, Heat, suspicion, player health, cleared rooms, inventory, offer status, and carried thefts — as versioned JSON, and rebuild the destination room deterministically on resume. Reject a checkpoint that lists the boss room as cleared or whose inventory cash disagrees with its run cash.
+- Clear the checkpoint when the run is won and keep it when the player dies; a failed storage clear must not report success or leave Continue run enabled.
+- Accept two independent cross-family read-only reviews at high reasoning as the M5 review gate: Muse reviewed the wing, run, economy, and checkpoint modules, and DeepSeek reviewed the boss and presentation. Every Critical and Important finding was repaired with a regression test in `c3a263b`.
+- M5 uses original local graybox/vector presentation. Production art, audio, WebKit/Safari/Windows/device coverage, physical-device performance, and M6 content remain out of scope.
+- Local commits are authorized for this build. Push, merge, publish, deploy, and release are not authorized. Do not begin M6 without a new user instruction.
+- Environment notes recorded for the next session: run vitest serially (`--no-file-parallelism`) because parallel workers can time out on this filesystem, Chromium requires the approved escalation, and the Vite dev server can exceed Playwright's default 60-second `webServer` timeout.
