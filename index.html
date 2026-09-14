@@ -19,6 +19,9 @@
           <button id="shoplifting-loop-launch" class="secondary-action" type="button">
             Shoplifting Loop
           </button>
+          <button id="void-warranty-launch" class="secondary-action" type="button">
+            Void the Warranty
+          </button>
         </div>
         <p id="startup-status" role="status" aria-live="polite"></p>
       </section>
@@ -76,6 +79,57 @@
           <div class="wing-actions">
             <button id="restart-loop" type="button">Restart loop</button>
             <button id="return-to-title" class="secondary-action" type="button">Return to title</button>
+          </div>
+        </aside>
+        <aside id="bench-hud" class="bench-hud" data-testid="bench-hud" hidden>
+          <div class="hud-row">
+            <span class="hud-label">BENCH WARRANT // SCENARIO</span>
+            <strong id="bench-scenario">clean-soaker</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">ROOM</span>
+            <strong id="bench-room">service room</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">CASH</span>
+            <strong id="bench-cash">$10</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">REVISION</span>
+            <strong id="bench-revision">rev 0</strong>
+          </div>
+          <p id="bench-primary" class="bench-primary">PRIMARY: —</p>
+          <p id="bench-carrier" class="bench-carrier">CARRIER: —</p>
+          <p id="bench-provenance" class="bench-provenance">PROVENANCE: —</p>
+          <p id="bench-interaction" class="bench-interaction" role="status" aria-live="polite">APPROACH THE BENCH WARRANT TO PREVIEW FUSION</p>
+          <p id="bench-retained" class="bench-retained">RETAINED MODIFIERS: —</p>
+          <p id="bench-late" class="bench-late">LATE PICKUP: —</p>
+          <p id="bench-prompt" class="bench-prompt">WASD MOVE · POINTER FIRE · E PREVIEW · R RECALL · ESC PAUSE</p>
+          <p id="bench-recent" class="bench-recent" role="status" aria-live="polite">RECENT: none yet</p>
+          <p id="bench-trace" class="bench-trace">TRACE: none yet</p>
+          <div id="bench-preview" class="bench-preview" hidden>
+            <h3 id="bench-preview-title">Emitter Mount preview</h3>
+            <p id="bench-preview-ingredients" class="bench-preview-ingredients"></p>
+            <p id="bench-preview-fee" class="bench-preview-fee"></p>
+            <p id="bench-preview-retained" class="bench-preview-retained"></p>
+            <p id="bench-preview-excluded" class="bench-preview-excluded"></p>
+            <p id="bench-preview-operation" class="bench-preview-operation"></p>
+            <p id="bench-preview-notice" class="bench-preview-notice"></p>
+            <div class="bench-actions">
+              <button id="bench-confirm" type="button">Confirm fusion</button>
+              <button id="bench-cancel" class="secondary-action" type="button">Cancel fusion</button>
+            </div>
+          </div>
+          <p id="bench-preview-reason" class="bench-preview-reason" role="status" aria-live="polite" hidden></p>
+          <div class="bench-scenarios" role="group" aria-label="Bench scenario">
+            <button id="bench-scenario-clean-soaker" class="secondary-action" type="button">Clean soaker</button>
+            <button id="bench-scenario-stolen-popper" class="secondary-action" type="button">Stolen popper</button>
+            <button id="bench-scenario-unsupported-mop" class="secondary-action" type="button">Unsupported mop</button>
+          </div>
+          <div class="bench-actions">
+            <button id="bench-late-pickup" type="button">Acquire late pickup</button>
+            <button id="bench-restart" type="button">Restart bench</button>
+            <button id="bench-return" class="secondary-action" type="button">Return to title</button>
           </div>
         </aside>
         <div id="game-host"></div>

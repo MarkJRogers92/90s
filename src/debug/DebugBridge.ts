@@ -2,7 +2,7 @@ import type { RunState } from '../sim/model';
 import type { CompiledPrimary } from '../sim/items/types';
 import type { WingState } from '../sim/shop/types';
 
-export type DebugMode = 'shift' | 'lab' | 'shop';
+export type DebugMode = 'shift' | 'lab' | 'shop' | 'bench';
 
 export type DebugSnapshot = {
   mode: DebugMode;
@@ -51,7 +51,7 @@ export type WingDebugSnapshot = {
 declare global {
   interface Window {
     __DEAD_MALL_DEBUG__?: {
-      snapshot(): DebugSnapshot | WingDebugSnapshot;
+      snapshot(): DebugSnapshot | WingDebugSnapshot | BenchDebugSnapshot;
     };
   }
 }
@@ -125,6 +125,104 @@ export function installWingDebugBridge(
           recentChange: state.recentChange,
           behaviorTrace: [...state.behaviorTrace],
           summary: state.summary ? structuredClone(state.summary) : null,
+        };
+      },
+    },
+  });
+
+  return () => {
+    delete window.__DEAD_MALL_DEBUG__;
+  };
+}
+
+export type BenchDebugSnapshot = {
+  mode: 'bench';
+  generation: number;
+  tick: number;
+  paused: boolean;
+  status: RunState['status'];
+  activeRoom: import('../sim/bench/types').BenchRoomId;
+  scenarioId: import('../sim/bench/types').BenchScenarioId;
+  player: { x: number; y: number };
+  carrier: {
+    mode: import('../sim/bench/types').CarrierMode;
+    x: number;
+    y: number;
+    recalling: boolean;
+  };
+  cash: number;
+  revision: number;
+  preview: null | {
+    fee: number;
+    primaryName: string;
+    carrierName: string;
+    primaryProvenance: string;
+    carrierProvenance: string;
+  };
+  projectiles: ReadonlyArray<{
+    id: number;
+    x: number;
+    y: number;
+    originX: number;
+    originY: number;
+    faction: 'enemy' | 'player';
+  }>;
+  recentChange: string;
+  behaviorTrace: readonly string[];
+};
+
+export function installBenchDebugBridge(
+  getBench: () => import('../sim/bench/types').BenchRunState,
+  getGeneration: () => number,
+): () => void {
+  Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
+    configurable: true,
+    value: {
+      snapshot: (): BenchDebugSnapshot => {
+        const state = getBench();
+        return {
+          mode: 'bench',
+          generation: getGeneration(),
+          tick: state.tick,
+          paused: state.paused,
+          status: state.combat.status,
+          activeRoom: state.activeRoom,
+          scenarioId: state.scenarioId,
+          player: { x: state.combat.player.x, y: state.combat.player.y },
+          carrier: {
+            mode: state.carrier.mode,
+            x: state.carrier.x,
+            y: state.carrier.y,
+            recalling: state.carrier.recalling,
+          },
+          cash: state.fusion.cash,
+          revision: state.fusion.revision,
+          preview: state.preview
+            ? {
+                fee: state.preview.fee,
+                primaryName: state.preview.primaryName,
+                carrierName: state.preview.carrierName,
+                primaryProvenance: state.preview.primaryProvenance,
+                carrierProvenance: state.preview.carrierProvenance,
+              }
+            : null,
+          projectiles: state.combat.projectiles.map((projectile) => {
+            const sampled = (
+              projectile as unknown as {
+                sampledPath?: ReadonlyArray<{ x: number; y: number }>;
+              }
+            ).sampledPath?.[0];
+            return {
+              id: projectile.id,
+              x: projectile.x,
+              y: projectile.y,
+              originX: sampled?.x ?? projectile.x,
+              originY: sampled?.y ?? projectile.y,
+              faction: projectile.faction,
+            };
+          }),
+          recentChange: state.recentChange,
+          behaviorTrace: [...state.behaviorTrace],
         };
       },
     },
