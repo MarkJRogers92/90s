@@ -16,15 +16,21 @@ import {
   RUN_SECURED_THEFT_HEAT,
   beginRunTheft,
   buyRunOffer,
+  runOfferPriceLabel,
   runCarryLimit,
   runOfferPrice,
   runPurchaseDiscount,
+  secureRunThefts,
   updateRunSuspicion,
 } from '../../src/sim/run/economy';
+import { commitRunEmitterMount } from '../../src/sim/run/bench';
 import { refreshRunLoadout } from '../../src/sim/run/loadout';
 import { enterDoorway, tickMvpRun } from '../../src/sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
 import type { InventoryLeaf } from '../../src/sim/fusion/types';
+import type { EnemyState } from '../../src/sim/model';
+import type { WingDoorSide, WingRoomId } from '../../src/sim/wing/types';
+import { bossHudParts } from '../../src/game/ui/MvpRunHud';
 
 const input = (overrides: Partial<MvpInputFrame> = {}): MvpInputFrame => ({
   moveX: 0,
@@ -51,6 +57,28 @@ function enterStorefront(state: MvpRunState): void {
   const result = enterDoorway(state, 'east');
   if (!result.accepted) {
     throw new Error(`Could not enter the storefront: ${result.reason}`);
+  }
+}
+
+function walkThrough(state: MvpRunState, side: WingDoorSide): void {
+  const doorway = state.wing.rooms[state.roomIndex]!.doorways.find(
+    (entry) => entry.side === side,
+  )!;
+  state.room.combat.player.x = doorway.rect.x + doorway.rect.width / 2;
+  state.room.combat.player.y = doorway.rect.y + doorway.rect.height / 2;
+  const result = enterDoorway(state, side);
+  if (!result.accepted) {
+    throw new Error(`Could not walk ${side}: ${result.reason}`);
+  }
+}
+
+function walkEastTo(state: MvpRunState, roomId: WingRoomId): void {
+  while (state.wing.rooms[state.roomIndex]?.id !== roomId) {
+    if (state.room.combat.enemies.length > 0) {
+      state.room.combat.enemies = [];
+      advance(state, 1);
+    }
+    walkThrough(state, 'east');
   }
 }
 
@@ -289,5 +317,184 @@ describe('theft rules', () => {
 
     expect(state.suspicion).toBeGreaterThan(0);
     expect(state.carried).toHaveLength(1);
+  });
+
+  it('refuses to bank a carried theft from inside its source store', () => {
+    const state = createMvpRun(9);
+    enterStorefront(state);
+    const store = currentStore(state);
+    const offer = state.wing.rooms[1]!.offers[0]!;
+    expect(beginRunTheft(state, offer.id).accepted).toBe(true);
+    const revisionBefore = state.inventory.revision;
+
+    const result = secureRunThefts(state, store);
+
+    expect(result.accepted).toBe(false);
+    if (!result.accepted) {
+      expect(result.reason).toMatch(/exit the store/i);
+    }
+    expect(state.carried).toHaveLength(1);
+    expect(state.offerStatus[offer.id]).toBe('carried');
+    expect(state.heat).toBe(0);
+    expect(state.inventory.revision).toBe(revisionBefore);
+    expect(
+      state.inventory.inventory.some(
+        (node) => node.kind === 'leaf' && node.acquisitionKind === 'stolen',
+      ),
+    ).toBe(false);
+  });
+
+  it('keeps sweeping a theft carried into another room so it can still be confiscated', () => {
+    const state = createMvpRun(9);
+    enterStorefront(state);
+    const sourceStore = currentStore(state);
+    const offer = state.wing.rooms[1]!.offers[0]!;
+    expect(beginRunTheft(state, offer.id).accepted).toBe(true);
+
+    walkEastTo(state, 'storefront_b');
+    expect(state.room.roomId).toBe('storefront_b');
+    expect(currentStore(state).templateId).not.toBe(sourceStore.templateId);
+
+    // Hidden from the source store's sweep, suspicion falls instead of freezing.
+    state.room.combat.player.x = 110;
+    state.room.combat.player.y = 240;
+    state.suspicion = 4;
+    advance(state, 1);
+    expect(state.suspicion).toBeLessThan(4);
+    expect(state.carried).toHaveLength(1);
+
+    // Seen by the source store's sweep, full suspicion still confiscates.
+    const facing = securityFacingAtTick(sourceStore.sightZone, state.tick + 1);
+    state.room.combat.player.x = sourceStore.sightZone.origin.x + Math.cos(facing) * 60;
+    state.room.combat.player.y = sourceStore.sightZone.origin.y + Math.sin(facing) * 60;
+    state.suspicion = MAX_SUSPICION - 0.25;
+
+    advance(state, 1);
+
+    expect(state.carried).toEqual([]);
+    expect(state.offerStatus[offer.id]).toBe('available');
+    expect(state.suspicion).toBe(0);
+    expect(state.heat).toBe(CONFISCATION_HEAT);
+    expect(state.room.combat.player.x).toBeCloseTo(sourceStore.resetPoint.x, 10);
+    expect(state.room.combat.player.y).toBeCloseTo(sourceStore.resetPoint.y, 10);
+  });
+});
+
+describe('run cash invariants', () => {
+  it('keeps the run cash and the inventory cash equal through every economy command', () => {
+    const state = createMvpRun(9);
+    enterStorefront(state);
+    const store = currentStore(state);
+    const offers = state.wing.rooms[1]!.offers;
+
+    expect(buyRunOffer(state, offers[0]!.id).accepted).toBe(true);
+    expect(state.inventory.cash).toBe(state.cash);
+
+    expect(beginRunTheft(state, offers[1]!.id).accepted).toBe(true);
+    walkPastStoreExit(state);
+    expect(state.carried).toEqual([]);
+    expect(state.inventory.cash).toBe(state.cash);
+
+    expect(beginRunTheft(state, offers[2]!.id).accepted).toBe(true);
+    const facing = securityFacingAtTick(store.sightZone, state.tick + 1);
+    state.room.combat.player.x = store.sightZone.origin.x + Math.cos(facing) * 60;
+    state.room.combat.player.y = store.sightZone.origin.y + Math.sin(facing) * 60;
+    state.suspicion = MAX_SUSPICION - 0.25;
+    advance(state, 1);
+    expect(state.carried).toEqual([]);
+    expect(state.inventory.cash).toBe(state.cash);
+
+    grantItem(state, 'party_popper');
+    grantItem(state, 'rc_car');
+    expect(commitRunEmitterMount(state, 'test-party_popper', 'test-rc_car').accepted).toBe(
+      true,
+    );
+    expect(state.inventory.cash).toBe(state.cash);
+  });
+
+  it('charges the Emitter Mount fee once so a later purchase cannot refund it', () => {
+    const state = createMvpRun(9);
+    enterStorefront(state);
+    grantItem(state, 'party_popper');
+    grantItem(state, 'rc_car');
+    const startingCash = state.cash;
+    const revisionBefore = state.inventory.revision;
+
+    const fused = commitRunEmitterMount(state, 'test-party_popper', 'test-rc_car');
+
+    expect(fused.accepted).toBe(true);
+    const fee = startingCash - state.cash;
+    expect(fee).toBeGreaterThan(0);
+    expect(state.inventory.cash).toBe(state.cash);
+    expect(state.inventory.revision).toBe(revisionBefore + 1);
+    expect(state.inventory.inventory).toHaveLength(2);
+    expect(state.inventory.inventory.some((node) => node.kind === 'composite')).toBe(true);
+    expect(state.room.combat.compiledLoadout.primary.definitionId).toBe('party_popper');
+    expect(state.room.combat.inventory).toHaveLength(state.inventory.inventory.length);
+
+    const cheapest = state.wing.rooms[1]!.offers.reduce((lowest, candidate) =>
+      candidate.price < lowest.price ? candidate : lowest,
+    );
+    const price = runOfferPrice(state, cheapest);
+    expect(state.cash).toBeGreaterThanOrEqual(price);
+
+    expect(buyRunOffer(state, cheapest.id).accepted).toBe(true);
+
+    expect(state.cash).toBe(startingCash - fee - price);
+    expect(state.inventory.cash).toBe(state.cash);
+  });
+
+  it('refuses an Emitter Mount the run cannot pay for and leaves cash untouched', () => {
+    const state = createMvpRun(9);
+    enterStorefront(state);
+    grantItem(state, 'party_popper');
+    grantItem(state, 'rc_car');
+    state.cash = 1;
+    state.inventory = { ...state.inventory, cash: 1 };
+
+    const result = commitRunEmitterMount(state, 'test-party_popper', 'test-rc_car');
+
+    expect(result.accepted).toBe(false);
+    expect(state.cash).toBe(1);
+    expect(state.inventory.cash).toBe(1);
+    expect(state.inventory.inventory.some((node) => node.kind === 'composite')).toBe(false);
+  });
+});
+
+describe('run presentation fidelity', () => {
+  it('renders the simulated boss phase instead of recomputing it from health', () => {
+    const boss: EnemyState = {
+      id: 1,
+      kind: 'lp_manager',
+      x: 760,
+      y: 240,
+      health: 60,
+      radius: 22,
+      phase: 'pursue',
+      phaseTicks: 60,
+      cooldownTicks: 150,
+      telegraphAimX: 0,
+      telegraphAimY: 0,
+      bossPhase: 3,
+      bossSummoned: true,
+    };
+
+    const parts = bossHudParts(boss);
+
+    expect(parts[0]).toBe('BOSS: phase 3 · HP 60/60');
+    expect(parts).toContain('BACKUP CALLED');
+  });
+
+  it('labels an offer with the same discounted price the run charges', () => {
+    const state = createMvpRun(9);
+    enterStorefront(state);
+    const offer = state.wing.rooms[1]!.offers.find((candidate) => candidate.price > 3)!;
+
+    expect(runOfferPriceLabel(state, offer)).toBe(`$${offer.price}`);
+
+    grantItem(state, 'receipt_wallet');
+
+    expect(runOfferPrice(state, offer)).toBe(Math.max(1, offer.price - 2));
+    expect(runOfferPriceLabel(state, offer)).toBe(`$${Math.max(1, offer.price - 2)}`);
   });
 });

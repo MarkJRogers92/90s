@@ -393,6 +393,42 @@ describe('boss summon', () => {
     expect(state.enemies).toHaveLength(3);
     expect(state.nextEntityId).toBe(102);
   });
+
+  it('spreads a summon burst instead of stacking both Hangers when the boss is against a wall', () => {
+    // The boss is pinned on the security office's east wall, so the +64 spot
+    // clamps into solid geometry and both summons would otherwise fall back to
+    // the single reachable boss-64 spot.
+    const state = stateWithBoss(
+      quietBoss({ health: 21, cooldownTicks: 150, x: 928, y: 240 }),
+    );
+    state.nextEntityId = 100;
+    state.player.x = 900;
+    state.player.y = 440;
+    state.walls = [{ x: 950, y: 0, width: 10, height: 480 }];
+
+    tickRun(state, frame());
+    expect(state.enemies).toHaveLength(1);
+
+    state.enemies[0]!.health = 20;
+    tickRun(state, frame());
+
+    expect(state.enemies).toHaveLength(3);
+    const first = state.enemies[1]!;
+    const second = state.enemies[2]!;
+    expect(first.x !== second.x || first.y !== second.y).toBe(true);
+    for (const summoned of [first, second]) {
+      expect(summoned.kind).toBe('hanger');
+      for (const wall of state.walls) {
+        expect(
+          circleIntersectsRect(summoned.x, summoned.y, summoned.radius, wall),
+        ).toBe(false);
+      }
+      expect(summoned.x).toBeGreaterThanOrEqual(summoned.radius);
+      expect(summoned.x).toBeLessThanOrEqual(960 - summoned.radius);
+      expect(summoned.y).toBeGreaterThanOrEqual(summoned.radius);
+      expect(summoned.y).toBeLessThanOrEqual(480 - summoned.radius);
+    }
+  });
 });
 
 describe('boss movement and contact', () => {

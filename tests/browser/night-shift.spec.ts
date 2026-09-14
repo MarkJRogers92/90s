@@ -195,8 +195,8 @@ test('an invalid checkpoint disables Continue run and never breaks startup', asy
   const errors = collectErrors(page);
   await page.goto('/');
   await page.evaluate(
-    ([key]) => localStorage.setItem(key, '{"version":99,"seed":"nope"}'),
-    [CHECKPOINT_KEY],
+    (key) => localStorage.setItem(key, '{"version":99,"seed":"nope"}'),
+    CHECKPOINT_KEY,
   );
   await page.reload();
 

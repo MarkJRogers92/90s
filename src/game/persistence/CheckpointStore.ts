@@ -25,7 +25,12 @@ export type CheckpointWriteResult =
 export interface CheckpointStore {
   read(): CheckpointReadResult;
   write(state: MvpRunState): CheckpointWriteResult;
-  clear(): void;
+  /**
+   * Removes the stored checkpoint. Clearing can fail (private mode, quota,
+   * security errors), so the result is reported instead of swallowed: a failed
+   * clear must never be presented as a cleared checkpoint.
+   */
+  clear(): CheckpointWriteResult;
 }
 
 export class InMemoryCheckpointStore implements CheckpointStore {
@@ -55,7 +60,8 @@ export class InMemoryCheckpointStore implements CheckpointStore {
     return { ok: true };
   }
 
-  public clear(): void {
+  public clear(): CheckpointWriteResult {
     this.raw = null;
+    return { ok: true };
   }
 }

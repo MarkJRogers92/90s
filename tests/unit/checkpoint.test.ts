@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { PLAYFIELD_WIDTH } from '../../src/sim/core/geometry';
 import { MAX_SECURITY_HEAT } from '../../src/sim/shop/types';
 import {
   parseCheckpoint,
@@ -281,6 +282,68 @@ describe('checkpoint validation', () => {
     expect(parseCheckpoint('nope').ok).toBe(false);
     expect(parseCheckpoint(undefined).ok).toBe(false);
     expect(parseCheckpoint({}).ok).toBe(false);
+  });
+
+  it('rejects a checkpoint that marks the boss room cleared', () => {
+    const checkpoint = freshCheckpoint();
+
+    const parsed = parseCheckpoint({
+      ...checkpoint,
+      clearedRoomIds: [...checkpoint.clearedRoomIds, 'security_office'],
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      expect(parsed.reason).toMatch(/boss room/i);
+    }
+  });
+
+  it('rejects an inventory cash that disagrees with the run cash', () => {
+    const checkpoint = freshCheckpoint();
+
+    const parsed = parseCheckpoint({
+      ...checkpoint,
+      inventory: { ...checkpoint.inventory, cash: checkpoint.cash + 5 },
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      expect(parsed.reason).toMatch(/cash/i);
+    }
+  });
+
+  it('rejects an unknown entry side', () => {
+    const checkpoint = freshCheckpoint();
+    expect(parseCheckpoint({ ...checkpoint, enteredFrom: 'north' }).ok).toBe(false);
+    expect(parseCheckpoint({ ...checkpoint, enteredFrom: null }).ok).toBe(false);
+  });
+});
+
+describe('checkpoint entry side', () => {
+  it('stores and restores the side the player entered the room from', () => {
+    const state = createMvpRun(31);
+    walkThrough(state, 'east');
+    expect(state.room.enteredFrom).toBe('west');
+    walkThrough(state, 'west');
+    expect(state.roomIndex).toBe(0);
+    expect(state.room.enteredFrom).toBe('east');
+
+    const checkpoint = serializeCheckpoint(state);
+    expect(checkpoint.enteredFrom).toBe('east');
+
+    const parsed = parseCheckpoint(roundTrip(checkpoint));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) {
+      return;
+    }
+    const restored = restoreMvpRun(parsed.checkpoint);
+
+    expect(restored.room.enteredFrom).toBe('east');
+    expect(serializeCheckpoint(restored)).toEqual(checkpoint);
+    expect(restored.room.combat.player.x).toBe(
+      PLAYFIELD_WIDTH - state.wing.rooms[0]!.playerEntry.x,
+    );
+    expect(restored.room.combat.player.y).toBe(state.wing.rooms[0]!.playerEntry.y);
   });
 });
 

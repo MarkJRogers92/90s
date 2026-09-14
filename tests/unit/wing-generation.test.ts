@@ -408,24 +408,32 @@ describe('wing graph validation', () => {
   });
 
   it('rejects an enemy spawn inside a wall', () => {
-    const corrupted = replaceRoom(baseWing, 'service_corridor', (room) => ({
-      ...room,
-      enemySpawns: [
-        { ...room.enemySpawns[0]!, x: 5, y: 5 },
-        ...room.enemySpawns.slice(1),
-      ],
-    }));
+    // A real food_court spawn, moved inside a wall: the service corridor has
+    // no spawns, so spreading and mutating its empty list would test nothing.
+    const corrupted = replaceRoom(baseWing, 'food_court', (room) => {
+      expect(room.enemySpawns.length).toBeGreaterThan(0);
+      return {
+        ...room,
+        enemySpawns: [
+          { ...room.enemySpawns[0]!, x: 5, y: 5 },
+          ...room.enemySpawns.slice(1),
+        ],
+      };
+    });
     expect(() => validateWingGraph(corrupted)).toThrow(/spawn .* wall/i);
   });
 
   it('rejects an enemy spawn outside its room bounds', () => {
-    const corrupted = replaceRoom(baseWing, 'service_corridor', (room) => ({
-      ...room,
-      enemySpawns: [
-        { ...room.enemySpawns[0]!, x: 1200, y: 240 },
-        ...room.enemySpawns.slice(1),
-      ],
-    }));
+    const corrupted = replaceRoom(baseWing, 'food_court', (room) => {
+      expect(room.enemySpawns.length).toBeGreaterThan(0);
+      return {
+        ...room,
+        enemySpawns: [
+          { ...room.enemySpawns[0]!, x: 1200, y: 240 },
+          ...room.enemySpawns.slice(1),
+        ],
+      };
+    });
     expect(() => validateWingGraph(corrupted)).toThrow(/spawn .* outside/i);
   });
 

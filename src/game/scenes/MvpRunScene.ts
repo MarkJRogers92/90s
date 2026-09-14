@@ -270,12 +270,14 @@ export class MvpRunScene extends Phaser.Scene {
 
   private restartRun(): void {
     this.generation += 1;
-    this.store.clear();
+    const cleared = this.store.clear();
     this.run = createMvpRun(this.seed);
     this.accumulator = 0;
     this.lastRoomIndex = this.run.roomIndex;
     this.lastCheckpointKey = null;
-    this.checkpointStatus = 'none yet';
+    this.checkpointStatus = cleared.ok
+      ? 'none yet'
+      : `clear unavailable: ${cleared.reason}`;
     this.inputAdapter?.clearHeld();
     this.syncCheckpoint();
     this.syncView();
@@ -292,8 +294,12 @@ export class MvpRunScene extends Phaser.Scene {
     }
     this.lastCheckpointKey = key;
     if (this.run.checkpoint === null) {
-      this.store.clear();
-      this.checkpointStatus = 'cleared — night shift survived';
+      // A win clears the checkpoint, so a refused clear has to stay visible
+      // instead of claiming the stored checkpoint is gone.
+      const cleared = this.store.clear();
+      this.checkpointStatus = cleared.ok
+        ? 'cleared — night shift survived'
+        : `clear unavailable: ${cleared.reason}`;
       return;
     }
     const result = this.store.write(this.run);
@@ -344,6 +350,39 @@ export class MvpRunScene extends Phaser.Scene {
         });
         if (!enterDoorway(state, 'east').accepted) {
           break;
+        }
+      }
+      return state;
+    }
+    if (fixture === 'mvp-boss-win') {
+      let guard = 0;
+      while (state.wing.rooms[state.roomIndex]?.id !== 'security_office' && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, {
+          moveX: 0,
+          moveY: 0,
+          aimX: state.room.combat.player.x,
+          aimY: state.room.combat.player.y,
+          fire: false,
+          interact: false,
+          steal: false,
+          recall: false,
+        });
+        if (!enterDoorway(state, 'east').accepted) {
+          break;
+        }
+      }
+      // Leave the run one real attack from winning: the boss stands at a
+      // single point of health inside the security office and the player is
+      // one mop swing away, so browser acceptance can prove the terminal
+      // summary and the checkpoint clearing with honest input.
+      if (state.wing.rooms[state.roomIndex]?.id === 'security_office') {
+        const boss = state.room.combat.enemies.find((enemy) => enemy.kind === 'lp_manager');
+        if (boss) {
+          boss.health = 1;
+          state.room.combat.player.x = boss.x - 80;
+          state.room.combat.player.y = boss.y;
         }
       }
       return state;

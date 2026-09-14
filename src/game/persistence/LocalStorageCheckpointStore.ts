@@ -70,11 +70,16 @@ export class LocalStorageCheckpointStore implements CheckpointStore {
     return { ok: true };
   }
 
-  public clear(): void {
-    try {
-      this.storage?.removeItem(MVP_CHECKPOINT_STORAGE_KEY);
-    } catch {
-      return;
+  public clear(): CheckpointWriteResult {
+    if (!this.storage) {
+      // No storage ever held a checkpoint, so there is nothing left behind.
+      return { ok: true };
     }
+    try {
+      this.storage.removeItem(MVP_CHECKPOINT_STORAGE_KEY);
+    } catch {
+      return { ok: false, reason: 'The checkpoint could not be cleared.' };
+    }
+    return { ok: true };
   }
 }

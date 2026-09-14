@@ -17,7 +17,10 @@ export const ASSOCIATE_MOP_DEFINITION_ID = 'janitor_mop';
 export const ASSOCIATE_MOP_INSTANCE_ID = 'mvp-associate-mop';
 
 export function createMvpRun(seed: number): MvpRunState {
-  const runSeed = Number.isFinite(seed) ? seed : 0;
+  // The wing RNG requires an integer, so a non-integer finite seed is
+  // truncated and anything else becomes 0, exactly as the title screen already
+  // sanitizes the URL seed.
+  const runSeed = Number.isFinite(seed) ? Math.trunc(seed) : 0;
   const wing = generateWing(runSeed);
 
   const mop: InventoryLeaf = {

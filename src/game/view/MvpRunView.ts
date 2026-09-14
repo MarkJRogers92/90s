@@ -9,6 +9,7 @@
  */
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH } from '../../sim/combat/boss';
+import { runOfferPriceLabel } from '../../sim/run/economy';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
@@ -144,7 +145,14 @@ export class MvpRunView {
         graphics.lineBetween(offer.position.x - 6, offer.position.y - 6, offer.position.x + 6, offer.position.y + 6);
         graphics.lineBetween(offer.position.x - 6, offer.position.y + 6, offer.position.x + 6, offer.position.y - 6);
       }
-      this.setLabel(`offer:${offer.id}`, `$${offer.price}`, offer.position.x + 10, offer.position.y - 8);
+      // The same run offer price the HUD card shows, so a world label can
+      // never disagree with the discounted price the run actually charges.
+      this.setLabel(
+        `offer:${offer.id}`,
+        runOfferPriceLabel(state, offer),
+        offer.position.x + 10,
+        offer.position.y - 8,
+      );
     }
   }
 

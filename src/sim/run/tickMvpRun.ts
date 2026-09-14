@@ -92,12 +92,21 @@ function doorwayLabel(state: MvpRunState, side: WingDoorSide): string {
   return destination ? `Door to the ${destination.name}` : 'Sealed doorway';
 }
 
+/**
+ * The reason a doorway is closed, or null when the player may use it.
+ *
+ * Both doorways of a room that authors enemy spawns stay shut until every
+ * enemy in it is down, so a fight cannot be walked out of in either direction.
+ * The security office seals its west door permanently on entry. Safe rooms
+ * (the service corridor and both storefronts) author no spawns, so their
+ * doorways are always passable.
+ */
 function doorwayLockReason(state: MvpRunState, side: WingDoorSide): string | null {
   const room = currentRoom(state);
   if (side === 'west' && room.id === 'security_office') {
     return 'The office door sealed behind you.';
   }
-  if (side === 'east' && hasLivingEnemies(state.room.combat)) {
+  if (room.enemySpawns.length > 0 && hasLivingEnemies(state.room.combat)) {
     return 'The door is locked until every enemy in the room is down.';
   }
   return null;
@@ -195,10 +204,9 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
 /**
  * Moves the run through one doorway.
  *
- * The east doorway of any room stays locked until every enemy in it is down,
- * the west doorway is always usable except in the service corridor (no west
- * door) and the security office (sealed permanently once entered), and the
- * destination room is rebuilt deterministically with the player's health
+ * Both doorways of a room that authors enemy spawns stay locked until every
+ * enemy in it is down, the security office seals permanently once entered, and
+ * the destination room is rebuilt deterministically with the player's health
  * carried over.
  */
 export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommandResult {
@@ -294,7 +302,7 @@ function evaluateStoreBoundary(
       missing &&
       crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store))
     ) {
-      const secured = secureRunThefts(state, store);
+      const secured = secureRunThefts(state, store, previousPosition);
       preserve = preserve || secured.accepted;
     }
   }
@@ -347,6 +355,22 @@ function publishSummary(state: MvpRunState, status: 'won' | 'dead'): void {
   publishRunFeedback(state, message);
 }
 
+/**
+ * True once the boss room's Loss Prevention Manager is down.
+ *
+ * The run is won by killing the boss, not by emptying the room: the Hangers it
+ * summons in phase 3 may still be standing. The boss room is the only room
+ * that authors a boss anchor, so no other room can end the run this way.
+ */
+function bossDefeated(state: MvpRunState): boolean {
+  if (currentRoom(state).bossAnchor === null) {
+    return false;
+  }
+  return !state.room.combat.enemies.some(
+    (enemy) => enemy.kind === 'lp_manager' && enemy.health > 0,
+  );
+}
+
 function evaluateTerminal(state: MvpRunState): void {
   if (state.room.combat.player.health <= 0) {
     if (state.status === 'playing') {
@@ -354,7 +378,7 @@ function evaluateTerminal(state: MvpRunState): void {
     }
     return;
   }
-  if (state.room.roomId === 'security_office' && state.room.cleared) {
+  if (bossDefeated(state)) {
     state.checkpoint = null;
     if (state.status === 'playing') {
       publishSummary(state, 'won');

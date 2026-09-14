@@ -11,7 +11,9 @@ import { hasLineOfSight } from '../combat/collision';
 import type { InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import type { ItemCapability, ItemDefinition, ItemId } from '../items/types';
+import type { Vec2 } from '../model';
 import { isPointInSightCone, securityFacingAtTick } from '../shop/security';
+import { crossedStoreExit } from '../shop/tickWingRun';
 import {
   CONFISCATION_HEAT,
   MAX_SECURITY_HEAT,
@@ -58,6 +60,8 @@ const OFFER_GONE_REASON = 'That offer is already gone.';
 const NOT_ENOUGH_CASH_REASON = 'Not enough cash.';
 const CARRY_LIMIT_REASON = 'Hands are full: secure the carried item first.';
 const NOT_CARRYING_REASON = 'No stolen item is being carried.';
+/** The M3 wording, reused so a run refusal reads exactly like the shop one. */
+const INSIDE_STORE_REASON = 'Exit the store before securing the item.';
 
 function rejected(reason: string): MvpCommandResult {
   return { accepted: false, reason };
@@ -132,6 +136,14 @@ export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
   return Math.max(RUN_PRICE_FLOOR, offer.price - runPurchaseDiscount(state));
 }
 
+/**
+ * The one price string the HUD offer card and the view's world label both
+ * render, so the two can never show a different number for the same offer.
+ */
+export function runOfferPriceLabel(state: MvpRunState, offer: WingOffer): string {
+  return `$${runOfferPrice(state, offer)}`;
+}
+
 /** The authored offer behind an id, anywhere in the wing. */
 export function findWingOffer(state: MvpRunState, offerId: string): WingOffer | undefined {
   for (const room of state.wing.rooms) {
@@ -163,6 +175,16 @@ export function storeDefinitionOf(store: WingStoreInstance): StoreDefinition {
   };
 }
 
+/** The generated storefront that authored a theft's source store, anywhere in the wing. */
+function wingStoreFor(state: MvpRunState, templateId: string): WingStoreInstance | null {
+  for (const room of state.wing.rooms) {
+    if (room.store !== null && room.store.templateId === templateId) {
+      return room.store;
+    }
+  }
+  return null;
+}
+
 function withInventory(
   state: MvpRunState,
   inventory: MvpRunState['inventory']['inventory'],
@@ -174,6 +196,13 @@ function withInventory(
     revision: state.inventory.revision + 1,
   };
   refreshRunLoadout(state);
+}
+
+/** Keeps the wrapped fusion inventory's cash equal to the run's authoritative cash. */
+function syncInventoryCash(state: MvpRunState): void {
+  if (state.inventory.cash !== state.cash) {
+    state.inventory = { ...state.inventory, cash: state.cash };
+  }
 }
 
 /** Buys one available offer when the discounted price is affordable. */
@@ -249,10 +278,16 @@ export function beginRunTheft(state: MvpRunState, offerId: string): MvpCommandRe
  * Secures every carried theft from one store as a `stolen` leaf once the
  * player has crossed that store's public exit. The smuggle_pouch capability
  * shaves five Heat off each secured theft, and Heat never drops below zero.
+ *
+ * Securing mirrors the M3 `secureTheft` rule: the player must have physically
+ * crossed that theft's source store exit this tick, so a carried theft can
+ * never be banked from inside the store it was taken from. The crossing uses
+ * the shared M3 geometry helper instead of a second exit rule.
  */
 export function secureRunThefts(
   state: MvpRunState,
   store: WingStoreInstance,
+  previousPosition: Vec2 = state.room.combat.player,
 ): MvpCommandResult {
   const blocked = blockedRunReason(state);
   if (blocked) {
@@ -262,6 +297,11 @@ export function secureRunThefts(
   const held = state.carried.filter((theft) => theft.sourceStoreId === store.templateId);
   if (held.length === 0) {
     return rejected(NOT_CARRYING_REASON);
+  }
+
+  const player = state.room.combat.player;
+  if (!crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store))) {
+    return rejected(INSIDE_STORE_REASON);
   }
 
   const leaves: InventoryLeaf[] = held.map((theft) => ({
@@ -320,6 +360,7 @@ export function confiscateRunThefts(
   state.heldActions = { interact: false, steal: false, recall: false };
   state.room.combat.player.x = store.resetPoint.x;
   state.room.combat.player.y = store.resetPoint.y;
+  syncInventoryCash(state);
 
   const message = `Confiscated ${held.length} item${held.length === 1 ? '' : 's'} back to ${store.name} (+${RUN_CONFISCATION_HEAT} Heat).`;
   publishRunFeedback(state, message);
@@ -351,21 +392,26 @@ export function canRunSecuritySeePlayer(
  * Mirrors the M3 sweep inside the run: a seen carried theft raises suspicion
  * toward the authored cap, hiding from the sweep lowers it, and full suspicion
  * confiscates everything the sweeping store is missing.
+ *
+ * Like M3, the sweep is resolved from the carried theft's source store rather
+ * than from the room the player happens to stand in, so a theft carried into
+ * another room keeps rising, falling, and confiscating instead of freezing.
  */
 export function updateRunSuspicion(
   state: MvpRunState,
   preserveActionFeedback = false,
 ): void {
-  const room = state.wing.rooms[state.roomIndex];
-  const store = room?.store ?? null;
-  if (!store) {
-    return;
-  }
   if (state.carried.length === 0) {
     state.suspicion = 0;
     return;
   }
-  if (!state.carried.some((theft) => theft.sourceStoreId === store.templateId)) {
+  const currentStore = state.wing.rooms[state.roomIndex]?.store ?? null;
+  const store =
+    currentStore !== null &&
+    state.carried.some((theft) => theft.sourceStoreId === currentStore.templateId)
+      ? currentStore
+      : wingStoreFor(state, state.carried[0]!.sourceStoreId);
+  if (!store) {
     return;
   }
 

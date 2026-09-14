@@ -126,6 +126,18 @@ describe('mvp run start state', () => {
     expect(state.room.variantId).toBe(state.wing.rooms[0]?.variantId);
     expect(state.room.combat.walls).toEqual(state.wing.rooms[0]?.walls);
   });
+
+  it('sanitizes a non-integer seed instead of throwing out of construction', () => {
+    expect(() => createMvpRun(1.5)).not.toThrow();
+    const truncated = createMvpRun(1.5);
+    expect(truncated.seed).toBe(1);
+    expect(truncated.wing).toEqual(createMvpRun(1).wing);
+    expect(createMvpRun(-3.7).seed).toBe(-3);
+    expect(() => createMvpRun(Number.NaN)).not.toThrow();
+    expect(createMvpRun(Number.NaN).seed).toBe(0);
+    expect(createMvpRun(Number.POSITIVE_INFINITY).seed).toBe(0);
+    expect(createMvpRun(Number.NEGATIVE_INFINITY).seed).toBe(0);
+  });
 });
 
 describe('deterministic room rebuild', () => {
@@ -181,7 +193,7 @@ describe('deterministic room rebuild', () => {
     }
   });
 
-  it('always returns a clean room without enemies, projectiles, or surfaces', () => {
+  it('always returns a combat room with only its authored enemies, no projectiles, and no surfaces', () => {
     const state = createMvpRun(7);
     state.room.combat.projectiles.push({
       id: 99,
@@ -207,10 +219,27 @@ describe('deterministic room rebuild', () => {
       sourceItemIds: [],
     });
 
-    const rebuilt = buildRoomCombatState(state.wing, 1, 'west', state.inventory, state.seed);
+    // A real combat room, so the enemy claim is actually exercised.
+    const combatIndex = state.wing.rooms.findIndex((room) => room.enemySpawns.length > 0);
+    expect(combatIndex).toBeGreaterThanOrEqual(0);
+    const combatRoom = state.wing.rooms[combatIndex]!;
+    const rebuilt = buildRoomCombatState(
+      state.wing,
+      combatIndex,
+      'west',
+      state.inventory,
+      state.seed,
+    );
+
     expect(rebuilt.projectiles).toEqual([]);
     expect(rebuilt.surfaces).toEqual([]);
-    expect(rebuilt.enemies).toEqual([]);
+    expect(rebuilt.enemies.length).toBeGreaterThan(0);
+    expect(rebuilt.enemies.map((enemy) => enemy.kind)).toEqual(
+      combatRoom.enemySpawns.map((spawn) => spawn.kind),
+    );
+    expect(rebuilt.enemies.map((enemy) => ({ x: enemy.x, y: enemy.y }))).toEqual(
+      combatRoom.enemySpawns.map((spawn) => ({ x: spawn.x, y: spawn.y })),
+    );
   });
 });
 
@@ -255,25 +284,33 @@ describe('room transitions', () => {
     expect(purchased).toHaveLength(2);
   });
 
-  it('locks the east door while a room has enemies and opens it once cleared', () => {
+  it('locks both doors while a combat room has enemies and opens them once cleared', () => {
     const state = createMvpRun(9);
     walkToRoom(state, 'food_court');
     expect(state.room.combat.enemies.length).toBeGreaterThan(0);
     expect(state.room.cleared).toBe(false);
 
-    const locked = enterDoorway(state, 'east');
-    expect(locked.accepted).toBe(false);
-    expect(state.roomIndex).toBe(2);
-
-    expect(enterDoorway(state, 'west').accepted).toBe(true);
-    expect(state.roomIndex).toBe(1);
-    expect(walkThrough(state, 'east').accepted).toBe(true);
+    const lockedEast = enterDoorway(state, 'east');
+    expect(lockedEast.accepted).toBe(false);
+    if (!lockedEast.accepted) {
+      expect(lockedEast.reason).toMatch(/locked/i);
+    }
+    const lockedWest = enterDoorway(state, 'west');
+    expect(lockedWest.accepted).toBe(false);
+    if (!lockedWest.accepted) {
+      expect(lockedWest.reason).toMatch(/locked/i);
+    }
     expect(state.roomIndex).toBe(2);
 
     clearCurrentRoom(state);
     expect(state.room.cleared).toBe(true);
     expect(state.clearedRooms).toContain('food_court');
     expect(state.status).toBe('playing');
+
+    expect(enterDoorway(state, 'west').accepted).toBe(true);
+    expect(state.roomIndex).toBe(1);
+    expect(walkThrough(state, 'east').accepted).toBe(true);
+    expect(state.roomIndex).toBe(2);
 
     expect(enterDoorway(state, 'east').accepted).toBe(true);
     expect(state.roomIndex).toBe(3);
@@ -283,6 +320,22 @@ describe('room transitions', () => {
     expect(state.roomIndex).toBe(2);
     expect(state.room.combat.enemies).toHaveLength(0);
     expect(state.room.cleared).toBe(true);
+  });
+
+  it('keeps safe rooms fully passable in both directions', () => {
+    const state = createMvpRun(9);
+    walkThrough(state, 'east');
+    expect(state.room.roomId).toBe('storefront_a');
+    expect(state.room.combat.enemies).toHaveLength(0);
+    expect(enterDoorway(state, 'east').accepted).toBe(true);
+    expect(state.roomIndex).toBe(2);
+    clearCurrentRoom(state);
+    expect(state.room.cleared).toBe(true);
+    expect(enterDoorway(state, 'west').accepted).toBe(true);
+    expect(state.roomIndex).toBe(1);
+    expect(enterDoorway(state, 'west').accepted).toBe(true);
+    expect(state.roomIndex).toBe(0);
+    expect(state.room.roomId).toBe('service_corridor');
   });
 
   it('seals the security office on entry and spawns exactly one boss at its anchor', () => {
@@ -370,7 +423,7 @@ describe('mvp interactions', () => {
     expect(tryInteract(corridor).accepted).toBe(false);
   });
 
-  it('reports a locked doorway while the room still has enemies', () => {
+  it('reports a locked doorway on both sides while the room still has enemies', () => {
     const state = createMvpRun(9);
     walkToRoom(state, 'food_court');
     const east = doorwayRectOf(state, 'east');
@@ -384,6 +437,20 @@ describe('mvp interactions', () => {
       expect(interaction.side).toBe('east');
       expect(interaction.locked).toBe(true);
       expect(interaction.lockedReason).not.toBeNull();
+    }
+    expect(tryInteract(state).accepted).toBe(false);
+
+    const west = doorwayRectOf(state, 'west');
+    state.room.combat.player.x = west.x + 20;
+    state.room.combat.player.y = west.y + west.height / 2;
+
+    const westInteraction = nearestMvpInteraction(state);
+
+    expect(westInteraction.kind).toBe('door');
+    if (westInteraction.kind === 'door') {
+      expect(westInteraction.side).toBe('west');
+      expect(westInteraction.locked).toBe(true);
+      expect(westInteraction.lockedReason).not.toBeNull();
     }
     expect(tryInteract(state).accepted).toBe(false);
   });
@@ -425,6 +492,38 @@ describe('terminal outcomes', () => {
     expect(state.summary?.status).toBe('dead');
     expect(state.checkpoint).not.toBeNull();
     expect(state.checkpoint?.roomIndex).toBe(2);
+  });
+
+  it('wins when the boss dies while its summoned Hangers are still alive', () => {
+    const state = createMvpRun(15);
+    walkToRoom(state, 'security_office');
+    const boss = state.room.combat.enemies.find((enemy) => enemy.kind === 'lp_manager');
+    expect(boss).toBeDefined();
+    if (!boss) {
+      return;
+    }
+
+    boss.health = 1;
+    advance(state, 1);
+    expect(boss.bossPhase).toBe(3);
+    expect(
+      state.room.combat.enemies.filter((enemy) => enemy.kind === 'hanger'),
+    ).toHaveLength(2);
+    expect(state.status).toBe('playing');
+
+    boss.health = 0;
+    advance(state, 1);
+
+    expect(state.status).toBe('won');
+    expect(state.checkpoint).toBeNull();
+    expect(state.summary?.status).toBe('won');
+    expect(state.summary?.seed).toBe(15);
+    expect(state.room.combat.enemies.some((enemy) => enemy.kind === 'hanger')).toBe(true);
+
+    const frozen = JSON.stringify(state.summary);
+    advance(state, 5);
+    expect(JSON.stringify(state.summary)).toBe(frozen);
+    expect(state.status).toBe('won');
   });
 });
 

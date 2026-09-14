@@ -31,9 +31,12 @@ import {
   clearRoomEnemies,
   hasLivingEnemies,
 } from './rooms';
-import type { MvpRunState } from './types';
+import type { MvpRoomEntryFrom, MvpRunState } from './types';
 
 export const MVP_CHECKPOINT_VERSION = 1;
+
+/** The one room whose cleared flag would restore an instantly-won empty boss room. */
+const BOSS_ROOM_ID = 'security_office';
 
 export type MvpCheckpoint = {
   readonly version: 1;
@@ -44,6 +47,8 @@ export type MvpCheckpoint = {
   readonly heat: number;
   readonly suspicion: number;
   readonly playerHealth: number;
+  /** Which side of the current room the player entered from. */
+  readonly enteredFrom: MvpRoomEntryFrom;
   readonly clearedRoomIds: readonly WingRoomId[];
   readonly inventory: FusionInventoryState;
   readonly offerStatus: Record<string, ShopOfferRuntimeStatus>;
@@ -103,11 +108,16 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
     heat: state.heat,
     suspicion: state.suspicion,
     playerHealth: state.room.combat.player.health,
+    enteredFrom: state.room.enteredFrom,
     clearedRoomIds: [...state.clearedRooms],
     inventory: cloneFusionInventory(state.inventory),
     offerStatus: { ...state.offerStatus },
     carried: state.carried.map((theft) => ({ ...theft })),
   };
+}
+
+function isRoomEntryFrom(value: unknown): value is MvpRoomEntryFrom {
+  return value === 'west' || value === 'east';
 }
 
 function validateOfferStatus(
@@ -252,11 +262,19 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     return fail('Checkpoint player health is out of range.');
   }
 
+  const enteredFrom = value.enteredFrom;
+  if (!isRoomEntryFrom(enteredFrom)) {
+    return fail('Checkpoint entry side must be "west" or "east".');
+  }
+
   if (!Array.isArray(value.clearedRoomIds)) {
     return fail('Checkpoint cleared rooms must be an array.');
   }
   const clearedRoomIds: WingRoomId[] = [];
   for (const roomId of value.clearedRoomIds) {
+    if (roomId === BOSS_ROOM_ID) {
+      return fail('Checkpoint cannot mark the boss room cleared.');
+    }
     const known = wing.rooms.some((room) => room.id === roomId);
     if (!known) {
       return fail(`Checkpoint references unknown room "${String(roomId)}".`);
@@ -296,6 +314,9 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   if (!isValidFusionInventoryState(inventory)) {
     return fail('Checkpoint inventory failed validation.');
   }
+  if (inventory.cash !== cash) {
+    return fail('Checkpoint inventory cash does not match its cash.');
+  }
   try {
     const projected = projectFusionInventory(inventory);
     compileLoadout(
@@ -323,6 +344,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
       heat,
       suspicion,
       playerHealth,
+      enteredFrom,
       clearedRoomIds,
       inventory,
       offerStatus: offerStatusResult.offerStatus,
@@ -347,7 +369,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
   const combat = buildRoomCombatState(
     wing,
     checkpoint.roomIndex,
-    'west',
+    checkpoint.enteredFrom,
     inventory,
     checkpoint.seed,
   );
@@ -370,7 +392,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
       variantId: room.variantId,
       combat,
       cleared: !hasLivingEnemies(combat),
-      enteredFrom: 'west',
+      enteredFrom: checkpoint.enteredFrom,
     },
     clearedRooms: [...checkpoint.clearedRoomIds],
     inventory,

@@ -12,9 +12,11 @@ import {
   itemDefinitionName,
   runCarryLimit,
   runOfferPrice,
+  runOfferPriceLabel,
 } from '../../sim/run/economy';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import type { MvpRunState } from '../../sim/run/types';
+import type { EnemyState } from '../../sim/model';
 
 const TERMINAL_PROMPT = 'RUN COMPLETE — RESTART OR RETURN';
 const PAUSED_PROMPT = 'PAUSED — PRESS ESC TO RESUME';
@@ -27,6 +29,29 @@ function requireElement<T extends HTMLElement>(selector: string): T {
     throw new Error(`MvpRun HUD markup is incomplete: missing ${selector}.`);
   }
   return element;
+}
+
+/**
+ * The boss line the HUD renders.
+ *
+ * The phase is the simulation's own `bossPhase`, never a second computation,
+ * so the HUD cannot disagree with the authoritative phase mid-fight. The
+ * health-derived phase is only a fallback for a boss that has not ticked yet.
+ */
+export function bossHudParts(boss: EnemyState): string[] {
+  const bossPhase = boss.bossPhase ?? bossPhaseForHealth(boss.health);
+  const parts = [`BOSS: phase ${bossPhase} · HP ${boss.health}/60`];
+  if (boss.phase === 'telegraph') {
+    parts.push('SLAM WIND-UP');
+  }
+  const volleyTicks = boss.bossVolleyTelegraphTicks ?? 0;
+  if (volleyTicks > 0) {
+    parts.push(`VOLLEY INCOMING (${volleyTicks})`);
+  }
+  if (boss.bossSummoned === true) {
+    parts.push('BACKUP CALLED');
+  }
+  return parts;
 }
 
 export class MvpRunHud {
@@ -150,18 +175,7 @@ export class MvpRunHud {
       return;
     }
     this.boss.hidden = false;
-    const parts = [`BOSS: phase ${bossPhaseForHealth(boss.health)} · HP ${boss.health}/60`];
-    if (boss.phase === 'telegraph') {
-      parts.push('SLAM WIND-UP');
-    }
-    const volleyTicks = boss.bossVolleyTelegraphTicks ?? 0;
-    if (volleyTicks > 0) {
-      parts.push(`VOLLEY INCOMING (${volleyTicks})`);
-    }
-    if (boss.bossSummoned === true) {
-      parts.push('BACKUP CALLED');
-    }
-    this.boss.textContent = parts.join(' · ');
+    this.boss.textContent = bossHudParts(boss).join(' · ');
   }
 
   private syncInteraction(state: MvpRunState): void {
@@ -264,7 +278,7 @@ export class MvpRunHud {
           name.textContent = itemDefinitionName(offer.itemDefinitionId);
         }
         if (meta) {
-          meta.textContent = `$${price} · ${room.store.name}`;
+          meta.textContent = `${runOfferPriceLabel(state, offer)} · ${room.store.name}`;
         }
         if (status) {
           if (offerStatus === 'carried') {

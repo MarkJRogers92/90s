@@ -53,6 +53,14 @@ describe('InMemoryCheckpointStore', () => {
     }
     expect(result.checkpoint).toEqual(serializeCheckpoint(state));
   });
+
+  it('reports a successful clear', () => {
+    const store = new InMemoryCheckpointStore();
+    store.write(createMvpRun(7));
+
+    expect(store.clear()).toEqual({ ok: true });
+    expect(store.read().ok).toBe(false);
+  });
 });
 
 describe('LocalStorageCheckpointStore', () => {
@@ -113,13 +121,47 @@ describe('LocalStorageCheckpointStore', () => {
     expect(result.reason.length).toBeGreaterThan(0);
   });
 
-  it('clear removes the entry', () => {
+  it('clear removes the entry and reports success', () => {
     const storage = fakeStorage();
     const store = new LocalStorageCheckpointStore(storage);
     expect(store.write(createMvpRun(9))).toEqual({ ok: true });
     expect(storage.getItem(MVP_CHECKPOINT_STORAGE_KEY)).not.toBeNull();
-    store.clear();
+    expect(store.clear()).toEqual({ ok: true });
     expect(storage.getItem(MVP_CHECKPOINT_STORAGE_KEY)).toBeNull();
     expect(store.read().ok).toBe(false);
+  });
+
+  it('reports a failed clear instead of claiming the checkpoint is gone', () => {
+    const storage = throwingStorage();
+    const store = new LocalStorageCheckpointStore(storage);
+
+    const result = store.clear();
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.reason.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps a stale checkpoint readable when the clear fails', () => {
+    const entries = new Map<string, string>([
+      [MVP_CHECKPOINT_STORAGE_KEY, JSON.stringify(serializeCheckpoint(createMvpRun(4)))],
+    ]);
+    const storage: StorageLike = {
+      getItem: (key) => entries.get(key) ?? null,
+      setItem: (key, value) => {
+        entries.set(key, value);
+      },
+      removeItem: () => {
+        throw new Error('denied');
+      },
+    };
+    const store = new LocalStorageCheckpointStore(storage);
+
+    // Availability is decided by reading and parsing the stored checkpoint,
+    // so a refused clear cannot pretend the checkpoint is gone.
+    expect(store.read().ok).toBe(true);
+    expect(store.clear().ok).toBe(false);
+    expect(store.read().ok).toBe(true);
   });
 });

@@ -69,39 +69,81 @@ function lockAimAtPlayer(state: RunState, enemyIndex: number): void {
   enemy.telegraphAimY = direction.x === 0 && direction.y === 0 ? 0 : direction.y;
 }
 
-function placeSummon(state: RunState, bossX: number, bossY: number, offsetX: number, offsetY: number): { x: number; y: number } {
-  const candidates = [
+function clampSummon(x: number, y: number): { x: number; y: number } {
+  return {
+    x: Math.max(
+      BOSS_SUMMONED_RADIUS,
+      Math.min(PLAYFIELD_WIDTH - BOSS_SUMMONED_RADIUS, x),
+    ),
+    y: Math.max(
+      BOSS_SUMMONED_RADIUS,
+      Math.min(PLAYFIELD_HEIGHT - BOSS_SUMMONED_RADIUS, y),
+    ),
+  };
+}
+
+/**
+ * The candidate offset vectors one summon tries, in stable order.
+ *
+ * The authored offset and its mirror come first, so an unobstructed summon
+ * keeps its exact authored position. The two perpendicular rotations of the
+ * same authored reach follow: they are only reached when the authored spots
+ * are inside solid geometry or already taken by an earlier Hanger in the same
+ * burst, which is what stops a summon against a wall from stacking both
+ * Hangers on the one reachable point.
+ */
+function summonCandidateOffsets(
+  offsetX: number,
+  offsetY: number,
+): { x: number; y: number }[] {
+  return [
     { x: offsetX, y: offsetY },
     { x: -offsetX, y: offsetY },
     { x: offsetX, y: -offsetY },
     { x: -offsetX, y: -offsetY },
+    { x: -offsetY, y: offsetX },
+    { x: offsetY, y: -offsetX },
+    { x: -offsetY, y: -offsetX },
+    { x: offsetY, y: offsetX },
   ];
+}
+
+/**
+ * One summon position: the first clear candidate that no earlier summon in the
+ * same burst already occupies.
+ *
+ * Candidates are tried in stable order and clamped inside the playfield. A
+ * clear candidate another Hanger already holds is remembered but skipped, so a
+ * summon burst near a wall spreads out instead of stacking both Hangers on the
+ * one reachable spot. If every clear candidate is taken, the remembered one
+ * stands; if no candidate is clear at all, the first clamped candidate is
+ * returned exactly as before.
+ */
+function placeSummon(
+  state: RunState,
+  bossX: number,
+  bossY: number,
+  offsetX: number,
+  offsetY: number,
+  occupied: readonly { readonly x: number; readonly y: number }[],
+): { x: number; y: number } {
+  const candidates = summonCandidateOffsets(offsetX, offsetY);
+  let occupiedFallback: { x: number; y: number } | null = null;
   for (const candidate of candidates) {
-    const x = Math.max(
-      BOSS_SUMMONED_RADIUS,
-      Math.min(PLAYFIELD_WIDTH - BOSS_SUMMONED_RADIUS, bossX + candidate.x),
-    );
-    const y = Math.max(
-      BOSS_SUMMONED_RADIUS,
-      Math.min(PLAYFIELD_HEIGHT - BOSS_SUMMONED_RADIUS, bossY + candidate.y),
-    );
+    const { x, y } = clampSummon(bossX + candidate.x, bossY + candidate.y);
     const insideWall = state.walls.some((wall) =>
       circleIntersectsRect(x, y, BOSS_SUMMONED_RADIUS, wall),
     );
-    if (!insideWall) {
-      return { x, y };
+    if (insideWall) {
+      continue;
     }
+    if (occupied.some((spot) => spot.x === x && spot.y === y)) {
+      occupiedFallback = occupiedFallback ?? { x, y };
+      continue;
+    }
+    return { x, y };
   }
-  return {
-    x: Math.max(
-      BOSS_SUMMONED_RADIUS,
-      Math.min(PLAYFIELD_WIDTH - BOSS_SUMMONED_RADIUS, bossX + offsetX),
-    ),
-    y: Math.max(
-      BOSS_SUMMONED_RADIUS,
-      Math.min(PLAYFIELD_HEIGHT - BOSS_SUMMONED_RADIUS, bossY + offsetY),
-    ),
-  };
+  return occupiedFallback ?? clampSummon(bossX + offsetX, bossY + offsetY);
 }
 
 function summonPhaseThreeHangers(state: RunState, enemyIndex: number): void {
@@ -109,8 +151,10 @@ function summonPhaseThreeHangers(state: RunState, enemyIndex: number): void {
   if (!boss) {
     return;
   }
+  const placed: { x: number; y: number }[] = [];
   for (const offset of BOSS_SUMMON_OFFSETS) {
-    const position = placeSummon(state, boss.x, boss.y, offset.x, offset.y);
+    const position = placeSummon(state, boss.x, boss.y, offset.x, offset.y, placed);
+    placed.push(position);
     state.enemies.push({
       id: state.nextEntityId,
       kind: BOSS_SUMMONED_KIND,
