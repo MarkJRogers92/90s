@@ -1,0 +1,1 @@
+Repository previews are intentionally compact browse copies because the connected GitHub writer cannot consume local binary file references directly. Lossless source PNG/JPG hashes remain the provenance authority. These previews are for visual browsing and catalog persistence, not Aseprite production exports.
