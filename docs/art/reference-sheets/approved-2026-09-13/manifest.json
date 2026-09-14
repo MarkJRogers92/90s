@@ -1,0 +1,214 @@
+{
+  "schema_version": 1,
+  "project": "DEAD MALL",
+  "batch": "approved-2026-09-13",
+  "repository": "MarkJRogers92/90s",
+  "status": "visual-direction-approved; binary GitHub import pending",
+  "original_sheet_count": 10,
+  "supporting_image_count": 9,
+  "source_preservation": "Original available image bytes are preserved without resizing or recompression.",
+  "limitations": [
+    "The generated batch consists of Sheet 01 visual alternatives; it does not complete requested Sheets 02-35.",
+    "The conversation shows eleven generated results, but only ten distinct current-session source PNGs remain mounted. An earlier cream-background ponytail-player variant shared a filename with a later result and is not separately recoverable here.",
+    "Baked-in dimensions, grids, names and animation labels are references, not validated engine metadata.",
+    "These images are not cleaned, segmented, alpha-trimmed or animation-verified Aseprite runtime assets.",
+    "Supporting files are archived as earlier references, not promoted to approved finished assets."
+  ],
+  "files": [
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01A_player_palette_portraits.png",
+      "source_filename": "a_wide_pixel_art_reference_sheet_graphic_retro_sn.png",
+      "role": "approved_visual_reference",
+      "description": "Player poses, global ramps, portraits and held equipment",
+      "bytes": 2166690,
+      "sha256": "f039dc2621c935a02fbbea24ba8b87a5ff248f9c1323f407ac25941545092fea",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01B_core_palette_player_scale.png",
+      "source_filename": "a_detailed_16_9_style_pixel_art_reference_sheet.png",
+      "role": "approved_visual_reference",
+      "description": "Core material ramps, character scale and directional studies",
+      "bytes": 2287918,
+      "sha256": "9ec7fb6b45a3ab45bb6a6b3120262fa1f5651be297d613b0914878683c982fc4",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01C_materials_lighting_store_accents.png",
+      "source_filename": "a_wide_pixel_art_style_reference_sheet_game_asse.png",
+      "role": "approved_visual_reference",
+      "description": "Shared materials, store accents, tile and lighting studies",
+      "bytes": 2052345,
+      "sha256": "617cdc0c7dc780b0aa19ed822c6451b10279b2cb03f7c086b5a09fb74e983981",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01D_player_aiming_outfit_variants.png",
+      "source_filename": "a_large_pixel_art_style_design_sheet_infographic.png",
+      "role": "approved_visual_reference",
+      "description": "Player movement, aiming, portraits and outfit alternatives",
+      "bytes": 2070066,
+      "sha256": "d42a1af4617d1dd995288688e5cd7f080648be9ec165687ab3d5f7896763a80b",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01E_visual_foundation_game_view.png",
+      "source_filename": "a_widescreen_pixel_art_concept_asset_sheet_in_a_da.png",
+      "role": "approved_visual_reference",
+      "description": "Visual foundation, game-view scale, player and aiming references",
+      "bytes": 2247994,
+      "sha256": "e319ee1eb9be00190704352b866790ea6e252ba36824c7a94d0c1f859702d853",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01F_player_actions_held_equipment.png",
+      "source_filename": "a_detailed_pixel_art_game_design_reference_sheet.png",
+      "role": "approved_visual_reference",
+      "description": "Player action keys, outfit variants, held-equipment references",
+      "bytes": 2051364,
+      "sha256": "b2d5da27580bffe7a148b2c66b92b29c15af7120ab5f8bfd95ad831dac623b3d",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01G_player_and_two_tier_item_art.png",
+      "source_filename": "a_large_detailed_pixel_art_reference_sheet_in_a_r.png",
+      "role": "approved_visual_reference",
+      "description": "Player references plus small item pickups and detailed item portraits",
+      "bytes": 2082549,
+      "sha256": "046e53c432581b042c705803108c45b3eb346386e66d36e33bd9497d8c1725ad",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01H_pickups_portraits_cassette_player.png",
+      "source_filename": "a_detailed_pixel_art_game_asset_sheet_on_a_dark_ba.png",
+      "role": "approved_visual_reference",
+      "description": "Alternate player, world pickups, item portraits and cassette player",
+      "bytes": 2026853,
+      "sha256": "b90acd83173a054fe85137e258806d901a5f58347e8d279ba0f33f66e22e14ba",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01I_character_portrait_expressions.png",
+      "source_filename": "a_wide_detailed_pixel_art_reference_sheet_in_a_re.png",
+      "role": "approved_visual_reference",
+      "description": "Character portrait, expressions, movement and material palettes",
+      "bytes": 2124208,
+      "sha256": "e72d73273dc22edf0bbc1aa59fea411d3005800c610d83075bbcdf06d26ef39a",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/originals/01J_world_style_scale_enemies.png",
+      "source_filename": "a_large_detailed_pixel_art_reference_sheet_in_a_re.png",
+      "role": "approved_visual_reference",
+      "description": "World style, perspective, player/common enemy/boss scale studies",
+      "bytes": 2193499,
+      "sha256": "e7ed01d0f2b55cb707d5da337a54ca55235b8cd602035f3ed8e7cfc31689694b",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/reference_sheet_index.jpg",
+      "source_filename": "reference_sheet_index.jpg",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 356662,
+      "sha256": "a2822ee35b1f8976496a4c1314f07b0d4f18fa991b748306cd5f0b2346c9f2c1",
+      "width": 1440,
+      "height": 1160
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/03_Held_Equipment_Pose_Studies.png",
+      "source_filename": "03_Held_Equipment_Pose_Studies.png",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 46144,
+      "sha256": "41a927a5a5378dd3645bc686453627d1179d34fdfb33b894bdd4d3041e373d9a",
+      "width": 1440,
+      "height": 850
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/aim_crop_review.png",
+      "source_filename": "aim_crop_review.png",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 481636,
+      "sha256": "e9c87a293e42e9c58f81e3d0a6de611f6f4cd4bfb26cdfec8cf09afa2f8d8e7d",
+      "width": 1058,
+      "height": 676
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/extract_test.png",
+      "source_filename": "extract_test.png",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 6836,
+      "sha256": "abef428890200ac03caaa0a0ce2c94d6eb95cec33c1eeed6526f193bd1d1c17e",
+      "width": 186,
+      "height": 384
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/grid_0.jpg",
+      "source_filename": "grid_0.jpg",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 504993,
+      "sha256": "052f01094311885445f05e611aa4a5a3a765fda3a9fa20e5997a289726c4a744",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/grid_1.jpg",
+      "source_filename": "grid_1.jpg",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 541508,
+      "sha256": "126dc436b4d11b2a64e62ec145a2cf7d8fd21da893db6e7ee302e74b1770ceca",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/grid_3.jpg",
+      "source_filename": "grid_3.jpg",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 524233,
+      "sha256": "a006be020790d2e8b53b1d4531eab7bd70d114c566aaffeaed1b288e2eab65ea",
+      "width": 1536,
+      "height": 1024
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/items_crop_review.png",
+      "source_filename": "items_crop_review.png",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 656747,
+      "sha256": "6d0a03b92d22499b790c497c5e01e4573a787a8428b62e791e3716fcb010b8c6",
+      "width": 1240,
+      "height": 432
+    },
+    {
+      "path": "docs/art/reference-sheets/approved-2026-09-13/supporting/player_crop_review.png",
+      "source_filename": "player_crop_review.png",
+      "role": "earlier_uploaded_supporting_reference",
+      "description": "Earlier uploaded crop, extraction test, or reference index; not a new production asset",
+      "bytes": 630742,
+      "sha256": "e852c3ba5a78ae24af52bc317b87987e6504b4eb9b4855cc30a4e85382a969d8",
+      "width": 1010,
+      "height": 730
+    }
+  ],
+  "source_brief": {
+    "path": "docs/art/reference-sheets/approved-2026-09-13/SOURCE_BRIEF.txt",
+    "sha256": "814455b7c5f1075a21b5d663830d3789bf8777d32f116b1539a6042638af728f",
+    "bytes": 23944
+  }
+}

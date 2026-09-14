@@ -1,27 +1,27 @@
 # Status
 
-**Current milestone:** M2 interaction lab implemented and verified locally; ready for user playtest.
+**Current milestone:** M3 Shoplifting Loop started. M3A transaction kernel is implemented and isolated-tested; M3 is not yet playable.
 
-**Playable result:** Normal Start shift still runs the M1 Janitor combat room. Interaction Lab launches a separate deterministic run with all eight M2 item cards, two curated builds, owned-item toggles, primary selection, applicability notes, recent-change text, and a readable behavior trace. The live canvas renders water shots, bubbles, outbound/return direction, Wet/Sticky markers, conductive feedback, and Wet patches.
+**Branch:** `codex/m3-shoplifting-art-reference`
 
-**Latest verification (2026-09-13):**
+**Baseline:** `948af6a4b49705e2f5b52531df424635fad53dfc` from `main`. The M2 implementation checkpoint remains `848bd693876c23ecf5f10a320140d2b9c68be75c`.
 
-- `npm run typecheck` — exit 0.
-- `npm test` — 9 files, 123 tests passed.
-- `npm run test:browser` — 12 Chromium tests passed, including five Interaction Lab flows and all seven M1 regressions.
-- `npm run build` — exit 0; Vite production output created in `dist/`.
-- Production JavaScript scan — no debug bridge, debug flag, installer, or development fixture names outside source maps.
-- Production preview smoke — one canvas, one HUD, one lab panel, eight item cards, meaningful content, no overlay, no page/console errors, and only local-origin requests.
-- Actual preview screenshot — `artifacts/m2-interaction-lab.png`.
+## This checkpoint
 
-**Published repository:** <https://github.com/MarkJRogers92/90s>
+- Added a pure immutable buy/steal/leave transaction kernel: cash in integer cents, one-stock offers, per-instance acquisition receipts, bounded Security Heat, duplicate-acquisition protection, and authored-data validation.
+- Added 24 Node contract tests and `npm run test:m3`; no new dependency or runtime service.
+- Preserved existing M1 and M2 gameplay entry points. No RunState, RunScene, renderer, item compiler, or Interaction Lab implementation is changed by this increment.
+- Indexed ten retrievable full-size approved Sheet 01 reference variants and nine earlier supporting images in the art manifest. Original image bytes are in the supplied `DEAD_MALL_APPROVED_ART_REFERENCE_PACK.zip`; **the PNG/JPG files have not yet been uploaded to GitHub**. Repository metadata alone is not completion of the requested image archive.
+- Recorded the M3 continuation scope and art-production constraints. Generated boards are approved visual references, not finished runtime sprites.
 
-**Branch:** `codex/m2-interaction-lab`
+## Verification
 
-**Cloud continuation:** The exact milestone HEAD is also published on `main`; no merge, deployment, or release has been performed.
+A purchase contract first failed with `false !== true`. After implementation, strict standalone compilation and all 24 contracts passed with Node v22.16.0 and TypeScript 5.8.3. The check includes the repo's `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, and `isolatedModules` safety flags. The initial indexed-access compile error was corrected with an explicit missing-offer guard and the gate rerun successfully.
 
-**Latest implementation checkpoint:** `848bd693876c23ecf5f10a320140d2b9c68be75c`
+This environment could not clone GitHub or install the repository dependencies. The pinned TypeScript 7.0.2/full-project typecheck, existing Vitest suite, Chromium suite, production build, Safari/device checks, and hands-on playtest were **not rerun**. Historical M2 evidence is retained separately, not reported as a fresh pass.
 
-**Known uncertainty:** The art remains deliberate graybox/vector work, there is no sound, WebKit/Safari/physical-device coverage was not run, and both combat feel and item-combination feel still need the user's hands-on playtest.
+## Next
 
-**Next:** Stop at M2. M3 Shoplifting Loop is not authorized.
+First complete the binary art import on the local authenticated checkout, verify manifest hashes, and push that scoped reference-folder commit. Then connect the transaction kernel to a separate M3 run mode, fixed mini-wing, shop UI, persisted room-state economy/provenance, and a deterministic security consequence. See NEXT_SESSION.md and docs/milestones/M3_SHOPLIFTING_LOOP.md.
+
+No merge to main, deployment, publication of a playable build, or release has been performed. M4 and later milestones remain outside this authorization.
