@@ -51,7 +51,7 @@ export type WingDebugSnapshot = {
 declare global {
   interface Window {
     __DEAD_MALL_DEBUG__?: {
-      snapshot(): DebugSnapshot | WingDebugSnapshot | BenchDebugSnapshot;
+      snapshot(): DebugSnapshot | WingDebugSnapshot | BenchDebugSnapshot | MvpRunDebugSnapshot;
     };
   }
 }
@@ -221,6 +221,77 @@ export function installBenchDebugBridge(
               faction: projectile.faction,
             };
           }),
+          recentChange: state.recentChange,
+          behaviorTrace: [...state.behaviorTrace],
+        };
+      },
+    },
+  });
+
+  return () => {
+    delete window.__DEAD_MALL_DEBUG__;
+  };
+}
+
+export type MvpRunDebugSnapshot = {
+  mode: 'run';
+  generation: number;
+  tick: number;
+  paused: boolean;
+  status: import('../sim/run/types').MvpRunStatus;
+  seed: number;
+  roomIndex: number;
+  roomId: string;
+  cash: number;
+  heat: number;
+  suspicion: number;
+  player: { x: number; y: number; health: number };
+  enemies: Array<{ id: number; kind: string; x: number; y: number; health: number }>;
+  carried: import('../sim/run/types').MvpRunState['carried'];
+  inventory: import('../sim/run/types').MvpRunState['inventory'];
+  checkpoint: import('../sim/run/types').MvpRunState['checkpoint'];
+  summary: import('../sim/run/types').MvpRunState['summary'];
+  recentChange: string;
+  behaviorTrace: readonly string[];
+};
+
+export function installMvpRunDebugBridge(
+  getRun: () => import('../sim/run/types').MvpRunState,
+  getGeneration: () => number,
+): () => void {
+  Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
+    configurable: true,
+    value: {
+      snapshot: (): MvpRunDebugSnapshot => {
+        const state = getRun();
+        return {
+          mode: 'run',
+          generation: getGeneration(),
+          tick: state.tick,
+          paused: state.paused,
+          status: state.status,
+          seed: state.seed,
+          roomIndex: state.roomIndex,
+          roomId: state.room.roomId,
+          cash: state.cash,
+          heat: state.heat,
+          suspicion: state.suspicion,
+          player: {
+            x: state.room.combat.player.x,
+            y: state.room.combat.player.y,
+            health: state.room.combat.player.health,
+          },
+          enemies: state.room.combat.enemies.map((enemy) => ({
+            id: enemy.id,
+            kind: enemy.kind,
+            x: enemy.x,
+            y: enemy.y,
+            health: enemy.health,
+          })),
+          carried: structuredClone(state.carried),
+          inventory: structuredClone(state.inventory),
+          checkpoint: state.checkpoint ? { ...state.checkpoint } : null,
+          summary: state.summary ? structuredClone(state.summary) : null,
           recentChange: state.recentChange,
           behaviorTrace: [...state.behaviorTrace],
         };

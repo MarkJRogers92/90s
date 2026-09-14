@@ -22,6 +22,12 @@
           <button id="void-warranty-launch" class="secondary-action" type="button">
             Void the Warranty
           </button>
+          <button id="night-shift-launch" type="button">
+            Night Shift
+          </button>
+          <button id="continue-run" class="secondary-action" type="button" disabled>
+            Continue run
+          </button>
         </div>
         <p id="startup-status" role="status" aria-live="polite"></p>
       </section>
@@ -130,6 +136,48 @@
             <button id="bench-late-pickup" type="button">Acquire late pickup</button>
             <button id="bench-restart" type="button">Restart bench</button>
             <button id="bench-return" class="secondary-action" type="button">Return to title</button>
+          </div>
+        </aside>
+        <aside id="mvp-run-hud" class="mvp-run-hud" data-testid="mvp-run-hud" hidden>
+          <div class="hud-row">
+            <span class="hud-label">NIGHT SHIFT // SEED</span>
+            <strong id="mvp-run-seed">seed 0</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">ROOM</span>
+            <strong id="mvp-run-room">—</strong>
+          </div>
+          <p id="mvp-run-objective" class="mvp-run-objective">OBJECTIVE: —</p>
+          <div class="hud-row">
+            <span class="hud-label">JANITOR // HEALTH</span>
+            <strong id="mvp-run-health">6 / 6</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">CASH</span>
+            <strong id="mvp-run-cash">$30</strong>
+          </div>
+          <div class="hud-row">
+            <span class="hud-label">SECURITY HEAT</span>
+            <strong id="mvp-run-heat">HEAT 0</strong>
+          </div>
+          <p id="mvp-run-suspicion" class="mvp-run-suspicion">SUSPICION 0</p>
+          <p id="mvp-run-boss" class="mvp-run-boss" hidden></p>
+          <p id="mvp-run-nearby" class="mvp-run-nearby" role="status" aria-live="polite">NEARBY: —</p>
+          <p id="mvp-run-carried" class="mvp-run-carried">CARRIED: none</p>
+          <p id="mvp-run-inventory" class="mvp-run-inventory">SECURED: —</p>
+          <p id="mvp-run-primary" class="mvp-run-primary">PRIMARY: —</p>
+          <p id="mvp-run-trace" class="mvp-run-trace">TRACE: none yet</p>
+          <div class="mvp-run-offers-wrap">
+            <h3 class="mvp-run-offers-title">Store offers</h3>
+            <ul id="mvp-run-offers" class="mvp-run-offer-list"></ul>
+          </div>
+          <p id="mvp-run-checkpoint" class="mvp-run-checkpoint" role="status" aria-live="polite">CHECKPOINT: —</p>
+          <p id="mvp-run-recent" class="mvp-run-recent" role="status" aria-live="polite">RECENT: none yet</p>
+          <div id="mvp-run-summary" class="mvp-run-summary" data-testid="mvp-run-summary" hidden></div>
+          <p id="mvp-run-controls" class="mvp-run-controls">WASD MOVE · POINTER AIM · CLICK ATTACK · E INTERACT · F STEAL · R RECALL · ESC PAUSE</p>
+          <div class="mvp-run-actions">
+            <button id="mvp-restart-run" type="button">Restart run</button>
+            <button id="mvp-return" class="secondary-action" type="button">Return to title</button>
           </div>
         </aside>
         <div id="game-host"></div>
