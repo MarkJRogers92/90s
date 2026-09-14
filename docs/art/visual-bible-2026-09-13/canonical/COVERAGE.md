@@ -24,9 +24,9 @@ This ledger controls what counts as canonical production/reference work. Generat
 | 03 | 8-direction aimed arms / weapon overlay | coverage exists in approved aim/held-equipment sources | locked; no redraw |
 | 04 | Master mall tileset | concept coverage exists | dedicated Aseprite-ready joins/corners/export pieces still pending |
 | 05 | Mall props | substantial coverage exists | extend missing props only |
-| 06 | Generic 1990s electronics store kit | ACCEPTED SUBJECT / latest dedicated generation is the first new store-kit expansion | canonical subject; do not regenerate another overview |
-| 07 | Electronics merchandise closeups | NOT FINALIZED | repeated Sheet 06 generations were rejected as duplicates |
-| 08 | Video rental store kit | pending | must be genuinely new |
+| 06 | Generic 1990s electronics store kit | FINALIZED REFERENCE SET | seven accepted variants are one collective kit; do not regenerate another electronics overview |
+| 07 | Electronics merchandise closeups | FINALIZED CURATED REFERENCE | merchandise-only 28-item sheet; brand-neutral, no DVD/storefront/player/fusion filler |
+| 08 | Video rental store kit | NEXT | must add genuinely new rental-store environment/fixture content |
 | 09 | Music store kit | pending | must be genuinely new |
 | 10 | Arcade kit | pending | must be genuinely new |
 
@@ -42,5 +42,6 @@ A sheet may be finalized only if all are true:
 6. Fictional retail identity is legally distinct: no copied logos or real brand names.
 7. Period details are appropriate to 1990s mall retail; unusual late-decade objects must be deliberate rather than accidental.
 8. Any failed or duplicate generation is explicitly rejected and not added to the canonical folder.
+9. Before finalization, perform a content audit against all earlier canonical sheets and the original brief; if a panel is duplicate filler, anachronistic, or contains a real brand, reject or rebuild it.
 
-The repeated Sheet 06 attempts made while trying to produce Sheet 07 are rejected and should not be treated as canonical new work.
+Rejected generations remain non-canonical even if they exist elsewhere in the chat or preview folders. Sheet 06 is a collective accepted reference set; Sheet 07 is the first curated merchandise-only sheet produced under the stricter audit gate.
