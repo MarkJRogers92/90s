@@ -1,0 +1,1 @@
+The connected GitHub contents writer accepts UTF-8 text files but does not accept local binary file references. Source image bytes therefore cannot be transferred through the contents writer directly. The art branch intentionally preserves the catalog, provenance, and upload target rather than claiming image binaries are present when they are not.
