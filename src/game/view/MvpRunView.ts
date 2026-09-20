@@ -12,7 +12,7 @@ import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
 import { runOfferPriceLabel } from '../../sim/run/economy';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
-import type { WingRoomDefinition } from '../../sim/wing/types';
+import type { WingOffer, WingRoomDefinition } from '../../sim/wing/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
 import {
   ALEX_FRAME_HEIGHT,
@@ -23,6 +23,7 @@ import {
   alexWalkFrame,
   BENCH_WARRANT_KIOSK_TEXTURE,
   FIXTURE_ART,
+  ITEM_ART,
   RC_CAR_TEXTURE,
   rcCarFrame,
   type AlexDirection,
@@ -30,6 +31,22 @@ import {
 
 /** Sim ticks per walk frame; 60 ticks/s over 6 frames is a ~0.8s cycle. */
 const ALEX_WALK_TICKS_PER_FRAME = 8;
+
+/** Unit vector per facing, so anything placed relative to the player can use it. */
+const DIRECTION_VECTORS: Record<AlexDirection, { x: number; y: number }> = {
+  south: { x: 0, y: 1 },
+  'south-west': { x: -0.71, y: 0.71 },
+  west: { x: -1, y: 0 },
+  'north-west': { x: -0.71, y: -0.71 },
+  north: { x: 0, y: -1 },
+  'north-east': { x: 0.71, y: -0.71 },
+  east: { x: 1, y: 0 },
+  'south-east': { x: 0.71, y: 0.71 },
+};
+
+/** How far along the facing direction a carried item sits, and how far up. */
+const HELD_ITEM_OFFSET = 15;
+const HELD_ITEM_LIFT = 8;
 
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
@@ -43,6 +60,9 @@ export class MvpRunView {
   private carFacing: AlexDirection = 'south';
   private lastCarrierPosition: { x: number; y: number } | undefined;
   private readonly fixtureSprites: Phaser.GameObjects.Image[] = [];
+  private readonly offerSprites: Phaser.GameObjects.Image[] = [];
+  private heldItemSprite: Phaser.GameObjects.Image | undefined;
+  private heldItemId: string | undefined;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -243,6 +263,72 @@ export class MvpRunView {
     }
   }
 
+  /**
+   * The item the player is currently carrying, drawn beside them.
+   *
+   * The id comes from the compiled loadout the HUD already reports, so the
+   * thing drawn in the character's hands cannot disagree with the PRIMARY line.
+   * Offset along the facing direction, because a carried object on the far side
+   * from the way you are walking reads as detached.
+   *
+   * A held item is drawn over the body rather than layered into it: at 32x48 a
+   * separate arm layer per item would be a lot of art for a small read, and the
+   * body is deliberately left free of held equipment so it stays one asset.
+   */
+  private syncHeldItem(state: MvpRunState): void {
+    const player = state.room.combat.player;
+    const primaryId = state.room.combat.compiledLoadout.primary.definitionId;
+    const art = ITEM_ART[primaryId];
+    if (!art || !this.scene.textures.exists(art.texture)) {
+      this.heldItemSprite?.setVisible(false);
+      this.heldItemId = undefined;
+      return;
+    }
+    const facing = alexDirectionFor(player.facing.x, player.facing.y);
+    const vector = DIRECTION_VECTORS[facing];
+    const x = Math.round(player.x + vector.x * HELD_ITEM_OFFSET);
+    const y = Math.round(player.y + vector.y * HELD_ITEM_OFFSET - HELD_ITEM_LIFT);
+
+    if (!this.heldItemSprite || this.heldItemId !== primaryId) {
+      this.heldItemSprite?.destroy();
+      this.heldItemSprite = this.scene.add
+        .image(x, y, art.texture)
+        .setOrigin(0.5, 0.5)
+        .setDepth(3);
+      this.heldItemId = primaryId;
+    }
+    this.heldItemSprite.setPosition(x, y).setVisible(true);
+  }
+
+  /**
+   * The item's own sprite, sitting inside the status marker the Graphics pass
+   * already drew.
+   *
+   * The marker is kept rather than replaced: it carries available / carried /
+   * taken, and a sprite cannot say those. An item with no art keeps the plain
+   * marker, so items can gain art one at a time.
+   */
+  private syncOfferSprite(index: number, offer: WingOffer, status: string): void {
+    const art = ITEM_ART[offer.itemDefinitionId];
+    const existing = this.offerSprites[index];
+    if (!art || !this.scene.textures.exists(art.texture)) {
+      existing?.setVisible(false);
+      return;
+    }
+    const x = Math.round(offer.position.x);
+    const y = Math.round(offer.position.y);
+    const alpha = status === 'available' ? 1 : 0.4;
+    if (!existing) {
+      this.offerSprites[index] = this.scene.add
+        .image(x, y, art.texture)
+        .setOrigin(0.5, 0.5)
+        .setDepth(1)
+        .setAlpha(alpha);
+      return;
+    }
+    existing.setTexture(art.texture).setPosition(x, y).setVisible(true).setAlpha(alpha);
+  }
+
   private drawBenchKioskFallback(x: number, y: number): void {
     const graphics = this.graphics;
     graphics.fillStyle(0x72566c, 1);
@@ -287,7 +373,12 @@ export class MvpRunView {
 
     this.setLabel(`store:${templateId}`, store.name, store.bounds.x + 6, store.bounds.y - 4);
 
-    for (const offer of room?.offers ?? []) {
+    const offers = room?.offers ?? [];
+    for (let index = 0; index < offers.length; index += 1) {
+      const offer = offers[index];
+      if (!offer) {
+        continue;
+      }
       const status = state.offerStatus[offer.id] ?? 'available';
       if (status === 'available') {
         graphics.fillStyle(0x8bc9b8, 1);
@@ -302,6 +393,7 @@ export class MvpRunView {
         graphics.lineBetween(offer.position.x - 6, offer.position.y - 6, offer.position.x + 6, offer.position.y + 6);
         graphics.lineBetween(offer.position.x - 6, offer.position.y + 6, offer.position.x + 6, offer.position.y - 6);
       }
+      this.syncOfferSprite(index, offer, status);
       // The same run offer price the HUD card shows, so a world label can
       // never disagree with the discounted price the run actually charges.
       this.setLabel(
@@ -310,6 +402,9 @@ export class MvpRunView {
         offer.position.x + 10,
         offer.position.y - 8,
       );
+    }
+    for (let index = offers.length; index < this.offerSprites.length; index += 1) {
+      this.offerSprites[index]?.setVisible(false);
     }
   }
 
@@ -475,6 +570,8 @@ export class MvpRunView {
       graphics.strokeCircle(player.x, player.y, player.radius);
     }
 
+    this.syncHeldItem(state);
+
     // The aim line stays vector: it is a gameplay readout of `player.facing`,
     // which is the attack direction and need not match where the sprite faces.
     graphics.lineStyle(3, 0xf6d365, 1);
@@ -627,6 +724,13 @@ export class MvpRunView {
       sprite.destroy();
     }
     this.fixtureSprites.length = 0;
+    for (const sprite of this.offerSprites) {
+      sprite.destroy();
+    }
+    this.offerSprites.length = 0;
+    this.heldItemSprite?.destroy();
+    this.heldItemSprite = undefined;
+    this.heldItemId = undefined;
     for (const key of [...this.labels.keys()]) {
       this.clearLabel(key);
     }

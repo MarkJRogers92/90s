@@ -5,6 +5,7 @@ import {
   ALEX_FRAME_WIDTH,
   ALEX_WALK_FRAMES,
   FIXTURE_ART,
+  ITEM_ART,
   RC_CAR_FRAME_SIZE,
 } from '../../src/game/assets';
 
@@ -247,6 +248,21 @@ test('every fixture sprite loads from the game asset paths', async ({ page }) =>
   const urls = Object.values(FIXTURE_ART).map((art) => art.url);
   const responses = urls.map((url) =>
     page.waitForResponse((response) => response.url().endsWith(url)),
+  );
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  for (const response of await Promise.all(responses)) {
+    expect(response.status()).toBe(200);
+  }
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('every item sprite loads from the game asset paths', async ({ page }) => {
+  const errors = collectErrors(page);
+  const responses = Object.values(ITEM_ART).map((art) =>
+    page.waitForResponse((response) => response.url().endsWith(art.url)),
   );
 
   await launchRun(page, '/?fixture=mvp-bench&seed=4242');

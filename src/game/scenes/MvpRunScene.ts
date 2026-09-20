@@ -42,6 +42,7 @@ import {
   BENCH_WARRANT_KIOSK_TEXTURE,
   BENCH_WARRANT_KIOSK_URL,
   FIXTURE_ART,
+  ITEM_ART,
   RC_CAR_FRAME_SIZE,
   RC_CAR_TEXTURE,
   RC_CAR_URL,
@@ -240,6 +241,9 @@ export class MvpRunScene extends Phaser.Scene {
       frameHeight: RC_CAR_FRAME_SIZE,
     });
     for (const art of Object.values(FIXTURE_ART)) {
+      this.load.image(art.texture, art.url);
+    }
+    for (const art of Object.values(ITEM_ART)) {
       this.load.image(art.texture, art.url);
     }
   }

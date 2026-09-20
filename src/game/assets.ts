@@ -21,6 +21,20 @@ export const ALEX_DIRECTIONS = [
 
 export type AlexDirection = (typeof ALEX_DIRECTIONS)[number];
 
+/**
+ * World art for a carried item, keyed by item definition id. An item with no
+ * entry keeps the vector marker, so this table can grow one item at a time
+ * rather than needing every item drawn before any of them ship.
+ */
+export const ITEM_ART: Record<string, FixtureArt> = {
+  janitor_mop: {
+    texture: 'item-mop',
+    url: '/assets/items/mop.png',
+    width: 32,
+    height: 32,
+  },
+};
+
 export const RC_CAR_TEXTURE = 'rc-car';
 export const RC_CAR_URL = '/assets/props/rc-car.png';
 export const RC_CAR_FRAME_SIZE = 24;
