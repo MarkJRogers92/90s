@@ -272,3 +272,58 @@ Not run: WebKit, Safari, Windows browser/device, physical-device performance,
 audio, and human feel/playtest. The car's steering and leash feel, the fusion
 fee, and the preview's readability in motion still require hands-on evaluation.
 Push, merge, publish, deploy, and release are not claimed.
+
+## 2026-09-19 — M5 combat readability and slam telegraph repair
+
+Two verified presentation defects repaired in `src/game/view/MvpRunView.ts`.
+
+Defect 4 (projectile identity): `drawProjectile` painted every projectile with
+the single hardcoded colour `0xff8d64`, so the player's water, the player's
+physical shots, burst bubbles, and the Loss Prevention Manager's five-shot
+phase-2 fan were visually identical. In a fan, a hit the player could not have
+avoided looked exactly like their own fire. Enemy shots are now magenta squares,
+water reads blue, physical reads bone, and a burst draws a wide translucent halo.
+Wet and Sticky markers now render on enemies and the boss from the
+`EnemyState.statuses` the central tick already maintains, so applied state is
+visible on the target it was applied to.
+
+Defect 5 (telegraph reach): the slam wind-up ring was drawn at
+`enemy.radius + 10` (32 units for a radius-22 boss) while `BOSS_SLAM_REACH` is 44,
+so the ring told players they were safe 12 units inside the actual hit. The ring
+and its fill now use `BOSS_SLAM_REACH` itself.
+
+Evidence:
+
+- `npm run typecheck` — exit 0.
+- `npm test` — exit 0; 25 files and 448 tests passed, unchanged, as expected for
+  a view-only change that adds no simulation behaviour.
+- `npm run test:browser` — exit 0; 44 Chromium tests passed.
+- `npm run build` — exit 0; production scan re-run with every pattern checked
+  individually: `__DEAD_MALL_DEBUG__` 0, `VITE_ENABLE_DEBUG_BRIDGE` 0, and 0 for
+  each fixture literal. The only `mvp-bench` matches in `dist/` are the
+  production `#mvp-bench-confirm` and `#mvp-bench-cancel` element IDs.
+- Deterministic pixel proof for defect 4: with the boss in phase 3 and a real
+  five-shot volley in flight, a screenshot clipped around an enemy projectile was
+  decoded from PNG and its pixels sampled. The fill sampled `rgb(255, 93, 122)`,
+  exactly the new `0xff5d7a` enemy magenta, and the outline sampled
+  `rgb(74, 18, 32)`, exactly the new `0x4a1220`. The old shared `0xff8d64` orange
+  did not appear. This is a colour measurement, not an eyeball judgement.
+- Visual inspection frames kept for a human: `artifacts/m5-readability-slam-
+  telegraph.png` (captured during a real phase-1 telegraph at boss health 60) and
+  `artifacts/m5-readability-enemy-volley.png` (captured with five real enemy
+  projectiles in flight at boss health 16, phase 3). The parent could not view
+  these images in its own session; they are recorded for the user's eyes.
+
+Honest limits of this evidence:
+
+- The view has no automated coverage in this repository. These fixes are proven by
+  typecheck, an unchanged green suite, the pixel measurement above, and the two
+  captured frames — not by an assertion that would fail if the colours were
+  reverted. Adding pixel assertions would be the way to make this durable.
+- The M5 run equips the Associate-Issue Mop, which is a melee arc and produces no
+  player projectiles, so no M5 fixture pairs player fire with enemies. The player
+  branch of `drawProjectile` is therefore verified by code inspection and by the
+  M2/M4 modes that do fire projectiles, not by an M5 pixel sample.
+
+Not run: WebKit, Safari, Windows browser/device, physical-device performance,
+audio, and human feel/playtest.

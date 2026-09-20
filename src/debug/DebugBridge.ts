@@ -246,7 +246,17 @@ export type MvpRunDebugSnapshot = {
   heat: number;
   suspicion: number;
   player: { x: number; y: number; health: number };
-  enemies: Array<{ id: number; kind: string; x: number; y: number; health: number }>;
+  enemies: Array<{
+    id: number;
+    kind: string;
+    x: number;
+    y: number;
+    health: number;
+    /** Enemy phase, so acceptance can wait for a real telegraph window. */
+    phase: string;
+    /** Present only on the Loss Prevention Manager. */
+    bossPhase: 1 | 2 | 3 | undefined;
+  }>;
   carried: import('../sim/run/types').MvpRunState['carried'];
   inventory: import('../sim/run/types').MvpRunState['inventory'];
   checkpoint: import('../sim/run/types').MvpRunState['checkpoint'];
@@ -256,7 +266,14 @@ export type MvpRunDebugSnapshot = {
   /** The owned Remote-Control Car, so acceptance can prove the firing origin. */
   carrier: import('../sim/run/types').MvpRunState['carrier'];
   /** Room-local shots, so acceptance can prove where an attack started. */
-  projectiles: Array<{ id: number; x: number; y: number; radius: number }>;
+  projectiles: Array<{
+    id: number;
+    x: number;
+    y: number;
+    radius: number;
+    /** Who fired it, so acceptance can tell a volley from the player's fire. */
+    faction: 'enemy' | 'player';
+  }>;
   /** Whether the Bench Warrant preview is open. */
   previewOpen: boolean;
 };
@@ -293,6 +310,8 @@ export function installMvpRunDebugBridge(
             x: enemy.x,
             y: enemy.y,
             health: enemy.health,
+            phase: enemy.phase,
+            bossPhase: enemy.bossPhase,
           })),
           carried: structuredClone(state.carried),
           inventory: structuredClone(state.inventory),
@@ -306,6 +325,7 @@ export function installMvpRunDebugBridge(
             x: shot.x,
             y: shot.y,
             radius: shot.radius,
+            faction: shot.faction,
           })),
           previewOpen: state.preview !== null,
         };

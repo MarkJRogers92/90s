@@ -34,6 +34,17 @@ Wing generation, run state, economy, transitions, the car, the boss, and checkpo
 - Production JavaScript scan — 0 hits for the debug bridge, the debug flag, and every fixture literal including the new `mvp-bench`; the only `mvp-bench` matches in `dist/` are the legitimate `#mvp-bench-confirm` and `#mvp-bench-cancel` markup IDs.
 - Production preview smoke at 1440x900 — one canvas, one visible HUD, the bench panel present and hidden, `CAR: none owned`, no debug bridge, no horizontal overflow, zero page errors, zero console errors, and only local-origin requests. No 800x600 production screenshot was retaken after this change.
 
+**Also repaired on 2026-09-19 (presentation):** every projectile was drawn with one
+shared colour, so the boss's five-shot volley was indistinguishable from the
+player's own fire, and the slam wind-up ring was drawn 12 units smaller than the
+slam's actual reach. Enemy shots are now magenta, water blue, physical bone, and
+bursts a wide halo; Wet and Sticky now render on the enemies carrying them; and
+the ring is exactly `BOSS_SLAM_REACH`. Verified by pixel measurement of a decoded
+screenshot (`rgb(255, 93, 122)` where the shared orange used to be) plus captured
+frames in `artifacts/`. This view code has no automated coverage, and the player
+projectile branch is not exercised by any M5 fixture because the starting mop is
+a melee arc.
+
 **Earlier verification (2026-09-13) from implementation checkpoint `c3a263b`:**
 
 - `npm run typecheck` — exit 0.

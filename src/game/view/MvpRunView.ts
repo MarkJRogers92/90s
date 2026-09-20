@@ -8,7 +8,7 @@
  * stay in `src/sim`.
  */
 import Phaser from 'phaser';
-import { BOSS_MAX_HEALTH } from '../../sim/combat/boss';
+import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
 import { runOfferPriceLabel } from '../../sim/run/economy';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
@@ -227,6 +227,7 @@ export class MvpRunView {
       graphics.fillStyle(0xc984d8, 1);
       graphics.fillRect(enemy.x - 6, enemy.y - 5, 12, 8);
     }
+    this.drawEnemyStatuses(enemy);
     graphics.fillStyle(0x2a2424, 0.9);
     graphics.fillRect(enemy.x - 15, enemy.y - enemy.radius - 12, 30, 4);
     graphics.fillStyle(0xd85c54, 1);
@@ -241,8 +242,12 @@ export class MvpRunView {
   private drawBoss(enemy: EnemyState): void {
     const graphics = this.graphics;
     if (enemy.phase === 'telegraph') {
+      // The ring is the authored slam reach itself, not a decorative radius: a
+      // smaller ring told players they were safe where the slam still connects.
+      graphics.fillStyle(0xffd45d, 0.12);
+      graphics.fillCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
       graphics.lineStyle(3, 0xffd45d, 0.95);
-      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 10);
+      graphics.strokeCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
       graphics.lineStyle(2, 0xffd45d, 0.7);
       graphics.lineBetween(
         enemy.x,
@@ -255,6 +260,7 @@ export class MvpRunView {
       graphics.lineStyle(2, 0x8bd8ff, 0.9);
       graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 16);
     }
+    this.drawEnemyStatuses(enemy);
     graphics.fillStyle(0x5c2936, 1);
     graphics.fillCircle(enemy.x, enemy.y, enemy.radius);
     graphics.lineStyle(3, 0xf6d365, 1);
@@ -272,12 +278,68 @@ export class MvpRunView {
     );
   }
 
+  /**
+   * One projectile, drawn so its owner and payload are readable at a glance.
+   *
+   * Enemy fire is magenta and player fire is not, because the boss's phase-2
+   * volley arrives as a five-shot fan: if every shot were one colour, a hit the
+   * player could not have avoided would look identical to their own. Within the
+   * player's shots, water reads blue and physical reads bone, and a burst reads
+   * as a wide translucent bubble so a spread is distinguishable from a bolt.
+   */
   private drawProjectile(projectile: ProjectileState): void {
     const graphics = this.graphics;
-    graphics.fillStyle(0xff8d64, 1);
+    if (projectile.faction === 'enemy') {
+      graphics.fillStyle(0xff5d7a, 1);
+      graphics.fillRect(
+        projectile.x - projectile.radius,
+        projectile.y - projectile.radius,
+        projectile.radius * 2,
+        projectile.radius * 2,
+      );
+      graphics.lineStyle(2, 0x4a1220, 0.95);
+      graphics.strokeRect(
+        projectile.x - projectile.radius - 2,
+        projectile.y - projectile.radius - 2,
+        projectile.radius * 2 + 4,
+        projectile.radius * 2 + 4,
+      );
+      return;
+    }
+    const water = projectile.payload?.payloadKind === 'water';
+    if (projectile.hasBurst === true) {
+      graphics.fillStyle(water ? 0x6fb7e8 : 0xe8dcc4, 0.28);
+      graphics.fillCircle(projectile.x, projectile.y, projectile.radius + 5);
+    }
+    graphics.fillStyle(water ? 0x6fb7e8 : 0xf0e6d2, 1);
     graphics.fillCircle(projectile.x, projectile.y, projectile.radius);
-    graphics.lineStyle(2, 0x401b20, 0.9);
+    graphics.lineStyle(2, 0x2b3a44, 0.9);
     graphics.strokeCircle(projectile.x, projectile.y, projectile.radius + 2);
+  }
+
+  /**
+   * Wet and Sticky markers an enemy is currently carrying.
+   *
+   * The statuses the central tick already applies are otherwise invisible, and
+   * a player cannot learn to compose Wet with a conductive reaction if the
+   * applied state cannot be seen on the target it is applied to.
+   */
+  private drawEnemyStatuses(enemy: EnemyState): void {
+    const statuses = enemy.statuses;
+    if (!statuses) {
+      return;
+    }
+    const graphics = this.graphics;
+    if (statuses.wetTicks > 0) {
+      graphics.lineStyle(2, 0x6fb7e8, 0.95);
+      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 4);
+      graphics.fillStyle(0x6fb7e8, 0.9);
+      graphics.fillCircle(enemy.x, enemy.y - enemy.radius - 2, 3);
+    }
+    if (statuses.stickyTicks > 0) {
+      graphics.lineStyle(2, 0xd7a45c, 0.95);
+      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 7);
+    }
   }
 
   private drawSurfacePatch(patch: SurfacePatchState): void {

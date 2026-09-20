@@ -95,3 +95,15 @@
 - Extend the development debug snapshot with the carrier, room-local projectiles,
   and whether a preview is open, so browser acceptance can prove the firing
   origin rather than only that a panel appeared.
+- Draw every projectile by its owner and payload rather than one shared colour, so
+  the boss's phase-2 volley can never be mistaken for the player's own fire, and
+  draw Wet and Sticky markers from the `EnemyState.statuses` the central tick
+  already maintains.
+- Draw the boss's slam wind-up ring at `BOSS_SLAM_REACH` itself rather than a
+  decorative radius, because a smaller ring tells players they are safe inside
+  the real reach.
+- Widen the development debug snapshot with enemy `phase`/`bossPhase` and
+  projectile `faction`. The earlier snapshot omitted both, which silently made
+  acceptance scripts unable to detect a telegraph or tell a volley from player
+  fire; the gap is worth closing because it was indistinguishable from "nothing
+  happened".
