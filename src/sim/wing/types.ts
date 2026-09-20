@@ -55,6 +55,22 @@ export type WingStoreInstance = {
   readonly offerIds: readonly string[];
 };
 
+/**
+ * Mall furniture standing in a room. Purely decorative for now: a fixture has
+ * no collision, so it never blocks a path and cannot trap an enemy spawn.
+ */
+export type WingFixtureKind =
+  | 'mall-bench'
+  | 'vending-machine'
+  | 'store-gondola';
+
+/** `x, y` is the fixture's BASE, matching the base-anchored sprite convention. */
+export type WingFixture = {
+  readonly kind: WingFixtureKind;
+  readonly x: number;
+  readonly y: number;
+};
+
 export type WingRoomDefinition = {
   readonly id: WingRoomId;
   readonly name: string;
@@ -68,6 +84,7 @@ export type WingRoomDefinition = {
   readonly store: WingStoreInstance | null;
   readonly offers: readonly WingOffer[];
   readonly benchKiosk: Vec2 | null;
+  readonly fixtures: readonly WingFixture[];
 };
 
 export type GeneratedWing = {

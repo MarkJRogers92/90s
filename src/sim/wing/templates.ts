@@ -7,7 +7,7 @@
  */
 import type { Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
-import type { WingRoomRole } from './types';
+import type { WingFixture, WingRoomRole } from './types';
 
 export const ROOM_WIDTH = 960;
 export const ROOM_HEIGHT = 480;
@@ -44,6 +44,12 @@ export type AuthoredRoomVariant = {
   readonly spawnSlots: readonly AuthoredSpawnSlot[];
   readonly enemyCount: AuthoredEnemyCountBand;
   readonly benchKiosk: Vec2 | null;
+  /**
+   * Furniture placed by hand for this variant. Optional so a variant can be
+   * authored without it rather than carrying invented coordinates; a room with
+   * no fixtures is a legitimate room.
+   */
+  readonly fixtures?: readonly WingFixture[];
 };
 
 export type CombatRoomRole =
@@ -94,6 +100,12 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 0, max: 0 },
       benchKiosk: { x: 480, y: 60 },
+      // Placed clear of the two interior walls at y 70-100 and y 380-410.
+      fixtures: [
+        { kind: 'store-gondola', x: 300, y: 200 },
+        { kind: 'vending-machine', x: 660, y: 200 },
+        { kind: 'mall-bench', x: 480, y: 300 },
+      ],
     },
     {
       id: 'service-corridor-locker-aisles',
@@ -111,6 +123,13 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 0, max: 0 },
       benchKiosk: { x: 480, y: 60 },
+      // The two aisle walls sit at x 180-210 and x 750-780, so these stay in
+      // the open lanes either side of centre.
+      fixtures: [
+        { kind: 'store-gondola', x: 620, y: 180 },
+        { kind: 'vending-machine', x: 300, y: 400 },
+        { kind: 'mall-bench', x: 480, y: 450 },
+      ],
     },
   ],
   food_court: [

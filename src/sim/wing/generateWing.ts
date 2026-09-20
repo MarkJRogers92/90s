@@ -234,6 +234,7 @@ function baseRoom(
     store: null,
     offers: [],
     benchKiosk: null,
+    fixtures: [],
   };
 }
 
@@ -247,6 +248,7 @@ function combatRoom(
     enemySpawns: enemySpawns.map((spawn) => ({ ...spawn })),
     benchKiosk:
       variant.benchKiosk === null ? null : { ...variant.benchKiosk },
+    fixtures: (variant.fixtures ?? []).map((fixture) => ({ ...fixture })),
   };
 }
 

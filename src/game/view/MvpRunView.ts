@@ -12,6 +12,7 @@ import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
 import { runOfferPriceLabel } from '../../sim/run/economy';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
+import type { WingRoomDefinition } from '../../sim/wing/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
 import {
   ALEX_FRAME_HEIGHT,
@@ -21,6 +22,7 @@ import {
   alexIdleFrame,
   alexWalkFrame,
   BENCH_WARRANT_KIOSK_TEXTURE,
+  FIXTURE_ART,
   RC_CAR_TEXTURE,
   rcCarFrame,
   type AlexDirection,
@@ -40,6 +42,7 @@ export class MvpRunView {
   private carSprite: Phaser.GameObjects.Sprite | undefined;
   private carFacing: AlexDirection = 'south';
   private lastCarrierPosition: { x: number; y: number } | undefined;
+  private readonly fixtureSprites: Phaser.GameObjects.Image[] = [];
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -79,6 +82,8 @@ export class MvpRunView {
       graphics.lineStyle(2, 0x12130f, 0.9);
       graphics.strokeRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
     }
+
+    this.syncFixtures(room);
 
     if (room.store) {
       this.drawStore(state, room.store.templateId);
@@ -194,6 +199,48 @@ export class MvpRunView {
         .setDepth(1);
     }
     this.benchKioskSprite.setPosition(Math.round(x), Math.round(y)).setVisible(true);
+  }
+
+  /**
+   * Mall furniture: benches, vending machines, gondola shelving.
+   *
+   * Base-anchored, so each fixture's world position is the bottom of its sprite.
+   * They are sprites rather than graphics because Phaser cannot place a texture
+   * inside a Graphics pass, and they sit at depth 1 -- above the floor and walls
+   * that Graphics draws, below the player and the car at depth 2.
+   *
+   * A fixture has no collision: it is set dressing, so it can never block a path
+   * or hold an enemy spawn. Draw a fixture only where the authored room leaves a
+   * clear lane, which is why the templates place them away from interior walls.
+   */
+  private syncFixtures(room: WingRoomDefinition): void {
+    const fixtures = room.fixtures;
+    for (let index = 0; index < fixtures.length; index += 1) {
+      const fixture = fixtures[index];
+      if (!fixture) {
+        continue;
+      }
+      const art = FIXTURE_ART[fixture.kind];
+      if (!this.scene.textures.exists(art.texture)) {
+        continue;
+      }
+      let sprite = this.fixtureSprites[index];
+      if (!sprite) {
+        sprite = this.scene.add
+          .image(Math.round(fixture.x), Math.round(fixture.y), art.texture)
+          .setOrigin(0.5, 1)
+          .setDepth(1);
+        this.fixtureSprites[index] = sprite;
+      }
+      sprite
+        .setTexture(art.texture)
+        .setPosition(Math.round(fixture.x), Math.round(fixture.y))
+        .setVisible(true);
+    }
+    // A room with fewer fixtures than the last one must not leave ghosts behind.
+    for (let index = fixtures.length; index < this.fixtureSprites.length; index += 1) {
+      this.fixtureSprites[index]?.setVisible(false);
+    }
   }
 
   private drawBenchKioskFallback(x: number, y: number): void {
@@ -576,6 +623,10 @@ export class MvpRunView {
     this.playerSprite = undefined;
     this.carSprite?.destroy();
     this.carSprite = undefined;
+    for (const sprite of this.fixtureSprites) {
+      sprite.destroy();
+    }
+    this.fixtureSprites.length = 0;
     for (const key of [...this.labels.keys()]) {
       this.clearLabel(key);
     }

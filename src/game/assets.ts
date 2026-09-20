@@ -1,3 +1,5 @@
+import type { WingFixtureKind } from '../sim/wing/types';
+
 export const BENCH_WARRANT_KIOSK_TEXTURE = 'bench-warrant-kiosk';
 export const BENCH_WARRANT_KIOSK_URL = '/assets/props/bench-warrant-kiosk.png';
 
@@ -22,6 +24,40 @@ export type AlexDirection = (typeof ALEX_DIRECTIONS)[number];
 export const RC_CAR_TEXTURE = 'rc-car';
 export const RC_CAR_URL = '/assets/props/rc-car.png';
 export const RC_CAR_FRAME_SIZE = 24;
+
+export type FixtureArt = {
+  readonly texture: string;
+  readonly url: string;
+  readonly width: number;
+  readonly height: number;
+};
+
+/**
+ * One sprite per fixture kind. These are props, not characters: each is drawn
+ * base-anchored, so the sprite's bottom edge sits on the fixture's world
+ * position. Sizes are the authored canvases and are what the runtime validator
+ * checks, so a mismatch here shows up as a prop drawn at the wrong scale.
+ */
+export const FIXTURE_ART: Record<WingFixtureKind, FixtureArt> = {
+  'mall-bench': {
+    texture: 'mall-bench',
+    url: '/assets/props/mall-bench.png',
+    width: 32,
+    height: 24,
+  },
+  'vending-machine': {
+    texture: 'vending-machine',
+    url: '/assets/props/vending-machine.png',
+    width: 24,
+    height: 40,
+  },
+  'store-gondola': {
+    texture: 'store-gondola',
+    url: '/assets/props/store-gondola.png',
+    width: 32,
+    height: 40,
+  },
+};
 
 /** Frame index for a facing; the car sheet shares the player's facing order. */
 export function rcCarFrame(direction: AlexDirection): number {
