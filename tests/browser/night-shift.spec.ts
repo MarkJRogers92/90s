@@ -46,6 +46,13 @@ type RunSnapshot = {
     originY: number;
   }>;
   previewOpen: boolean;
+  audio: {
+    created: boolean;
+    running: boolean;
+    muted: boolean;
+    /** Cues actually scheduled as voices, not merely decided. */
+    played: number;
+  } | null;
 };
 
 const CHECKPOINT_KEY = 'dead-mall:mvp-checkpoint:v1';
@@ -445,6 +452,50 @@ test('the Bench Warrant kiosk previews and fuses the car, and shots then start a
     // this assertion would have passed before the repair.
     expect(distance(origin, after.player)).toBeGreaterThan(50);
   }
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the sound layer starts on a real gesture and can be muted', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page);
+
+  // The unlock listener is attached when the scene is created, which happens in
+  // response to the very click that starts the run — so that click predates it
+  // and a further real gesture is needed before the context may start.
+  await page.locator('canvas').click({ position: { x: 300, y: 200 } });
+  await expect.poll(() => runSnapshot(page).then((state) => state.audio?.created)).toBe(true);
+  await expect.poll(() => runSnapshot(page).then((state) => state.audio?.muted)).toBe(false);
+
+  const muteButton = page.getByRole('button', { name: /SOUND:/ });
+  await expect(muteButton).toBeVisible();
+  await expect(muteButton).toContainText('SOUND: ON');
+
+  await muteButton.click();
+  await expect(muteButton).toContainText('SOUND: OFF');
+  await expect(muteButton).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(() => runSnapshot(page).then((state) => state.audio?.muted)).toBe(true);
+
+  // The keyboard shortcut reaches the same switch.
+  await page.keyboard.press('m');
+  await expect(muteButton).toContainText('SOUND: ON');
+  await expect(muteButton).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(() => runSnapshot(page).then((state) => state.audio?.muted)).toBe(false);
+
+  // Swing for real with sound live. This must not throw anywhere, and the
+  // engine must actually schedule a voice: a created context only proves the
+  // layer exists, whereas this proves it acted on a cue.
+  const playedBefore = (await runSnapshot(page)).audio?.played ?? 0;
+  await page.mouse.move(200, 400);
+  await page.mouse.down();
+  await page.waitForTimeout(400);
+  await page.mouse.up();
+
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.audio?.played ?? 0))
+    .toBeGreaterThan(playedBefore);
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

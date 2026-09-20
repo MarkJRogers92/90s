@@ -102,10 +102,12 @@ export class MvpRunHud {
   private readonly returnButton: HTMLButtonElement;
   private readonly confirmFusionButton: HTMLButtonElement;
   private readonly cancelFusionButton: HTMLButtonElement;
+  private readonly muteButton: HTMLButtonElement;
   private readonly onRestart: () => void;
   private readonly onReturn: () => void;
   private readonly onConfirmFusion: () => void;
   private readonly onCancelFusion: () => void;
+  private readonly onToggleMute: () => boolean;
   private readonly offerCards = new Map<string, HTMLElement>();
 
   public constructor(
@@ -113,6 +115,7 @@ export class MvpRunHud {
     onReturn: () => void,
     onConfirmFusion: () => void,
     onCancelFusion: () => void,
+    onToggleMute: () => boolean,
   ) {
     this.root = requireElement<HTMLElement>('#mvp-run-hud');
     this.seed = requireElement<HTMLElement>('#mvp-run-seed');
@@ -145,14 +148,38 @@ export class MvpRunHud {
     this.returnButton = requireElement<HTMLButtonElement>('#mvp-return');
     this.confirmFusionButton = requireElement<HTMLButtonElement>('#mvp-bench-confirm');
     this.cancelFusionButton = requireElement<HTMLButtonElement>('#mvp-bench-cancel');
+    this.muteButton = requireElement<HTMLButtonElement>('#mvp-toggle-sound');
     this.onRestart = onRestart;
     this.onReturn = onReturn;
     this.onConfirmFusion = onConfirmFusion;
     this.onCancelFusion = onCancelFusion;
+    this.onToggleMute = onToggleMute;
     this.restartButton.addEventListener('click', this.onRestart);
     this.returnButton.addEventListener('click', this.onReturn);
     this.confirmFusionButton.addEventListener('click', this.onConfirmFusion);
     this.cancelFusionButton.addEventListener('click', this.onCancelFusion);
+    this.muteButton.addEventListener('click', this.handleToggleMute);
+    this.syncMuteLabel(false);
+  }
+
+  /**
+   * Flips the sound switch and relabels the button.
+   *
+   * Public because both entry points route through here — the button click and
+   * the M key — so the label can never disagree with the engine's mute state.
+   */
+  public toggleMute(): void {
+    this.syncMuteLabel(this.onToggleMute());
+  }
+
+  private readonly handleToggleMute = (): void => {
+    this.toggleMute();
+  };
+
+  /** The button states what the sound is doing, not what clicking would do. */
+  private syncMuteLabel(muted: boolean): void {
+    this.muteButton.textContent = muted ? 'SOUND: OFF (M)' : 'SOUND: ON (M)';
+    this.muteButton.setAttribute('aria-pressed', muted ? 'true' : 'false');
   }
 
   public sync(state: MvpRunState, checkpointStatus: string): void {
@@ -471,6 +498,7 @@ export class MvpRunHud {
     this.returnButton.removeEventListener('click', this.onReturn);
     this.confirmFusionButton.removeEventListener('click', this.onConfirmFusion);
     this.cancelFusionButton.removeEventListener('click', this.onCancelFusion);
+    this.muteButton.removeEventListener('click', this.handleToggleMute);
     this.offerCards.clear();
     this.offers.textContent = '';
     this.bench.hidden = true;

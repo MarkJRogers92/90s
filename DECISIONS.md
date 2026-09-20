@@ -151,3 +151,28 @@
   spawns and therefore heal nothing, so recovery is per fight rather than per
   doorway; and the amount is deliberately small, so a player still ends every
   fight worse than they entered it and attrition stays the source of tension.
+- Add sound as synthesized oscillators in `src/game/audio/engine.ts`, with no
+  audio assets. The repository forbids external runtime assets and should ship no
+  binary payloads before an art pass, but a horror-comedy game with no sound is
+  missing half its register; oscillators give a full cue set for no download and
+  no new request surface.
+- Decide *what* happened with a pure function over authoritative state
+  (`deriveAudioCues` in `src/game/audio/cues.ts`) rather than by pattern-matching
+  rendered text or diffing the view. Audio is presentation and stays outside
+  `src/sim`, but the moment a sound is chosen by guessing, the sound layer can
+  disagree with the simulation. Keeping it pure also makes the whole cue table
+  unit-testable with no AudioContext and no browser.
+- Keep the engine silent rather than broken when Web Audio is unavailable,
+  suspended before a user gesture, or fails to start a voice: every failure path
+  degrades to no sound and never interrupts the frame.
+- Treat the first `syncTo` as a baseline and stay silent, and reset that baseline
+  on restart. Without it every field would look changed on the first frame and a
+  run would open with a burst of cues.
+- Route both mute entry points — the HUD button and the M key — through
+  `MvpRunHud.toggleMute`, so the button label can never disagree with the engine.
+- Scope the sound layer to the M5 Night Shift run for now. `deriveAudioCues`
+  reads only run state and is mode-agnostic, so wiring M1 Start shift, the M2 lab,
+  M3 and M4 is follow-up work rather than new design.
+- Announce a room change with a two-tone PA chime rather than spoken
+  announcements. Spoken lines would need recorded assets or SpeechSynthesis, and
+  neither is in scope here; the chime is honest about being a chime.

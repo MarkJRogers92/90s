@@ -32,6 +32,7 @@ import {
   tickMvpRun,
 } from '../../sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
+import { GameAudioEngine } from '../audio/engine';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
 
@@ -70,6 +71,7 @@ class MvpRunInputAdapter {
   };
   private readonly onEscape: () => void;
   private readonly onBlurPause: () => void;
+  private readonly onToggleMute: () => void;
   private pointerHeld = false;
   private pendingInteract = false;
   private pendingSteal = false;
@@ -93,6 +95,8 @@ class MvpRunInputAdapter {
       this.pendingSteal = true;
     } else if (event.code === 'KeyR') {
       this.pendingRecall = true;
+    } else if (event.code === 'KeyM') {
+      this.onToggleMute();
     } else if (event.code === 'Escape') {
       event.preventDefault();
       this.clearHeld();
@@ -105,10 +109,16 @@ class MvpRunInputAdapter {
     this.onBlurPause();
   };
 
-  public constructor(scene: Phaser.Scene, onEscape: () => void, onBlurPause: () => void) {
+  public constructor(
+    scene: Phaser.Scene,
+    onEscape: () => void,
+    onBlurPause: () => void,
+    onToggleMute: () => void,
+  ) {
     this.scene = scene;
     this.onEscape = onEscape;
     this.onBlurPause = onBlurPause;
+    this.onToggleMute = onToggleMute;
 
     const keyboard = scene.input.keyboard;
     if (!keyboard) {
@@ -190,6 +200,7 @@ export class MvpRunScene extends Phaser.Scene {
   private inputAdapter: MvpRunInputAdapter | undefined;
   private runView: MvpRunView | undefined;
   private hud: MvpRunHud | undefined;
+  private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
 
   public constructor() {
@@ -210,23 +221,33 @@ export class MvpRunScene extends Phaser.Scene {
     this.lastRoomIndex = this.run.roomIndex;
     this.lastCheckpointKey = null;
     this.checkpointStatus = 'none yet';
+    this.audio = new GameAudioEngine();
     this.inputAdapter = new MvpRunInputAdapter(
       this,
       () => this.setPaused(!this.run.paused),
       () => this.setPaused(true),
+      // The M key routes through the HUD, not straight to the engine, so the
+      // button label follows a keyboard toggle exactly as it follows a click.
+      () => this.hud?.toggleMute(),
     );
+    // Web Audio may only start from a real user gesture, so the first pointer or
+    // key press anywhere unlocks it; until then the engine is silent, not broken.
+    window.addEventListener('pointerdown', this.unlockAudio);
+    window.addEventListener('keydown', this.unlockAudio);
     this.runView = new MvpRunView(this);
     this.hud = new MvpRunHud(
       () => this.restartRun(),
       () => this.returnToTitle(),
       () => this.confirmFusion(),
       () => this.cancelFusion(),
+      () => this.toggleMuted(),
     );
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
       this.removeDebugBridge = installMvpRunDebugBridge(
         () => this.run,
         () => this.generation,
+        () => this.audio,
       );
     }
 
@@ -310,9 +331,13 @@ export class MvpRunScene extends Phaser.Scene {
     clearMvpHeldActions(this.run);
   }
 
-  private restartRun(): void {    this.generation += 1;
+  private restartRun(): void {
+    this.generation += 1;
     const cleared = this.store.clear();
     this.run = createMvpRun(this.seed);
+    // A fresh run has no previous tick to compare against, so the next sync
+    // would read every field as a change and fire a burst of cues.
+    this.audio?.resetBaseline();
     this.accumulator = 0;
     this.lastRoomIndex = this.run.roomIndex;
     this.lastCheckpointKey = null;
@@ -352,9 +377,21 @@ export class MvpRunScene extends Phaser.Scene {
     }
   }
 
+  private readonly unlockAudio = (): void => {
+    this.audio?.resume();
+  };
+
+  /** Toggles mute and returns the new state, so the HUD can label its button. */
+  private toggleMuted(): boolean {
+    return this.audio?.toggleMuted() ?? false;
+  }
+
   private syncView(): void {
     this.runView?.sync(this.run);
     this.hud?.sync(this.run, this.checkpointStatus);
+    // Derived from authoritative state each frame, so the sound layer can never
+    // disagree with what the simulation actually did.
+    this.audio?.syncTo(this.run);
   }
 
   private applyDevFixture(state: MvpRunState): MvpRunState {
@@ -471,6 +508,10 @@ export class MvpRunScene extends Phaser.Scene {
     this.runView = undefined;
     this.hud?.destroy();
     this.hud = undefined;
+    window.removeEventListener('pointerdown', this.unlockAudio);
+    window.removeEventListener('keydown', this.unlockAudio);
+    this.audio?.destroy();
+    this.audio = undefined;
     this.removeDebugBridge?.();
     this.removeDebugBridge = undefined;
     this.accumulator = 0;

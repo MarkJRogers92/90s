@@ -38,12 +38,17 @@ Last full gate from this working tree on 2026-09-19:
     npm run test:browser
     npm run build
 
-Result: typecheck and build passed; 25 unit/integration files and 448 tests
-passed; 44 Chromium tests passed; the production scan was clean and the
+Result: typecheck and build passed; 27 unit/integration files and 469 tests
+passed; 45 Chromium tests passed; the production scan was clean and the
 production preview at 1440x900 was smoke-inspected. No 800x600 production
 screenshot was retaken for this change.
 
 Notes for the next session:
+
+- Night Shift has sound, wired into the M5 run only. **Start shift** (M1),
+  **Interaction Lab** (M2), **Shoplifting Loop** (M3), and **Void the Warranty**
+  (M4) are still silent. `deriveAudioCues` reads run state and is mode-agnostic,
+  so wiring them is follow-up work. Mute with the HUD button or the M key.
 
 - The Vite dev server can take longer than Playwright's default 60-second
   `webServer` timeout to bind here; start Vite yourself and reuse it.

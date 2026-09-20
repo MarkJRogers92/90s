@@ -24,6 +24,8 @@ Buying the Remote-Control Car puts a real car in the run: it follows as an indep
 
 Clearing a room that authored a fight restores 2 health, up to the maximum of 6. The safe rooms recover nothing, so this is a reward per fight rather than per doorway, and it is small enough that a player still leaves every fight worse than they entered it.
 
+Night Shift also has sound, synthesized with oscillators and requiring no audio assets: swings, shots, impacts, Wet and electrical conduction, purchases and thefts, confiscation, enemy deaths, the boss's escalation, telegraph, and volley, checkpoints, room clears, a PA chime on entering a room, and terminal stings. Sound starts on the first real input and is mutable from the HUD button or the M key. Sound is wired into Night Shift only; the four earlier modes remain silent.
+
 Wing generation, run state, economy, transitions, the car, the boss, and checkpoint validation remain renderer-independent under `src/sim/wing` and `src/sim/run`, with the carrier physics shared between the M4 bench and the M5 run in `src/sim/carrier`. Phaser collects input, advances the fixed-step loop, and presents authoritative state.
 
 **Latest verification (2026-09-19) from this working tree:**

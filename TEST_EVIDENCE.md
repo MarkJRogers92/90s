@@ -437,3 +437,72 @@ the tooling's own classifier as a test-removal pattern, which is a reasonable
 guardrail, and it was not worked around. The gate was reverted immediately and
 the suite re-run green. Both directions are pinned by assertions, but only the
 positive direction was watched turning from red to green.
+
+## 2026-09-19 — synthesized sound layer
+
+Night Shift now has sound. There are no audio assets: every cue is a short
+oscillator envelope in `src/game/audio/engine.ts`, with one generated noise
+buffer for the noisy cues. The white noise uses a small deterministic LCG rather
+than `Math.random`, so the module has no unseeded randomness anywhere.
+
+What decides the sounds is a pure function, `deriveAudioCues` in
+`src/game/audio/cues.ts`, which reads the fields the simulation already
+maintains — health, the attack window, the enemy roster, boss phase and volley
+telegraph, the event counters, cash, carried thefts, Heat, cleared rooms, and the
+checkpoint — and reports the cues one tick produced, loudest first. Audio stays
+out of `src/sim`, and the cue decision is never made by matching rendered text.
+
+Cues: swing, shot, splash, hit, hurt, heal, purchase, theft, confiscation,
+conduction, enemy_down, boss_telegraph, boss_volley, boss_phase, checkpoint,
+room_clear, pa_chime, won, died.
+
+Evidence:
+
+- `npm run typecheck` — exit 0.
+- `npm test` — exit 0; 27 files and 469 tests passed (456 before), including 13
+  new cases in `tests/unit/audio-cues.test.ts` that exercise the cue table with no
+  AudioContext at all.
+- `npx playwright test tests/browser/night-shift.spec.ts` — exit 0; 14 tests
+  passed, including a new one that clicks the canvas, proves the engine's context
+  was actually created, toggles mute by button and by the M key, and fires in
+  combat with sound live.
+- `npm run test:browser` — exit 0; 45 Chromium tests passed (44 before).
+- `npm run build` — exit 0; `dist/` regenerated and inspected. Production scan: 0
+  hits for the debug bridge, the debug flag, and fixture literals. `AudioContext`
+  appears in the bundle because it is production code. No new external URL was
+  introduced: the only absolute URLs in the bundle are Phaser's XML namespace
+  strings and its own attribution link, both pre-existing and neither a request.
+- Web Audio only starts from a genuine user gesture. The test had to click the
+  canvas *after* launch, because the unlock listener is attached when the scene is
+  created, which happens in response to the very click that starts the run.
+
+A bug this test found: the keyboard shortcut was wired to the wrong callback, so
+pressing M resumed the audio context instead of toggling mute. The test asserted
+the button label rather than only the engine state, which is what caught it, and
+both entry points now route through one method.
+
+Scope, stated plainly: only the M5 Night Shift run has sound. **Start shift** (M1),
+**Interaction Lab** (M2), **Shoplifting Loop** (M3), and **Void the Warranty**
+(M4) are still silent. `deriveAudioCues` reads run state and is mode-agnostic, so
+those are wiring work rather than new design. The PA announcement is a two-tone
+chime, not speech; spoken lines would need assets or SpeechSynthesis.
+
+Not run: WebKit, Safari, Windows browser/device, physical-device performance, and
+human feel/playtest. Actual audio quality has never been heard by a human — the
+tests prove the cue table, the mute path, and that nothing throws, not that the
+sounds are any good.
+
+The sound test asserts more than "audio did not crash": the engine exposes a
+count of cues actually scheduled as voices, and the test swings for real and
+requires that count to rise. A created AudioContext only proves the layer exists;
+the counter proves the engine acted on a cue.
+
+Observed intermittent failure, recorded rather than hidden: one full
+`npm run test:browser` run failed
+`void-the-warranty.spec.ts:139 › fused car is the sampled projectile origin`,
+which is an M4 test unrelated to this change. It passes 7/7 when that spec is run
+alone and the full suite passed 45/45 on the next run. Nothing in the sound layer
+runs in the M4 bench scene, and the M4 debug bridge was not modified, so this is
+recorded as an existing timing-sensitive flake rather than a regression — and it
+is worth a proper look, because a flaky test is a test that will eventually be
+ignored.

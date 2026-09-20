@@ -284,11 +284,26 @@ export type MvpRunDebugSnapshot = {
   }>;
   /** Whether the Bench Warrant preview is open. */
   previewOpen: boolean;
+  /**
+   * Audio engine state, so acceptance can prove the sound layer actually
+   * started rather than only that nothing threw. `created` flips true once a
+   * user gesture has unlocked Web Audio.
+   */
+  audio: {
+    created: boolean;
+    running: boolean;
+    muted: boolean;
+    /** Cues actually scheduled as voices, not merely decided. */
+    played: number;
+  } | null;
 };
 
 export function installMvpRunDebugBridge(
   getRun: () => import('../sim/run/types').MvpRunState,
   getGeneration: () => number,
+  getAudio?: () =>
+    | { created: boolean; running: boolean; isMuted: boolean; played: number }
+    | undefined,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -341,6 +356,17 @@ export function installMvpRunDebugBridge(
             };
           }),
           previewOpen: state.preview !== null,
+          audio: (() => {
+            const engine = getAudio?.();
+            return engine
+              ? {
+                  created: engine.created,
+                  running: engine.running,
+                  muted: engine.isMuted,
+                  played: engine.played,
+                }
+              : null;
+          })(),
         };
       },
     },
