@@ -13,7 +13,8 @@
 Current authorization ends at M5. Do not begin M6 without a new user
 instruction.
 
-Status on 2026-09-13: M0-M5 are implemented and automatically verified. The M1
-combat feel, M2 interaction-lab feel, M3 shoplifting-loop feel, M4
-bench-fusion feel, and M5 MVP-run feel gates await user playtest. M6-M10 are not
-started.
+Status on 2026-09-19: M0-M5 are implemented and automatically verified, with the
+M5 in-run Bench Warrant fusion repaired so the car is a real run entity that
+fuses at the kiosk and fires the shots. The M1 combat feel, M2
+interaction-lab feel, M3 shoplifting-loop feel, M4 bench-fusion feel, and M5
+MVP-run feel gates await user playtest. M6-M10 are not started.

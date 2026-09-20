@@ -29,6 +29,15 @@ type RunSnapshot = {
   summary: null | { status: 'won' | 'dead'; roomIndex: number; cash: number; heat: number };
   recentChange: string;
   behaviorTrace: string[];
+  carrier: null | {
+    mode: 'independent' | 'emitter';
+    x: number;
+    y: number;
+    radius: number;
+    recalling: boolean;
+  };
+  projectiles: Array<{ id: number; x: number; y: number; radius: number }>;
+  previewOpen: boolean;
 };
 
 const CHECKPOINT_KEY = 'dead-mall:mvp-checkpoint:v1';
@@ -330,6 +339,104 @@ test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) =>
   expect(layout.hudVisible).toBe(true);
   expect(layout.bodyWidth).toBeLessThanOrEqual(layout.viewportWidth);
   await expect(page.locator('canvas')).toHaveCount(1);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+const distance = (
+  first: { x: number; y: number },
+  second: { x: number; y: number },
+): number => Math.hypot(first.x - second.x, first.y - second.y);
+
+test('the Bench Warrant kiosk previews and fuses the car, and shots then start at the car', async ({
+  page,
+}) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  // The shift owns the car as an independent companion before fusion.
+  await expect.poll(() => runSnapshot(page).then((state) => state.carrier?.mode)).toBe(
+    'independent',
+  );
+  await expect(page.locator('#mvp-run-carrier')).toContainText(/independent/i);
+  // Recall is not advertised while it would do nothing.
+  await expect(page.locator('#mvp-run-controls')).not.toContainText('R RECALL');
+
+  // Press E at the kiosk for real and read the proposal the sim produced.
+  await page.keyboard.press('e');
+  await expect(page.getByTestId('mvp-run-bench')).toBeVisible();
+  await expect(page.locator('#mvp-run-bench')).toContainText('Party Popper');
+  await expect(page.locator('#mvp-run-bench')).toContainText('RC Car');
+  await expect(page.locator('#mvp-run-bench')).toContainText(/FEE: \$\d+ \(base \$6/);
+  expect((await runSnapshot(page)).previewOpen).toBe(true);
+
+  await page.getByRole('button', { name: 'Confirm fusion', exact: true }).click();
+
+  await expect(page.getByTestId('mvp-run-bench')).toBeHidden();
+  await expect.poll(() => runSnapshot(page).then((state) => state.carrier?.mode)).toBe('emitter');
+  await expect(page.locator('#mvp-run-carrier')).toContainText(/fused emitter mount/i);
+  await expect(page.locator('#mvp-run-controls')).toContainText('R RECALL');
+  const fused = await runSnapshot(page);
+  expect(fused.inventory.inventory.some((node) => node.kind === 'composite')).toBe(true);
+
+  // Steer the car away from the player, then fire: the shot must begin at the
+  // car, not at the janitor. Aiming far left drags the car out along the leash
+  // without moving the player, so the gap opens without risking a doorway
+  // crossing that would re-park the car in another room.
+  const canvas = page.locator('canvas');
+  const box = await canvas.boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) {
+    return;
+  }
+  await page.mouse.move(box.x + 4, box.y + box.height * 0.5);
+  await expect
+    .poll(
+      async () => {
+        const state = await runSnapshot(page);
+        return state.carrier ? distance(state.carrier, state.player) : 0;
+      },
+      { timeout: 15_000 },
+    )
+    .toBeGreaterThan(100);
+
+  const before = await runSnapshot(page);
+  const carAtFire = before.carrier;
+  expect(carAtFire).not.toBeNull();
+  if (!carAtFire) {
+    return;
+  }
+
+  await page.mouse.down();
+  await page.waitForTimeout(140);
+  await page.mouse.up();
+
+  const after = await runSnapshot(page);
+  expect(after.projectiles.length).toBeGreaterThan(0);
+  for (const shot of after.projectiles) {
+    expect(distance(shot, carAtFire)).toBeLessThan(distance(shot, after.player));
+  }
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('recall is refused before fusion and reported instead of silently ignored', async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.carrier?.mode)).toBe(
+    'independent',
+  );
+
+  await page.keyboard.press('r');
+
+  await expect(page.locator('#mvp-run-recent')).toContainText(/after Emitter Mount fusion/i);
+  expect((await runSnapshot(page)).carrier?.recalling).toBe(false);
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

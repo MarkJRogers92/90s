@@ -9,6 +9,7 @@ import type { FusionInventoryState } from '../fusion/types';
 import type { InventoryLeaf } from '../fusion/types';
 import type { ShopOfferRuntimeStatus } from '../shop/types';
 import { generateWing } from '../wing/generateWing';
+import { syncRunCarrier } from './carrier';
 import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
 
@@ -79,7 +80,12 @@ export function createMvpRun(seed: number): MvpRunState {
     heldActions: { interact: false, steal: false, recall: false },
     recentChange: `Night shift begins in the ${startRoom.name} with $${wing.startingCash}.`,
     behaviorTrace: [],
+    carrier: null,
+    preview: null,
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
+  // The shift starts with no emitter carrier, so this is a no-op today; going
+  // through the same derivation keeps the one rule for carrier presence.
+  syncRunCarrier(state);
   return state;
 }

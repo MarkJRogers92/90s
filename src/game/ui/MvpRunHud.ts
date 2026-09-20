@@ -20,8 +20,23 @@ import type { EnemyState } from '../../sim/model';
 
 const TERMINAL_PROMPT = 'RUN COMPLETE — RESTART OR RETURN';
 const PAUSED_PROMPT = 'PAUSED — PRESS ESC TO RESUME';
-const CONTROLS_PROMPT =
-  'WASD MOVE · POINTER AIM · CLICK ATTACK · E INTERACT · F STEAL · R RECALL · ESC PAUSE';
+const PREVIEW_PROMPT = 'FUSION PREVIEW OPEN — CONFIRM OR CANCEL';
+
+/**
+ * The movement and action prompt for a live shift.
+ *
+ * `R RECALL` is advertised only while a fused car actually exists, because
+ * recall is refused until Emitter Mount fusion. The car line reports what the
+ * car is doing instead of promising a key that would do nothing.
+ */
+function movementControls(state: MvpRunState): string {
+  const parts = ['WASD MOVE', 'POINTER AIM', 'CLICK ATTACK', 'E INTERACT', 'F STEAL'];
+  if (state.carrier !== null) {
+    parts.push(state.carrier.mode === 'emitter' ? 'R RECALL' : 'CAR FOLLOWS');
+  }
+  parts.push('ESC PAUSE');
+  return parts.join(' · ');
+}
 
 function requireElement<T extends HTMLElement>(selector: string): T {
   const element = document.querySelector<T>(selector);
@@ -68,19 +83,36 @@ export class MvpRunHud {
   private readonly carried: HTMLElement;
   private readonly inventory: HTMLElement;
   private readonly primary: HTMLElement;
+  private readonly carrierLine: HTMLElement;
   private readonly trace: HTMLElement;
   private readonly offers: HTMLElement;
+  private readonly bench: HTMLElement;
+  private readonly benchIngredients: HTMLElement;
+  private readonly benchFee: HTMLElement;
+  private readonly benchOperation: HTMLElement;
+  private readonly benchRetained: HTMLElement;
+  private readonly benchExcluded: HTMLElement;
+  private readonly benchNotice: HTMLElement;
   private readonly checkpoint: HTMLElement;
   private readonly recent: HTMLElement;
   private readonly summary: HTMLElement;
   private readonly controls: HTMLElement;
   private readonly restartButton: HTMLButtonElement;
   private readonly returnButton: HTMLButtonElement;
+  private readonly confirmFusionButton: HTMLButtonElement;
+  private readonly cancelFusionButton: HTMLButtonElement;
   private readonly onRestart: () => void;
   private readonly onReturn: () => void;
+  private readonly onConfirmFusion: () => void;
+  private readonly onCancelFusion: () => void;
   private readonly offerCards = new Map<string, HTMLElement>();
 
-  public constructor(onRestart: () => void, onReturn: () => void) {
+  public constructor(
+    onRestart: () => void,
+    onReturn: () => void,
+    onConfirmFusion: () => void,
+    onCancelFusion: () => void,
+  ) {
     this.root = requireElement<HTMLElement>('#mvp-run-hud');
     this.seed = requireElement<HTMLElement>('#mvp-run-seed');
     this.room = requireElement<HTMLElement>('#mvp-run-room');
@@ -94,18 +126,32 @@ export class MvpRunHud {
     this.carried = requireElement<HTMLElement>('#mvp-run-carried');
     this.inventory = requireElement<HTMLElement>('#mvp-run-inventory');
     this.primary = requireElement<HTMLElement>('#mvp-run-primary');
+    this.carrierLine = requireElement<HTMLElement>('#mvp-run-carrier');
     this.trace = requireElement<HTMLElement>('#mvp-run-trace');
     this.offers = requireElement<HTMLElement>('#mvp-run-offers');
+    this.bench = requireElement<HTMLElement>('#mvp-run-bench');
+    this.benchIngredients = requireElement<HTMLElement>('#mvp-run-bench-ingredients');
+    this.benchFee = requireElement<HTMLElement>('#mvp-run-bench-fee');
+    this.benchOperation = requireElement<HTMLElement>('#mvp-run-bench-operation');
+    this.benchRetained = requireElement<HTMLElement>('#mvp-run-bench-retained');
+    this.benchExcluded = requireElement<HTMLElement>('#mvp-run-bench-excluded');
+    this.benchNotice = requireElement<HTMLElement>('#mvp-run-bench-notice');
     this.checkpoint = requireElement<HTMLElement>('#mvp-run-checkpoint');
     this.recent = requireElement<HTMLElement>('#mvp-run-recent');
     this.summary = requireElement<HTMLElement>('#mvp-run-summary');
     this.controls = requireElement<HTMLElement>('#mvp-run-controls');
     this.restartButton = requireElement<HTMLButtonElement>('#mvp-restart-run');
     this.returnButton = requireElement<HTMLButtonElement>('#mvp-return');
+    this.confirmFusionButton = requireElement<HTMLButtonElement>('#mvp-bench-confirm');
+    this.cancelFusionButton = requireElement<HTMLButtonElement>('#mvp-bench-cancel');
     this.onRestart = onRestart;
     this.onReturn = onReturn;
+    this.onConfirmFusion = onConfirmFusion;
+    this.onCancelFusion = onCancelFusion;
     this.restartButton.addEventListener('click', this.onRestart);
     this.returnButton.addEventListener('click', this.onReturn);
+    this.confirmFusionButton.addEventListener('click', this.onConfirmFusion);
+    this.cancelFusionButton.addEventListener('click', this.onCancelFusion);
   }
 
   public sync(state: MvpRunState, checkpointStatus: string): void {
@@ -126,6 +172,8 @@ export class MvpRunHud {
     this.syncBoss(state);
     this.syncInteraction(state);
     this.syncEconomy(state);
+    this.syncCarrier(state);
+    this.syncBench(state);
     this.syncOffers(state);
 
     this.checkpoint.textContent = `CHECKPOINT: ${checkpointStatus}`;
@@ -185,15 +233,66 @@ export class MvpRunHud {
 
     if (state.status !== 'playing') {
       this.controls.textContent = TERMINAL_PROMPT;
+    } else if (state.preview !== null) {
+      this.controls.textContent = PREVIEW_PROMPT;
     } else if (state.paused) {
       this.controls.textContent = PAUSED_PROMPT;
     } else if (interaction.kind === 'door' && interaction.locked) {
-      this.controls.textContent = interaction.lockedReason ?? CONTROLS_PROMPT;
+      this.controls.textContent = interaction.lockedReason ?? movementControls(state);
+    } else if (interaction.kind === 'bench') {
+      this.controls.textContent = 'E PREVIEW FUSION · ' + movementControls(state);
     } else if (interaction.kind === 'offer') {
-      this.controls.textContent = 'E BUY · F STEAL · ' + CONTROLS_PROMPT;
+      this.controls.textContent = 'E BUY · F STEAL · ' + movementControls(state);
     } else {
-      this.controls.textContent = CONTROLS_PROMPT;
+      this.controls.textContent = movementControls(state);
     }
+  }
+
+  /** What the Remote-Control Car is doing, or that the shift owns none. */
+  private syncCarrier(state: MvpRunState): void {
+    const carrier = state.carrier;
+    if (carrier === null) {
+      this.carrierLine.textContent = 'CAR: none owned';
+      return;
+    }
+    if (carrier.mode === 'emitter') {
+      const leashState = carrier.recalling ? 'returning on recall' : 'steered by the pointer';
+      this.carrierLine.textContent =
+        `CAR: fused emitter mount — ${leashState}; shots fire from the car`;
+      return;
+    }
+    this.carrierLine.textContent =
+      'CAR: independent — seeks and bumps nearby enemies; fuse it to fire from it';
+  }
+
+  /**
+   * The Bench Warrant preview.
+   *
+   * Every line is read from the simulation's own proposal, so the panel cannot
+   * describe a fee or an ingredient set the commit would not honour. Confirm
+   * and cancel are the only actions; the sim revalidates on commit.
+   */
+  private syncBench(state: MvpRunState): void {
+    const preview = state.preview;
+    if (preview === null) {
+      this.bench.hidden = true;
+      return;
+    }
+    this.bench.hidden = false;
+    this.benchIngredients.textContent =
+      `INGREDIENTS: ${preview.primaryName} (${preview.primaryProvenance}) + ` +
+      `${preview.carrierName} (${preview.carrierProvenance})`;
+    this.benchFee.textContent =
+      `FEE: $${preview.fee} (base $${preview.baseFee} − clean discount $${preview.cleanDiscount})` +
+      ` · CASH $${state.cash}`;
+    this.benchOperation.textContent =
+      `RESULT: attack origin ${preview.operation.attackOrigin} · steering ` +
+      `${preview.operation.steering} · recall ${preview.operation.recallKey} · ` +
+      `${preview.operation.lostBehavior} lost`;
+    this.benchRetained.textContent =
+      `RETAINED: ${preview.retainedInstanceIds.join(', ') || 'nothing else'}`;
+    this.benchExcluded.textContent = `EXCLUDED: ${preview.excludedNotes.join(' ')}`;
+    this.benchNotice.textContent = preview.irreversibilityNotice;
   }
 
   private syncEconomy(state: MvpRunState): void {
@@ -320,17 +419,52 @@ export class MvpRunHud {
       `CASH $${summary.cash} · HEAT ${summary.heat}`;
     const purchased = document.createElement('p');
     purchased.textContent =
-      `purchased (${summary.purchasedInstanceIds.length}): ${summary.purchasedInstanceIds.join(', ') || 'none'}`;
+      `purchased (${summary.purchasedInstanceIds.length}): ${this.instanceNames(state, summary.purchasedInstanceIds)}`;
     const stolen = document.createElement('p');
     stolen.textContent =
-      `stolen (${summary.stolenInstanceIds.length}): ${summary.stolenInstanceIds.join(', ') || 'none'}`;
+      `stolen (${summary.stolenInstanceIds.length}): ${this.instanceNames(state, summary.stolenInstanceIds)}`;
     this.summary.append(title, totals, purchased, stolen);
+  }
+
+  /**
+   * Readable names for a summary's instance IDs.
+   *
+   * The summary deliberately carries IDs, not labels, so the HUD resolves them
+   * against the inventory it already renders rather than printing raw IDs like
+   * `mvp-purchased-mall-mart-receipt_wallet` at the player.
+   */
+  private instanceNames(state: MvpRunState, instanceIds: readonly string[]): string {
+    if (instanceIds.length === 0) {
+      return 'none';
+    }
+    return instanceIds
+      .map((instanceId) => {
+        for (const node of state.inventory.inventory) {
+          if (node.kind === 'leaf') {
+            if (node.instanceId === instanceId) {
+              return itemDefinitionName(node.itemDefinitionId);
+            }
+            continue;
+          }
+          if (node.primary.instanceId === instanceId) {
+            return itemDefinitionName(node.primary.itemDefinitionId);
+          }
+          if (node.carrier.instanceId === instanceId) {
+            return itemDefinitionName(node.carrier.itemDefinitionId);
+          }
+        }
+        return instanceId;
+      })
+      .join(', ');
   }
 
   public destroy(): void {
     this.restartButton.removeEventListener('click', this.onRestart);
     this.returnButton.removeEventListener('click', this.onReturn);
+    this.confirmFusionButton.removeEventListener('click', this.onConfirmFusion);
+    this.cancelFusionButton.removeEventListener('click', this.onCancelFusion);
     this.offerCards.clear();
     this.offers.textContent = '';
+    this.bench.hidden = true;
   }
 }

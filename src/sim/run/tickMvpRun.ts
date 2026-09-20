@@ -3,18 +3,21 @@
  *
  * Deterministic tick stage order:
  *   1. held-action update;
- *   2. interaction/shopping;
- *   3. transition check;
- *   4. combat tick (delegated to the shared `RunState` tick);
- *   5. store boundary evaluation (exit crossing secures carried thefts, then
+ *   2. interaction/shopping (the Bench Warrant preview pauses the run here);
+ *   3. carrier presence sync (the inventory decides whether a car exists);
+ *   4. transition check;
+ *   5. carrier update (independent seek and bump, or fused steering);
+ *   6. combat tick (delegated to the shared `RunState` tick, fired from the
+ *      fused carrier when the run owns one), then leash enforcement;
+ *   7. store boundary evaluation (exit crossing secures carried thefts, then
  *      the security sweep updates suspicion and may confiscate);
- *   6. room-clear evaluation (marks the room cleared and checkpoints it);
- *   7. terminal evaluation (publishes the win or death summary).
+ *   8. room-clear evaluation (marks the room cleared and checkpoints it);
+ *   9. terminal evaluation (publishes the win or death summary).
  *
  * The run owns movement cadence, contextual commands, transitions, the
  * economy, and the terminal outcome; Phaser only draws the result and converts
- * input. Room-local enemies, projectiles, and surfaces are rebuilt from the
- * seed whenever the room changes and never carry across a doorway.
+ * input. Room-local enemies, projectiles, surfaces, and the car are rebuilt
+ * from the seed whenever the room changes and never carry across a doorway.
  */
 import { circleIntersectsRect } from '../core/geometry';
 import { freezeDeep } from '../items/types';
@@ -22,6 +25,15 @@ import type { Rect, Vec2 } from '../model';
 import { crossedStoreExit } from '../shop/tickWingRun';
 import { tickRun } from '../tickRun';
 import type { WingDoorSide, WingRoomDefinition, WingStoreInstance } from '../wing/types';
+import { openRunFusionPreview } from './bench';
+import {
+  carrierAttackContext,
+  enforceRunCarrierLeash,
+  parkRunCarrier,
+  recallRunCarrier,
+  syncRunCarrier,
+  updateRunCarrier,
+} from './carrier';
 import { buildRoomCombatState, clearRoomEnemies, hasLivingEnemies } from './rooms';
 import {
   RUN_INTERACTION_RANGE,
@@ -191,11 +203,8 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
       return buyRunOffer(state, interaction.offerId);
     case 'door':
       return enterDoorway(state, interaction.side);
-    case 'bench': {
-      const message = 'The Bench Warrant kiosk is ready for Emitter Mount fusion.';
-      publishRunFeedback(state, message);
-      return { accepted: true, message };
-    }
+    case 'bench':
+      return openRunFusionPreview(state);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }
@@ -259,6 +268,9 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
   };
   state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
   clearMvpHeldActions(state);
+  // The car follows the shift through the doorway by being re-parked at the
+  // destination's deterministic spot, never by carrying a position across.
+  parkRunCarrier(state);
 
   const message = `Entered the ${destination.name}.`;
   publishRunFeedback(state, message);
@@ -405,6 +417,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   // 1. Held-action update.
   const interactPressed = input.interact && !state.heldActions.interact;
   const stealPressed = input.steal && !state.heldActions.steal;
+  const recallPressed = input.recall && !state.heldActions.recall;
   state.heldActions = {
     interact: input.interact,
     steal: input.steal,
@@ -416,35 +429,54 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   let preserveActionFeedback = false;
   if (interactPressed) {
     preserveActionFeedback = !tryInteract(state).accepted;
+    // Opening the Bench Warrant preview pauses the shift for this tick and the
+    // ones after it, so the proposal is read rather than played past.
+    if (state.preview !== null) {
+      return;
+    }
   } else if (stealPressed) {
     const offer = nearestRunOffer(state);
     if (offer) {
       preserveActionFeedback = !beginRunTheft(state, offer.id).accepted;
     }
+  } else if (recallPressed) {
+    recallRunCarrier(state);
   }
 
-  // 3. Transition check.
+  // 3. Carrier presence follows the inventory, so a purchase in stage 2 brings
+  //    the car into the run on the same tick it is bought.
+  syncRunCarrier(state);
+
+  // 4. Transition check.
   checkDoorwayCrossing(state, input);
 
-  // 4. Combat tick.
+  // 5. Carrier update: independent seek and bump, or fused pointer steering.
+  updateRunCarrier(state, input);
+
+  // 6. Combat tick, fired from the fused carrier when the run owns one.
   const previousPosition = {
     x: state.room.combat.player.x,
     y: state.room.combat.player.y,
   };
-  tickRun(state.room.combat, {
-    moveX: input.moveX,
-    moveY: input.moveY,
-    aimX: input.aimX,
-    aimY: input.aimY,
-    fire: input.fire,
-  });
+  tickRun(
+    state.room.combat,
+    {
+      moveX: input.moveX,
+      moveY: input.moveY,
+      aimX: input.aimX,
+      aimY: input.aimY,
+      fire: input.fire,
+    },
+    carrierAttackContext(state),
+  );
+  enforceRunCarrierLeash(state);
 
-  // 5. Store boundary evaluation.
+  // 7. Store boundary evaluation.
   evaluateStoreBoundary(state, previousPosition, preserveActionFeedback);
 
-  // 6. Room-clear evaluation.
+  // 8. Room-clear evaluation.
   evaluateRoomClear(state);
 
-  // 7. Terminal evaluation.
+  // 9. Terminal evaluation.
   evaluateTerminal(state);
 }

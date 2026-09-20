@@ -18,7 +18,14 @@ import {
   restoreMvpRun,
   type MvpCheckpoint,
 } from '../../sim/run/checkpoint';
+import {
+  cancelRunFusionPreview,
+  confirmRunFusionPreview,
+} from '../../sim/run/bench';
+import { syncRunCarrier } from '../../sim/run/carrier';
 import { createMvpRun } from '../../sim/run/createMvpRun';
+import { refreshRunLoadout } from '../../sim/run/loadout';
+import type { InventoryLeaf } from '../../sim/fusion/types';
 import {
   clearMvpHeldActions,
   enterDoorway,
@@ -209,7 +216,12 @@ export class MvpRunScene extends Phaser.Scene {
       () => this.setPaused(true),
     );
     this.runView = new MvpRunView(this);
-    this.hud = new MvpRunHud(() => this.restartRun(), () => this.returnToTitle());
+    this.hud = new MvpRunHud(
+      () => this.restartRun(),
+      () => this.returnToTitle(),
+      () => this.confirmFusion(),
+      () => this.cancelFusion(),
+    );
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
       this.removeDebugBridge = installMvpRunDebugBridge(
@@ -268,8 +280,37 @@ export class MvpRunScene extends Phaser.Scene {
     this.syncView();
   }
 
-  private restartRun(): void {
-    this.generation += 1;
+  /**
+   * Confirms the open Bench Warrant preview.
+   *
+   * The commit revalidates against the proposal's own revision, so a preview
+   * that went stale behind a purchase is refused rather than fused. Either way
+   * the run is left unpaused and the held actions are cleared, so a click that
+   * also moved the pointer cannot leak into the next tick.
+   */
+  private confirmFusion(): void {
+    const result = confirmRunFusionPreview(this.run);
+    if (result.accepted) {
+      this.resumeAfterPreview();
+    }
+    this.syncView();
+  }
+
+  private cancelFusion(): void {
+    const result = cancelRunFusionPreview(this.run);
+    if (result.accepted) {
+      this.resumeAfterPreview();
+    }
+    this.syncView();
+  }
+
+  private resumeAfterPreview(): void {
+    this.accumulator = 0;
+    this.inputAdapter?.clearHeld();
+    clearMvpHeldActions(this.run);
+  }
+
+  private restartRun(): void {    this.generation += 1;
     const cleared = this.store.clear();
     this.run = createMvpRun(this.seed);
     this.accumulator = 0;
@@ -330,6 +371,39 @@ export class MvpRunScene extends Phaser.Scene {
           state.room.combat.player.x = offer.position.x + 12;
           state.room.combat.player.y = offer.position.y;
         }
+      }
+      return state;
+    }
+    if (fixture === 'mvp-bench') {
+      // Stands the shift at the service-corridor Bench Warrant kiosk already
+      // owning the car and a projectile primary, so browser acceptance can
+      // press E, read the real proposal, confirm it, and then fire from the
+      // car with honest input instead of replaying a whole store purchase.
+      const devLeaf = (instanceId: string, itemDefinitionId: string): InventoryLeaf => ({
+        kind: 'leaf',
+        instanceId,
+        itemDefinitionId,
+        acquisitionKind: 'purchased',
+        sourceLocationId: 'dev-fixture',
+        sourceStockId: `dev-${itemDefinitionId}-offer`,
+        acquisitionTick: state.tick,
+      });
+      state.inventory = {
+        ...state.inventory,
+        inventory: [
+          ...state.inventory.inventory,
+          devLeaf('dev-rc_car', 'rc_car'),
+          devLeaf('dev-party_popper', 'party_popper'),
+        ],
+        selectedPrimaryInstanceId: 'dev-party_popper',
+        revision: state.inventory.revision + 1,
+      };
+      refreshRunLoadout(state);
+      syncRunCarrier(state);
+      const kiosk = state.wing.rooms[state.roomIndex]?.benchKiosk;
+      if (kiosk) {
+        state.room.combat.player.x = kiosk.x;
+        state.room.combat.player.y = kiosk.y;
       }
       return state;
     }

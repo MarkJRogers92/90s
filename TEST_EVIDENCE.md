@@ -202,3 +202,73 @@ performance, audio, and human feel/playtest. Wing pacing, store placement, boss
 difficulty, and checkpoint cadence still require hands-on evaluation. The
 graybox/vector art is not the production-art pass. Push, merge, publish, deploy,
 and release are not claimed.
+
+## 2026-09-19 — M5 in-run Bench Warrant fusion repair
+
+Defect repaired. The M5 acceptance list claimed browser item 4, "the bench still
+fuses in-run and the next attack uses the fused behavior". `src/sim/run/bench.ts`
+did implement `previewRunEmitterMount` and `commitRunEmitterMount`, but its only
+importer was `tests/unit/mvp-economy.test.ts`. No production file called it,
+`src/game/ui/MvpRunHud.ts` had no bench panel, and
+`tests/browser/night-shift.spec.ts` had no bench or fusion coverage. The player
+path was `tickMvpRun.ts`'s `case 'bench'`, which only published the string "The
+Bench Warrant kiosk is ready for Emitter Mount fusion." The same gap made
+`rc_car` a $20 item with `effects: []` whose only use was unreachable, and made
+`R RECALL` advertised by the HUD while `tickMvpRun` forwarded only
+`{moveX, moveY, aimX, aimY, fire}` to `tickRun`, so recall was collected and
+dropped.
+
+Red proof:
+
+- The pre-existing assertion `tests/integration/mvp-run.test.ts:418`
+  (`expect(tryInteract(corridor).accepted).toBe(true)` at the kiosk) failed with
+  `expected false to be true` once the kiosk stopped reporting success without a
+  carrier. That failure is the observed red for the interaction contract change;
+  the assertion was updated to require a readable refusal plus no opened preview,
+  and a positive path is covered in `tests/unit/run-carrier.test.ts`.
+- Every new behavior is new surface: the preview panel, the `carrier` and
+  `preview` run fields, and the car itself did not exist, so
+  `tests/unit/run-carrier.test.ts` and the two new browser tests could not have
+  passed against the previous revision.
+
+Not red-green: for the new `src/sim/carrier/car.ts` module the extraction was
+written first and then verified behavior-preserving, rather than test-first. The
+three bench adapters were checked against the unchanged 431-test baseline before
+any new test was added, which is what establishes the extraction did not change
+M4 behavior.
+
+Green proof, from this working tree:
+
+- `npm run typecheck` — exit 0.
+- `npm test` — exit 0; 25 files and 448 tests passed (431 before this change).
+- `npx playwright test tests/browser/night-shift.spec.ts` — exit 0; 13 tests
+  passed, including the two new ones.
+- `npm run test:browser` — exit 0; 44 Chromium tests passed (42 before).
+- `npm run build` — exit 0; Vite produced `dist/`.
+- Production scan: `__DEAD_MALL_DEBUG__` 0 hits, `VITE_ENABLE_DEBUG_BRIDGE` 0
+  hits, and 0 hits for every fixture literal including the new `mvp-bench`. The
+  only `mvp-bench` matches in `dist/` are the legitimate `#mvp-bench-confirm` and
+  `#mvp-bench-cancel` UI element IDs, which are production markup.
+- Production preview smoke at 1440x900 on `localhost:4199`: one canvas, one
+  visible HUD, the bench panel present and hidden, `CAR: none owned`, no debug
+  bridge, body width 1440 equal to scroll width 1440, zero page errors, zero
+  console errors, and only local-origin requests.
+
+What the new coverage proves:
+
+- Buying the car brings an independent companion into the run; it parks beside
+  the player inside the leash and seeks and bumps a nearby enemy.
+- Pressing E at the kiosk opens a real proposal that pauses the shift; cancel
+  changes nothing and confirm charges the fee once, consumes both ingredients,
+  and promotes the car to the firing origin.
+- A commit against an inventory that changed after the preview is refused
+  atomically, leaving cash and inventory untouched.
+- After fusion a real browser mouse-down spawns shots closer to the car than to
+  the player, and before fusion the same input spawns them at the player.
+- Recall is refused with a readable reason before fusion and advertised by the
+  HUD only after it, instead of being an advertised no-op.
+
+Not run: WebKit, Safari, Windows browser/device, physical-device performance,
+audio, and human feel/playtest. The car's steering and leash feel, the fusion
+fee, and the preview's readability in motion still require hands-on evaluation.
+Push, merge, publish, deploy, and release are not claimed.

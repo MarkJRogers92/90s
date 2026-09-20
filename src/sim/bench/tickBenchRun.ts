@@ -1,4 +1,5 @@
 import { tickRun } from '../tickRun';
+import { emitterProjectileOrigin } from '../carrier/car';
 import { enforceCarrierLeash, updateEmitterCarrier, updateIndependentCarrier } from './car';
 import { openFusionPreview, transferBenchRoom } from './commands';
 import type { BenchInputFrame, BenchRunState } from './types';
@@ -41,10 +42,8 @@ export function tickBenchRun(state: BenchRunState, input: BenchInputFrame): void
     }
   }
 
-  const attackContext =
-    state.carrier.mode === 'emitter'
-      ? { projectileOrigin: { x: state.carrier.x, y: state.carrier.y } }
-      : {};
+  const origin = emitterProjectileOrigin(state.carrier);
+  const attackContext = origin === null ? {} : { projectileOrigin: origin };
   tickRun(
     state.combat,
     {

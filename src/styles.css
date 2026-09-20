@@ -820,6 +820,51 @@ body[data-mode='bench'] {
   overflow-wrap: anywhere;
 }
 
+.mvp-run-carrier {
+  margin: 7px 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  overflow-wrap: anywhere;
+  color: #cfd6c9;
+}
+
+.mvp-run-bench {
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid rgb(139 201 184 / 60%);
+  background: rgb(20 24 26 / 70%);
+}
+
+.mvp-run-bench-title {
+  margin: 0 0 0.4rem;
+  color: #f6d365;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.mvp-run-bench-line {
+  margin: 4px 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.03em;
+  color: #cfd6c9;
+  overflow-wrap: anywhere;
+}
+
+.mvp-run-bench-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgb(139 201 184 / 40%);
+}
+
+.mvp-run-bench-actions button {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.75rem;
+}
+
 .mvp-run-actions {
   display: flex;
   flex-wrap: wrap;

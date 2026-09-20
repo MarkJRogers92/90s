@@ -1,8 +1,9 @@
 # Next session
 
 M5 is implemented on codex/m5-mvp in the linked worktree `.worktrees/m5-mvp`,
-started from the M4 tip `ff2dcf5`. Verify the actual branch and working tree
-before trusting this note.
+started from the M4 tip `ff2dcf5`, with the in-run Bench Warrant fusion repaired
+on 2026-09-19. Verify the actual branch and working tree before trusting this
+note.
 
 Run it locally:
 
@@ -15,22 +16,32 @@ or open the Bench Warrant kiosk, press F to steal, press R to recall a fused
 carrier, and press Escape to pause. **Continue run** on the title screen resumes
 the last room boundary, and `?seed=12345` replays a specific wing.
 
+To reach the repaired fusion loop quickly, buy the Remote-Control Car at the
+first storefront (Mall Mart sells it for $20), then walk back to the Bench
+Warrant kiosk in the service corridor and press E. Alternatively,
+`http://127.0.0.1:5173/?fixture=mvp-bench` starts a shift at the kiosk already
+owning the car and a projectile primary; that fixture exists only in Vite
+development mode.
+
 The M5 fun gate is awaiting user playtest: wing pacing, store placement, boss
-difficulty, and whether the checkpoint cadence feels right.
+difficulty, whether the checkpoint cadence feels right, and whether the car
+feels good to steer — its leash, its recall trip, and whether the fusion fee
+reads as a real trade rather than a free upgrade.
 
 After M6 authorization, the next milestone per ROADMAP.md is M6 depth work.
 Preserve `src/sim` as the authority and keep branches out of the central tick.
 
-Last full gate from checkpoint `c3a263b`:
+Last full gate from this working tree on 2026-09-19:
 
     npm run typecheck
     npm test
     npm run test:browser
     npm run build
 
-Result: typecheck and build passed; 24 unit/integration files and 431 tests
-passed; 42 Chromium tests passed; the production scan and production inspection
-at 1440x900 and 800x600 were clean.
+Result: typecheck and build passed; 25 unit/integration files and 448 tests
+passed; 44 Chromium tests passed; the production scan was clean and the
+production preview at 1440x900 was smoke-inspected. No 800x600 production
+screenshot was retaken for this change.
 
 Notes for the next session:
 

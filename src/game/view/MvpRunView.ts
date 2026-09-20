@@ -90,8 +90,53 @@ export class MvpRunView {
       this.drawProjectile(projectile);
     }
 
+    this.drawCarrier(state);
     this.drawPlayer(state);
     this.pruneLabels(state);
+  }
+
+  /**
+   * The Remote-Control Car, drawn only while the shift owns one.
+   *
+   * A fused car is the firing origin, so it is drawn with the same tether cue
+   * the player needs to judge leash range, plus a distinct fill for the two
+   * modes: an independent companion versus the steered emitter mount.
+   */
+  private drawCarrier(state: MvpRunState): void {
+    const carrier = state.carrier;
+    if (carrier === null) {
+      this.clearLabel('carrier');
+      return;
+    }
+    const graphics = this.graphics;
+    const player = state.room.combat.player;
+    const fused = carrier.mode === 'emitter';
+
+    // The leash, so the player can read why the car stops following.
+    graphics.lineStyle(1, fused ? 0x8bc9b8 : 0xc4b878, 0.28);
+    graphics.lineBetween(player.x, player.y, carrier.x, carrier.y);
+
+    graphics.fillStyle(fused ? 0x8bc9b8 : 0xd7a45c, 1);
+    graphics.fillRect(
+      carrier.x - carrier.radius,
+      carrier.y - carrier.radius,
+      carrier.radius * 2,
+      carrier.radius * 2,
+    );
+    graphics.lineStyle(2, 0x12130f, 0.9);
+    graphics.strokeRect(
+      carrier.x - carrier.radius - 1,
+      carrier.y - carrier.radius - 1,
+      carrier.radius * 2 + 2,
+      carrier.radius * 2 + 2,
+    );
+
+    this.setLabel(
+      'carrier',
+      fused ? (carrier.recalling ? 'CAR · RECALL' : 'CAR · EMITTER') : 'CAR · INDEPENDENT',
+      carrier.x,
+      carrier.y - carrier.radius - 14,
+    );
   }
 
   private drawStore(state: MvpRunState, templateId: string): void {
@@ -291,6 +336,9 @@ export class MvpRunView {
   private pruneLabels(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
     const keep = new Set<string>(['bench']);
+    if (state.carrier !== null) {
+      keep.add('carrier');
+    }
     if (room?.store) {
       keep.add(`store:${room.store.templateId}`);
       for (const offer of room.offers) {

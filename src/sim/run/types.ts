@@ -7,7 +7,8 @@
  * projectiles, and surfaces live in the wrapped combat state and are rebuilt
  * from the seed on every transition.
  */
-import type { FusionInventoryState } from '../fusion/types';
+import type { CarrierState } from '../carrier/car';
+import type { EmitterMountProposal, FusionInventoryState } from '../fusion/types';
 import type { RunState } from '../model';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
@@ -102,4 +103,15 @@ export type MvpRunState = {
   heldActions: { interact: boolean; steal: boolean; recall: boolean };
   recentChange: string;
   behaviorTrace: string[];
+  /**
+   * The Remote-Control Car, while the run owns one.
+   *
+   * Null until the inventory contains an emitter carrier. The carrier is
+   * deliberately absent from the checkpoint: a restored run re-derives its
+   * presence and mode from the checkpointed inventory and parks it
+   * deterministically, exactly as the room itself is rebuilt from the seed.
+   */
+  carrier: CarrierState | null;
+  /** The open Bench Warrant preview, which pauses the run while it is set. */
+  preview: EmitterMountProposal | null;
 };

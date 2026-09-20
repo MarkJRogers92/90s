@@ -24,6 +24,7 @@ import { MAX_SECURITY_HEAT, MAX_SUSPICION } from '../shop/types';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import { generateWing } from '../wing/generateWing';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
+import { syncRunCarrier } from './carrier';
 import { refreshRunLoadout, runCompilerInstances } from './loadout';
 import {
   PLAYER_MAX_HEALTH,
@@ -406,8 +407,13 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     heldActions: { interact: false, steal: false, recall: false },
     recentChange: `Resumed the night shift in the ${room.name}.`,
     behaviorTrace: [],
+    carrier: null,
+    preview: null,
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   refreshRunLoadout(state);
+  // The car is deliberately not checkpointed: a restored shift re-derives
+  // whether it owns one, and in which mode, from the checkpointed inventory.
+  syncRunCarrier(state);
   return state;
 }

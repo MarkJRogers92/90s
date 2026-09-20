@@ -48,3 +48,50 @@
 - M5 uses original local graybox/vector presentation. Production art, audio, WebKit/Safari/Windows/device coverage, physical-device performance, and M6 content remain out of scope.
 - Local commits are authorized for this build. Push, merge, publish, deploy, and release are not authorized. Do not begin M6 without a new user instruction.
 - Environment notes recorded for the next session: run vitest serially (`--no-file-parallelism`) because parallel workers can time out on this filesystem, Chromium requires the approved escalation, and the Vite dev server can exceed Playwright's default 60-second `webServer` timeout.
+
+## 2026-09-19
+
+- Repair the M5 in-run Bench Warrant instead of removing the Remote-Control Car,
+  because the M5 acceptance list already promised in-run fusion and browser
+  acceptance item 4 and `R` recall, and because fusion is the verb DESIGN.md
+  calls the game's core. Removing the car would have meant amending the M5 spec.
+- Extract the carrier physics into `src/sim/carrier/car.ts` and make
+  `src/sim/bench/car.ts` adapters over it, rather than writing a second copy for
+  the run. `AGENTS.md` and the existing `src/sim/run/bench.ts` header both require
+  one rule rather than two, and the extraction was verified by leaving M4's
+  existing 431 tests green with `bench/car.ts`'s exported names and constant
+  values unchanged.
+- Derive the run's car from its inventory rather than storing it: an Emitter Mount
+  composite means the car is fused and steers the shots, an owned
+  `emitter_carrier` leaf means an independent companion, and neither means the
+  run owns no car. This follows the existing rule that no central gameplay path
+  branches on an item definition ID — presence branches on a capability and a
+  recipe.
+- Do not checkpoint the car. A checkpoint keeps storing run-level state only, so
+  a restored shift re-derives whether it owns a car and in which mode from the
+  checkpointed inventory, and re-parks it deterministically, exactly as the room
+  and its enemies are rebuilt from the seed.
+- Park the car with a fixed candidate-offset order (`findCarrierSpawn`) when it is
+  first bought and after every doorway, taking the first spot that is inside the
+  playfield and outside authored solid geometry, falling back to the owner's own
+  position. The order is fixed so a replay stays reproducible.
+- Open the Bench Warrant preview as a pausing run command and commit it against
+  the proposal's own transaction ID and source revision, so a confirm after an
+  intervening purchase or theft fails atomically with a reason instead of fusing
+  against state the player never saw. `confirmRunFusionPreview` deliberately does
+  not consult `blockedRunReason`, because an open preview pauses the run and
+  confirming or cancelling are exactly the ways out of it.
+- Advertise `R RECALL` in the HUD only while a fused car exists, and report a
+  readable reason when recall is refused, so a key is never advertised while it
+  would do nothing.
+- Resolve the terminal summary's instance IDs to item names in the HUD, because
+  the summary deliberately carries IDs and printing them raw showed players
+  strings like `mvp-purchased-mall-mart-receipt_wallet`.
+- Add a development-only `mvp-bench` fixture that stands the shift at the kiosk
+  already owning the car and a projectile primary, so browser acceptance reaches
+  the preview and the fused firing origin with real input instead of replaying a
+  whole store purchase. Like every other fixture it is gated on Vite development
+  mode plus `VITE_ENABLE_DEBUG_BRIDGE` and is absent from production output.
+- Extend the development debug snapshot with the carrier, room-local projectiles,
+  and whether a preview is open, so browser acceptance can prove the firing
+  origin rather than only that a panel appeared.

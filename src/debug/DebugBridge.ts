@@ -253,6 +253,12 @@ export type MvpRunDebugSnapshot = {
   summary: import('../sim/run/types').MvpRunState['summary'];
   recentChange: string;
   behaviorTrace: readonly string[];
+  /** The owned Remote-Control Car, so acceptance can prove the firing origin. */
+  carrier: import('../sim/run/types').MvpRunState['carrier'];
+  /** Room-local shots, so acceptance can prove where an attack started. */
+  projectiles: Array<{ id: number; x: number; y: number; radius: number }>;
+  /** Whether the Bench Warrant preview is open. */
+  previewOpen: boolean;
 };
 
 export function installMvpRunDebugBridge(
@@ -294,6 +300,14 @@ export function installMvpRunDebugBridge(
           summary: state.summary ? structuredClone(state.summary) : null,
           recentChange: state.recentChange,
           behaviorTrace: [...state.behaviorTrace],
+          carrier: state.carrier ? { ...state.carrier } : null,
+          projectiles: state.room.combat.projectiles.map((shot) => ({
+            id: shot.id,
+            x: shot.x,
+            y: shot.y,
+            radius: shot.radius,
+          })),
+          previewOpen: state.preview !== null,
         };
       },
     },

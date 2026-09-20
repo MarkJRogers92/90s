@@ -1,3 +1,4 @@
+import type { CarrierMode, CarrierState } from '../carrier/car';
 import type { EmitterMountProposal, FusionInventoryState } from '../fusion/types';
 import type { InputFrame, RunState } from '../model';
 
@@ -5,16 +6,9 @@ export type BenchScenarioId = 'clean-soaker' | 'stolen-popper' | 'unsupported-mo
 
 export type BenchRoomId = 'service' | 'test_bay';
 
-export type CarrierMode = 'independent' | 'emitter';
-
-export type CarrierState = {
-  mode: CarrierMode;
-  x: number;
-  y: number;
-  radius: number;
-  bumpCooldownTicks: number;
-  recalling: boolean;
-};
+// The carrier contract is shared with the M5 MVP run; this module only
+// re-exports it so both runs cannot drift apart.
+export type { CarrierMode, CarrierState };
 
 export type BenchInputFrame = InputFrame & {
   readonly interact: boolean;
