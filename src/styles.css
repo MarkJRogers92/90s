@@ -686,6 +686,16 @@ body[data-mode='bench'] {
   color: #f4edd8;
   background: rgb(9 11 13 / 92%);
   box-shadow: 4px 4px 0 rgb(92 41 54 / 80%);
+  /* The panel overlays the playfield, so it must not swallow canvas pointer
+     input: aim and fire are read from the canvas, and the janitor spawns under
+     this panel's footprint. Interactive children re-enable events, exactly as
+     .run-hud already does. */
+  pointer-events: none;
+}
+
+.mvp-run-actions,
+.mvp-run-bench-actions {
+  pointer-events: auto;
 }
 
 .mvp-run-objective,

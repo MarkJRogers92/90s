@@ -107,3 +107,33 @@
   acceptance scripts unable to detect a telegraph or tell a volley from player
   fire; the gap is worth closing because it was indistinguishable from "nothing
   happened".
+- Make an open Bench Warrant preview halt the run at the simulation level
+  (`state.paused || state.preview !== null`) rather than relying on the scene
+  having set `paused`, because the Escape handler toggles `paused` while knowing
+  nothing about previews.
+- Report confiscation out of `updateRunSuspicion` and re-park the car in
+  `tickMvpRun` on that signal, rather than having the economy reach into the
+  carrier module. Every player teleport must be paired with a re-park, because a
+  single unswept leash correction can cross geometry instead of sliding along it.
+- Publish edge-triggered interaction refusals (buy, steal, kiosk, recall) instead
+  of leaving them silent, and gate the kiosk prompt on `canOpenRunFusionPreview`.
+  A refusal happens once per press, so it cannot spam, and a silent refusal is
+  indistinguishable to the player from a broken key.
+- Publish a refused fusion commit and disable Confirm while the run is not
+  playing, so a terminal run cannot present a button the sim will never honour.
+- Accept `pointer-events: none` on the M5 HUD with `auto` restored on its action
+  rows, matching the existing `.run-hud`. The panel overlays the playfield and was
+  consuming aim and fire across the janitor's own spawn area. The accepted cost is
+  that the panel can no longer be wheel-scrolled; it remains keyboard-scrollable
+  and the panel is not required for play.
+- Branch `carrierModeForInventory` on `recipeId === 'emitter_mount'` rather than
+  merely on `node.kind === 'composite'`, so a future composite recipe cannot
+  silently promote the car to a firing origin.
+- Expose `originX`/`originY` on run projectiles in the development snapshot and
+  assert firing origin against those, because comparing a shot's travelled
+  position is a proxy that a fast shot moving away from its origin can satisfy.
+- Record the checkpoint validation gaps found by review (leaves not cross-checked
+  against offer status, cleared rooms ahead of the current room, and a
+  `nextCompositeId` that can collide with an existing transaction) as known
+  issues. They are only reachable by hand-editing a stored checkpoint, and they
+  are left visibly open rather than fixed in this round.

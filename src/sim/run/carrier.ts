@@ -52,6 +52,12 @@ export function carrierModeForInventory(
   let ownsCarrierLeaf = false;
   for (const node of inventory.inventory) {
     if (node.kind === 'composite') {
+      // Branch on the recipe, not merely on "is a composite": Emitter Mount is
+      // the one recipe that turns a car into its own firing origin, and a future
+      // composite recipe must not silently promote the car too.
+      if (node.recipeId !== 'emitter_mount') {
+        continue;
+      }
       return 'emitter';
     }
     if (definitionIsEmitterCarrier(node.itemDefinitionId)) {
@@ -101,6 +107,10 @@ export function parkRunCarrier(state: MvpRunState): void {
   carrier.x = spawn.x;
   carrier.y = spawn.y;
   carrier.recalling = false;
+  // A room-local cooldown must not follow the car into a rebuilt room, where
+  // every enemy is fresh; a restored shift already starts at zero, and the two
+  // paths should agree on what "arriving in a fresh room" means.
+  carrier.bumpCooldownTicks = 0;
 }
 
 /** Advances the carrier one tick: independent seek and bump, or fused steering. */

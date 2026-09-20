@@ -300,11 +300,12 @@ function checkDoorwayCrossing(state: MvpRunState, input: MvpInputFrame): void {
   }
 }
 
+/** Returns true when this tick's sweep confiscated carried thefts. */
 function evaluateStoreBoundary(
   state: MvpRunState,
   previousPosition: Vec2,
   preserveActionFeedback: boolean,
-): void {
+): boolean {
   const store: WingStoreInstance | null = currentRoom(state).store;
   let preserve = preserveActionFeedback;
   if (store) {
@@ -318,7 +319,7 @@ function evaluateStoreBoundary(
       preserve = preserve || secured.accepted;
     }
   }
-  updateRunSuspicion(state, preserve);
+  return updateRunSuspicion(state, preserve);
 }
 
 function evaluateRoomClear(state: MvpRunState): void {
@@ -403,7 +404,11 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   if (state.status !== 'playing') {
     return;
   }
-  if (state.paused) {
+  if (state.paused || state.preview !== null) {
+    // An open Bench Warrant preview always halts the run, not only while it has
+    // set `paused`. Otherwise clearing `paused` from outside the sim (the
+    // scene's Escape handler does exactly that) would resume live combat behind
+    // a panel that still claims the preview is open.
     state.heldActions = {
       interact: input.interact,
       steal: input.steal,
@@ -428,7 +433,14 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   state.recentChange = '';
   let preserveActionFeedback = false;
   if (interactPressed) {
-    preserveActionFeedback = !tryInteract(state).accepted;
+    const interaction = tryInteract(state);
+    preserveActionFeedback = !interaction.accepted;
+    if (!interaction.accepted) {
+      // An interaction refusal is edge-triggered, so it happens once per press
+      // and cannot spam. Publishing it keeps a key that does nothing from
+      // reading as a broken key, which is what a silent rejection looks like.
+      publishRunFeedback(state, interaction.reason);
+    }
     // Opening the Bench Warrant preview pauses the shift for this tick and the
     // ones after it, so the proposal is read rather than played past.
     if (state.preview !== null) {
@@ -437,7 +449,11 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   } else if (stealPressed) {
     const offer = nearestRunOffer(state);
     if (offer) {
-      preserveActionFeedback = !beginRunTheft(state, offer.id).accepted;
+      const theft = beginRunTheft(state, offer.id);
+      preserveActionFeedback = !theft.accepted;
+      if (!theft.accepted) {
+        publishRunFeedback(state, theft.reason);
+      }
     }
   } else if (recallPressed) {
     recallRunCarrier(state);
@@ -472,7 +488,14 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   enforceRunCarrierLeash(state);
 
   // 7. Store boundary evaluation.
-  evaluateStoreBoundary(state, previousPosition, preserveActionFeedback);
+  const confiscated = evaluateStoreBoundary(state, previousPosition, preserveActionFeedback);
+  if (confiscated) {
+    // A confiscation teleports the player to the store entrance. Every player
+    // teleport has to re-park the car, exactly as a doorway does: otherwise the
+    // next tick's leash correction is one large unswept step that can cross a
+    // wall instead of sliding along it.
+    parkRunCarrier(state);
+  }
 
   // 8. Room-clear evaluation.
   evaluateRoomClear(state);

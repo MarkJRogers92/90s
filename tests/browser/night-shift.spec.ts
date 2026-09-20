@@ -36,7 +36,15 @@ type RunSnapshot = {
     radius: number;
     recalling: boolean;
   };
-  projectiles: Array<{ id: number; x: number; y: number; radius: number }>;
+  projectiles: Array<{
+    id: number;
+    x: number;
+    y: number;
+    radius: number;
+    faction: 'enemy' | 'player';
+    originX: number;
+    originY: number;
+  }>;
   previewOpen: boolean;
 };
 
@@ -408,15 +416,34 @@ test('the Bench Warrant kiosk previews and fuses the car, and shots then start a
   if (!carAtFire) {
     return;
   }
+  // Re-aim just short of the car so it holds roughly still while firing: the
+  // car steers toward the pointer, so aiming at its own position stops it
+  // drifting during the shot that is being measured.
+  await page.mouse.move(
+    box.x + (carAtFire.x - 2) * (box.width / 960),
+    box.y + carAtFire.y * (box.height / 480),
+  );
+  await page.waitForTimeout(80);
 
   await page.mouse.down();
   await page.waitForTimeout(140);
   await page.mouse.up();
 
   const after = await runSnapshot(page);
-  expect(after.projectiles.length).toBeGreaterThan(0);
-  for (const shot of after.projectiles) {
-    expect(distance(shot, carAtFire)).toBeLessThan(distance(shot, after.player));
+  // Only the player's own shots are in question, and the assertion is made
+  // against where each shot BEGAN rather than where it has travelled to. A
+  // travelled-position comparison is a proxy that a fast shot moving away from
+  // its real origin can satisfy, so it could pass for the wrong reason.
+  const shots = after.projectiles.filter((shot) => shot.faction === 'player');
+  expect(shots.length).toBeGreaterThan(0);
+  const carAfter = after.carrier ?? carAtFire;
+  for (const shot of shots) {
+    const origin = { x: shot.originX, y: shot.originY };
+    // The real discriminator: the shot began nearer the car than the player.
+    expect(distance(origin, carAfter)).toBeLessThan(distance(origin, after.player));
+    // And it plainly did not come from the player's own body, which is where
+    // this assertion would have passed before the repair.
+    expect(distance(origin, after.player)).toBeGreaterThan(50);
   }
 
   expect(errors.pageErrors).toEqual([]);

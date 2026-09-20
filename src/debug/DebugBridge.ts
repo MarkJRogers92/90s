@@ -273,6 +273,14 @@ export type MvpRunDebugSnapshot = {
     radius: number;
     /** Who fired it, so acceptance can tell a volley from the player's fire. */
     faction: 'enemy' | 'player';
+    /**
+     * Where the shot began, sampled from its recorded path when the tick kept
+     * one. Origin is the honest way to prove a firing source; a shot's current
+     * position drifts with travel, so comparing live positions is a proxy that
+     * can be satisfied by a fast shot travelling away from the true origin.
+     */
+    originX: number;
+    originY: number;
   }>;
   /** Whether the Bench Warrant preview is open. */
   previewOpen: boolean;
@@ -320,13 +328,18 @@ export function installMvpRunDebugBridge(
           recentChange: state.recentChange,
           behaviorTrace: [...state.behaviorTrace],
           carrier: state.carrier ? { ...state.carrier } : null,
-          projectiles: state.room.combat.projectiles.map((shot) => ({
-            id: shot.id,
-            x: shot.x,
-            y: shot.y,
-            radius: shot.radius,
-            faction: shot.faction,
-          })),
+          projectiles: state.room.combat.projectiles.map((shot) => {
+            const sampled = shot.sampledPath?.[0];
+            return {
+              id: shot.id,
+              x: shot.x,
+              y: shot.y,
+              radius: shot.radius,
+              faction: shot.faction,
+              originX: sampled?.x ?? shot.x,
+              originY: sampled?.y ?? shot.y,
+            };
+          }),
           previewOpen: state.preview !== null,
         };
       },

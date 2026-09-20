@@ -104,6 +104,9 @@ export function commitRunEmitterMount(
 
   state.inventory = committed.state;
   state.cash = committed.state.cash;
+  // Promote the car here too, so a direct commit agrees with the preview path
+  // and an immediate attack fires from the car rather than from the player.
+  syncRunCarrier(state);
   refreshRunLoadout(state);
 
   const message =
@@ -111,6 +114,33 @@ export function commitRunEmitterMount(
     `${resolution.proposal.carrierName} for $${committed.record.fee}.`;
   publishRunFeedback(state, message);
   return { accepted: true, message };
+}
+
+/**
+ * Whether the kiosk would actually offer a proposal, without opening one.
+ *
+ * The HUD uses this so it never advertises "E PREVIEW FUSION" where the sim
+ * would refuse. It deliberately checks only the two conditions that decide
+ * whether an offer exists at all — a standalone selected primary and an owned
+ * carrier — because those are cheap and stable per frame. A cash shortfall is
+ * not pre-judged: opening still publishes the resolver's real reason, so the
+ * prompt is never a promise the sim silently breaks.
+ */
+export function canOpenRunFusionPreview(state: MvpRunState): boolean {
+  if (state.status !== 'playing' || state.preview !== null) {
+    return false;
+  }
+  const primary = selectedPrimaryLeaf(state);
+  if (primary === null || findRunCarrierLeaf(state) === null) {
+    return false;
+  }
+  // A melee primary such as the starting mop can never be an Emitter Mount, and
+  // that is the most common state early in a shift, so the check rules it out
+  // rather than advertising a preview the sim would refuse.
+  return (
+    ITEM_CATALOG.find((definition) => definition.id === primary.itemDefinitionId)?.base
+      ?.delivery === 'projectile'
+  );
 }
 
 /**
@@ -191,6 +221,9 @@ export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
     createdTick: state.tick,
   });
   if (!committed.committed) {
+    // Publish the refusal so the player sees why the click did nothing; the
+    // preview stays open, so the reason can be read and then cancelled.
+    publishRunFeedback(state, committed.message);
     return rejected(committed.message);
   }
   state.inventory = committed.state;

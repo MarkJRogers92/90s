@@ -397,13 +397,22 @@ export function canRunSecuritySeePlayer(
  * than from the room the player happens to stand in, so a theft carried into
  * another room keeps rising, falling, and confiscating instead of freezing.
  */
+/**
+ * Advances the security sweep for one tick.
+ *
+ * Returns true exactly when this tick confiscated carried thefts, because a
+ * confiscation teleports the player back to the store entrance and every
+ * teleport has to be paired with re-parking the car (the caller does that; the
+ * carrier module is imported by the run, not by the economy, so the signal
+ * travels outward rather than the economy reaching into the carrier).
+ */
 export function updateRunSuspicion(
   state: MvpRunState,
   preserveActionFeedback = false,
-): void {
+): boolean {
   if (state.carried.length === 0) {
     state.suspicion = 0;
-    return;
+    return false;
   }
   const currentStore = state.wing.rooms[state.roomIndex]?.store ?? null;
   const store =
@@ -412,7 +421,7 @@ export function updateRunSuspicion(
       ? currentStore
       : wingStoreFor(state, state.carried[0]!.sourceStoreId);
   if (!store) {
-    return;
+    return false;
   }
 
   if (canRunSecuritySeePlayer(state, store)) {
@@ -426,7 +435,9 @@ export function updateRunSuspicion(
 
   if (state.suspicion >= RUN_MAX_SUSPICION) {
     confiscateRunThefts(state, store);
+    return true;
   }
+  return false;
 }
 
 /** The carried thefts a store is missing, for summaries and HUDs. */

@@ -327,3 +327,82 @@ Honest limits of this evidence:
 
 Not run: WebKit, Safari, Windows browser/device, physical-device performance,
 audio, and human feel/playtest.
+
+## 2026-09-19 — independent review round on the repair commits
+
+Two independent read-only reviewers were run in parallel over the change set:
+Muse reviewed the simulation half and DeepSeek reviewed the presentation and test
+half. Both returned findings; every one below was re-verified here by reading the
+code or by running it, and the refuted ones are recorded as refuted.
+
+Confirmed and repaired:
+
+- **A refusal the sim never halts.** `tickMvpRun`'s opening guard was
+  `if (state.paused)` only. `openRunFusionPreview` sets `paused = true`, but the
+  scene's Escape handler toggles `paused` with no knowledge of previews, so
+  Escape behind an open preview resumed live combat while the HUD still rendered
+  `FUSION PREVIEW OPEN`. The guard is now `state.paused || state.preview !== null`.
+  Red proof: the new test in `tests/unit/run-carrier.test.ts` ("halts the shift
+  even when the pause is cleared from outside the sim") fails against the old
+  guard and passes against the new one.
+- **A teleport that left the car behind.** `confiscateRunThefts` moves the player
+  to the store entrance without re-parking the car, unlike `enterDoorway`. The
+  next tick's leash correction then covered the whole deficit in one `moveCircle`
+  call, which only endpoint-checks and so can cross a wall rather than slide along
+  it. `updateRunSuspicion` now reports whether this tick confiscated, and
+  `tickMvpRun` re-parks on that signal. Red proof: with the `parkRunCarrier` call
+  disabled, the new test fails with the car 146 units from where it belongs
+  (`expected 356.7 to be close to 503`); with it enabled the test passes.
+- **Advertised controls the sim would refuse.** The HUD printed
+  `E PREVIEW FUSION` at the kiosk unconditionally, even with no carrier owned or
+  with the melee mop selected, and the refusal was never published, so the RECENT
+  line kept showing an unrelated older event. A new `canOpenRunFusionPreview`
+  gates the prompt, and edge-triggered interaction refusals (buy, steal, kiosk,
+  recall) now publish their reason instead of failing silently.
+- **A refused Confirm that did nothing visible.** A stale proposal was rejected
+  without any feedback while the panel sat there with an enabled button.
+  `confirmRunFusionPreview` now publishes the refusal, and the Confirm button is
+  disabled whenever the run is not playing.
+- **The HUD swallowed pointer input.** `.mvp-run-hud` had no `pointer-events`
+  rule, so it defaulted to `auto` and consumed aim and fire across its footprint —
+  which covers the janitor's spawn area. It now follows the existing `.run-hud`
+  pattern: `pointer-events: none` on the panel, `auto` on its action rows. Trade
+  accepted: wheel-scrolling the panel is no longer possible; it is documented in
+  DECISIONS.md.
+- **A projection that proved less than it claimed.** The firing-origin browser
+  assertion compared each shot's *current* position, which a fast shot travelling
+  away from its true origin can satisfy, and it did not filter to player shots.
+  The run debug snapshot now exposes `originX`/`originY` from the shot's recorded
+  path — the same field the M4 bench snapshot already exposes — and the test
+  asserts against the origin and additionally that the origin is more than 50
+  units from the player.
+- Three one-line hardenings: `commitRunEmitterMount` now promotes the car like the
+  preview path does; `parkRunCarrier` resets `bumpCooldownTicks` so a room-local
+  cooldown does not follow the car into a rebuilt room; and `carrierModeForInventory`
+  branches on `recipeId === 'emitter_mount'` rather than merely on node kind.
+
+Refuted:
+
+- **"The `selectCarTarget` tie-break changed and may flip an M4 golden test."**
+  Refuted by diffing the pre-extraction file: `git show 348cfeb:src/sim/bench/car.ts`
+  contains the identical `(distance === bestDistance && enemy.id < best.id)` clause.
+  The extraction did not change target selection. The reviewer correctly said it
+  could not check this without a shell.
+
+Deferred, and recorded rather than fixed:
+
+- Checkpoint validation accepts hand-crafted saves that live play cannot produce:
+  inventory leaves are not cross-checked against `offerStatus`, `clearedRoomIds`
+  may name rooms ahead of `roomIndex`, and `nextCompositeId` may collide with a
+  composite and transaction already present (which would brick future fusion on
+  that restored run). These require editing `localStorage` by hand; they are real
+  defects worth fixing and are left as known issues rather than silently ignored.
+
+Gate after the review repairs: `npm run typecheck` exit 0; `npm test` exit 0 with
+25 files and 452 tests passed (448 before this round); `npm run test:browser` exit
+0 with 44 Chromium tests passed; `npm run build` exit 0 and `dist/` regenerated;
+production scan 0 hits for the debug bridge, the debug flag, and every fixture
+literal including the quoted `mvp-bench`.
+
+Not run: WebKit, Safari, Windows browser/device, physical-device performance,
+audio, and human feel/playtest.

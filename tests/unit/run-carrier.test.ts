@@ -6,10 +6,16 @@
  * read a preview, commit an Emitter Mount, and fire from the car.
  */
 import { describe, expect, it } from 'vitest';
-import { CAR_BUMP_DAMAGE, CAR_LEASH, CAR_RADIUS } from '../../src/sim/carrier/car';
+import {
+  CAR_BUMP_DAMAGE,
+  CAR_LEASH,
+  CAR_RADIUS,
+  findCarrierSpawn,
+} from '../../src/sim/carrier/car';
 import { isPlayerProjectile } from '../../src/sim/effects/playerProjectiles';
 import type { InventoryLeaf } from '../../src/sim/fusion/types';
 import {
+  canOpenRunFusionPreview,
   cancelRunFusionPreview,
   confirmRunFusionPreview,
   openRunFusionPreview,
@@ -21,9 +27,12 @@ import {
   serializeCheckpoint,
 } from '../../src/sim/run/checkpoint';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
+import { beginRunTheft } from '../../src/sim/run/economy';
 import { refreshRunLoadout } from '../../src/sim/run/loadout';
 import { enterDoorway, tickMvpRun } from '../../src/sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
+import { securityFacingAtTick } from '../../src/sim/shop/security';
+import { MAX_SUSPICION } from '../../src/sim/shop/types';
 import type { EnemyState } from '../../src/sim/model';
 
 const input = (overrides: Partial<MvpInputFrame> = {}): MvpInputFrame => ({
@@ -243,6 +252,70 @@ describe('the Bench Warrant preview in the run', () => {
     expect(result.accepted).toBe(false);
     expect(state.preview).toBeNull();
   });
+
+  it('reports honestly whether the kiosk has anything to offer', () => {
+    const state = createMvpRun(7);
+    // The starting mop is not a projectile primary, so there is nothing to fuse
+    // even once a carrier is owned.
+    expect(canOpenRunFusionPreview(state)).toBe(false);
+    grantItem(state, 'rc_car');
+    advance(state, 1);
+    expect(canOpenRunFusionPreview(state)).toBe(false);
+
+    grantItem(state, 'party_popper');
+    state.inventory = { ...state.inventory, selectedPrimaryInstanceId: 'test-party_popper' };
+    refreshRunLoadout(state);
+    advance(state, 1);
+    expect(canOpenRunFusionPreview(state)).toBe(true);
+
+    standAtKiosk(state);
+    tickMvpRun(state, input({ interact: true }));
+    expect(state.preview).not.toBeNull();
+    // While a preview is already open the kiosk offers nothing further.
+    expect(canOpenRunFusionPreview(state)).toBe(false);
+  });
+
+  it('publishes the reason when a click cannot commit, instead of doing nothing', () => {
+    const state = runAtKioskWithCarAndPrimary();
+    tickMvpRun(state, input({ interact: true }));
+    // Move the inventory out from under the open proposal.
+    grantItem(state, 'gel_pens');
+
+    const result = confirmRunFusionPreview(state);
+
+    expect(result.accepted).toBe(false);
+    expect(state.recentChange).toMatch(/revision/i);
+    // The preview stays open so the player can read the reason and cancel.
+    expect(state.preview).not.toBeNull();
+    expect(cancelRunFusionPreview(state).accepted).toBe(true);
+    expect(state.paused).toBe(false);
+  });
+});
+
+describe('an open preview defends its own pause', () => {
+  it('halts the shift even when the pause is cleared from outside the sim', () => {
+    const state = createMvpRun(7);
+    grantItem(state, 'rc_car');
+    grantItem(state, 'party_popper');
+    state.inventory = { ...state.inventory, selectedPrimaryInstanceId: 'test-party_popper' };
+    refreshRunLoadout(state);
+    advance(state, 1);
+    standAtKiosk(state);
+    tickMvpRun(state, input({ interact: true }));
+    expect(state.preview).not.toBeNull();
+
+    const tickBefore = state.tick;
+    const playerBefore = { x: state.room.combat.player.x, y: state.room.combat.player.y };
+    // The scene's Escape handler toggles `paused` with no knowledge of previews.
+    state.paused = false;
+    advance(state, 10, { fire: true, moveX: 1 });
+
+    expect(state.tick).toBe(tickBefore);
+    expect(state.room.combat.projectiles).toEqual([]);
+    expect(state.room.combat.player.x).toBe(playerBefore.x);
+    expect(state.room.combat.player.y).toBe(playerBefore.y);
+    expect(state.preview).not.toBeNull();
+  });
 });
 
 describe('firing from the fused car', () => {
@@ -354,6 +427,41 @@ describe('recall and room changes', () => {
     expect(state.carrier?.mode).toBe('emitter');
     const distance = distanceBetween(state.carrier!, state.room.combat.player);
     expect(distance).toBeLessThanOrEqual(CAR_LEASH);
+  });
+
+  it('re-parks the car when a security confiscation teleports the player', () => {
+    const state = createMvpRun(9);
+    grantItem(state, 'rc_car');
+    advance(state, 1);
+
+    const doorway = state.wing.rooms[0]!.doorways.find((entry) => entry.side === 'east')!;
+    state.room.combat.player.x = doorway.rect.x + doorway.rect.width / 2;
+    state.room.combat.player.y = doorway.rect.y + doorway.rect.height / 2;
+    expect(enterDoorway(state, 'east').accepted).toBe(true);
+
+    const room = state.wing.rooms[state.roomIndex]!;
+    const store = room.store!;
+    expect(beginRunTheft(state, room.offers[0]!.id).accepted).toBe(true);
+    const facing = securityFacingAtTick(store.sightZone, state.tick + 1);
+    state.room.combat.player.x = store.sightZone.origin.x + Math.cos(facing) * 60;
+    state.room.combat.player.y = store.sightZone.origin.y + Math.sin(facing) * 60;
+    state.suspicion = MAX_SUSPICION - 0.25;
+
+    advance(state, 1);
+
+    // Confiscation fired: the theft is gone and the player was teleported to
+    // the store entrance.
+    expect(state.carried).toEqual([]);
+    // The car must be parked where the player now stands. Leaving it behind made
+    // the next tick's leash correction one large unswept jump through geometry.
+    expect(state.carrier).not.toBeNull();
+    const expected = findCarrierSpawn(
+      state.room.combat.player,
+      state.room.combat.player.radius,
+      state.room.combat.walls,
+    );
+    expect(state.carrier!.x).toBeCloseTo(expected.x, 6);
+    expect(state.carrier!.y).toBeCloseTo(expected.y, 6);
   });
 
   it('drops the car when the inventory no longer carries one', () => {

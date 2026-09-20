@@ -14,6 +14,7 @@ import {
   runOfferPrice,
   runOfferPriceLabel,
 } from '../../sim/run/economy';
+import { canOpenRunFusionPreview } from '../../sim/run/bench';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import type { MvpRunState } from '../../sim/run/types';
 import type { EnemyState } from '../../sim/model';
@@ -240,7 +241,11 @@ export class MvpRunHud {
     } else if (interaction.kind === 'door' && interaction.locked) {
       this.controls.textContent = interaction.lockedReason ?? movementControls(state);
     } else if (interaction.kind === 'bench') {
-      this.controls.textContent = 'E PREVIEW FUSION · ' + movementControls(state);
+      // Never advertise a key the sim would refuse: without an owned carrier the
+      // kiosk has no proposal to offer, so the prompt says what is missing.
+      this.controls.textContent = canOpenRunFusionPreview(state)
+        ? 'E PREVIEW FUSION · ' + movementControls(state)
+        : 'BENCH WARRANT NEEDS AN OWNED EMITTER CARRIER · ' + movementControls(state);
     } else if (interaction.kind === 'offer') {
       this.controls.textContent = 'E BUY · F STEAL · ' + movementControls(state);
     } else {
@@ -279,6 +284,9 @@ export class MvpRunHud {
       return;
     }
     this.bench.hidden = false;
+    // A terminal run can still be cancelled but never committed, so the confirm
+    // button must not look available while the sim would refuse it.
+    this.confirmFusionButton.disabled = state.status !== 'playing';
     this.benchIngredients.textContent =
       `INGREDIENTS: ${preview.primaryName} (${preview.primaryProvenance}) + ` +
       `${preview.carrierName} (${preview.carrierProvenance})`;
