@@ -21,6 +21,8 @@ import {
   alexIdleFrame,
   alexWalkFrame,
   BENCH_WARRANT_KIOSK_TEXTURE,
+  RC_CAR_TEXTURE,
+  rcCarFrame,
   type AlexDirection,
 } from '../assets';
 
@@ -35,6 +37,9 @@ export class MvpRunView {
   private playerSprite: Phaser.GameObjects.Sprite | undefined;
   private playerFacing: AlexDirection = 'south';
   private lastPlayerPosition: { x: number; y: number } | undefined;
+  private carSprite: Phaser.GameObjects.Sprite | undefined;
+  private carFacing: AlexDirection = 'south';
+  private lastCarrierPosition: { x: number; y: number } | undefined;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -118,6 +123,8 @@ export class MvpRunView {
     const carrier = state.carrier;
     if (carrier === null) {
       this.clearLabel('carrier');
+      this.carSprite?.setVisible(false);
+      this.lastCarrierPosition = undefined;
       return;
     }
     const graphics = this.graphics;
@@ -128,20 +135,33 @@ export class MvpRunView {
     graphics.lineStyle(1, fused ? 0x8bc9b8 : 0xc4b878, 0.28);
     graphics.lineBetween(player.x, player.y, carrier.x, carrier.y);
 
-    graphics.fillStyle(fused ? 0x8bc9b8 : 0xd7a45c, 1);
-    graphics.fillRect(
-      carrier.x - carrier.radius,
-      carrier.y - carrier.radius,
-      carrier.radius * 2,
-      carrier.radius * 2,
-    );
-    graphics.lineStyle(2, 0x12130f, 0.9);
-    graphics.strokeRect(
-      carrier.x - carrier.radius - 1,
-      carrier.y - carrier.radius - 1,
-      carrier.radius * 2 + 2,
-      carrier.radius * 2 + 2,
-    );
+    if (!this.syncCarSprite(carrier.x, carrier.y)) {
+      graphics.fillStyle(fused ? 0x8bc9b8 : 0xd7a45c, 1);
+      graphics.fillRect(
+        carrier.x - carrier.radius,
+        carrier.y - carrier.radius,
+        carrier.radius * 2,
+        carrier.radius * 2,
+      );
+      graphics.lineStyle(2, 0x12130f, 0.9);
+      graphics.strokeRect(
+        carrier.x - carrier.radius - 1,
+        carrier.y - carrier.radius - 1,
+        carrier.radius * 2 + 2,
+        carrier.radius * 2 + 2,
+      );
+    } else {
+      // The sprite supplies the silhouette, so the mode colour moves to a
+      // ground ring: an independent companion and a steered emitter mount
+      // still have to be told apart at a glance.
+      graphics.lineStyle(2, fused ? 0x8bc9b8 : 0xd7a45c, 0.7);
+      graphics.strokeEllipse(
+        carrier.x,
+        carrier.y + carrier.radius - 3,
+        (carrier.radius + 6) * 2,
+        carrier.radius + 4,
+      );
+    }
 
     // The carrier trails the player, so a label drawn just above it lands across
     // the character every time rather than occasionally — unlike the fixed
@@ -467,6 +487,41 @@ export class MvpRunView {
     return true;
   }
 
+  /**
+   * Places the RC car centred on its collision circle rather than base-anchored
+   * like an upright sprite: the car's footprint is a circle at (x, y), so the
+   * art is centred on it too.
+   *
+   * `CarrierState` carries no heading, so the facing is derived from the
+   * frame-to-frame delta, exactly as the player's walk facing is.
+   */
+  private syncCarSprite(x: number, y: number): boolean {
+    if (!this.scene.textures.exists(RC_CAR_TEXTURE)) {
+      this.carSprite?.setVisible(false);
+      return false;
+    }
+
+    const last = this.lastCarrierPosition;
+    const dx = last ? x - last.x : 0;
+    const dy = last ? y - last.y : 0;
+    if (dx * dx + dy * dy > 0.25) {
+      this.carFacing = alexDirectionFor(dx, dy);
+    }
+    this.lastCarrierPosition = { x, y };
+
+    const frame = rcCarFrame(this.carFacing);
+    const centreX = Math.round(x);
+    const centreY = Math.round(y);
+    if (!this.carSprite) {
+      this.carSprite = this.scene.add
+        .sprite(centreX, centreY, RC_CAR_TEXTURE, frame)
+        .setOrigin(0.5, 0.5)
+        .setDepth(2);
+    }
+    this.carSprite.setPosition(centreX, centreY).setFrame(frame).setVisible(true);
+    return true;
+  }
+
   private setLabel(key: string, text: string, x: number, y: number): void {
     let label = this.labels.get(key);
     if (!label) {
@@ -519,6 +574,8 @@ export class MvpRunView {
     this.benchKioskSprite = undefined;
     this.playerSprite?.destroy();
     this.playerSprite = undefined;
+    this.carSprite?.destroy();
+    this.carSprite = undefined;
     for (const key of [...this.labels.keys()]) {
       this.clearLabel(key);
     }

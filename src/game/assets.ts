@@ -19,6 +19,15 @@ export const ALEX_DIRECTIONS = [
 
 export type AlexDirection = (typeof ALEX_DIRECTIONS)[number];
 
+export const RC_CAR_TEXTURE = 'rc-car';
+export const RC_CAR_URL = '/assets/props/rc-car.png';
+export const RC_CAR_FRAME_SIZE = 24;
+
+/** Frame index for a facing; the car sheet shares the player's facing order. */
+export function rcCarFrame(direction: AlexDirection): number {
+  return ALEX_DIRECTIONS.indexOf(direction);
+}
+
 export const ALEX_IDLE_TEXTURE = 'alex-idle';
 export const ALEX_IDLE_URL = '/assets/characters/alex-idle.png';
 export const ALEX_WALK_TEXTURE = 'alex-walk';

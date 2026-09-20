@@ -4,6 +4,7 @@ import {
   ALEX_FRAME_HEIGHT,
   ALEX_FRAME_WIDTH,
   ALEX_WALK_FRAMES,
+  RC_CAR_FRAME_SIZE,
 } from '../../src/game/assets';
 
 type RunSnapshot = {
@@ -202,6 +203,47 @@ test('the Alex sheets load from the local game asset paths', async ({ page }) =>
 test('player sprite failure keeps the vector fallback playable', async ({ page }) => {
   const errors = collectErrors(page);
   await page.route('**/assets/characters/alex-*.png', (route) => route.abort());
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.getByTestId('mvp-run-hud')).toHaveCount(1);
+  expect((await runSnapshot(page)).roomId).toBe('service_corridor');
+  expect(errors.pageErrors).toEqual([]);
+});
+
+test('the RC car sheet loads and carries one frame per facing', async ({ page }) => {
+  const errors = collectErrors(page);
+  const car = page.waitForResponse((response) =>
+    response.url().endsWith('/assets/props/rc-car.png'),
+  );
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  expect((await car).status()).toBe(200);
+
+  const size = await page.evaluate(async () => {
+    const image = new Image();
+    await new Promise<void>((resolve, reject) => {
+      image.onload = () => resolve();
+      image.onerror = () => reject(new Error('could not load rc-car.png'));
+      image.src = '/assets/props/rc-car.png';
+    });
+    return { width: image.naturalWidth, height: image.naturalHeight };
+  });
+
+  expect(size).toEqual({
+    width: RC_CAR_FRAME_SIZE * ALEX_DIRECTIONS.length,
+    height: RC_CAR_FRAME_SIZE,
+  });
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('car sprite failure keeps the vector fallback playable', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.route('**/assets/props/rc-car.png', (route) => route.abort());
 
   await launchRun(page, '/?fixture=mvp-bench&seed=4242');
 

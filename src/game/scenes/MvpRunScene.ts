@@ -41,6 +41,9 @@ import {
   ALEX_WALK_URL,
   BENCH_WARRANT_KIOSK_TEXTURE,
   BENCH_WARRANT_KIOSK_URL,
+  RC_CAR_FRAME_SIZE,
+  RC_CAR_TEXTURE,
+  RC_CAR_URL,
 } from '../assets';
 import { GameAudioEngine } from '../audio/engine';
 import { MvpRunHud } from '../ui/MvpRunHud';
@@ -228,6 +231,12 @@ export class MvpRunScene extends Phaser.Scene {
     this.load.spritesheet(ALEX_WALK_TEXTURE, ALEX_WALK_URL, {
       frameWidth: ALEX_FRAME_WIDTH,
       frameHeight: ALEX_FRAME_HEIGHT,
+    });
+    // One row of eight facings; the car has no heading in the sim, so the view
+    // picks a frame from its movement delta.
+    this.load.spritesheet(RC_CAR_TEXTURE, RC_CAR_URL, {
+      frameWidth: RC_CAR_FRAME_SIZE,
+      frameHeight: RC_CAR_FRAME_SIZE,
     });
   }
 

@@ -5,6 +5,7 @@ import {
   alexDirectionFor,
   alexIdleFrame,
   alexWalkFrame,
+  rcCarFrame,
   type AlexDirection,
 } from '../../src/game/assets';
 
@@ -62,5 +63,19 @@ describe('alex sprite frames', () => {
     const frames = ALEX_DIRECTIONS.map((d) => alexWalkFrame(d, ALEX_WALK_FRAMES - 1));
     expect(Math.max(...frames)).toBe(ALEX_DIRECTIONS.length * ALEX_WALK_FRAMES - 1);
     expect(Math.min(...frames)).toBeGreaterThanOrEqual(0);
+  });
+});
+
+describe('rc car sprite', () => {
+  it('gives every facing its own frame, sharing the player facing order', () => {
+    const frames = ALEX_DIRECTIONS.map((d) => rcCarFrame(d));
+    expect(frames).toEqual([...ALEX_DIRECTIONS.keys()]);
+  });
+
+  it('faces the car the same way the player faces for the same vector', () => {
+    // The car sheet is built from the same facing order, so a car driving south
+    // must select the same index a south-facing player would.
+    expect(rcCarFrame(alexDirectionFor(0, 1))).toBe(rcCarFrame('south'));
+    expect(rcCarFrame(alexDirectionFor(1, 0))).toBe(rcCarFrame('east'));
   });
 });
