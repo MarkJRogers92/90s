@@ -1,0 +1,122 @@
+{
+  "wall-face-32x64": {
+    "size": "32x64",
+    "overlay": false,
+    "palette": {
+      "opaque_pixels": 2048,
+      "transparent_pixels": 0,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "repeat_horizontal": {
+      "axis": "horizontal",
+      "interior_mean": 8.193,
+      "interior_sd": 15.17,
+      "interior_max": 36.281,
+      "seam_values": [
+        36.281,
+        36.281,
+        36.281
+      ],
+      "is_outlier": false
+    }
+  },
+  "wall-top-32": {
+    "size": "32x32",
+    "overlay": false,
+    "palette": {
+      "opaque_pixels": 1024,
+      "transparent_pixels": 0,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "repeat_horizontal": {
+      "axis": "horizontal",
+      "interior_mean": 10.867,
+      "interior_sd": 20.122,
+      "interior_max": 48.125,
+      "seam_values": [
+        48.125,
+        48.125,
+        48.125
+      ],
+      "is_outlier": false
+    },
+    "repeat_vertical": {
+      "axis": "vertical",
+      "interior_mean": 10.867,
+      "interior_sd": 20.122,
+      "interior_max": 48.125,
+      "seam_values": [
+        48.125,
+        48.125,
+        48.125
+      ],
+      "is_outlier": false
+    }
+  },
+  "wall-corner-32x64": {
+    "size": "32x64",
+    "overlay": false,
+    "palette": {
+      "opaque_pixels": 2048,
+      "transparent_pixels": 0,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    }
+  },
+  "column-32": {
+    "size": "32x32",
+    "overlay": true,
+    "palette": {
+      "opaque_pixels": 492,
+      "transparent_pixels": 532,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    }
+  },
+  "railing-glass-32": {
+    "size": "32x32",
+    "overlay": true,
+    "palette": {
+      "opaque_pixels": 448,
+      "transparent_pixels": 576,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "repeat_horizontal": {
+      "axis": "horizontal",
+      "interior_mean": 2.258,
+      "interior_sd": 4.181,
+      "interior_max": 10.0,
+      "seam_values": [
+        10.0,
+        10.0,
+        10.0
+      ],
+      "is_outlier": false
+    }
+  },
+  "security-gate-32": {
+    "size": "32x32",
+    "overlay": false,
+    "palette": {
+      "opaque_pixels": 1024,
+      "transparent_pixels": 0,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "repeat_horizontal": {
+      "axis": "horizontal",
+      "interior_mean": 0.0,
+      "interior_sd": 0.0,
+      "interior_max": 0.0,
+      "seam_values": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "is_outlier": false
+    }
+  }
+}

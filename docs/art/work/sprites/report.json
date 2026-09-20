@@ -1,0 +1,20 @@
+{
+  "mall-bench": {
+    "size": "32x24",
+    "drawn_pixels": 398,
+    "off_palette_pixels": 0,
+    "off_palette_examples": []
+  },
+  "vending-machine": {
+    "size": "24x40",
+    "drawn_pixels": 832,
+    "off_palette_pixels": 0,
+    "off_palette_examples": []
+  },
+  "store-gondola": {
+    "size": "32x40",
+    "drawn_pixels": 970,
+    "off_palette_pixels": 0,
+    "off_palette_examples": []
+  }
+}

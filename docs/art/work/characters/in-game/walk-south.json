@@ -1,0 +1,89 @@
+{
+  "label": "holding S (south)",
+  "state": {
+    "mode": "run",
+    "generation": 1,
+    "tick": 81,
+    "paused": false,
+    "status": "playing",
+    "seed": 4242,
+    "roomIndex": 0,
+    "roomId": "service_corridor",
+    "cash": 30,
+    "heat": 0,
+    "suspicion": 0,
+    "player": {
+      "x": 480,
+      "y": 168.5,
+      "health": 6
+    },
+    "enemies": [],
+    "carried": [],
+    "inventory": {
+      "inventory": [
+        {
+          "kind": "leaf",
+          "instanceId": "mvp-associate-mop",
+          "itemDefinitionId": "janitor_mop",
+          "acquisitionKind": "purchased",
+          "sourceLocationId": "service_corridor",
+          "sourceStockId": "associate-issue-mop",
+          "acquisitionTick": 0
+        },
+        {
+          "kind": "leaf",
+          "instanceId": "dev-rc_car",
+          "itemDefinitionId": "rc_car",
+          "acquisitionKind": "purchased",
+          "sourceLocationId": "dev-fixture",
+          "sourceStockId": "dev-rc_car-offer",
+          "acquisitionTick": 0
+        },
+        {
+          "kind": "leaf",
+          "instanceId": "dev-party_popper",
+          "itemDefinitionId": "party_popper",
+          "acquisitionKind": "purchased",
+          "sourceLocationId": "dev-fixture",
+          "sourceStockId": "dev-party_popper-offer",
+          "acquisitionTick": 0
+        }
+      ],
+      "cash": 30,
+      "revision": 1,
+      "selectedPrimaryInstanceId": "dev-party_popper",
+      "serviceAvailable": true,
+      "nextCompositeId": 1,
+      "committedTransactions": []
+    },
+    "checkpoint": {
+      "roomIndex": 0,
+      "tick": 0
+    },
+    "summary": null,
+    "recentChange": "",
+    "behaviorTrace": [],
+    "carrier": {
+      "mode": "independent",
+      "x": 480,
+      "y": 165,
+      "radius": 9,
+      "bumpCooldownTicks": 0,
+      "recalling": false
+    },
+    "projectiles": [],
+    "previewOpen": false,
+    "audio": {
+      "created": true,
+      "running": true,
+      "muted": false,
+      "played": 0
+    }
+  },
+  "box": {
+    "x": 0,
+    "y": 173,
+    "width": 1200,
+    "height": 600
+  }
+}

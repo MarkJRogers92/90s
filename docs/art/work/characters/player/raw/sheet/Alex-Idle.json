@@ -1,0 +1,45 @@
+{
+  "character": {
+    "id": "a2b81358-dbe3-4ff7-b2e2-8ea09b128c72",
+    "name": "Idle",
+    "prompt": "pixel art chibi teen survivor for a 1990s American mall horror roguelike, oversized messy dark brown hair with ragged spiky silhouette, pale tan skin, small dark eyes, open dark red jacket over a light cream t-shirt, blue denim jeans, thick one-pixel black outline, muted limited palette, late-SNES detail, standing idle facing the camera, full body, feet at the bottom of the canvas",
+    "size": {
+      "width": 48,
+      "height": 48
+    },
+    "directions": 8,
+    "view": "low top-down"
+  },
+  "spritesheet": {
+    "path": "Alex-Idle.png",
+    "cell_size": {
+      "width": 48,
+      "height": 48
+    },
+    "sheet_size": {
+      "width": 384,
+      "height": 48
+    },
+    "columns": 8,
+    "pivot": "cell-center",
+    "rows": [
+      {
+        "row": 0,
+        "type": "rotations",
+        "frame_count": 8,
+        "directions": [
+          "south",
+          "south-east",
+          "east",
+          "north-east",
+          "north",
+          "north-west",
+          "west",
+          "south-west"
+        ]
+      }
+    ]
+  },
+  "export_version": "1.0",
+  "export_date": "2026-09-20T19:23:09.341024+00:00"
+}

@@ -1,0 +1,36 @@
+{
+  "vending-machine": {
+    "sprite": {
+      "label": "sprite",
+      "pixels_measured": 960,
+      "luminance_mean": 89.4,
+      "luminance_std": 46.7,
+      "luminance_p5_p95": [
+        25.2,
+        189.3
+      ],
+      "edge_density": 22.45,
+      "mean_saturation": 0.34,
+      "distinct_colours": 31
+    },
+    "reference": {
+      "label": "reference",
+      "pixels_measured": 4240,
+      "luminance_mean": 75.0,
+      "luminance_std": 61.7,
+      "luminance_p5_p95": [
+        18.4,
+        218.8
+      ],
+      "edge_density": 27.02,
+      "mean_saturation": 0.249,
+      "distinct_colours": 1774
+    },
+    "image": "/Users/markrogers/deadmall-art/work/compare/vending-machine-vs-reference.png",
+    "note": "Closest approved language available: sheet 07 is boxy 1990s consumer electronics (CRT, VCR, boombox), the same family of object as a vending machine. Only a 384x256 lossy preview survives in the repo."
+  },
+  "mall-bench": {
+    "reference": null,
+    "note": "NO REFERENCE EXISTS. The approved set covers the player, palettes, scale, portraits, held equipment and item art. There is no furniture or environment board, so a bench has no subject anchor -- only the palette and the written style rules."
+  }
+}

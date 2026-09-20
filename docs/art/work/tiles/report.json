@@ -1,0 +1,172 @@
+{
+  "floor-terrazzo-32": {
+    "seam_mean": {
+      "seam_positions": [
+        31,
+        63,
+        95
+      ],
+      "seam_diffs": [
+        17.719,
+        17.719,
+        17.719
+      ],
+      "interior_mean": 21.262,
+      "interior_sd": 9.407,
+      "worst_seam_deviation_sd": 0.38,
+      "seam_is_outlier": false
+    },
+    "palette": {
+      "unique_colours": 9,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "seam_pixels": {
+      "axis": "horizontal",
+      "seam_mismatched_pixels": [
+        84,
+        84,
+        84
+      ],
+      "interior_max_mismatched_pixels": 216,
+      "interior_mean_mismatched_pixels": 124.26,
+      "is_outlier": false
+    }
+  },
+  "floor-tile-beige-32": {
+    "seam_mean": {
+      "seam_positions": [
+        31,
+        63,
+        95
+      ],
+      "seam_diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "interior_mean": 16.534,
+      "interior_sd": 25.395,
+      "worst_seam_deviation_sd": 0.65,
+      "seam_is_outlier": false
+    },
+    "palette": {
+      "unique_colours": 5,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "seam_pixels": {
+      "axis": "horizontal",
+      "seam_mismatched_pixels": [
+        0,
+        0,
+        0
+      ],
+      "interior_max_mismatched_pixels": 336,
+      "interior_mean_mismatched_pixels": 79.74,
+      "is_outlier": false
+    }
+  },
+  "floor-tile-accent-32": {
+    "seam_mean": {
+      "seam_positions": [
+        31,
+        63,
+        95
+      ],
+      "seam_diffs": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "interior_mean": 5.911,
+      "interior_sd": 15.139,
+      "worst_seam_deviation_sd": 0.39,
+      "seam_is_outlier": false
+    },
+    "palette": {
+      "unique_colours": 4,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "seam_pixels": {
+      "axis": "horizontal",
+      "seam_mismatched_pixels": [
+        0,
+        0,
+        0
+      ],
+      "interior_max_mismatched_pixels": 360,
+      "interior_mean_mismatched_pixels": 46.45,
+      "is_outlier": false
+    }
+  },
+  "floor-carpet-32": {
+    "seam_mean": {
+      "seam_positions": [
+        31,
+        63,
+        95
+      ],
+      "seam_diffs": [
+        25.896,
+        25.896,
+        25.896
+      ],
+      "interior_mean": 35.521,
+      "interior_sd": 13.848,
+      "worst_seam_deviation_sd": 0.7,
+      "seam_is_outlier": false
+    },
+    "palette": {
+      "unique_colours": 6,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "seam_pixels": {
+      "axis": "horizontal",
+      "seam_mismatched_pixels": [
+        264,
+        264,
+        264
+      ],
+      "interior_max_mismatched_pixels": 288,
+      "interior_mean_mismatched_pixels": 219.1,
+      "is_outlier": false
+    }
+  },
+  "floor-carpet-damaged-32": {
+    "seam_mean": {
+      "seam_positions": [
+        31,
+        63,
+        95
+      ],
+      "seam_diffs": [
+        23.031,
+        23.031,
+        23.031
+      ],
+      "interior_mean": 36.483,
+      "interior_sd": 13.751,
+      "worst_seam_deviation_sd": 0.98,
+      "seam_is_outlier": false
+    },
+    "palette": {
+      "unique_colours": 8,
+      "off_palette_pixels": 0,
+      "off_palette_examples": []
+    },
+    "seam_pixels": {
+      "axis": "horizontal",
+      "seam_mismatched_pixels": [
+        240,
+        240,
+        240
+      ],
+      "interior_max_mismatched_pixels": 312,
+      "interior_mean_mismatched_pixels": 226.84,
+      "is_outlier": false
+    }
+  }
+}

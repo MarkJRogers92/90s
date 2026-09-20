@@ -1,0 +1,36 @@
+{
+  "group_id": "87517043-f3bd-47a0-b4dd-904b88f893ba",
+  "states": [
+    {
+      "character": {
+        "id": "a2b81358-dbe3-4ff7-b2e2-8ea09b128c72",
+        "name": "Idle",
+        "prompt": "pixel art chibi teen survivor for a 1990s American mall horror roguelike, oversized messy dark brown hair with ragged spiky silhouette, pale tan skin, small dark eyes, open dark red jacket over a light cream t-shirt, blue denim jeans, thick one-pixel black outline, muted limited palette, late-SNES detail, standing idle facing the camera, full body, feet at the bottom of the canvas",
+        "size": {
+          "width": 48,
+          "height": 48
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-20T19:18:02.260666+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-20T19:23:08.443374"
+}

@@ -1,0 +1,30 @@
+DEAD MALL ART PACK
+Generated: 2026-09-19
+Repository: MarkJRogers92/90s
+Canonical art branch: art/visual-bible-2026-09-13
+Canonical art registry source commit: 7045c14fcccd53d9c5e4e18c2742da1cc17ec1c6
+
+Repository-preserved source files: 41
+
+Included:
+- 10 approved initial visual/reference boards
+- 8 continuation visual/reference boards
+- 9 supporting/crop studies
+- Canonical Sheet 06 electronics store reference set
+- Canonical Sheet 07 electronics merchandise reference
+- Canonical Sheet 08 video rental store reference
+- Canonical registry, coverage, source catalog, and upload-status documentation
+
+Registry status:
+- Sheet 01: reference-complete / locked
+- Sheet 02: covered / locked
+- Sheet 03: covered / locked
+- Sheet 04: partial
+- Sheet 05: substantial coverage
+- Sheets 06-08: finalized canonical/dedicated reference sets
+
+Important:
+The GitHub branch preserves compressed browseable WebP references. The original lossless PNG masters
+from the earlier chat-generated reference pack were not pushed to GitHub because the connected writer
+could not transfer those binary source files. This ZIP therefore contains everything currently preserved
+in the canonical repository art set, without inventing or regenerating missing masters.
