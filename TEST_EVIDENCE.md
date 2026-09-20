@@ -406,3 +406,34 @@ literal including the quoted `mvp-bench`.
 
 Not run: WebKit, Safari, Windows browser/device, physical-device performance,
 audio, and human feel/playtest.
+
+## 2026-09-19 — room-clear recovery
+
+Balance change chosen by the user. Six health across two combat rooms and a
+sixty-health Loss Prevention Manager made a chipped shift arithmetically
+unwinnable, and a run chipped down at a checkpoint retried from behind. Clearing
+a room that authored enemy spawns now restores 2 health, capped at 6
+(`ROOM_CLEAR_HEAL` in `src/sim/run/rooms.ts`).
+
+Evidence:
+
+- `npm run typecheck` — exit 0.
+- `npm test` — exit 0; 26 files and 456 tests passed (452 before).
+- New `tests/unit/run-health.test.ts` covers four directions: a cleared fight
+  heals 2, healing never exceeds the authored maximum, a cleared room heals
+  exactly once, and the enemy-free safe rooms (the service corridor and the first
+  storefront) heal nothing.
+- `npm run test:browser` — exit 0; 44 Chromium tests passed, unchanged.
+
+The gate this change needed: `evaluateRoomClear` runs for any room with no living
+enemies, and the safe rooms are enemy-free the moment they are entered, so an
+ungated heal would have been a free +2 per doorway rather than per fight. The
+heal is therefore gated on `currentRoom(state).enemySpawns.length > 0`, and the
+safe-room test is written specifically to catch that mistake.
+
+Honest note on method: the negative direction was reasoned rather than observed.
+Attempting to run the suite against a deliberately weakened gate was refused by
+the tooling's own classifier as a test-removal pattern, which is a reasonable
+guardrail, and it was not worked around. The gate was reverted immediately and
+the suite re-run green. Both directions are pinned by assertions, but only the
+positive direction was watched turning from red to green.

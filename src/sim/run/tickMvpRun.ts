@@ -34,7 +34,13 @@ import {
   syncRunCarrier,
   updateRunCarrier,
 } from './carrier';
-import { buildRoomCombatState, clearRoomEnemies, hasLivingEnemies } from './rooms';
+import {
+  PLAYER_MAX_HEALTH,
+  ROOM_CLEAR_HEAL,
+  buildRoomCombatState,
+  clearRoomEnemies,
+  hasLivingEnemies,
+} from './rooms';
 import {
   RUN_INTERACTION_RANGE,
   blockedRunReason,
@@ -300,6 +306,24 @@ function checkDoorwayCrossing(state: MvpRunState, input: MvpInputFrame): void {
   }
 }
 
+/**
+ * The recovery a cleared fight pays out, capped at the authored maximum.
+ *
+ * Published so the player can see why their health moved; clearing a room is
+ * the only authored heal in the run.
+ */
+function healClearedRoom(state: MvpRunState): void {
+  const player = state.room.combat.player;
+  const before = player.health;
+  player.health = Math.min(PLAYER_MAX_HEALTH, player.health + ROOM_CLEAR_HEAL);
+  const gained = player.health - before;
+  const message =
+    gained > 0
+      ? `Cleared the ${currentRoom(state).name}; patched up +${gained} health (${player.health}/${PLAYER_MAX_HEALTH}).`
+      : `Cleared the ${currentRoom(state).name}; already at full health.`;
+  publishRunFeedback(state, message);
+}
+
 /** Returns true when this tick's sweep confiscated carried thefts. */
 function evaluateStoreBoundary(
   state: MvpRunState,
@@ -332,6 +356,13 @@ function evaluateRoomClear(state: MvpRunState): void {
   }
   if (!state.room.cleared) {
     state.room.cleared = true;
+    // Only a room that authored a fight pays out recovery. The service corridor
+    // and the storefronts author no spawns and are enemy-free the moment they
+    // are entered, so healing them would be a free +2 per doorway instead of
+    // per fight.
+    if (currentRoom(state).enemySpawns.length > 0) {
+      healClearedRoom(state);
+    }
     if (state.room.roomId !== 'security_office') {
       state.checkpoint = { roomIndex: state.roomIndex, tick: state.tick };
     }

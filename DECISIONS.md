@@ -144,3 +144,10 @@
   beginning M6. The fast-forward was possible because `origin/main` was already a
   direct ancestor of the tip, so no merge commit was needed and nothing was
   rewritten. No branch was deleted.
+- Add authored room-clear recovery: clearing a room that authored enemy spawns
+  restores `ROOM_CLEAR_HEAL` (2) health, capped at `PLAYER_MAX_HEALTH` (6). The
+  user chose this over leaving the run at six unrecoverable health, over a
+  purchasable heal, and over refilling before the boss. The safe rooms author no
+  spawns and therefore heal nothing, so recovery is per fight rather than per
+  doorway; and the amount is deliberately small, so a player still ends every
+  fight worse than they entered it and attrition stays the source of tension.

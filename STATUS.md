@@ -22,6 +22,8 @@ Night Shift is one short seeded mall wing: a safe service corridor with the Benc
 
 Buying the Remote-Control Car puts a real car in the run: it follows as an independent companion that seeks and bumps nearby enemies, and pressing E at the Bench Warrant kiosk opens a proposal that pauses the shift, states the fee, both ingredients and their provenance, the resulting attack origin, and what fusion costs the player. Confirming fuses the car into the firing origin, so the next attack leaves the car while WASD still moves the janitor and R steers it home. Cancelling changes nothing, and a proposal that went stale behind a purchase is refused rather than committed.
 
+Clearing a room that authored a fight restores 2 health, up to the maximum of 6. The safe rooms recover nothing, so this is a reward per fight rather than per doorway, and it is small enough that a player still leaves every fight worse than they entered it.
+
 Wing generation, run state, economy, transitions, the car, the boss, and checkpoint validation remain renderer-independent under `src/sim/wing` and `src/sim/run`, with the carrier physics shared between the M4 bench and the M5 run in `src/sim/carrier`. Phaser collects input, advances the fixed-step loop, and presents authoritative state.
 
 **Latest verification (2026-09-19) from this working tree:**

@@ -26,6 +26,17 @@ import type { MvpRoomEntryFrom } from './types';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
+/**
+ * Authored recovery for clearing a room that actually authored a fight.
+ *
+ * Six health across two combat rooms and a sixty-health boss left optimal play
+ * as "take no damage or lose", and a shift chipped down at a checkpoint was
+ * stuck retrying from behind. This is deliberately small: the player still ends
+ * every fight worse than they entered it, so attrition remains the tension, but
+ * a chipped run is no longer arithmetically unwinnable. Safe rooms author no
+ * spawns and therefore heal nothing, so this is per fight rather than per door.
+ */
+export const ROOM_CLEAR_HEAL = 2;
 const PLAYER_RADIUS = 10;
 const HANGER_HEALTH = 8;
 const HANGER_RADIUS = 14;
