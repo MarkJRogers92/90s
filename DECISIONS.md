@@ -137,3 +137,10 @@
   `nextCompositeId` that can collide with an existing transaction) as known
   issues. They are only reachable by hand-editing a stored checkpoint, and they
   are left visibly open rather than fixed in this round.
+- On 2026-09-19 the user instructed that the work be merged and pushed. `main` was
+  advanced to the M5 tip by fast-forward and pushed, together with
+  `codex/m5-mvp`. This supersedes the earlier decision that push and merge were
+  unauthorized; it does not authorize deploy, release, tagging, publishing, or
+  beginning M6. The fast-forward was possible because `origin/main` was already a
+  direct ancestor of the tip, so no merge commit was needed and nothing was
+  rewritten. No branch was deleted.

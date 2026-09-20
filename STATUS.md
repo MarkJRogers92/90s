@@ -59,7 +59,14 @@ a melee arc.
 - Direct production inspection at 1440x900 and 800x600 — one canvas, one run HUD, no horizontal overflow, no debug bridge, no page or console errors, and only local-origin requests. Screenshots: `artifacts/m5-mvp-run.png` and `artifacts/m5-mvp-run-800x600.png`.
 - Independent cross-family review — Muse reviewed the wing, run, economy, and checkpoint modules read-only at high reasoning, and DeepSeek reviewed the boss and presentation read-only at high reasoning. Every Critical and Important finding was repaired with a regression test in `c3a263b`.
 
-**Repository state:** Branch `codex/m5-mvp` in the local linked worktree `/Users/markrogers/Documents/Github Code/90s/.worktrees/m5-mvp`, started from the M4 tip `ff2dcf5`. Nothing from M5 has been pushed, merged, published, deployed, or released.
+**Repository state:** Branch `codex/m5-mvp` in the local linked worktree `/Users/markrogers/Documents/Github Code/90s/.worktrees/m5-mvp`, started from the M4 tip `ff2dcf5`.
+
+On 2026-09-19, at the user's explicit instruction, `main` was advanced to this
+work by fast-forward and both `main` and `codex/m5-mvp` were pushed to `origin`.
+Because `origin/main` was a direct ancestor of this tip, the advance introduced no
+merge commit and resolved no conflicts. Nothing has been tagged, released,
+deployed, or published as a package, and no branch has been deleted. This
+supersedes the earlier statement that nothing from M5 had been pushed or merged.
 
 **Known uncertainty:** The art is deliberate graybox/vector work and there is no sound. Balance is unplayed: wing pacing, store placement, boss difficulty, and checkpoint cadence all need the user's hands. The repaired car is unplayed too — its steering weight, the 180-unit leash, the recall trip, and whether the fusion fee reads as a real trade rather than a free upgrade all need hands on it. Phase-3 boss summons are allowed once per boss encounter rather than once per save slot, because checkpoints deliberately exclude room-local entity state. WebKit, Safari, Windows, device coverage, and physical-device performance were not run. No 800x600 production screenshot was retaken after the repair.
 

@@ -51,5 +51,6 @@ Notes for the next session:
   approved escalation.
 - Run vitest serially here (`--no-file-parallelism`); parallel workers can time
   out while starting on this filesystem.
-- No code blocker. Push, merge, publish, deploy, and release remain separate
-  authorization gates.
+- No code blocker. On 2026-09-19 the user authorized one push, so `main` and
+  `codex/m5-mvp` are now current on `origin`. Deploy, release, tagging, and
+  publishing remain separate authorization gates, as does beginning M6.
