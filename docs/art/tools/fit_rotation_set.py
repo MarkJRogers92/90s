@@ -27,10 +27,15 @@ from __future__ import annotations
 
 import argparse
 import glob
-import json
+import os
+import sys
 from pathlib import Path
 
 from PIL import Image
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from pixeldraw import Palette  # noqa: E402
+from snap_palette import build as build_candidates  # noqa: E402
 
 DIRECTIONS = [
     "south", "south-west", "west", "north-west",
@@ -38,9 +43,29 @@ DIRECTIONS = [
 ]
 
 
-def load_palette(path: Path) -> list[tuple[int, int, int]]:
-    data = json.loads(path.read_text())
-    return [tuple(s["rgb"]) for ramp in data["grid"] for s in ramp["swatches"]]
+def load_palette(path: Path, mode: str = "naive"):
+    """Build the colour matcher.
+
+    `naive` matches the nearest of all 95 swatches. That is correct whenever the
+    generated palette is already close to the approved one -- which it is when a
+    PixelLab style_image guided the generation, as with Alex and the RC car.
+
+    `ramp` classifies a pixel before matching, which is what a sprite needs when
+    its colours are NOT close: the mop's warm off-white sits nearer the cool
+    fluorescent white than any grey, so naive matching shattered its shading
+    into confetti across three ramps. Ramp matching fixed that.
+
+    Neither is universally better, and the ramp families in snap_palette are
+    hand-guessed, so they can be wrong where naive happened to be right -- on
+    Alex, ramp matching tints the hair orange and the vest tan. Default stays
+    `naive` because that is what the shipped character was built and reviewed
+    with.
+    """
+    palette = Palette.load(str(path))
+    if mode == "ramp":
+        return build_candidates(palette)
+    flat = [colour for ramp in palette.ramps for colour in ramp]
+    return lambda _rgb: flat
 
 
 def bbox(img: Image.Image) -> tuple[int, int, int, int] | None:
@@ -55,10 +80,11 @@ def bbox(img: Image.Image) -> tuple[int, int, int, int] | None:
     return min(xs), min(ys), max(xs), max(ys)
 
 
-def nearest(rgb, palette, cache):
+def nearest(rgb, candidates, cache):
     if rgb not in cache:
+        options = candidates(rgb)
         cache[rgb] = min(
-            palette,
+            options,
             key=lambda p: (p[0] - rgb[0]) ** 2 + (p[1] - rgb[1]) ** 2 + (p[2] - rgb[2]) ** 2,
         )
     return cache[rgb]
@@ -96,6 +122,10 @@ def main() -> int:
                     help="output name; {d} direction, {n} frame index")
     ap.add_argument("--sole-width", type=int, default=6,
                     help="min row width counting as the sole, not a toe tip")
+    ap.add_argument("--snap", choices=["naive", "ramp"], default="naive",
+                    help="naive: nearest of all swatches, right when the "
+                         "generated colours are already close. ramp: classify "
+                         "first, for sprites whose colours are not close.")
     ap.add_argument("--anchor", choices=["sole", "preserve"], default="sole",
                     help="sole: upright sprite, align each image by its sole row. "
                          "preserve: top-down sprite centred on its own origin "
@@ -103,7 +133,7 @@ def main() -> int:
                          "the delivered placement and only recolour.")
     args = ap.parse_args()
 
-    palette = load_palette(args.palette)
+    palette = load_palette(args.palette, args.snap)
     args.out.mkdir(parents=True, exist_ok=True)
 
     # ---- load the whole set

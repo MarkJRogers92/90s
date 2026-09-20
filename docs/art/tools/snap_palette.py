@@ -37,13 +37,15 @@ from pixeldraw import Palette  # noqa: E402
 WARM_NEUTRAL = ("beige", "fabric", "leather")
 COOL_NEUTRAL = ("steel", "tile", "shadow", "plastic_black")
 
-# Chromatic sources: pick a ramp by hue family.
+# Chromatic sources: pick a ramp by hue family. The hair and fabric ramps belong
+# in these families -- leaving them out sent brown hair to the brass ramp and an
+# olive vest to the tan one, which is worse than the naive snap it replaced.
 HUE_RAMPS = {
     "red": ("red", "blood", "plastic", "leather"),
-    "orange": ("brass", "beige", "leather", "blood"),
-    "yellow": ("brass", "beige", "hair_blonde"),
-    "green": ("green", "fluoro"),
-    "cyan": ("tile", "fluoro", "steel"),
+    "orange": ("brass", "beige", "leather", "hair_brown", "blood"),
+    "yellow": ("brass", "beige", "hair_blonde", "hair_brown"),
+    "green": ("green", "fluoro", "fabric", "tile"),
+    "cyan": ("tile", "fluoro", "steel", "denim"),
     "blue": ("denim", "tile", "plastic"),
     "purple": ("purple", "denim", "plastic"),
 }
