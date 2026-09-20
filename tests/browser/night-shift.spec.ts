@@ -122,6 +122,32 @@ test('launches Night Shift with one canvas, one HUD, and the service corridor', 
   expect(errors.consoleErrors).toEqual([]);
 });
 
+test('kiosk texture loads from the local game asset path', async ({ page }) => {
+  const errors = collectErrors(page);
+  const kioskResponse = page.waitForResponse((response) =>
+    response.url().endsWith('/assets/props/bench-warrant-kiosk.png'),
+  );
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  expect((await kioskResponse).status()).toBe(200);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('kiosk texture failure keeps the vector fallback playable', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.route('**/assets/props/bench-warrant-kiosk.png', (route) => route.abort());
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.getByTestId('mvp-run-hud')).toHaveCount(1);
+  expect((await runSnapshot(page)).roomId).toBe('service_corridor');
+  expect(errors.pageErrors).toEqual([]);
+});
+
 test('offers are identical for one seed and vary across seeds', async ({ page }) => {
   const errors = collectErrors(page);
 

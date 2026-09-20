@@ -13,11 +13,13 @@ import { runOfferPriceLabel } from '../../sim/run/economy';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
+import { BENCH_WARRANT_KIOSK_TEXTURE } from '../assets';
 
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly labels = new Map<string, Phaser.GameObjects.Text>();
+  private benchKioskSprite: Phaser.GameObjects.Image | undefined;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -63,14 +65,9 @@ export class MvpRunView {
     }
 
     if (room.benchKiosk) {
-      graphics.lineStyle(2, 0xd8e06a, 0.55);
-      graphics.strokeCircle(room.benchKiosk.x, room.benchKiosk.y, 48);
-      graphics.fillStyle(0x72566c, 1);
-      graphics.fillRect(room.benchKiosk.x - 43, room.benchKiosk.y - 12, 86, 24);
-      graphics.lineStyle(2, 0xf4edd8, 0.9);
-      graphics.strokeRect(room.benchKiosk.x - 43, room.benchKiosk.y - 12, 86, 24);
-      this.setLabel('bench', 'BENCH WARRANT', room.benchKiosk.x, room.benchKiosk.y - 22);
+      this.syncBenchKiosk(room.benchKiosk.x, room.benchKiosk.y);
     } else {
+      this.benchKioskSprite?.setVisible(false);
       this.clearLabel('bench');
     }
 
@@ -137,6 +134,35 @@ export class MvpRunView {
       carrier.x,
       carrier.y - carrier.radius - 14,
     );
+  }
+
+  private syncBenchKiosk(x: number, y: number): void {
+    const graphics = this.graphics;
+    graphics.lineStyle(2, 0xd8e06a, 0.55);
+    graphics.strokeCircle(x, y, 48);
+    this.setLabel('bench', 'BENCH WARRANT', x, y - 72);
+
+    if (!this.scene.textures.exists(BENCH_WARRANT_KIOSK_TEXTURE)) {
+      this.benchKioskSprite?.setVisible(false);
+      this.drawBenchKioskFallback(x, y);
+      return;
+    }
+
+    if (!this.benchKioskSprite) {
+      this.benchKioskSprite = this.scene.add
+        .image(Math.round(x), Math.round(y), BENCH_WARRANT_KIOSK_TEXTURE)
+        .setOrigin(0.5, 1)
+        .setDepth(1);
+    }
+    this.benchKioskSprite.setPosition(Math.round(x), Math.round(y)).setVisible(true);
+  }
+
+  private drawBenchKioskFallback(x: number, y: number): void {
+    const graphics = this.graphics;
+    graphics.fillStyle(0x72566c, 1);
+    graphics.fillRect(x - 43, y - 12, 86, 24);
+    graphics.lineStyle(2, 0xf4edd8, 0.9);
+    graphics.strokeRect(x - 43, y - 12, 86, 24);
   }
 
   private drawStore(state: MvpRunState, templateId: string): void {
@@ -415,6 +441,8 @@ export class MvpRunView {
   }
 
   public destroy(): void {
+    this.benchKioskSprite?.destroy();
+    this.benchKioskSprite = undefined;
     for (const key of [...this.labels.keys()]) {
       this.clearLabel(key);
     }

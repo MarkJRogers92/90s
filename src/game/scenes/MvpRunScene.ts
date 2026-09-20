@@ -32,6 +32,10 @@ import {
   tickMvpRun,
 } from '../../sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
+import {
+  BENCH_WARRANT_KIOSK_TEXTURE,
+  BENCH_WARRANT_KIOSK_URL,
+} from '../assets';
 import { GameAudioEngine } from '../audio/engine';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
@@ -205,6 +209,10 @@ export class MvpRunScene extends Phaser.Scene {
 
   public constructor() {
     super(MvpRunScene.KEY);
+  }
+
+  public preload(): void {
+    this.load.image(BENCH_WARRANT_KIOSK_TEXTURE, BENCH_WARRANT_KIOSK_URL);
   }
 
   public create(): void {
