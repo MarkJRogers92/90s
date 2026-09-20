@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "asset": "bench-warrant-kiosk",
+  "assetVersion": "v1",
+  "generator": "PixelLab create_image_pixflux",
+  "prompt": "Static Bench Warrant fusion kiosk for a haunted abandoned 1990s American shopping mall, an improvised mall service counter built from mauve laminate, tarnished brass and beige trim, with a small CRT terminal, coiled cables and tool drawers, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+  "seed": 19950920,
+  "jobId": "b17ec034-0f45-43ca-90a0-a5a3f07e65f8",
+  "reportedCost": "1 generation",
+  "rawSha256": "82821b95a734bb2459ca75e4b88054f89d3656dd390c5aaf6cd05c4eb161dc62",
+  "masterSha256": "2784be91a0b3437e0fde50a1d423adf17030a3e719f51c21a642d6669bb857a8",
+  "runtimeSha256": "27c8cb2fb20bb26a14e8477af162d88212cbc82ced70a2f2d11f1387b070a6be",
+  "paletteSource": "deadmall-global.json",
+  "dimensions": [64, 64],
+  "anchor": "bottom-center",
+  "generatedAt": "2026-09-20T18:37:47.237136+00:00",
+  "rawApprovedAt": "2026-09-20T19:02:26Z",
+  "cleanupApprovedAt": "2026-09-20T19:06:45Z",
+  "validator": "PASS: 64x64, approved palette, binary alpha, bottom anchor"
+}
