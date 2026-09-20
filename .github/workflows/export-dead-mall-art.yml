@@ -1,0 +1,39 @@
+name: Export DEAD MALL Art Pack
+
+on:
+  push:
+    branches:
+      - art/visual-bible-2026-09-13
+
+permissions:
+  contents: write
+
+jobs:
+  export:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: art/visual-bible-2026-09-13
+      - name: Build pack
+        run: |
+          rm -rf /tmp/DEAD_MALL_ART_PACK
+          mkdir -p /tmp/DEAD_MALL_ART_PACK
+          cp -R docs/art/visual-bible-2026-09-13/. /tmp/DEAD_MALL_ART_PACK/
+          cat > /tmp/DEAD_MALL_ART_PACK/PACK_MANIFEST.txt <<'EOF'
+          DEAD MALL ART PACK
+          Source branch: art/visual-bible-2026-09-13
+          Includes all repository-preserved canonical/reference art, previews, supporting studies, and registry/provenance docs through canonical Sheet 08.
+          Note: repository images are compressed browseable WebP references. Original lossless PNG masters were not pushed because the connected GitHub writer could not transfer binary source files.
+          EOF
+          cd /tmp
+          zip -r -9 "$GITHUB_WORKSPACE/DEAD_MALL_ART_PACK_2026-09-19.zip" DEAD_MALL_ART_PACK >/dev/null
+      - name: Commit pack
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add DEAD_MALL_ART_PACK_2026-09-19.zip
+          git diff --cached --quiet && exit 0
+          git commit -m "art: export DEAD MALL reference pack"
+          git push origin HEAD:art/visual-bible-2026-09-13
