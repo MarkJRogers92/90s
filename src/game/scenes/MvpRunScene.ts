@@ -33,6 +33,12 @@ import {
 } from '../../sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
 import {
+  ALEX_FRAME_HEIGHT,
+  ALEX_FRAME_WIDTH,
+  ALEX_IDLE_TEXTURE,
+  ALEX_IDLE_URL,
+  ALEX_WALK_TEXTURE,
+  ALEX_WALK_URL,
   BENCH_WARRANT_KIOSK_TEXTURE,
   BENCH_WARRANT_KIOSK_URL,
 } from '../assets';
@@ -213,6 +219,16 @@ export class MvpRunScene extends Phaser.Scene {
 
   public preload(): void {
     this.load.image(BENCH_WARRANT_KIOSK_TEXTURE, BENCH_WARRANT_KIOSK_URL);
+    // Alex is loaded as two sheets rather than 56 separate images: one row per
+    // facing in the walk sheet, one frame per facing in the idle sheet.
+    this.load.spritesheet(ALEX_IDLE_TEXTURE, ALEX_IDLE_URL, {
+      frameWidth: ALEX_FRAME_WIDTH,
+      frameHeight: ALEX_FRAME_HEIGHT,
+    });
+    this.load.spritesheet(ALEX_WALK_TEXTURE, ALEX_WALK_URL, {
+      frameWidth: ALEX_FRAME_WIDTH,
+      frameHeight: ALEX_FRAME_HEIGHT,
+    });
   }
 
   public create(): void {

@@ -1,4 +1,10 @@
 import { expect, test, type Page } from '@playwright/test';
+import {
+  ALEX_DIRECTIONS,
+  ALEX_FRAME_HEIGHT,
+  ALEX_FRAME_WIDTH,
+  ALEX_WALK_FRAMES,
+} from '../../src/game/assets';
 
 type RunSnapshot = {
   mode: 'run';
@@ -138,6 +144,64 @@ test('kiosk texture loads from the local game asset path', async ({ page }) => {
 test('kiosk texture failure keeps the vector fallback playable', async ({ page }) => {
   const errors = collectErrors(page);
   await page.route('**/assets/props/bench-warrant-kiosk.png', (route) => route.abort());
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.getByTestId('mvp-run-hud')).toHaveCount(1);
+  expect((await runSnapshot(page)).roomId).toBe('service_corridor');
+  expect(errors.pageErrors).toEqual([]);
+});
+
+test('the Alex sheets load from the local game asset paths', async ({ page }) => {
+  const errors = collectErrors(page);
+  const idle = page.waitForResponse((response) =>
+    response.url().endsWith('/assets/characters/alex-idle.png'),
+  );
+  const walk = page.waitForResponse((response) =>
+    response.url().endsWith('/assets/characters/alex-walk.png'),
+  );
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  expect((await idle).status()).toBe(200);
+  expect((await walk).status()).toBe(200);
+
+  // Measure the sheets the browser actually received, so the frame constants
+  // stay bound to the shipped bytes rather than to a second copy of the numbers.
+  const sizes = await page.evaluate(async () => {
+    const load = (src: string) =>
+      new Promise<{ width: number; height: number }>((resolve, reject) => {
+        const image = new Image();
+        image.onload = () =>
+          resolve({ width: image.naturalWidth, height: image.naturalHeight });
+        image.onerror = () => reject(new Error(`could not load ${src}`));
+        image.src = src;
+      });
+    return {
+      idle: await load('/assets/characters/alex-idle.png'),
+      walk: await load('/assets/characters/alex-walk.png'),
+    };
+  });
+
+  expect(sizes.idle).toEqual({
+    width: ALEX_FRAME_WIDTH * ALEX_DIRECTIONS.length,
+    height: ALEX_FRAME_HEIGHT,
+  });
+  expect(sizes.walk).toEqual({
+    width: ALEX_FRAME_WIDTH * ALEX_WALK_FRAMES,
+    height: ALEX_FRAME_HEIGHT * ALEX_DIRECTIONS.length,
+  });
+  expect(sizes.walk.width % ALEX_FRAME_WIDTH).toBe(0);
+  expect(sizes.walk.height % ALEX_FRAME_HEIGHT).toBe(0);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('player sprite failure keeps the vector fallback playable', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.route('**/assets/characters/alex-*.png', (route) => route.abort());
 
   await launchRun(page, '/?fixture=mvp-bench&seed=4242');
 

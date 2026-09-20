@@ -13,13 +13,28 @@ import { runOfferPriceLabel } from '../../sim/run/economy';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
-import { BENCH_WARRANT_KIOSK_TEXTURE } from '../assets';
+import {
+  ALEX_FRAME_HEIGHT,
+  ALEX_IDLE_TEXTURE,
+  ALEX_WALK_TEXTURE,
+  alexDirectionFor,
+  alexIdleFrame,
+  alexWalkFrame,
+  BENCH_WARRANT_KIOSK_TEXTURE,
+  type AlexDirection,
+} from '../assets';
+
+/** Sim ticks per walk frame; 60 ticks/s over 6 frames is a ~0.8s cycle. */
+const ALEX_WALK_TICKS_PER_FRAME = 8;
 
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly labels = new Map<string, Phaser.GameObjects.Text>();
   private benchKioskSprite: Phaser.GameObjects.Image | undefined;
+  private playerSprite: Phaser.GameObjects.Sprite | undefined;
+  private playerFacing: AlexDirection = 'south';
+  private lastPlayerPosition: { x: number; y: number } | undefined;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -128,11 +143,15 @@ export class MvpRunView {
       carrier.radius * 2 + 2,
     );
 
+    // The carrier trails the player, so a label drawn just above it lands across
+    // the character every time rather than occasionally — unlike the fixed
+    // store and bench labels, which only collide if the player walks onto them.
+    // Clear the sprite's full height so both the car's state and Alex stay legible.
     this.setLabel(
       'carrier',
       fused ? (carrier.recalling ? 'CAR · RECALL' : 'CAR · EMITTER') : 'CAR · INDEPENDENT',
       carrier.x,
-      carrier.y - carrier.radius - 14,
+      carrier.y - carrier.radius - ALEX_FRAME_HEIGHT,
     );
   }
 
@@ -380,10 +399,17 @@ export class MvpRunView {
     const graphics = this.graphics;
     const player = state.room.combat.player;
     const flicker = player.invulnerableTicks > 0 && Math.floor(state.tick / 12) % 2 === 0;
-    graphics.fillStyle(flicker ? 0xdce8c8 : 0x2f5f62, 1);
-    graphics.fillCircle(player.x, player.y, player.radius);
-    graphics.lineStyle(2, 0xf4edd8, 0.9);
-    graphics.strokeCircle(player.x, player.y, player.radius);
+
+    if (!this.syncPlayerSprite(state, flicker)) {
+      // Vector fallback: the run stays playable if the sheets fail to load.
+      graphics.fillStyle(flicker ? 0xdce8c8 : 0x2f5f62, 1);
+      graphics.fillCircle(player.x, player.y, player.radius);
+      graphics.lineStyle(2, 0xf4edd8, 0.9);
+      graphics.strokeCircle(player.x, player.y, player.radius);
+    }
+
+    // The aim line stays vector: it is a gameplay readout of `player.facing`,
+    // which is the attack direction and need not match where the sprite faces.
     graphics.lineStyle(3, 0xf6d365, 1);
     graphics.lineBetween(
       player.x,
@@ -391,6 +417,54 @@ export class MvpRunView {
       player.x + player.facing.x * (player.radius + 6),
       player.y + player.facing.y * (player.radius + 6),
     );
+  }
+
+  /**
+   * Places Alex's feet on the bottom of the sim's collision circle.
+   *
+   * `player.facing` is the aim vector, so the walk direction is derived here
+   * from the frame-to-frame movement delta instead. That keeps the sim free of
+   * presentation state, and it is why this tracking lives in the view.
+   */
+  private syncPlayerSprite(state: MvpRunState, flicker: boolean): boolean {
+    if (
+      !this.scene.textures.exists(ALEX_IDLE_TEXTURE) ||
+      !this.scene.textures.exists(ALEX_WALK_TEXTURE)
+    ) {
+      this.playerSprite?.setVisible(false);
+      return false;
+    }
+
+    const player = state.room.combat.player;
+    const last = this.lastPlayerPosition;
+    const dx = last ? player.x - last.x : 0;
+    const dy = last ? player.y - last.y : 0;
+    const moving = dx * dx + dy * dy > 0.25;
+    if (moving) {
+      this.playerFacing = alexDirectionFor(dx, dy);
+    }
+    this.lastPlayerPosition = { x: player.x, y: player.y };
+
+    const step = Math.floor(state.tick / ALEX_WALK_TICKS_PER_FRAME);
+    const texture = moving ? ALEX_WALK_TEXTURE : ALEX_IDLE_TEXTURE;
+    const frame = moving
+      ? alexWalkFrame(this.playerFacing, step)
+      : alexIdleFrame(this.playerFacing);
+
+    const feetX = Math.round(player.x);
+    const feetY = Math.round(player.y + player.radius);
+    if (!this.playerSprite) {
+      this.playerSprite = this.scene.add
+        .sprite(feetX, feetY, texture, frame)
+        .setOrigin(0.5, 1)
+        .setDepth(2);
+    }
+    this.playerSprite
+      .setTexture(texture, frame)
+      .setPosition(feetX, feetY)
+      .setVisible(true)
+      .setAlpha(flicker ? 0.45 : 1);
+    return true;
   }
 
   private setLabel(key: string, text: string, x: number, y: number): void {
@@ -443,6 +517,8 @@ export class MvpRunView {
   public destroy(): void {
     this.benchKioskSprite?.destroy();
     this.benchKioskSprite = undefined;
+    this.playerSprite?.destroy();
+    this.playerSprite = undefined;
     for (const key of [...this.labels.keys()]) {
       this.clearLabel(key);
     }
