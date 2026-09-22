@@ -1,0 +1,36 @@
+{
+  "group_id": "466b3442-8613-4088-9c2f-5f9657ded10f",
+  "states": [
+    {
+      "character": {
+        "id": "edde125b-7d20-44ed-81c1-3abd7bcdbf98",
+        "name": "Idle",
+        "prompt": "Production-ready pixel art character sprite for a 1990s shopping-mall horror roguelite.\n\nCHARACTER:\nYoung adult male mall employee, slightly exaggerated human proportions, tired expression, messy brown hair, faded burgundy retail polo shirt with tiny blank name-tag shape, khaki pants, black work sneakers, simple wristwatch. Ordinary and believable, not heroic or fantasy-styled. Slightly hunched posture like someone trapped working an overnight mall shift.\n\nGAME VIEW:\n3/4 top-down perspective for a 2D action roguelite.\nCharacter must read clearly from a medium-close gameplay camera.\nConsistent body proportions and silhouette in every animation frame.\n\nPIXEL ART STYLE:\nDetailed late-16-bit / early handheld-era pixel art.\nClean, crisp pixel clusters.\nSelective dark outlines rather than thick outlines everywhere.\nStrong material highlights and readable folds.\nControlled texture.\nMinimal dithering.\nNo anti-aliasing.\nNo blurred pixels.\nNo painterly rendering.\nNo modern vector-art look.\nSlight exaggeration for readability while remaining recognizably human.\n\nSPRITE REQUIREMENTS:\n48x64 pixels per animation frame.\nTransparent background.\nPixel-perfect hard edges.\nCharacter centered consistently in every frame.\nConsistent feet position and ground contact.\nNo baked-in floor, background, lighting, drop shadow, text, UI, borders, or labels.\n\nCreate 4 directional idle poses:\n- facing down / toward camera\n- facing left\n- facing right\n- facing up / away from camera\n\nThen create a 6-frame walking cycle for each of those four directions.\n\nAnimation should feel smooth and natural rather than chibi or bouncy.\nArms should remain visually distinct enough that separate weapon/equipment overlays can later be attached.\nKeep the torso and shoulder area easy to read for an independent 8-direction weapon layer.\n\nLIGHTING:\nNeutral base sprite lighting designed to accept dynamic in-game lighting later.\nSubtle cool fluorescent mall-light influence only.\nDo not bake dramatic directional lighting i",
+        "size": {
+          "width": 64,
+          "height": 64
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-21T05:22:33.353875+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T16:04:29.402862"
+}
