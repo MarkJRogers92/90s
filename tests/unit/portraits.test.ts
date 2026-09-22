@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  BOSS_PORTRAIT_KIND,
   PORTRAIT_ART,
   PORTRAIT_DETAIL_SIZE,
   PORTRAIT_EXPRESSIONS,
@@ -7,8 +8,10 @@ import {
   PORTRAIT_KINDS,
   PORTRAIT_LABELS,
   PORTRAIT_SHEET_WIDTH,
+  bossPortraitExpression,
   portraitExpressionFrame,
 } from '../../src/game/portraits';
+import type { EnemyState } from '../../src/sim/model';
 
 /**
  * Pure-catalogue checks for the portrait art.
@@ -51,6 +54,73 @@ describe('portrait catalogue', () => {
   it('gives every kind its own files rather than sharing one', () => {
     const urls = PORTRAIT_KINDS.flatMap((k) => [PORTRAIT_ART[k].url, PORTRAIT_ART[k].expressionUrl]);
     expect(new Set(urls).size).toBe(PORTRAIT_KINDS.length * 2);
+  });
+});
+
+describe('the boss portrait tracks authoritative boss state', () => {
+  const boss = (over: Partial<EnemyState> = {}): EnemyState => ({
+    id: 1,
+    kind: 'lp_manager',
+    health: 60,
+    radius: 14,
+    x: 0,
+    y: 0,
+    phase: 'pursue',
+    phaseTicks: 0,
+    cooldownTicks: 0,
+    telegraphAimX: 0,
+    telegraphAimY: 0,
+    ...over,
+  });
+
+  it('points the boss at a kind that actually exists', () => {
+    expect(PORTRAIT_KINDS).toContain(BOSS_PORTRAIT_KIND);
+    // Pin the sheet the HUD will actually request, so a rename is caught here
+    // rather than as a 404 in the middle of a fight.
+    expect(PORTRAIT_ART[BOSS_PORTRAIT_KIND].expressionUrl).toBe(
+      '/assets/portraits/security-guard-expressions.png',
+    );
+  });
+
+  it.each([
+    ['pursuing at full health', {}, 'neutral'],
+    ['winding up a slam', { phase: 'telegraph' as const }, 'angry'],
+    ['having called backup', { bossSummoned: true }, 'determined'],
+    ['below a third health', { bossPhase: 3 as const }, 'hurt'],
+    ['in the middle phase', { bossPhase: 2 as const }, 'neutral'],
+    ['in the opening phase', { bossPhase: 1 as const }, 'neutral'],
+    ['recovering after a swing', { phase: 'recover' as const }, 'neutral'],
+  ])('%s reads as %s', (_label, over, expected) => {
+    expect(bossPortraitExpression(boss(over))).toBe(expected);
+  });
+
+  it('prefers the most specific signal, so the face never shows the calm state mid-attack', () => {
+    const everything = boss({ phase: 'telegraph', bossSummoned: true, bossPhase: 3 });
+    expect(bossPortraitExpression(everything)).toBe('angry');
+    expect(bossPortraitExpression(boss({ bossSummoned: true, bossPhase: 3 }))).toBe('determined');
+  });
+
+  it('falls back to health when the phase has not been computed yet', () => {
+    // The same documented thresholds the sim uses, at a 60-health boss:
+    // above 66% is phase 1, 66..34% is phase 2, below 34% is phase 3.
+    expect(bossPortraitExpression(boss({ health: 60 }))).toBe('neutral');
+    expect(bossPortraitExpression(boss({ health: 39 }))).toBe('neutral');
+    expect(bossPortraitExpression(boss({ health: 21 }))).toBe('neutral');
+    expect(bossPortraitExpression(boss({ health: 20 }))).toBe('hurt');
+  });
+
+  it('only ever returns an expression the sheet actually has', () => {
+    const seen = new Set(
+      [
+        boss(),
+        boss({ phase: 'telegraph' as const }),
+        boss({ bossSummoned: true }),
+        boss({ bossPhase: 3 as const }),
+      ].map(bossPortraitExpression),
+    );
+    for (const expression of seen) {
+      expect(PORTRAIT_EXPRESSIONS).toContain(expression);
+    }
   });
 });
 

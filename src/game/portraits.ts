@@ -24,6 +24,10 @@
  */
 
 /** Portrait subjects, in the order board 01I lists them. */
+import { bossPhaseForHealth } from '../sim/combat/boss';
+import type { EnemyState } from '../sim/model';
+
+/** Portrait subjects, in the order board 01I lists them. */
 export const PORTRAIT_KINDS = [
   'teenager',
   'employee',
@@ -95,3 +99,40 @@ export function portraitExpressionFrame(expression: PortraitExpression): number 
 
 /** Width of a character's expression sheet: right for the sheet's `width`. */
 export const PORTRAIT_SHEET_WIDTH = PORTRAIT_EXPRESSION_SIZE * PORTRAIT_EXPRESSIONS.length;
+
+/**
+ * The Loss Prevention Manager's face.
+ *
+ * `security-guard` because that is what the boss is: mall security, in a
+ * peaked cap with a badge and a radio. It is the one archetype the roster
+ * already contains that the boss genuinely is, rather than one being stretched
+ * to fit.
+ */
+export const BOSS_PORTRAIT_KIND: PortraitKind = 'security-guard';
+
+/**
+ * Which expression the boss wears, from state the simulation already keeps.
+ *
+ * Deliberately derived from the same authoritative fields `bossHudParts` reads,
+ * including the same `bossPhaseForHealth` fallback, so the face cannot disagree
+ * with the text beside it — the HUD's existing comment makes that promise about
+ * the phase, and a portrait is a more conspicuous way to break it than a number.
+ *
+ * Ordered most-specific first, mirroring the text's precedence:
+ *
+ *   telegraphing  angry        mid-wind-up, about to slam
+ *   summoned      determined   has called backup and committed
+ *   phase 3       hurt         below 34% health: wounded, not posturing
+ *   otherwise     neutral      pursuing, nothing special to say
+ *
+ * `surprised` and `afraid` are deliberately unused. No existing state means
+ * either one, and inventing a flag to justify using them would be writing
+ * gameplay to fit the art rather than the reverse. They stay available for a
+ * future encounter that actually has those beats.
+ */
+export function bossPortraitExpression(boss: EnemyState): PortraitExpression {
+  if (boss.phase === 'telegraph') return 'angry';
+  if (boss.bossSummoned === true) return 'determined';
+  if ((boss.bossPhase ?? bossPhaseForHealth(boss.health)) === 3) return 'hurt';
+  return 'neutral';
+}

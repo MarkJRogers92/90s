@@ -98,3 +98,55 @@ test.describe('portrait assets', () => {
     expect(alpha.transparent / alpha.total).toBeGreaterThan(0.2);
   });
 });
+
+/**
+ * The first real gameplay consumer: the Loss Prevention Manager's face in the
+ * HUD, driven by the same authoritative state as the text beside it.
+ *
+ * The assertion is deliberately a *consistency* check rather than a fixed
+ * expectation. The boss's phase depends on live combat, so hard-coding "angry"
+ * would be a test that passes only when the encounter behaves identically every
+ * time. Instead this derives the expression the text line implies and requires
+ * the face to agree — which is exactly the invariant the HUD claims, and it
+ * holds at every phase rather than only at the one a hard-coded value caught.
+ */
+test.describe('the boss portrait', () => {
+  test('is visible during the boss fight and agrees with the boss text', async ({ page }) => {
+    test.setTimeout(90_000);
+    await page.goto('/?fixture=mvp-boss-entry&seed=5150');
+    await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
+
+    const portrait = page.locator('#mvp-run-boss-portrait');
+    await expect(portrait).toBeVisible({ timeout: 30_000 });
+
+    const face = page.locator('#mvp-run-boss-face');
+    await expect(face).toHaveCSS('background-image', /security-guard-expressions\.png/);
+
+    const bossText = (await page.locator('#mvp-run-boss').innerText()).trim();
+    expect(bossText).toMatch(/BOSS: phase [123]/);
+
+    // The same precedence bossPortraitExpression applies, read back off the
+    // text the HUD rendered from the same state.
+    const expected = bossText.includes('SLAM WIND-UP')
+      ? 'angry'
+      : bossText.includes('BACKUP CALLED')
+        ? 'determined'
+        : /phase 3/.test(bossText)
+          ? 'hurt'
+          : 'neutral';
+    const frame = ['neutral', 'determined', 'hurt', 'afraid', 'angry', 'surprised'].indexOf(expected);
+
+    await expect(page.locator('#mvp-run-boss-expression')).toHaveText(
+      `LOSS PREVENTION // ${expected}`,
+    );
+    // 96px frame at the 2x the stylesheet declares.
+    await expect(face).toHaveCSS('background-position', `${-frame * 96 * 2}px 0px`);
+  });
+
+  test('is hidden when there is no boss in the room', async ({ page }) => {
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
+    await page.waitForTimeout(1000);
+    await expect(page.locator('#mvp-run-boss-portrait')).toBeHidden();
+  });
+});

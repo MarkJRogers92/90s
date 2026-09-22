@@ -9,6 +9,14 @@
  */
 import { bossPhaseForHealth } from '../../sim/combat/boss';
 import {
+  BOSS_PORTRAIT_KIND,
+  PORTRAIT_ART,
+  PORTRAIT_EXPRESSION_SIZE,
+  PORTRAIT_SHEET_WIDTH,
+  bossPortraitExpression,
+  portraitExpressionFrame,
+} from '../portraits';
+import {
   itemDefinitionName,
   runCarryLimit,
   runOfferPrice,
@@ -80,6 +88,9 @@ export class MvpRunHud {
   private readonly heat: HTMLElement;
   private readonly suspicion: HTMLElement;
   private readonly boss: HTMLElement;
+  private readonly bossPortrait: HTMLElement;
+  private readonly bossFace: HTMLElement;
+  private readonly bossExpression: HTMLElement;
   private readonly nearby: HTMLElement;
   private readonly carried: HTMLElement;
   private readonly inventory: HTMLElement;
@@ -126,6 +137,9 @@ export class MvpRunHud {
     this.heat = requireElement<HTMLElement>('#mvp-run-heat');
     this.suspicion = requireElement<HTMLElement>('#mvp-run-suspicion');
     this.boss = requireElement<HTMLElement>('#mvp-run-boss');
+    this.bossPortrait = requireElement<HTMLElement>('#mvp-run-boss-portrait');
+    this.bossFace = requireElement<HTMLElement>('#mvp-run-boss-face');
+    this.bossExpression = requireElement<HTMLElement>('#mvp-run-boss-expression');
     this.nearby = requireElement<HTMLElement>('#mvp-run-nearby');
     this.carried = requireElement<HTMLElement>('#mvp-run-carried');
     this.inventory = requireElement<HTMLElement>('#mvp-run-inventory');
@@ -248,10 +262,23 @@ export class MvpRunHud {
     if (!boss || state.status !== 'playing') {
       this.boss.hidden = true;
       this.boss.textContent = '';
+      this.bossPortrait.hidden = true;
+      this.bossFace.style.backgroundImage = '';
+      this.bossExpression.textContent = '';
       return;
     }
     this.boss.hidden = false;
     this.boss.textContent = bossHudParts(boss).join(' · ');
+
+    // The face tracks the same authoritative state as the line above it, so the
+    // expression and the text cannot disagree mid-fight.
+    const expression = bossPortraitExpression(boss);
+    const art = PORTRAIT_ART[BOSS_PORTRAIT_KIND];
+    this.bossPortrait.hidden = false;
+    this.bossFace.style.backgroundImage = `url(${art.expressionUrl})`;
+    this.bossFace.style.backgroundPosition =
+      `-${portraitExpressionFrame(expression) * PORTRAIT_EXPRESSION_SIZE * 2}px 0`;
+    this.bossExpression.textContent = `LOSS PREVENTION // ${expression}`;
   }
 
   private syncInteraction(state: MvpRunState): void {

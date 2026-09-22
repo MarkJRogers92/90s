@@ -769,6 +769,40 @@ body[data-mode='bench'] {
   font-weight: 700;
 }
 
+/*
+ * The Loss Prevention Manager's face.
+ *
+ * Block layout rather than flex on the container: `[hidden]` sets
+ * `display: none` from the user-agent sheet, and any `display` declared on the
+ * class would out-specify it and leave the portrait permanently visible. A
+ * plain block sidesteps that entirely.
+ *
+ * Sized 2x from the 96px frame and 1152px from the 576px sheet so the browser
+ * samples whole art pixels. The HUD column is ~302px of content, so this fits
+ * without introducing horizontal overflow at 800x600.
+ */
+.mvp-run-boss-portrait {
+  margin: 8px 0 0;
+}
+
+.mvp-run-boss-face {
+  width: 192px;
+  height: 192px;
+  border: 2px solid rgb(246 211 101 / 45%);
+  background-color: rgb(0 0 0 / 35%);
+  background-repeat: no-repeat;
+  background-size: 1152px 192px;
+  image-rendering: pixelated;
+}
+
+.mvp-run-boss-expression {
+  margin: 4px 0 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #ff8274;
+}
+
 .mvp-run-nearby {
   color: #f6d365;
   font-weight: 700;
