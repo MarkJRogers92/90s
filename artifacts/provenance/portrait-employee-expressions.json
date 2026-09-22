@@ -53,7 +53,7 @@
   ],
   "reportedCost": "30 generations (6 frames x 5)",
   "masterSha256": "4d8c4dc8a8512f63590f45f63d159dd7e230b368a0908483f0975b6ed59c741a",
-  "runtimeSha256": "5b7f2d6205c96dbc62be116205d1810abd059f7d865ab6b2ae3123c279840b95",
+  "runtimeSha256": "753ef0b7915ae03673210c6b442b258d0f10dbc24c88990d24923389d3fcfda3",
   "masterPath": "docs/art/work/portraits/expressions/employee/sheet-expressions.png",
   "paletteSource": "deadmall-portrait-union.json",
   "dimensions": [

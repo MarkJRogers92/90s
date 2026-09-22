@@ -9,8 +9,8 @@
   "jobId": null,
   "reportedCost": null,
   "rawSha256": null,
-  "masterSha256": "fccb54f037314e01713d54d64e880568002e65e6bc5a5ebf9b21e413472c725e",
-  "runtimeSha256": "6330b7f551fdba1c5d769ec62d7a3577dff9f28d9f5630b41036be6df5a75d1c",
+  "masterSha256": "e1e4bc2a8fa117647532e7a68b89978fe5ed7b5cb5da1b8f128d825ece8faaa1",
+  "runtimeSha256": "4933216d06b006d031e6dcbc6bd65d0a841b33ef6d91370109e082f763a9b515",
   "masterPath": "docs/art/work/portraits/out/portrait-employee.png",
   "paletteSource": "deadmall-portrait-union.json",
   "dimensions": [
