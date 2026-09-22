@@ -235,10 +235,10 @@ export class MvpRunHud {
       (offer) => (state.offerStatus[offer.id] ?? 'available') === 'available',
     );
     if (room.store && available.length > 0) {
-      return 'Shop the offers (E buy · F steal) or move on.';
+      return 'Shop the offers (E buy · F steal), or press E at the east door.';
     }
     if (state.roomIndex < state.wing.rooms.length - 1) {
-      return 'Head east to continue the shift.';
+      return 'Head east, then press E at the door.';
     }
     return '—';
   }

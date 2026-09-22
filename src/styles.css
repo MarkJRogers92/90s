@@ -689,8 +689,12 @@ body[data-mode='bench'] {
   /* The panel overlays the playfield, so it must not swallow canvas pointer
      input: aim and fire are read from the canvas, and the janitor spawns under
      this panel's footprint. Interactive children re-enable events, exactly as
-     .run-hud already does. */
+     .run-hud already does. The action row leads the panel (order -1) so the
+     always-live buttons sit above the canvas instead of over the west room
+     entry, where attack clicks used to land on Return to title mid-fight. */
   pointer-events: none;
+  display: flex;
+  flex-direction: column;
 }
 
 .mvp-run-actions,
@@ -879,9 +883,13 @@ body[data-mode='bench'] {
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgb(246 211 101 / 40%);
+  order: -1;
+  margin-top: 0;
+  margin-bottom: 12px;
+  padding-top: 0;
+  padding-bottom: 12px;
+  border-top: none;
+  border-bottom: 1px solid rgb(246 211 101 / 40%);
 }
 
 .mvp-run-actions button {

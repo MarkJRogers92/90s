@@ -29,6 +29,7 @@ import {
   STORE_TEMPLATES,
   STOREFRONT_ROLES,
   WALL_THICKNESS,
+  WEST_ENTRY_X,
 } from './templates';
 import {
   WING_ROOM_COUNT,
@@ -275,7 +276,7 @@ function storefrontRoom(
       role,
       STOREFRONT_VARIANT_ID,
       [],
-      { x: 110, y: 240 },
+      { x: WEST_ENTRY_X, y: 240 },
     ),
     store: instance.store,
     offers: instance.offers,

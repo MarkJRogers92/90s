@@ -22,6 +22,17 @@ export const ROOM_BOUNDS: Rect = {
   height: ROOM_HEIGHT,
 };
 
+/**
+ * Shared west entry x for every M5 room; east entries mirror it.
+ *
+ * The run HUD overlays the playfield's west edge, so the old x=110 spawned the
+ * janitor underneath the panel at desktop viewports. 265 clears the panel at
+ * 1280x720 and wider while keeping every variant's interior walls more than a
+ * body radius away (see the entry-clearance test); the 800x600 floor still
+ * covers it, matching the M1-M4 overlay pattern.
+ */
+export const WEST_ENTRY_X = 265;
+
 export type AuthoredEnemyKind = 'hanger' | 'spitter';
 
 export type AuthoredSpawnSlot = {
@@ -84,7 +95,7 @@ export const ROOM_VARIANTS: Readonly<
         { x: 260, y: 70, width: 140, height: 30 },
         { x: 560, y: 380, width: 140, height: 30 },
       ],
-      playerEntry: { x: 110, y: 240 },
+      playerEntry: { x: WEST_ENTRY_X, y: 240 },
       bossAnchor: null,
       spawnSlots: [
         { slotId: 'corridor-utility-hanger-west', x: 180, y: 120, kinds: ['hanger'] },
@@ -101,7 +112,7 @@ export const ROOM_VARIANTS: Readonly<
         { x: 180, y: 110, width: 30, height: 260 },
         { x: 750, y: 110, width: 30, height: 260 },
       ],
-      playerEntry: { x: 110, y: 240 },
+      playerEntry: { x: WEST_ENTRY_X, y: 240 },
       bossAnchor: null,
       spawnSlots: [
         { slotId: 'corridor-locker-hanger-north', x: 480, y: 120, kinds: ['hanger'] },
@@ -122,7 +133,7 @@ export const ROOM_VARIANTS: Readonly<
         { x: 220, y: 320, width: 120, height: 40 },
         { x: 620, y: 320, width: 120, height: 40 },
       ],
-      playerEntry: { x: 110, y: 240 },
+      playerEntry: { x: WEST_ENTRY_X, y: 240 },
       bossAnchor: null,
       spawnSlots: [
         { slotId: 'food-court-tables-mixed-west', x: 180, y: 240, kinds: ['hanger', 'spitter'] },
@@ -139,7 +150,7 @@ export const ROOM_VARIANTS: Readonly<
         { x: 300, y: 100, width: 360, height: 30 },
         { x: 300, y: 350, width: 360, height: 30 },
       ],
-      playerEntry: { x: 110, y: 240 },
+      playerEntry: { x: WEST_ENTRY_X, y: 240 },
       bossAnchor: null,
       spawnSlots: [
         { slotId: 'food-court-counter-hanger-northwest', x: 180, y: 120, kinds: ['hanger'] },
@@ -158,7 +169,7 @@ export const ROOM_VARIANTS: Readonly<
         { x: 280, y: 160, width: 30, height: 160 },
         { x: 650, y: 160, width: 30, height: 160 },
       ],
-      playerEntry: { x: 110, y: 240 },
+      playerEntry: { x: WEST_ENTRY_X, y: 240 },
       bossAnchor: null,
       spawnSlots: [
         { slotId: 'back-hall-pillars-mixed-northwest', x: 180, y: 120, kinds: ['hanger', 'spitter'] },
@@ -175,7 +186,7 @@ export const ROOM_VARIANTS: Readonly<
         { x: 260, y: 90, width: 80, height: 80 },
         { x: 620, y: 310, width: 80, height: 80 },
       ],
-      playerEntry: { x: 110, y: 240 },
+      playerEntry: { x: WEST_ENTRY_X, y: 240 },
       bossAnchor: null,
       spawnSlots: [
         { slotId: 'back-hall-crates-hanger-north', x: 480, y: 120, kinds: ['hanger'] },
@@ -196,7 +207,7 @@ export const SECURITY_OFFICE_VARIANT: AuthoredRoomVariant = {
     { x: 330, y: 120, width: 140, height: 40 },
     { x: 330, y: 320, width: 140, height: 40 },
   ],
-  playerEntry: { x: 110, y: 240 },
+  playerEntry: { x: WEST_ENTRY_X, y: 240 },
   bossAnchor: { x: 760, y: 240 },
   spawnSlots: [],
   enemyCount: { min: 0, max: 0 },

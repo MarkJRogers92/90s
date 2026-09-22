@@ -76,6 +76,21 @@ const RECIPES: Record<AudioCue, Recipe> = {
     tones: [{ wave: 'sine', from: 300, to: 540, ms: 150, gain: 0.12 }],
     minGapMs: 200,
   },
+  secured: {
+    tones: [
+      { wave: 'triangle', from: 660, to: 660, ms: 90, gain: 0.14 },
+      { wave: 'triangle', from: 990, to: 990, ms: 220, gain: 0.13, atMs: 80 },
+    ],
+    minGapMs: 300,
+  },
+  fusion: {
+    tones: [
+      { wave: 'sawtooth', from: 180, to: 720, ms: 220, gain: 0.1 },
+      { wave: 'square', from: 720, to: 1440, ms: 160, gain: 0.1, atMs: 200 },
+    ],
+    noise: { ms: 200, gain: 0.07, cutoff: 2400 },
+    minGapMs: 400,
+  },
   confiscation: {
     tones: [
       { wave: 'sawtooth', from: 200, to: 70, ms: 400, gain: 0.26 },

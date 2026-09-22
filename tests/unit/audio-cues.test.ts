@@ -11,6 +11,7 @@ import type { AudioCue } from '../../src/game/audio/cues';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import type { MvpRunState } from '../../src/sim/run/types';
 import type { EnemyState, ProjectileState } from '../../src/sim/model';
+import type { EmitterMountComposite, InventoryLeaf } from '../../src/sim/fusion/types';
 
 function makeBoss(overrides: Partial<EnemyState> = {}): EnemyState {
   return {
@@ -121,6 +122,92 @@ describe('audio cue derivation', () => {
     });
     expect(confiscated).toContain('confiscation');
     expect(confiscated).not.toContain('theft');
+    expect(confiscated).not.toContain('secured');
+  });
+
+  it('reports a secured theft instead of a confiscation', () => {
+    // Securing and confiscating look identical in carried/Heat/suspicion: both
+    // drop carried goods, raise Heat, and reset suspicion. The distinguisher is
+    // the inventory — a securing banks stolen leaves, a confiscation does not.
+    const theft = {
+      itemDefinitionId: 'gel_pens',
+      sourceStoreId: 'mall_mart',
+      sourceOfferId: 'offer-1',
+      startedTick: 0,
+    };
+    const carrying = createMvpRun(9);
+    carrying.carried.push(theft);
+    const secured = cuesBetween(carrying, (state) => {
+      state.heat += 15;
+      state.suspicion = 0;
+      state.carried = [];
+      const leaf: InventoryLeaf = {
+        kind: 'leaf',
+        instanceId: 'mvp-stolen-offer-1',
+        itemDefinitionId: 'gel_pens',
+        acquisitionKind: 'stolen',
+        sourceLocationId: 'mall_mart',
+        sourceStockId: 'offer-1',
+        acquisitionTick: 5,
+      };
+      state.inventory = {
+        ...state.inventory,
+        inventory: [...state.inventory.inventory, leaf],
+      };
+    });
+    expect(secured).toContain('secured');
+    expect(secured).not.toContain('confiscation');
+  });
+
+  it('reports a fusion instead of a purchase', () => {
+    // The bench fee reduces cash exactly like a shop purchase; the composite
+    // appearing in the same tick is what makes it a fusion.
+    const fused = cuesAfter((state) => {
+      state.cash -= 4;
+      const popper: InventoryLeaf = {
+        kind: 'leaf',
+        instanceId: 'dev-party_popper',
+        itemDefinitionId: 'party_popper',
+        acquisitionKind: 'purchased',
+        sourceLocationId: 'dev-fixture',
+        sourceStockId: 'dev-fixture',
+        acquisitionTick: 0,
+      };
+      const car: InventoryLeaf = {
+        kind: 'leaf',
+        instanceId: 'dev-rc_car',
+        itemDefinitionId: 'rc_car',
+        acquisitionKind: 'purchased',
+        sourceLocationId: 'dev-fixture',
+        sourceStockId: 'dev-fixture',
+        acquisitionTick: 0,
+      };
+      const composite: EmitterMountComposite = {
+        kind: 'composite',
+        instanceId: 'composite-1',
+        recipeId: 'emitter_mount',
+        createdTick: 5,
+        transactionId: 'txn-1',
+        primary: popper,
+        carrier: car,
+      };
+      state.inventory = {
+        ...state.inventory,
+        inventory: [...state.inventory.inventory, composite],
+      };
+    });
+    expect(fused).toContain('fusion');
+    expect(fused).not.toContain('purchase');
+  });
+
+  it('reports a non-lethal enemy hit without the takedown cue', () => {
+    const state = createMvpRun(9);
+    state.room.combat.enemies = [makeHanger(1, 200, 240)];
+    const struck = cuesBetween(state, (current) => {
+      current.room.combat.enemies = [makeHanger(1, 200, 240, 4)];
+    });
+    expect(struck).toContain('hit');
+    expect(struck).not.toContain('enemy_down');
   });
 
   it('reports an enemy going down', () => {

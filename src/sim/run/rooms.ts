@@ -37,7 +37,7 @@ export const PLAYER_MAX_HEALTH = 6;
  * spawns and therefore heal nothing, so this is per fight rather than per door.
  */
 export const ROOM_CLEAR_HEAL = 2;
-const PLAYER_RADIUS = 10;
+export const PLAYER_RADIUS = 10;
 const HANGER_HEALTH = 8;
 const HANGER_RADIUS = 14;
 const SPITTER_HEALTH = 8;

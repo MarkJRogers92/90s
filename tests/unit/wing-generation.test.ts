@@ -5,9 +5,11 @@ import {
   AUTHORED_OFFER_BANDS,
   DOORWAY_WIDTH,
   ROOM_VARIANTS,
+  SECURITY_OFFICE_VARIANT,
   STORE_TEMPLATES,
   WALL_THICKNESS,
 } from '../../src/sim/wing/templates';
+import { PLAYER_RADIUS } from '../../src/sim/run/rooms';
 import {
   WING_ROOM_COUNT,
   WING_ROOM_ORDER,
@@ -65,6 +67,15 @@ function containsPoint(
     point.y >= rect.y &&
     point.y <= rect.y + rect.height
   );
+}
+
+function distanceToRect(
+  point: { x: number; y: number },
+  rect: { x: number; y: number; width: number; height: number },
+): number {
+  const dx = Math.max(rect.x - point.x, 0, point.x - (rect.x + rect.width));
+  const dy = Math.max(rect.y - point.y, 0, point.y - (rect.y + rect.height));
+  return Math.hypot(dx, dy);
 }
 
 function assertDeepFrozen(value: unknown): void {
@@ -168,6 +179,25 @@ describe('seeded wing generation', () => {
       expect(
         room.walls.some((wall) => containsPoint(wall, room.playerEntry)),
       ).toBe(false);
+    }
+  });
+
+  it('keeps every authored entry more than a body radius from interior walls', () => {
+    // Entries moved east to clear the HUD panel footprint; center-in-wall is
+    // not enough, since spawning exactly at a wall face breaks the slide. Every
+    // variant is checked directly so no seed roll can dodge the assertion.
+    const variants = [
+      ...ROOM_VARIANTS.service_corridor,
+      ...ROOM_VARIANTS.food_court,
+      ...ROOM_VARIANTS.back_hall,
+      SECURITY_OFFICE_VARIANT,
+    ];
+    for (const variant of variants) {
+      for (const wall of variant.interiorWalls) {
+        expect(distanceToRect(variant.playerEntry, wall)).toBeGreaterThan(
+          PLAYER_RADIUS,
+        );
+      }
     }
   });
 

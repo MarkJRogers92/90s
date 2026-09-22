@@ -23,6 +23,8 @@ export type AudioCue =
   | 'heal'
   | 'purchase'
   | 'theft'
+  | 'secured'
+  | 'fusion'
   | 'confiscation'
   | 'conduction'
   | 'enemy_down'
@@ -56,6 +58,9 @@ export type AudioSnapshot = {
   readonly cash: number;
   readonly carried: number;
   readonly heat: number;
+  readonly stolenCount: number;
+  readonly compositeCount: number;
+  readonly enemyHealth: number;
   readonly clearedRooms: number;
   readonly checkpointKey: string;
   readonly roomIndex: number;
@@ -82,6 +87,12 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     cash: state.cash,
     carried: state.carried.length,
     heat: state.heat,
+    stolenCount: state.inventory.inventory.filter(
+      (node) => node.kind === 'leaf' && node.acquisitionKind === 'stolen',
+    ).length,
+    compositeCount: state.inventory.inventory.filter((node) => node.kind === 'composite')
+      .length,
+    enemyHealth: combat.enemies.reduce((total, enemy) => total + enemy.health, 0),
     clearedRooms: state.clearedRooms.length,
     checkpointKey: state.checkpoint
       ? `${state.checkpoint.roomIndex}:${state.checkpoint.tick}`
@@ -142,13 +153,23 @@ export function deriveAudioCues(
     cues.push('conduction');
   }
 
-  if (current.carried < previous.carried && current.heat > previous.heat) {
-    cues.push('confiscation');
+  // Securing and confiscating are identical in carried goods, Heat, and
+  // suspicion: both drop the goods, raise Heat, and reset suspicion. Only the
+  // inventory tells them apart — a securing banks stolen leaves, so it gets a
+  // triumphant cue instead of the confiscation sting.
+  if (current.carried < previous.carried) {
+    if (current.stolenCount > previous.stolenCount) {
+      cues.push('secured');
+    } else if (current.heat > previous.heat) {
+      cues.push('confiscation');
+    }
   } else if (current.carried > previous.carried) {
     cues.push('theft');
   }
+  // The bench fee reduces cash exactly like a shop purchase; a composite
+  // appearing in the same tick is what makes it a fusion.
   if (current.cash < previous.cash) {
-    cues.push('purchase');
+    cues.push(current.compositeCount > previous.compositeCount ? 'fusion' : 'purchase');
   }
 
   const deaths = previous.livingEnemyIds.filter(
@@ -156,6 +177,8 @@ export function deriveAudioCues(
   ).length;
   if (deaths > 0) {
     cues.push('enemy_down');
+  } else if (current.enemyHealth < previous.enemyHealth) {
+    cues.push('hit');
   }
 
   // A cleared fight heals, so the two arrive together; report the clear once.

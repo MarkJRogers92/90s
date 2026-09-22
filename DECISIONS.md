@@ -176,3 +176,23 @@
 - Announce a room change with a two-tone PA chime rather than spoken
   announcements. Spoken lines would need recorded assets or SpeechSynthesis, and
   neither is in scope here; the chime is honest about being a chime.
+- Distinguish a secured theft from a confiscation by the inventory, not by
+  carried goods, Heat, or suspicion: both paths drop carried goods, raise Heat,
+  and reset suspicion, so only the banked stolen leaves tell them apart. A
+  securing plays a new triumphant `secured` cue; a confiscation keeps its sting.
+  Likewise the bench fee plays a new `fusion` cue when a composite appears in
+  the same tick, and non-lethal enemy damage plays the previously unreachable
+  `hit` cue, so every combat outcome is audible.
+- Lead the run HUD with its action row instead of trailing it. The panel
+  overlays the playfield and the west room entry sat under Return to title, so
+  attack clicks aimed near a fresh entry could quit the run mid-fight. The row
+  now sits in the strip above the canvas at 1440x900 and 800x600 with no
+  behavior or test-id change.
+- Name the door key in the run objectives. New players walked into the east
+  doorway and stalled because nothing said doors are E-to-use; the travel and
+  shop objectives now say so directly.
+- Spawn every M5 room at x=265 (`WEST_ENTRY_X`) instead of x=110. The old
+  anchor hid the janitor under the HUD panel at desktop viewports; 265 clears
+  the panel at 1280x720 and wider while keeping more than a body radius from
+  every variant's interior walls, which the entry-clearance test now locks. The
+  800x600 floor still covers the spawn, matching the M1-M4 overlay pattern.
