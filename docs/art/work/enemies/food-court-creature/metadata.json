@@ -1,0 +1,36 @@
+{
+  "group_id": "6183b102-af21-4461-8452-78907268eb34",
+  "states": [
+    {
+      "character": {
+        "id": "548cd6a5-7d95-4981-ac73-9b906127b108",
+        "name": "Idle",
+        "prompt": "A mall food court horror enemy for a 1990s American shopping mall horror roguelite. A HUNCHED, BLOATED humanoid mass that was once a food court worker. It still wears a stained fast-food uniform: a striped short-sleeve shirt, a greasy apron with a small blank badge containing NO lettering, and a paper food-service cap. The body has swollen badly - a heavy sagging torso distended over the belt, thick short limbs, and rolls of flesh spilling over the uniform. Food-court matter is fused into it: a cardboard tray embedded in one shoulder, a paper drink cup fused at the hip, fryer grease sheening the skin, and paper wrappers stuck to the arms. The head is swollen and pushed forward low between the shoulders with a wide wet mouth and no visible eyes. POSTURE: hunched forward, shoulders rolled down, head low, knees slightly bent, so the silhouette is a squat heavy BULB - wider and squatter than a normal person, with almost no neck. CRITICAL: the striped uniform, greasy apron and paper cap keep the food court worker recognisable. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:12:30.887928+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T04:17:01.336084"
+}

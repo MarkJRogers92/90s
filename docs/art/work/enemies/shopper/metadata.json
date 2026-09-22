@@ -1,0 +1,36 @@
+{
+  "group_id": "0797a559-42f3-4268-8960-c116655e01dd",
+  "states": [
+    {
+      "character": {
+        "id": "29b191b3-4f3f-40cd-8764-ffa41fde8413",
+        "name": "Idle",
+        "prompt": "A corrupted mall shopper enemy for a 1990s American shopping mall horror roguelite. Humanoid of ordinary adult build dressed in unmistakably 1990s casual mall clothing: an open dark denim jacket over a plain t-shirt, baggy faded jeans, chunky white sneakers, and a paper shopping bag hanging from one hand. Corruption has partly taken the body: cold grey skin with faint bruised purple and sickly green mottling, the fingers of the free hand stretched into long pale gripping tendrils, the jaw hanging slightly too open, dark organic matter staining the jacket collar and cuffs. Pose is a slow shamble, standing upright, arms slightly away from the body. CRITICAL: it must still read at a glance as an ordinary 1990s shopper - the denim jacket, baggy jeans and shopping bag stay clearly recognisable. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:04:22.208014+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T04:07:41.149062"
+}

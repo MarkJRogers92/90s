@@ -1,0 +1,36 @@
+{
+  "group_id": "333c5f94-4447-4479-9928-f673de481e3b",
+  "states": [
+    {
+      "character": {
+        "id": "fe3b861c-365a-42a9-8ad4-c9a35e775920",
+        "name": "Idle",
+        "prompt": "A corrupted mall retail employee enemy for a 1990s American shopping mall horror roguelite. Humanoid dressed in a 1990s mall store uniform: a teal polyester vest over a white short-sleeve shirt, a small blank rectangular badge shape with NO lettering on the chest, dark trousers, black shoes, and a plain lanyard. Corruption has partly taken the body: one arm stretched too long, the head tilted and slightly too large, the skin under the collar pale grey with dark veins, and the vest stained and torn along one shoulder. Pose is a stiff forward lean, standing upright, arms hanging. CRITICAL: it must still read at a glance as a mall store employee - the teal vest, white shirt and blank badge stay clearly recognisable. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:04:22.784801+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T04:09:43.962364"
+}

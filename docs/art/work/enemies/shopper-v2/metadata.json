@@ -1,0 +1,36 @@
+{
+  "group_id": "201b84ad-2f92-402c-ace5-22034d7f48c1",
+  "states": [
+    {
+      "character": {
+        "id": "5a21926c-1bd9-4b77-91a0-59df8aadf4f3",
+        "name": "Idle",
+        "prompt": "A corrupted mall shopper enemy for a 1990s American shopping mall horror roguelite. Humanoid dressed in unmistakably 1990s casual mall clothing: an open dark denim jacket over a plain t-shirt, baggy faded jeans, chunky white sneakers, and a paper shopping bag with handles. Corruption has partly taken the body: cold grey skin with bruised purple and sickly green mottling, the fingers of one hand stretched into long pale gripping tendrils, the jaw hanging too open. POSTURE: a shambling LEAN TO ONE SIDE - the body is tipped, one shoulder hitched high and the other dropped, so the figure leans heavily. One leg trails and drags behind. The arm on the dropped side hangs low, trailing the shopping bag near the floor. The head is tipped toward the dropped shoulder. The silhouette MUST read as LOPSIDED and ASYMMETRIC, clearly not a symmetrical standing figure. CRITICAL: the denim jacket, baggy jeans and shopping bag stay clearly recognisable as an ordinary 1990s shopper. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:18:36.283247+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T04:23:46.452252"
+}

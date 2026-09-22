@@ -1,0 +1,103 @@
+{
+  "group_id": "fa6e52c5-aa0d-4514-b417-5760ad368eaa",
+  "states": [
+    {
+      "character": {
+        "id": "08163fc7-2f37-40dc-a3af-3b31190b1e57",
+        "name": "Idle",
+        "prompt": "A mall mannequin horror enemy for a 1990s American shopping mall horror roguelite. A humanoid that is clearly a shop mannequin: smooth glossy pale beige plastic with visible mould seam lines and NO facial features at all - a blank featureless face, no eyes, no mouth, no hair. Dressed in the remains of a 1990s clothing-store outfit: a mustard ribbed sweater and dark trousers. Corruption: the plastic is cracked across one shoulder and the hip with dark organic tissue showing through, the neck twisted unnaturally, and crazing spreading down the chest. POSTURE: held in a RIGID SHOP-DISPLAY POSE - both arms raised and held straight out FORWARD at chest height, parallel to each other and horizontal, with the hands slightly cupped as if presenting merchandise. The legs are straight and slightly apart, and the head is tilted at a hard unnatural angle to one side. Every joint looks frozen and posed. The silhouette MUST read as a STIFF posed dummy with two arms projecting forward, clearly not a natural standing figure. CRITICAL: the smooth beige plastic, blank face and mould seams stay recognisable as a shop mannequin. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:18:37.121580+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {
+          "walk-stiff": {
+            "south": [
+              "Idle/animations/walk-stiff/south/frame_000.png",
+              "Idle/animations/walk-stiff/south/frame_001.png",
+              "Idle/animations/walk-stiff/south/frame_002.png",
+              "Idle/animations/walk-stiff/south/frame_003.png",
+              "Idle/animations/walk-stiff/south/frame_004.png",
+              "Idle/animations/walk-stiff/south/frame_005.png"
+            ],
+            "north-east": [
+              "Idle/animations/walk-stiff/north-east/frame_000.png",
+              "Idle/animations/walk-stiff/north-east/frame_001.png",
+              "Idle/animations/walk-stiff/north-east/frame_002.png",
+              "Idle/animations/walk-stiff/north-east/frame_003.png",
+              "Idle/animations/walk-stiff/north-east/frame_004.png",
+              "Idle/animations/walk-stiff/north-east/frame_005.png"
+            ],
+            "south-west": [
+              "Idle/animations/walk-stiff/south-west/frame_000.png",
+              "Idle/animations/walk-stiff/south-west/frame_001.png",
+              "Idle/animations/walk-stiff/south-west/frame_002.png",
+              "Idle/animations/walk-stiff/south-west/frame_003.png",
+              "Idle/animations/walk-stiff/south-west/frame_004.png",
+              "Idle/animations/walk-stiff/south-west/frame_005.png"
+            ],
+            "north": [
+              "Idle/animations/walk-stiff/north/frame_000.png",
+              "Idle/animations/walk-stiff/north/frame_001.png",
+              "Idle/animations/walk-stiff/north/frame_002.png",
+              "Idle/animations/walk-stiff/north/frame_003.png",
+              "Idle/animations/walk-stiff/north/frame_004.png",
+              "Idle/animations/walk-stiff/north/frame_005.png"
+            ],
+            "north-west": [
+              "Idle/animations/walk-stiff/north-west/frame_000.png",
+              "Idle/animations/walk-stiff/north-west/frame_001.png",
+              "Idle/animations/walk-stiff/north-west/frame_002.png",
+              "Idle/animations/walk-stiff/north-west/frame_003.png",
+              "Idle/animations/walk-stiff/north-west/frame_004.png",
+              "Idle/animations/walk-stiff/north-west/frame_005.png"
+            ],
+            "east": [
+              "Idle/animations/walk-stiff/east/frame_000.png",
+              "Idle/animations/walk-stiff/east/frame_001.png",
+              "Idle/animations/walk-stiff/east/frame_002.png",
+              "Idle/animations/walk-stiff/east/frame_003.png",
+              "Idle/animations/walk-stiff/east/frame_004.png",
+              "Idle/animations/walk-stiff/east/frame_005.png"
+            ],
+            "south-east": [
+              "Idle/animations/walk-stiff/south-east/frame_000.png",
+              "Idle/animations/walk-stiff/south-east/frame_001.png",
+              "Idle/animations/walk-stiff/south-east/frame_002.png",
+              "Idle/animations/walk-stiff/south-east/frame_003.png",
+              "Idle/animations/walk-stiff/south-east/frame_004.png",
+              "Idle/animations/walk-stiff/south-east/frame_005.png"
+            ],
+            "west": [
+              "Idle/animations/walk-stiff/west/frame_000.png",
+              "Idle/animations/walk-stiff/west/frame_001.png",
+              "Idle/animations/walk-stiff/west/frame_002.png",
+              "Idle/animations/walk-stiff/west/frame_003.png",
+              "Idle/animations/walk-stiff/west/frame_004.png",
+              "Idle/animations/walk-stiff/west/frame_005.png"
+            ]
+          }
+        }
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T04:27:11.534037"
+}

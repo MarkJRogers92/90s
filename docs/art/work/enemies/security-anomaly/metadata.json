@@ -1,0 +1,36 @@
+{
+  "group_id": "2ecfd32c-87d3-4ac1-bdaa-76ae99e9af05",
+  "states": [
+    {
+      "character": {
+        "id": "574710fd-d4f3-46a8-8d8c-7ed1841b8835",
+        "name": "Idle",
+        "prompt": "A mall security anomaly enemy for a 1990s American shopping mall horror roguelite. A TALL, GAUNT, STRETCHED humanoid - unnaturally elongated and thin, far taller and narrower than a normal person. It wears the remains of a 1990s mall security uniform: a dark navy short-sleeve shirt with a small blank shoulder patch containing NO lettering, dark trousers, a black duty belt carrying a torch and a radio, and a peaked security cap. The body is wrong: the limbs are too long and too thin, the torso stretched vertically, the neck extended so the small head sits too far above the shoulders, and both arms hang well past the knees. The uniform fabrics stay recognisable but are faded and stained. POSTURE: standing fully upright and unnaturally still, shoulders level, arms hanging straight down and close to the body - a rigid vertical silhouette. CRITICAL: it must read as mall security - the dark navy uniform, duty belt, torch, radio and peaked cap stay clearly recognisable. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:12:18.489998+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T04:17:00.463700"
+}

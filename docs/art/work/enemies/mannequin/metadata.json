@@ -1,0 +1,36 @@
+{
+  "group_id": "4aea1ff6-7f43-4845-b020-1a861eb7152f",
+  "states": [
+    {
+      "character": {
+        "id": "37d6dfe7-cd06-4795-9568-c47ada6b4103",
+        "name": "Idle",
+        "prompt": "A mall mannequin horror enemy for a 1990s American shopping mall horror roguelite. A humanoid figure that is clearly a shop mannequin: smooth glossy pale beige plastic with visible mould seam lines, and NO facial features at all - a blank featureless face, no eyes, no mouth, no hair. Dressed in the remains of a 1990s clothing-store outfit: a mustard ribbed sweater and dark trousers. Corruption: the plastic is cracked across one shoulder and the hip with dark organic tissue showing through the cracks, the neck stretched and twisted unnaturally, one arm hanging at a wrong angle with plastic fingers splayed, and crazing spreading down the chest. Pose is standing, stiff, upright, arms hanging slightly away from the body. CRITICAL: it must still read at a glance as a shop mannequin - smooth beige plastic, blank face and mould seams stay clearly recognisable. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:05:16.003918+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T04:09:44.914567"
+}

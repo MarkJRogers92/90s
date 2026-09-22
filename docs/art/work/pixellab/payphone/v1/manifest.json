@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "asset": "payphone",
+  "version": "v1",
+  "status": "cleanup_approved",
+  "tool": "create_image_pro",
+  "costBracket": "pro (20-40 generations); exact spend not reported by API",
+  "seed": 19950921,
+  "width": 64,
+  "height": 96,
+  "paletteSnap": "tools/snap_palette.py onto work/deadmall-global.gpl (21 colours)",
+  "candidate": "c2 of 4, picked by user from review/candidates.png",
+  "rawApproved": true,
+  "rawApprovedAt": "2026-09-21T05:18:51Z",
+  "completedAt": "2026-09-21T05:13:16Z",
+  "jobId": "6d764e74-f7b5-415d-92ec-6bfa5f6def1f",
+  "sha256": "fc08ff9384d5a35f8117fa6c38c26323a6447654bcdfdf5aef75494ade22ef3e",
+  "nativeDimensions": [
+    64,
+    96
+  ],
+  "rawPath": "/Users/markrogers/deadmall-art/work/pixellab/payphone/v1/original/pixellab-payphone.png",
+  "reviewPath": "/Users/markrogers/deadmall-art/work/pixellab/payphone/v1/review/c2-3way.png",
+  "cleanupApproved": true,
+  "cleanupApprovedAt": "2026-09-21T05:18:51Z",
+  "cleanupNote": "snap-only; no manual touch-ups needed (0 orphan pixels, clean clusters at 8x zoom)",
+  "masterPath": "/Users/markrogers/deadmall-art/work/pixellab/payphone/v1/source/payphone-v1.aseprite",
+  "runtimeExportPath": "/Users/markrogers/deadmall-art/work/pixellab/payphone/v1/exports/payphone.png",
+  "masterSha256": "3c1be990c84c48a616945b042b96d0bc0cf5b30031d458823e8e206379b47b55",
+  "runtimeSha256": "2594d6f24f347c4279d0995f952d0685fa7e9d89bda210c5c2e5178a54f0a160",
+  "validator": "PASS: 64x96, approved palette, binary alpha, bottom anchor"
+}

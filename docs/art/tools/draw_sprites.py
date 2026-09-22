@@ -212,10 +212,93 @@ def store_gondola(palette: Palette) -> Sprite:
     return s
 
 
+def payphone(palette: Palette) -> Sprite:
+    """A 1990s pedestal payphone: backlit sign band, chrome housing, handset.
+
+    Front-on and base-anchored like the vending machine (same 24x40 canvas).
+    The handset hangs on the left with a short coiled cord; the pedestal post
+    drops from the housing to a base plate on the floor line.
+
+    Restraint notes: the sign face is left FLAT -- at 14x2 there is no readable
+    "PHONE", and tick marks would read as vents. The housing face is flat chrome
+    with a lit left edge and dark right edge, same as the vending cabinet. See
+    [[deadmall-art-detail-restraint]].
+    """
+    s = Sprite(24, 40, palette)
+    chrome, chrome_lit, chrome_dark = s.c("steel", 1), s.c("steel", 0), s.c("steel", 3)
+    post, post_dark = s.c("steel", 2), s.c("steel", 3)
+    dark, dark_deep = s.c("plastic_black", 1), s.c("plastic_black", 2)
+    card, card_ink = s.c("beige", 0), s.c("tile", 3)
+    card_head = s.c("brass", 1)
+    sign, sign_shade = s.c("fluoro", 1), s.c("fluoro", 2)
+    shadow = s.c("shadow", 1)
+
+    # Sign band: dark frame, flat lit face, one pixel wider than the housing
+    # each side so it reads as a cap.
+    s.fill(4, 2, 19, 5, chrome_dark)
+    s.fill(5, 3, 18, 4, sign)
+    s.row(5, 18, 4, sign_shade)
+
+    # Housing: flat chrome face, lit left edge, dark right and bottom edges.
+    s.fill(5, 6, 18, 27, chrome)
+    s.col(5, 6, 27, chrome_lit)
+    s.col(18, 6, 27, chrome_dark)
+    s.row(5, 18, 27, chrome_dark)
+
+    # Instruction card: pale card, brass header, two ink lines.
+    s.fill(7, 8, 16, 11, card)
+    s.row(7, 16, 8, card_head)
+    s.row(8, 15, 9, card_ink)
+    s.row(8, 15, 10, card_ink)
+
+    # Keypad: pale plate with a 3x4 field of single-pixel buttons.
+    s.fill(7, 14, 13, 22, chrome_lit)
+    s.row(7, 13, 22, chrome_dark)
+    s.col(13, 14, 22, chrome_dark)
+    for r in range(4):
+        for i in range(3):
+            s.px(8 + i * 2, 15 + r * 2, dark_deep)
+
+    # Coin slot with a lit lip, and the coin-return cup below it.
+    s.fill(15, 14, 16, 18, dark_deep)
+    s.row(15, 16, 19, chrome_lit)
+    s.fill(14, 22, 17, 25, dark_deep)
+    s.row(14, 17, 21, chrome_lit)
+
+    # Handset hanging on the left: grip with a wider earpiece and mouthpiece,
+    # shaded on its right, with a lit left edge on the grip.
+    s.fill(2, 11, 3, 21, dark)
+    s.fill(2, 9, 4, 12, dark)
+    s.fill(2, 20, 4, 23, dark)
+    s.col(3, 13, 19, dark_deep)
+    s.col(4, 9, 12, dark_deep)
+    s.col(4, 20, 23, dark_deep)
+    s.col(2, 13, 19, chrome)
+    s.px(4, 14, dark)                    # cradle arms reaching to the housing
+    s.px(4, 18, dark)
+
+    # Coiled cord: a short zigzag from the mouthpiece into the housing base.
+    for x, y in ((4, 24), (3, 25), (4, 26), (5, 27)):
+        s.px(x, y, dark_deep)
+
+    # Pedestal post, collar, and base plate.
+    s.fill(9, 28, 14, 36, post)
+    s.col(9, 28, 36, chrome)
+    s.col(14, 28, 36, post_dark)
+    s.row(8, 15, 28, post_dark)
+    s.fill(7, 37, 16, 37, dark)
+
+    # Ground contact on the last two rows, so the sprite is base-anchored.
+    s.row(5, 18, 38, shadow)
+    s.row(7, 16, 39, shadow)
+    return s
+
+
 CATALOGUE = {
     "mall-bench": bench,
     "vending-machine": vending_machine,
     "store-gondola": store_gondola,
+    "payphone": payphone,
 }
 
 
