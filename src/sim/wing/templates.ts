@@ -7,7 +7,7 @@
  */
 import type { Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
-import type { WingFixture, WingRoomRole } from './types';
+import type { WingDecal, WingFixture, WingRoomRole } from './types';
 
 export const ROOM_WIDTH = 960;
 export const ROOM_HEIGHT = 480;
@@ -50,6 +50,12 @@ export type AuthoredRoomVariant = {
    * no fixtures is a legitimate room.
    */
   readonly fixtures?: readonly WingFixture[];
+  /**
+   * Floor damage and grime, hand-placed for this variant. Optional for the same
+   * reason as fixtures: a room with no decals is a legitimate room. Positions
+   * are centres, since a decal lies flat rather than standing on a base.
+   */
+  readonly decals?: readonly WingDecal[];
 };
 
 export type CombatRoomRole =
@@ -106,6 +112,14 @@ export const ROOM_VARIANTS: Readonly<
         { kind: 'vending-machine', x: 660, y: 200 },
         { kind: 'mall-bench', x: 480, y: 300 },
       ],
+      // Below the second interior wall's band at y 380-410, so no decal lies on
+      // top of masonry.
+      decals: [
+        { kind: 'blood-drag', x: 240, y: 250 },
+        { kind: 'scorch-mark', x: 724, y: 300 },
+        { kind: 'cracked-tile', x: 460, y: 444 },
+        { kind: 'organic-residue', x: 620, y: 444 },
+      ],
     },
     {
       id: 'service-corridor-locker-aisles',
@@ -130,6 +144,14 @@ export const ROOM_VARIANTS: Readonly<
         { kind: 'vending-machine', x: 300, y: 400 },
         { kind: 'mall-bench', x: 480, y: 450 },
       ],
+      // Clear of both aisle walls, which run x 180-210 and x 750-780 between
+      // y 110 and y 370; a 32px decal centred too near an edge still overlaps.
+      decals: [
+        { kind: 'broken-glass', x: 250, y: 250 },
+        { kind: 'blood-pool', x: 700, y: 320 },
+        { kind: 'torn-carpet', x: 470, y: 200 },
+        { kind: 'blood-handprint', x: 250, y: 420 },
+      ],
     },
   ],
   food_court: [
@@ -151,6 +173,13 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 2, max: 4 },
       benchKiosk: null,
+      // Hand-placed clear of this layout's walls and fixtures.
+      decals: [
+        { kind: 'scorch-mark', x: 480, y: 240 },
+        { kind: 'organic-residue', x: 480, y: 440 },
+        { kind: 'blood-pool', x: 120, y: 240 },
+        { kind: 'cracked-tile', x: 840, y: 240 },
+      ],
     },
     {
       id: 'food-court-counter-row',
@@ -168,6 +197,13 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 3, max: 4 },
       benchKiosk: null,
+      // Hand-placed clear of this layout's walls and fixtures.
+      decals: [
+        { kind: 'blood-splash', x: 480, y: 225 },
+        { kind: 'organic-residue', x: 480, y: 430 },
+        { kind: 'scorch-mark', x: 140, y: 240 },
+        { kind: 'cracked-tile', x: 820, y: 240 },
+      ],
     },
   ],
   back_hall: [
@@ -187,6 +223,13 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 2, max: 4 },
       benchKiosk: null,
+      // Hand-placed clear of this layout's walls and fixtures.
+      decals: [
+        { kind: 'broken-glass', x: 480, y: 240 },
+        { kind: 'blood-drag', x: 160, y: 400 },
+        { kind: 'scorch-mark', x: 800, y: 120 },
+        { kind: 'torn-carpet', x: 480, y: 430 },
+      ],
     },
     {
       id: 'back-hall-crate-corners',
@@ -204,6 +247,13 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 2, max: 3 },
       benchKiosk: null,
+      // Hand-placed clear of this layout's walls and fixtures.
+      decals: [
+        { kind: 'broken-glass', x: 480, y: 200 },
+        { kind: 'blood-pool', x: 800, y: 120 },
+        { kind: 'blood-drag', x: 160, y: 400 },
+        { kind: 'cracked-tile', x: 480, y: 430 },
+      ],
     },
   ],
 };
@@ -220,6 +270,13 @@ export const SECURITY_OFFICE_VARIANT: AuthoredRoomVariant = {
   spawnSlots: [],
   enemyCount: { min: 0, max: 0 },
   benchKiosk: null,
+  // Clear of the two desk walls at y 120-160 and y 320-360.
+  decals: [
+    { kind: 'blood-pool', x: 560, y: 240 },
+    { kind: 'blood-drag', x: 200, y: 240 },
+    { kind: 'broken-glass', x: 480, y: 440 },
+    { kind: 'scorch-mark', x: 760, y: 100 },
+  ],
 };
 
 export type AuthoredPriceBand = {
@@ -285,6 +342,11 @@ export type AuthoredStoreTemplate = {
   };
   readonly sightZone: StoreSightZone;
   readonly offers: readonly AuthoredStoreOffer[];
+  /**
+   * Floor damage inside the shop. Optional for the same reason a variant's is: a
+   * store with a clean floor is a legitimate store. Positions are centres.
+   */
+  readonly decals?: readonly WingDecal[];
 };
 
 export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
@@ -292,6 +354,12 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'mall-mart',
     name: 'Mall Mart',
     bounds: { x: 250, y: 70, width: 460, height: 300 },
+    // Inside the shop, below the offer row on the back wall.
+    decals: [
+      { kind: 'cracked-tile', x: 340, y: 300 },
+      { kind: 'blood-drag', x: 500, y: 320 },
+      { kind: 'scorch-mark', x: 620, y: 300 },
+    ],
     resetPoint: { x: 480, y: 410 },
     exit: {
       id: 'mall-mart-exit',
@@ -312,6 +380,12 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'cinema-snacks',
     name: 'Cinema Snacks',
     bounds: { x: 230, y: 90, width: 500, height: 280 },
+    // Inside the shop, below the offer row on the back wall.
+    decals: [
+      { kind: 'organic-residue', x: 320, y: 300 },
+      { kind: 'cracked-tile', x: 480, y: 320 },
+      { kind: 'blood-pool', x: 640, y: 300 },
+    ],
     resetPoint: { x: 480, y: 410 },
     exit: {
       id: 'cinema-snacks-exit',
@@ -332,6 +406,12 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'arcade-annex',
     name: 'Arcade Annex',
     bounds: { x: 270, y: 80, width: 440, height: 290 },
+    // Inside the shop, below the offer row on the back wall.
+    decals: [
+      { kind: 'broken-glass', x: 340, y: 300 },
+      { kind: 'scorch-mark', x: 480, y: 320 },
+      { kind: 'blood-drag', x: 620, y: 300 },
+    ],
     resetPoint: { x: 490, y: 410 },
     exit: {
       id: 'arcade-annex-exit',
@@ -352,6 +432,12 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'department-outlet',
     name: 'Department Outlet',
     bounds: { x: 240, y: 70, width: 480, height: 300 },
+    // Inside the shop, below the offer row on the back wall.
+    decals: [
+      { kind: 'torn-carpet', x: 330, y: 300 },
+      { kind: 'blood-pool', x: 480, y: 320 },
+      { kind: 'cracked-tile', x: 630, y: 300 },
+    ],
     resetPoint: { x: 480, y: 410 },
     exit: {
       id: 'department-outlet-exit',

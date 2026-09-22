@@ -1,0 +1,36 @@
+{
+  "group_id": "046d95b2-7ba9-43ba-9ae0-4d81bd56af09",
+  "states": [
+    {
+      "character": {
+        "id": "efd30bc5-8e3e-4737-b28d-6531d0654f6b",
+        "name": "Idle",
+        "prompt": "A bloated spitting creature for a 1990s American shopping mall horror roguelite. It was once a mall food court employee: a swollen low-slung body still wearing a grease-stained striped uniform shirt and an apron with NO lettering on it. The head is sunk low between the shoulders and a huge distended circular maw ringed with short blunt teeth takes up most of the face, held open. Sacs of fluid bulge along its back and glisten. One arm ends in a fused mass of drinking straws and cup lids. Short thick legs. POSTURE: hunched forward and top-heavy with the maw facing ahead, wider than a normal person and low to the ground. CRITICAL: the striped uniform and apron keep the food court worker recognisable. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:56:09.510380+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T05:02:48.156469"
+}

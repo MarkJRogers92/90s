@@ -45,9 +45,9 @@ HUE_RAMPS = {
     "orange": ("brass", "beige", "leather", "hair_brown", "blood"),
     "yellow": ("brass", "beige", "hair_blonde", "hair_brown"),
     "green": ("green", "fluoro", "fabric", "tile"),
-    "cyan": ("tile", "fluoro", "steel", "denim"),
+    "cyan": ("neon_cyan", "tile", "fluoro", "steel", "denim"),
     "blue": ("denim", "tile", "plastic"),
-    "purple": ("purple", "denim", "plastic"),
+    "purple": ("neon_magenta", "purple", "denim", "plastic"),
 }
 
 NEUTRAL_SATURATION = 0.18
@@ -70,15 +70,20 @@ def hue_family(r: int, g: int, b: int) -> str:
     return "purple"
 
 
-def build(palette: Palette):
+def build(palette: Palette, limit: str = "any"):
     def candidates(rgb):
         r, g, b = rgb
-        mx, mn = max(rgb), min(rgb)
-        saturation = 0 if mx == 0 else (mx - mn) / mx
-        if saturation < NEUTRAL_SATURATION:
-            names = WARM_NEUTRAL if (r - b) > 10 else COOL_NEUTRAL
+        if limit == "neutral":
+            # Skip hue routing entirely: a wholly neutral object whose charcoal
+            # is faintly blue must not be captured by the denim ramp.
+            names = WARM_NEUTRAL + COOL_NEUTRAL
         else:
-            names = HUE_RAMPS[hue_family(r, g, b)]
+            mx, mn = max(rgb), min(rgb)
+            saturation = 0 if mx == 0 else (mx - mn) / mx
+            if saturation < NEUTRAL_SATURATION:
+                names = WARM_NEUTRAL if (r - b) > 10 else COOL_NEUTRAL
+            else:
+                names = HUE_RAMPS[hue_family(r, g, b)]
         steps = []
         for name in names:
             try:
@@ -97,10 +102,18 @@ def main() -> int:
     parser.add_argument("src")
     parser.add_argument("dst")
     parser.add_argument("--palette", default=None)
+    parser.add_argument(
+        "--limit",
+        choices=("any", "neutral"),
+        default="any",
+        help="Restrict candidate ramps. 'neutral' keeps only the warm and cool "
+             "neutral ramps, so a faintly blue charcoal snaps to grey rather "
+             "than to the denim ramp.",
+    )
     args = parser.parse_args()
 
     palette = Palette.load(args.palette) if args.palette else Palette.load()
-    candidates = build(palette)
+    candidates = build(palette, args.limit)
 
     image = Image.open(args.src).convert("RGBA")
     out = Image.new("RGBA", image.size, (0, 0, 0, 0))

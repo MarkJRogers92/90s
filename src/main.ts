@@ -4,6 +4,7 @@ import { BootScene } from './game/scenes/BootScene';
 import { MvpRunScene, setMvpRunLaunch } from './game/scenes/MvpRunScene';
 import { RunScene } from './game/scenes/RunScene';
 import { WingScene } from './game/scenes/WingScene';
+import { VIEWPORT_HEIGHT, VIEWPORT_WIDTH } from './game/view/viewport';
 import {
   LocalStorageCheckpointStore,
   type CheckpointStorageLike,
@@ -12,6 +13,13 @@ import type { MvpCheckpoint } from './sim/run/checkpoint';
 import './styles.css';
 
 export const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
+
+/**
+ * Re-exported so the viewport has a single definition, in a module free of DOM
+ * and renderer side effects. `src/main.ts` itself cannot be imported by a test:
+ * it queries the startup markup at load and throws when it is absent.
+ */
+export { VIEWPORT_HEIGHT, VIEWPORT_WIDTH };
 
 type RunMode = 'shift' | 'lab' | 'shop' | 'bench' | 'run';
 
@@ -93,8 +101,8 @@ function launch(mode: RunMode): void {
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: 'game-host',
-      width: 960,
-      height: 480,
+      width: VIEWPORT_WIDTH,
+      height: VIEWPORT_HEIGHT,
       backgroundColor: '#252926',
       render: {
         antialias: false,
@@ -149,8 +157,8 @@ function launchRun(checkpoint: MvpCheckpoint | null, seed: number): void {
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: 'game-host',
-      width: 960,
-      height: 480,
+      width: VIEWPORT_WIDTH,
+      height: VIEWPORT_HEIGHT,
       backgroundColor: '#252926',
       render: {
         antialias: false,

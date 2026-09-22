@@ -12,7 +12,9 @@
  * whole cue table is unit-testable with no Web Audio and no browser, which is
  * the only reason a sound layer in this project can have honest tests at all.
  */
+import type { RunState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
+import type { WingState } from '../../sim/shop/types';
 
 export type AudioCue =
   | 'swing'
@@ -58,27 +60,93 @@ export type AudioSnapshot = {
   readonly heat: number;
   readonly clearedRooms: number;
   readonly checkpointKey: string;
+  readonly hasCheckpoint: boolean;
   readonly roomIndex: number;
 };
 
-export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
-  const combat = state.room.combat;
-  const boss = combat.enemies.find((enemy) => enemy.kind === 'lp_manager');
+/**
+ * Snapshot for a bare combat run, which is what M1 and M2 advance, and the
+ * shared basis for M4, whose `combat` field is one.
+ *
+ * A combat run carries none of the run-level bookkeeping M5 adds -- cash,
+ * carried thefts, Heat, cleared rooms, checkpoints -- so those report their
+ * empty values rather than being guessed at. The cues that read them stay
+ * silent in these modes, which is right: an M1 room has no economy to report.
+ *
+ * M3's wing is deliberately not covered here. `WingStatus` is
+ * `'shopping' | 'left'`, a different vocabulary from the run's
+ * `'playing' | 'won' | 'dead'`, so it needs an explicit mapping rather than a
+ * field copy, and guessing that mapping would silently change which stings fire.
+ */
+export function audioSnapshotFromRun(run: RunState): AudioSnapshot {
+  const boss = run.enemies.find((enemy) => enemy.kind === 'lp_manager');
   return {
-    status: state.status,
-    health: combat.player.health,
-    attackActiveTicks: combat.player.attackActiveTicks,
-    livingEnemyIds: combat.enemies
+    status: run.status,
+    health: run.player.health,
+    attackActiveTicks: run.player.attackActiveTicks,
+    livingEnemyIds: run.enemies
       .filter((enemy) => enemy.health > 0)
       .map((enemy) => enemy.id)
       .sort((first, second) => first - second),
     bossPhase: boss?.bossPhase ?? null,
     bossTelegraphing: boss?.phase === 'telegraph',
     bossVolleyTelegraphTicks: boss?.bossVolleyTelegraphTicks ?? 0,
-    playerProjectiles: combat.projectiles.filter((shot) => shot.faction === 'player').length,
-    surfaces: combat.surfaces.length,
-    gameplayEvents: combat.counters.gameplayEvents,
-    childEventsThisRoot: combat.counters.childEventsThisRoot,
+    playerProjectiles: run.projectiles.filter((shot) => shot.faction === 'player').length,
+    surfaces: run.surfaces.length,
+    gameplayEvents: run.counters.gameplayEvents,
+    childEventsThisRoot: run.counters.childEventsThisRoot,
+    cash: 0,
+    carried: 0,
+    heat: 0,
+    clearedRooms: 0,
+    checkpointKey: 'none',
+    hasCheckpoint: false,
+    roomIndex: 0,
+  };
+}
+
+/**
+ * Snapshot for the M3 shoplifting wing.
+ *
+ * `WingStatus` is `'shopping' | 'left'`, a different vocabulary from the run's
+ * `'playing' | 'won' | 'dead'`, so it is MAPPED rather than copied: leaving the
+ * mall is this mode's success and should sound like one. Copying the status
+ * fields would leave the terminal sting permanently unreachable, which is the
+ * kind of silence that looks like a bug.
+ *
+ * The wing has no combat, so every combat field reports its empty value and the
+ * cues that read them stay silent. It has no health at all, so a constant stands
+ * in and `hurt`/`heal` cannot fire. What M3 does drive is its own economy: cash
+ * falling is a purchase, carried rising is a theft, and carried falling while
+ * Heat rises is a confiscation.
+ */
+export function audioSnapshotFromWing(wing: WingState): AudioSnapshot {
+  return {
+    status: wing.status === 'left' ? 'won' : 'playing',
+    health: 1,
+    attackActiveTicks: 0,
+    livingEnemyIds: [],
+    bossPhase: null,
+    bossTelegraphing: false,
+    bossVolleyTelegraphTicks: 0,
+    playerProjectiles: 0,
+    surfaces: 0,
+    gameplayEvents: 0,
+    childEventsThisRoot: 0,
+    cash: wing.cash,
+    carried: wing.carried === null ? 0 : 1,
+    heat: wing.heat,
+    clearedRooms: 0,
+    checkpointKey: 'none',
+    hasCheckpoint: false,
+    roomIndex: 0,
+  };
+}
+
+export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
+  return {
+    ...audioSnapshotFromRun(state.room.combat),
+    status: state.status,
     cash: state.cash,
     carried: state.carried.length,
     heat: state.heat,
@@ -86,6 +154,7 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     checkpointKey: state.checkpoint
       ? `${state.checkpoint.roomIndex}:${state.checkpoint.tick}`
       : 'none',
+    hasCheckpoint: state.checkpoint !== null,
     roomIndex: state.roomIndex,
   };
 }
@@ -98,9 +167,8 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
  */
 export function deriveAudioCues(
   previous: AudioSnapshot,
-  state: MvpRunState,
+  current: AudioSnapshot,
 ): AudioCue[] {
-  const current = createAudioSnapshot(state);
   const cues: AudioCue[] = [];
 
   // Terminal outcomes first: they are the loudest and the most worth hearing.
@@ -162,7 +230,7 @@ export function deriveAudioCues(
   if (current.clearedRooms > previous.clearedRooms) {
     cues.push('room_clear');
   }
-  if (current.checkpointKey !== previous.checkpointKey && state.checkpoint !== null) {
+  if (current.checkpointKey !== previous.checkpointKey && current.hasCheckpoint) {
     cues.push('checkpoint');
   }
 

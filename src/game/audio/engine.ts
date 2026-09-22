@@ -12,9 +12,8 @@
  * refuse to start before a user gesture, and a queued voice may fail — none of
  * which may break the game loop, so every path degrades to silence.
  */
-import { deriveAudioCues, createAudioSnapshot } from './cues';
+import { deriveAudioCues } from './cues';
 import type { AudioCue, AudioSnapshot } from './cues';
-import type { MvpRunState } from '../../sim/run/types';
 
 type Tone = {
   readonly wave: OscillatorType;
@@ -250,14 +249,14 @@ export class GameAudioEngine {
    * without a previous snapshot, every field would look like a change and a run
    * would open with a burst of noise.
    */
-  public syncTo(state: MvpRunState): void {
+  public syncTo(snapshot: AudioSnapshot): void {
     if (this.snapshot === null) {
-      this.snapshot = createAudioSnapshot(state);
+      this.snapshot = snapshot;
       return;
     }
     const previous = this.snapshot;
-    this.snapshot = createAudioSnapshot(state);
-    for (const cue of deriveAudioCues(previous, state).slice(0, MAX_VOICES_PER_FRAME)) {
+    this.snapshot = snapshot;
+    for (const cue of deriveAudioCues(previous, snapshot).slice(0, MAX_VOICES_PER_FRAME)) {
       this.play(cue);
     }
   }

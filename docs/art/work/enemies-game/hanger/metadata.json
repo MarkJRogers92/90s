@@ -1,0 +1,36 @@
+{
+  "group_id": "a4275934-0927-458b-b5e9-cb0296d9d3d5",
+  "states": [
+    {
+      "character": {
+        "id": "18727f8f-b8c3-4f90-91a3-bbc9ee710213",
+        "name": "Idle",
+        "prompt": "An enemy creature grown from a tangle of wire clothes hangers, for a 1990s American shopping mall horror roguelite. Dozens of steel wire hangers are twisted together into a hunched spider-like body: the hooks splay outward as legs, a dense nest of wires forms the torso, and one larger hook rises where a head would be, bent forward like a beak. Snagged in the wires are fragments of 1990s clothing - a torn sleeve, a shirt collar, and a blank price-tag shape containing NO lettering. The metal is dull chrome with rust at the joints and the fabric scraps are faded and greyed. CRITICAL: it must still read at a glance as clothes hangers. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:56:09.199159+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T05:02:46.927244"
+}

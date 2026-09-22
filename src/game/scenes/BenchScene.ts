@@ -11,6 +11,8 @@ import type { BenchInputFrame, BenchRunState, BenchScenarioId } from '../../sim/
 import { BenchInputAdapter } from '../input/BenchInputAdapter';
 import { BenchHud } from '../ui/BenchHud';
 import { BenchView } from '../view/BenchView';
+import { GameAudioEngine } from '../audio/engine';
+import { audioSnapshotFromRun } from '../audio/cues';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -27,6 +29,7 @@ export class BenchScene extends Phaser.Scene {
   private benchView: BenchView | undefined;
   private hud: BenchHud | undefined;
   private removeDebugBridge: (() => void) | undefined;
+  private audio: GameAudioEngine | undefined;
 
   public constructor() {
     super(BenchScene.KEY);
@@ -41,6 +44,13 @@ export class BenchScene extends Phaser.Scene {
       () => this.handleEscape(),
       () => this.setPaused(true),
     );
+    // The bench owns a combat RunState, so it takes the same sound layer as M1
+    // and M2. Web Audio may only start from a real user gesture, so the first
+    // pointer or key press anywhere unlocks it.
+    this.audio = new GameAudioEngine();
+    window.addEventListener('pointerdown', this.unlockAudio);
+    window.addEventListener('keydown', this.unlockAudio);
+    window.addEventListener('keydown', this.toggleAudioMute);
     this.benchView = new BenchView(this);
     this.hud = new BenchHud({
       onConfirm: () => {
@@ -66,6 +76,7 @@ export class BenchScene extends Phaser.Scene {
       this.removeDebugBridge = installBenchDebugBridge(
         () => this.bench,
         () => this.generation,
+        () => this.audio,
       );
     }
 
@@ -143,6 +154,7 @@ export class BenchScene extends Phaser.Scene {
     this.bench = this.createInitialRun(scenarioId);
     this.accumulator = 0;
     this.inputAdapter?.clearHeld();
+    this.audio?.resetBaseline();
     this.syncView();
   }
 
@@ -151,6 +163,7 @@ export class BenchScene extends Phaser.Scene {
     this.bench = this.createInitialRun(this.bench.scenarioId);
     this.accumulator = 0;
     this.inputAdapter?.clearHeld();
+    this.audio?.resetBaseline();
     this.syncView();
   }
 
@@ -158,12 +171,33 @@ export class BenchScene extends Phaser.Scene {
     window.dispatchEvent(new CustomEvent(RETURN_TO_TITLE_EVENT));
   };
 
+  /** The bench's combat half is a bare run, so the cue source is the same one M1 uses. */
   private syncView(): void {
     this.benchView?.sync(this.bench);
     this.hud?.sync(this.bench);
+    this.audio?.syncTo(audioSnapshotFromRun(this.bench.combat));
   }
 
+  private readonly unlockAudio = (): void => {
+    this.audio?.resume();
+  };
+
+  /**
+   * Mutes from the keyboard. The bench has no mute control in its HUD, unlike
+   * M5, so the key goes straight to the engine.
+   */
+  private readonly toggleAudioMute = (event: KeyboardEvent): void => {
+    if (event.key === 'm' || event.key === 'M') {
+      this.audio?.toggleMuted();
+    }
+  };
+
   private readonly destroyBench = (): void => {
+    window.removeEventListener('pointerdown', this.unlockAudio);
+    window.removeEventListener('keydown', this.unlockAudio);
+    window.removeEventListener('keydown', this.toggleAudioMute);
+    this.audio?.destroy();
+    this.audio = undefined;
     this.inputAdapter?.destroy();
     this.inputAdapter = undefined;
     this.benchView?.destroy();

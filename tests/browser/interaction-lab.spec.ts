@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { aimPointFor, cameraScrollFor } from '../../src/game/view/viewport';
 
 type LabSnapshot = {
   mode: 'shift' | 'lab';
@@ -84,7 +85,12 @@ async function fireAtWorld(page: Page, worldX: number, worldY: number): Promise<
   if (!box) {
     return;
   }
-  await page.mouse.move(box.x + (worldX / 960) * box.width, box.y + (worldY / 480) * box.height);
+  // Aim along the direction to the world point: the camera shows a 640x360
+  // window on a 960x480 room, so the point itself is often off-screen.
+  const state = await snapshot(page);
+  const scroll = cameraScrollFor(state.player.x, state.player.y);
+  const point = aimPointFor(state.player, { x: worldX, y: worldY }, scroll, box.width, box.height);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await page.waitForTimeout(80);
   await page.mouse.up();

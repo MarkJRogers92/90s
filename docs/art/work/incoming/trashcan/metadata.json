@@ -1,0 +1,29 @@
+{
+  "group_id": "c51d42b1-b7f7-4733-9859-52fdbc3e98ce",
+  "objects": [
+    {
+      "id": "76640749-9c33-4ce9-bd3c-9c2f3a6fac83",
+      "name": "base",
+      "prompt": "Create one production-ready pixel art prop for a 1990s American shopping mall horror roguelite.\n\nOBJECT: A waist-high indoor mall trash receptacle from the early/mid 1990s. Beige/taupe molded plastic body, rounded corners, dark charcoal plastic top, large recessed front trash opening, removable front access panel, and small metal latch. Add light age and wear: yellowed plastic, scratches, shoe scuffs, grime around seams, and one faded partially peeled sticker. Keep it mundane and believable, not destroyed or overtly horror-themed.\n\nSTYLE: Detailed late-SNES/GBA pixel art. Crisp hard pixels, clean clusters, selective outlines, minimal dithering, no anti-aliasing, no blur, no 3D-rendered look.\n\nVIEW: 3/4 top-down game perspective, showing front, one side, and top.\n\nSIZE: About 40x48 pixels.\n\nLIGHTING: Neutral overhead fluorescent mall lighting.\n\nOUTPUT: Transparent background. Exactly one isolated object. No floor, scenery, text, border, grid, extra props, or alternate angles. Must be directly usable as an in-game sprite.",
+      "size": {
+        "width": 64,
+        "height": 64
+      },
+      "directions": 8,
+      "view": "low top-down",
+      "rotations": {
+        "south": "rotations/south.png",
+        "south-east": "rotations/south-east.png",
+        "east": "rotations/east.png",
+        "north-east": "rotations/north-east.png",
+        "north": "rotations/north.png",
+        "north-west": "rotations/north-west.png",
+        "west": "rotations/west.png",
+        "south-west": "rotations/south-west.png"
+      },
+      "animations": {}
+    }
+  ],
+  "export_version": "1.1",
+  "export_date": "2026-09-22T03:21:18.662614"
+}

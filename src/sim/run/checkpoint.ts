@@ -9,6 +9,7 @@
  * version-mismatched data is rejected with a reason and a restore never
  * partially applies.
  */
+import { compositeIdFor, transactionIdFor } from '../fusion/emitterMount';
 import {
   isValidFusionInventoryState,
   projectFusionInventory,
@@ -280,6 +281,15 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     if (!known) {
       return fail(`Checkpoint references unknown room "${String(roomId)}".`);
     }
+    // Rooms are ordered along the wing, so a room past the current index has
+    // not been reached and cannot have been cleared. A save that claims
+    // otherwise would restore into a wing with content skipped ahead of it.
+    const clearedIndex = wing.rooms.findIndex((room) => room.id === roomId);
+    if (clearedIndex > roomIndex) {
+      return fail(
+        `Checkpoint clears room "${String(roomId)}", which is ahead of its current room.`,
+      );
+    }
     if (clearedRoomIds.includes(roomId as WingRoomId)) {
       return fail(`Checkpoint lists room "${String(roomId)}" twice.`);
     }
@@ -332,6 +342,51 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   const carriedResult = validateCarried(value.carried, offerStatusResult.offerStatus, offerIds);
   if (!carriedResult.ok) {
     return fail(carriedResult.reason);
+  }
+
+  // Every offer's status must agree with the inventory that records it. Both
+  // routes that take an offer -- a purchase and a secured theft -- mark it
+  // 'consumed' and create a leaf whose `sourceStockId` IS the offer id, so a
+  // 'consumed' offer must own one somewhere in the forest: a fused composite
+  // still carries its source leaves, which is why this walks the components
+  // rather than the top level alone. An 'available' offer must own nothing.
+  // 'carried' is already covered by the theft list above, which is the record
+  // for an item that has been stolen but not yet secured.
+  const ownedStockIds = new Set<string>();
+  for (const node of inventory.inventory) {
+    if (node.kind === 'leaf') {
+      ownedStockIds.add(node.sourceStockId);
+    } else {
+      ownedStockIds.add(node.primary.sourceStockId);
+      ownedStockIds.add(node.carrier.sourceStockId);
+    }
+  }
+  for (const [offerId, status] of Object.entries(offerStatusResult.offerStatus)) {
+    const owned = ownedStockIds.has(offerId);
+    if (status === 'consumed' && !owned) {
+      return fail(`Checkpoint marks offer "${offerId}" taken but owns no item from it.`);
+    }
+    if (status === 'available' && owned) {
+      return fail(`Checkpoint owns an item from offer "${offerId}", which is still available.`);
+    }
+  }
+
+  // Composite ids are minted from `nextCompositeId`, so a hand-edited save can
+  // point it at an id that already exists and the next fusion would create a
+  // duplicate transaction. Test the mint itself rather than parsing numbers
+  // back out of the id strings, so this stays correct if the format changes.
+  const existingIds = new Set<string>();
+  for (const node of inventory.inventory) {
+    existingIds.add(node.instanceId);
+  }
+  for (const record of inventory.committedTransactions) {
+    existingIds.add(record.transactionId);
+  }
+  if (
+    existingIds.has(compositeIdFor(inventory.nextCompositeId)) ||
+    existingIds.has(transactionIdFor(inventory.nextCompositeId))
+  ) {
+    return fail('Checkpoint next composite id collides with an existing transaction.');
   }
 
   return {

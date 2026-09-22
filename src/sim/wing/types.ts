@@ -71,6 +71,32 @@ export type WingFixture = {
   readonly y: number;
 };
 
+/**
+ * Damage and grime lying flat on a floor.
+ *
+ * Like a fixture, a decal is purely decorative: it has no collision and no
+ * gameplay meaning, so it is authored here as room content rather than derived
+ * by the view. Unlike a fixture it is not upright, so `x, y` is the decal's
+ * CENTRE rather than a base.
+ */
+export type WingDecalKind =
+  | 'blood-drops'
+  | 'blood-pool'
+  | 'blood-drag'
+  | 'blood-splash'
+  | 'blood-handprint'
+  | 'broken-glass'
+  | 'cracked-tile'
+  | 'torn-carpet'
+  | 'scorch-mark'
+  | 'organic-residue';
+
+export type WingDecal = {
+  readonly kind: WingDecalKind;
+  readonly x: number;
+  readonly y: number;
+};
+
 export type WingRoomDefinition = {
   readonly id: WingRoomId;
   readonly name: string;
@@ -85,6 +111,7 @@ export type WingRoomDefinition = {
   readonly offers: readonly WingOffer[];
   readonly benchKiosk: Vec2 | null;
   readonly fixtures: readonly WingFixture[];
+  readonly decals: readonly WingDecal[];
 };
 
 export type GeneratedWing = {

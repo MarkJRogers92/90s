@@ -4,10 +4,17 @@ import {
   ALEX_FRAME_HEIGHT,
   ALEX_FRAME_WIDTH,
   ALEX_WALK_FRAMES,
+  DECAL_ART,
+  EFFECT_ART,
+  EFFECT_FRAMES,
+  EFFECT_FRAME_SIZE,
+  ENEMY_ART,
+  ENEMY_FRAME_SIZE,
   FIXTURE_ART,
   ITEM_ART,
   RC_CAR_FRAME_SIZE,
 } from '../../src/game/assets';
+import { aimPointFor, cameraScrollFor } from '../../src/game/view/viewport';
 
 type RunSnapshot = {
   mode: 'run';
@@ -62,6 +69,10 @@ type RunSnapshot = {
     /** Cues actually scheduled as voices, not merely decided. */
     played: number;
   } | null;
+  /** Effects actually spawned, not merely loaded. */
+  effects: { spawned: number; active: number } | null;
+  /** Decals on screen for the current room. */
+  decals: { visible: number } | null;
 };
 
 const CHECKPOINT_KEY = 'dead-mall:mvp-checkpoint:v1';
@@ -255,6 +266,123 @@ test('every fixture sprite loads from the game asset paths', async ({ page }) =>
   for (const response of await Promise.all(responses)) {
     expect(response.status()).toBe(200);
   }
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('every effect strip loads with four 32px frames', async ({ page }) => {
+  const errors = collectErrors(page);
+  const responses = Object.values(EFFECT_ART).map((art) =>
+    page.waitForResponse((response) => response.url().endsWith(art.url)),
+  );
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  for (const response of await Promise.all(responses)) {
+    expect(response.status()).toBe(200);
+  }
+
+  // Frame index is derived from the strip's width, so a strip that is not
+  // exactly four frames across would silently clip or index past the end.
+  for (const art of Object.values(EFFECT_ART)) {
+    const size = await page.evaluate(async (url) => {
+      const image = new Image();
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error(`could not load ${url}`));
+        image.src = url;
+      });
+      return { width: image.naturalWidth, height: image.naturalHeight };
+    }, art.url);
+    expect(size).toEqual({
+      width: EFFECT_FRAME_SIZE * EFFECT_FRAMES,
+      height: EFFECT_FRAME_SIZE,
+    });
+  }
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the starting corridor draws its authored floor decals', async ({ page }) => {
+  const errors = collectErrors(page);
+  const responses = Object.values(DECAL_ART).map((art) =>
+    page.waitForResponse((response) => response.url().endsWith(art.url)),
+  );
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  for (const response of await Promise.all(responses)) {
+    expect(response.status()).toBe(200);
+  }
+
+  // Both service-corridor variants author exactly four decals and the shift
+  // opens in one of them, so the count is known rather than merely non-zero: a
+  // regression that dropped decals to one would still satisfy "greater than 0".
+  await expect.poll(() => runSnapshot(page).then((state) => state.decals?.visible)).toBe(4);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('a swing spawns a combat effect and the effect decays', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  // The starting mop is a melee arc, so a swing is the cue this drives.
+  const before = (await runSnapshot(page)).effects?.spawned ?? 0;
+  await page.mouse.move(300, 200);
+  await page.mouse.down();
+  await page.waitForTimeout(400);
+  await page.mouse.up();
+
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.effects?.spawned ?? 0))
+    .toBeGreaterThan(before);
+
+  // An effect is four frames long, so it must not accumulate: a strip that
+  // never retired would leave the list growing for the whole run.
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.effects?.active ?? -1), {
+      timeout: 5_000,
+    })
+    .toBe(0);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('every enemy sheet loads with one 48px frame per facing', async ({ page }) => {
+  const errors = collectErrors(page);
+  const responses = Object.values(ENEMY_ART).map((art) =>
+    page.waitForResponse((response) => response.url().endsWith(art.url)),
+  );
+
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  for (const response of await Promise.all(responses)) {
+    expect(response.status()).toBe(200);
+  }
+
+  // A frame index is derived from the facing order, so a sheet that is not
+  // exactly one frame per facing would silently select the wrong direction.
+  for (const art of Object.values(ENEMY_ART)) {
+    const size = await page.evaluate(async (url) => {
+      const image = new Image();
+      await new Promise<void>((resolve, reject) => {
+        image.onload = () => resolve();
+        image.onerror = () => reject(new Error(`could not load ${url}`));
+        image.src = url;
+      });
+      return { width: image.naturalWidth, height: image.naturalHeight };
+    }, art.url);
+    expect(size).toEqual({
+      width: ENEMY_FRAME_SIZE * ALEX_DIRECTIONS.length,
+      height: ENEMY_FRAME_SIZE,
+    });
+  }
+
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });
@@ -591,10 +719,17 @@ test('the Bench Warrant kiosk previews and fuses the car, and shots then start a
   // Re-aim just short of the car so it holds roughly still while firing: the
   // car steers toward the pointer, so aiming at its own position stops it
   // drifting during the shot that is being measured.
-  await page.mouse.move(
-    box.x + (carAtFire.x - 2) * (box.width / 960),
-    box.y + carAtFire.y * (box.height / 480),
+  // Aim along the direction to the car. The aim still steers it, and aiming by
+  // direction keeps the click on the canvas now that the view scrolls.
+  const scroll = cameraScrollFor(before.player.x, before.player.y);
+  const point = aimPointFor(
+    before.player,
+    { x: carAtFire.x - 2, y: carAtFire.y },
+    scroll,
+    box.width,
+    box.height,
   );
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.waitForTimeout(80);
 
   await page.mouse.down();

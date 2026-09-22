@@ -235,6 +235,7 @@ function baseRoom(
     offers: [],
     benchKiosk: null,
     fixtures: [],
+    decals: [],
   };
 }
 
@@ -249,6 +250,7 @@ function combatRoom(
     benchKiosk:
       variant.benchKiosk === null ? null : { ...variant.benchKiosk },
     fixtures: (variant.fixtures ?? []).map((fixture) => ({ ...fixture })),
+    decals: (variant.decals ?? []).map((decal) => ({ ...decal })),
   };
 }
 
@@ -263,6 +265,11 @@ function securityOffice(): WingRoomDefinition {
     ),
     bossAnchor:
       variant.bossAnchor === null ? null : { ...variant.bossAnchor },
+    // `baseRoom` takes only the walls and the entry point, so an optional
+    // authored field has to be propagated explicitly here or it is silently
+    // dropped for this room.
+    fixtures: (variant.fixtures ?? []).map((fixture) => ({ ...fixture })),
+    decals: (variant.decals ?? []).map((decal) => ({ ...decal })),
   };
 }
 
@@ -281,6 +288,7 @@ function storefrontRoom(
     ),
     store: instance.store,
     offers: instance.offers,
+    decals: (template.decals ?? []).map((decal) => ({ ...decal })),
   };
 }
 

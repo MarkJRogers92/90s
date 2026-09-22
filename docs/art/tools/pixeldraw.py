@@ -40,6 +40,11 @@ RAMP_ALIASES = [
     "skin", "hair_brown", "hair_blonde", "hair_black", "denim", "fabric",
     "leather", "plastic", "plastic_black", "steel", "brass", "beige",
     "tile", "shadow", "blood", "purple", "green", "fluoro", "red",
+    # Authored 2026-09-21, NOT sampled from 01A. The board has no vivid cyan or
+    # magenta, so arcade/CRT neon had no expressible colour at all — a cyan screen
+    # sat 101 units from anything approved. Order must stay in step with the .gpl,
+    # because ramp() addresses these positionally.
+    "neon_cyan", "neon_magenta",
 ]
 
 

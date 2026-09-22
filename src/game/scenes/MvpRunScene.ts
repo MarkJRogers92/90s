@@ -41,6 +41,11 @@ import {
   ALEX_WALK_URL,
   BENCH_WARRANT_KIOSK_TEXTURE,
   BENCH_WARRANT_KIOSK_URL,
+  DECAL_ART,
+  EFFECT_ART,
+  EFFECT_FRAME_SIZE,
+  ENEMY_ART,
+  ENEMY_FRAME_SIZE,
   FIXTURE_ART,
   ITEM_ART,
   RC_CAR_FRAME_SIZE,
@@ -48,6 +53,7 @@ import {
   RC_CAR_URL,
 } from '../assets';
 import { GameAudioEngine } from '../audio/engine';
+import { createAudioSnapshot } from '../audio/cues';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
 
@@ -243,6 +249,24 @@ export class MvpRunScene extends Phaser.Scene {
     for (const art of Object.values(FIXTURE_ART)) {
       this.load.image(art.texture, art.url);
     }
+    // Enemy idle sheets: eight 48px facings in the player's direction order.
+    for (const art of Object.values(ENEMY_ART)) {
+      this.load.spritesheet(art.texture, art.url, {
+        frameWidth: ENEMY_FRAME_SIZE,
+        frameHeight: ENEMY_FRAME_SIZE,
+      });
+    }
+    // Combat effect strips: four 32px frames per cue, driven from the run tick.
+    for (const art of Object.values(EFFECT_ART)) {
+      this.load.spritesheet(art.texture, art.url, {
+        frameWidth: EFFECT_FRAME_SIZE,
+        frameHeight: EFFECT_FRAME_SIZE,
+      });
+    }
+    // Floor decals: one 32px image per kind, drawn centred on the floor.
+    for (const art of Object.values(DECAL_ART)) {
+      this.load.image(art.texture, art.url);
+    }
     for (const art of Object.values(ITEM_ART)) {
       this.load.image(art.texture, art.url);
     }
@@ -289,6 +313,8 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.run,
         () => this.generation,
         () => this.audio,
+        () => this.runView?.effectCounts,
+        () => (this.runView ? { visible: this.runView.drawnDecalCount } : undefined),
       );
     }
 
@@ -432,7 +458,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.hud?.sync(this.run, this.checkpointStatus);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
-    this.audio?.syncTo(this.run);
+    this.audio?.syncTo(createAudioSnapshot(this.run));
   }
 
   private applyDevFixture(state: MvpRunState): MvpRunState {

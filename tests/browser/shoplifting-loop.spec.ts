@@ -23,6 +23,8 @@ type WingSnapshot = {
     stolen: Array<{ itemDefinitionId: string }>;
     heat: number;
   } | null;
+  /** Sound layer state, so acceptance can prove it started and acted. */
+  audio: { created: boolean; running: boolean; muted: boolean; played: number } | null;
 };
 
 function collectErrors(page: Page): { pageErrors: string[]; consoleErrors: string[] } {
@@ -74,6 +76,45 @@ test('launches the shoplifting loop with one canvas, one HUD, two stores, eight 
   expect(state.cash).toBe(30);
   expect(state.heat).toBe(0);
   expect(state.status).toBe('shopping');
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the sound layer starts on a real gesture in the shoplifting loop', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchShop(page, '/?fixture=m3-buy-proof');
+
+  // The unlock listener is attached when the scene is created, which happens in
+  // response to the click that starts the mode — so that click predates it and a
+  // further real gesture is needed before the context may start.
+  //
+  // The press goes to an inert corner of the page rather than the canvas: the
+  // shoplifting HUD sits over the canvas's left side and intercepts clicks
+  // there, and the listener is on the window, so any real press will do.
+  const viewport = page.viewportSize() ?? { width: 1280, height: 720 };
+  await page.mouse.click(viewport.width - 24, viewport.height - 24);
+  await expect.poll(() => wingSnapshot(page).then((state) => state.audio?.created)).toBe(true);
+  await expect.poll(() => wingSnapshot(page).then((state) => state.audio?.muted)).toBe(false);
+
+  // The loop has no mute button, so the key is this mode's only control and goes
+  // straight to the engine rather than through a HUD label.
+  await page.keyboard.press('m');
+  await expect.poll(() => wingSnapshot(page).then((state) => state.audio?.muted)).toBe(true);
+  await page.keyboard.press('m');
+  await expect.poll(() => wingSnapshot(page).then((state) => state.audio?.muted)).toBe(false);
+
+  // Buy for real. A live context only proves the layer exists; a scheduled voice
+  // proves the economy mapped onto a cue.
+  const playedBefore = (await wingSnapshot(page)).audio?.played ?? 0;
+  await page.keyboard.press('e');
+  await expect
+    .poll(() => wingSnapshot(page).then((state) => state.cash))
+    .toBeLessThan(30);
+  await expect
+    .poll(() => wingSnapshot(page).then((state) => state.audio?.played ?? 0))
+    .toBeGreaterThan(playedBefore);
+
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });

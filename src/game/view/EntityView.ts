@@ -8,6 +8,7 @@ import type {
   SurfacePatchState,
 } from '../../sim/model';
 import { latestConductiveFeedback, shouldDrawDirectAttackArc } from './visualState';
+import { centreCameraOnPlayer } from './camera';
 
 /** Cosmetic duration of the conductive feedback flash, in rendered frames. */
 const CONDUCTIVE_FEEDBACK_FRAMES = 40;
@@ -18,7 +19,7 @@ export class EntityView {
   private conductiveTargetIds: number[] = [];
   private conductiveFeedbackFrames = 0;
 
-  public constructor(scene: Phaser.Scene) {
+  public constructor(private readonly scene: Phaser.Scene) {
     this.graphics = scene.add.graphics();
   }
 
@@ -151,6 +152,8 @@ export class EntityView {
         8,
       );
     }
+
+    centreCameraOnPlayer(this.scene, state.player.x, state.player.y);
   }
 
   /**

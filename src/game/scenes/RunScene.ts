@@ -7,6 +7,8 @@ import { InputAdapter } from '../input/InputAdapter';
 import { Hud } from '../ui/Hud';
 import { InteractionLab, defaultLabSelection, type LabLoadoutSelection } from '../ui/InteractionLab';
 import { EntityView } from '../view/EntityView';
+import { GameAudioEngine } from '../audio/engine';
+import { audioSnapshotFromRun } from '../audio/cues';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -27,6 +29,7 @@ export class RunScene extends Phaser.Scene {
   private hud: Hud | undefined;
   private interactionLab: InteractionLab | undefined;
   private removeDebugBridge: (() => void) | undefined;
+  private audio: GameAudioEngine | undefined;
 
   public constructor() {
     super(RunScene.KEY);
@@ -45,6 +48,13 @@ export class RunScene extends Phaser.Scene {
       () => this.setPaused(!this.run.paused),
       () => this.setPaused(true),
     );
+    // M1 and M2 share this scene, so both gain the sound layer together. Web
+    // Audio may only start from a real user gesture, so the first pointer or key
+    // press anywhere unlocks it; until then the engine is silent, not broken.
+    this.audio = new GameAudioEngine();
+    window.addEventListener('pointerdown', this.unlockAudio);
+    window.addEventListener('keydown', this.unlockAudio);
+    window.addEventListener('keydown', this.toggleAudioMute);
     this.entityView = new EntityView(this);
     this.hud = new Hud(this.restartRun, this.mode);
     if (this.mode === 'lab') {
@@ -56,6 +66,7 @@ export class RunScene extends Phaser.Scene {
         () => this.run,
         () => this.generation,
         () => this.mode,
+        () => this.audio,
       );
     }
 
@@ -156,6 +167,7 @@ export class RunScene extends Phaser.Scene {
     this.run = this.createInitialRun();
     this.accumulator = 0;
     this.inputAdapter?.clearHeld();
+    this.audio?.resetBaseline();
     this.syncView();
   };
 
@@ -164,16 +176,43 @@ export class RunScene extends Phaser.Scene {
     this.run = this.createInitialRun();
     this.accumulator = 0;
     this.inputAdapter?.clearHeld();
+    this.audio?.resetBaseline();
     this.syncView();
   };
 
+  /**
+   * M1 and M2 derive cues from the bare combat state, so the economy, theft and
+   * checkpoint cues stay silent here rather than being invented: a combat room
+   * has nothing to say about Heat.
+   */
   private syncView(): void {
     this.entityView?.sync(this.run);
     this.hud?.sync(this.run);
     this.interactionLab?.sync(this.run);
+    this.audio?.syncTo(audioSnapshotFromRun(this.run));
   }
 
+  private readonly unlockAudio = (): void => {
+    this.audio?.resume();
+  };
+
+  /**
+   * Mutes from the keyboard. M1 and M2 have no mute control in their HUD, unlike
+   * M5, so the key goes straight to the engine rather than through a button that
+   * would have no label to keep in step.
+   */
+  private readonly toggleAudioMute = (event: KeyboardEvent): void => {
+    if (event.key === 'm' || event.key === 'M') {
+      this.audio?.toggleMuted();
+    }
+  };
+
   private readonly destroyRun = (): void => {
+    window.removeEventListener('pointerdown', this.unlockAudio);
+    window.removeEventListener('keydown', this.unlockAudio);
+    window.removeEventListener('keydown', this.toggleAudioMute);
+    this.audio?.destroy();
+    this.audio = undefined;
     this.inputAdapter?.destroy();
     this.inputAdapter = undefined;
     this.entityView?.destroy();

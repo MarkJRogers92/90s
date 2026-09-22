@@ -8,9 +8,11 @@
  * stay in `src/sim`.
  */
 import Phaser from 'phaser';
+import { centreCameraOnPlayer } from './camera';
+import { latestConductiveFeedback } from './visualState';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
 import { runOfferPriceLabel } from '../../sim/run/economy';
-import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
+import type { EnemyKind, EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import type { WingOffer, WingRoomDefinition } from '../../sim/wing/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
@@ -22,11 +24,18 @@ import {
   alexIdleFrame,
   alexWalkFrame,
   BENCH_WARRANT_KIOSK_TEXTURE,
+  DECAL_ART,
+  EFFECT_ART,
+  EFFECT_FRAMES,
+  ENEMY_ART,
+  ENEMY_FRAME_SIZE,
   FIXTURE_ART,
   ITEM_ART,
   RC_CAR_TEXTURE,
   rcCarFrame,
   type AlexDirection,
+  type EffectArt,
+  type EffectName,
 } from '../assets';
 
 /** Sim ticks per walk frame; 60 ticks/s over 6 frames is a ~0.8s cycle. */
@@ -48,6 +57,45 @@ const DIRECTION_VECTORS: Record<AlexDirection, { x: number; y: number }> = {
 const HELD_ITEM_OFFSET = 15;
 const HELD_ITEM_LIFT = 8;
 
+/** Effect sprites sit above the player and the car, below the world labels. */
+const EFFECT_DEPTH = 4;
+/**
+ * Decals sit between the floor and the furniture.
+ *
+ * The Graphics pass draws the floor, walls, doorways and the combat overlays as
+ * one object at depth 0, so a decal placed at 0 would tie with all of them. A
+ * fractional depth pins it above the floor the Graphics drew and below the
+ * fixtures at 1, which is what "flat on the floor" means in the depth ladder.
+ */
+const DECAL_DEPTH = 0.5;
+/** Bound on concurrent effects, so a burst of hits cannot grow the list without limit. */
+const MAX_ACTIVE_EFFECTS = 24;
+
+/** One playing effect: its strip, when it started, and how fast it runs. */
+type ActiveEffect = {
+  readonly sprite: Phaser.GameObjects.Sprite;
+  readonly art: EffectArt;
+  readonly spawnTick: number;
+};
+
+/**
+ * The state an effect decision is made against.
+ *
+ * Deliberately the same shape of comparison the audio cues use: effects and
+ * sound are two readings of the same events, so a swing that is heard is a
+ * swing that is seen, without either one driving the other.
+ */
+type EffectBaseline = {
+  readonly roomId: string;
+  readonly playerHealth: number;
+  readonly attackActiveTicks: number;
+  readonly playerProjectiles: number;
+  readonly enemyHealth: Map<number, number>;
+  readonly enemyPositions: Map<number, { x: number; y: number }>;
+  /** Identity of the last conductive event acted on, so it fires once. */
+  readonly conductiveKey: string | null;
+};
+
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
   private readonly graphics: Phaser.GameObjects.Graphics;
@@ -63,10 +111,31 @@ export class MvpRunView {
   private readonly offerSprites: Phaser.GameObjects.Image[] = [];
   private heldItemSprite: Phaser.GameObjects.Image | undefined;
   private heldItemId: string | undefined;
+  private readonly enemySprites = new Map<number, Phaser.GameObjects.Sprite>();
+  private readonly enemyFacing = new Map<number, AlexDirection>();
+  private readonly lastEnemyPositions = new Map<number, { x: number; y: number }>();
+  private readonly effects: ActiveEffect[] = [];
+  private lastEffectBaseline: EffectBaseline | undefined;
+  private effectsSpawned = 0;
+  private readonly decalSprites: Phaser.GameObjects.Image[] = [];
+  private decalsDrawn = 0;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.graphics = scene.add.graphics();
+  }
+
+  /**
+   * Effect counters, so acceptance can prove effects were spawned rather than
+   * only that their art loaded. `spawned` is cumulative for the scene's life.
+   */
+  public get effectCounts(): { spawned: number; active: number } {
+    return { spawned: this.effectsSpawned, active: this.effects.length };
+  }
+
+  /** How many of the room's decals are actually on screen, for acceptance. */
+  public get drawnDecalCount(): number {
+    return this.decalsDrawn;
   }
 
   public sync(state: MvpRunState): void {
@@ -104,6 +173,7 @@ export class MvpRunView {
     }
 
     this.syncFixtures(room);
+    this.syncDecals(room);
 
     if (room.store) {
       this.drawStore(state, room.store.templateId);
@@ -128,6 +198,9 @@ export class MvpRunView {
       }
     }
 
+    this.syncEnemySprites(state);
+    this.syncEffects(state);
+
     for (const projectile of state.room.combat.projectiles) {
       this.drawProjectile(projectile);
     }
@@ -135,6 +208,8 @@ export class MvpRunView {
     this.drawCarrier(state);
     this.drawPlayer(state);
     this.pruneLabels(state);
+
+    centreCameraOnPlayer(this.scene, state.room.combat.player.x, state.room.combat.player.y);
   }
 
   /**
@@ -408,39 +483,273 @@ export class MvpRunView {
     }
   }
 
+  /** One effect sprite of one strip, or nothing when its art did not load. */
+  private spawnEffect(name: EffectName, x: number, y: number, tick: number): void {
+    const art = EFFECT_ART[name];
+    if (!this.scene.textures.exists(art.texture) || this.effects.length >= MAX_ACTIVE_EFFECTS) {
+      return;
+    }
+    const sprite = this.scene.add
+      .sprite(Math.round(x), Math.round(y), art.texture, 0)
+      .setOrigin(0.5, 0.5)
+      .setDepth(EFFECT_DEPTH);
+    this.effects.push({ sprite, art, spawnTick: tick });
+    this.effectsSpawned += 1;
+  }
+
+  /**
+   * Combat effects, driven by the same state deltas the audio cues read.
+   *
+   * Every effect is anchored to a position the state already reports, so an
+   * effect cannot describe a hit the simulation did not record. An enemy that
+   * died is no longer in the list, which is why the baseline remembers its last
+   * position: the burst belongs where it was, not where nothing is.
+   */
+  private syncEffects(state: MvpRunState): void {
+    const combat = state.room.combat;
+    const player = combat.player;
+    const roomId = state.room.roomId;
+    const enemyHealth = new Map<number, number>();
+    const enemyPositions = new Map<number, { x: number; y: number }>();
+    for (const enemy of combat.enemies) {
+      if (enemy.health > 0) {
+        enemyHealth.set(enemy.id, enemy.health);
+        enemyPositions.set(enemy.id, { x: enemy.x, y: enemy.y });
+      }
+    }
+    const playerProjectiles = combat.projectiles.filter(
+      (shot) => shot.faction === 'player',
+    ).length;
+    // Read before the branch so the same value is both acted on and recorded.
+    const conductive = latestConductiveFeedback(combat.behaviorTrace);
+
+    const previous = this.lastEffectBaseline;
+    // A room change replaces every enemy at once. That is not a massacre, so the
+    // baseline is rebuilt silently rather than firing a burst per departure.
+    if (previous && previous.roomId === roomId) {
+      if (player.attackActiveTicks > 0 && previous.attackActiveTicks === 0) {
+        this.spawnEffect('melee-swing', player.x, player.y, state.tick);
+      }
+      if (playerProjectiles > previous.playerProjectiles) {
+        this.spawnEffect('muzzle-flash', player.x, player.y, state.tick);
+      }
+      if (player.health < previous.playerHealth) {
+        this.spawnEffect('blood-hit', player.x, player.y, state.tick);
+      }
+      // The compiled primary decides which impact reads correctly: a projectile
+      // weapon should not look like a bat landing.
+      const impact =
+        combat.compiledLoadout.primary.delivery === 'projectile'
+          ? 'bullet-impact'
+          : 'blunt-impact';
+      for (const enemy of combat.enemies) {
+        const before = previous.enemyHealth.get(enemy.id);
+        if (before !== undefined && enemy.health > 0 && enemy.health < before) {
+          this.spawnEffect(impact, enemy.x, enemy.y - 8, state.tick);
+        }
+      }
+      for (const [id, health] of previous.enemyHealth) {
+        if (health <= 0 || enemyHealth.has(id)) {
+          continue;
+        }
+        const last = previous.enemyPositions.get(id);
+        if (last) {
+          this.spawnEffect('blood-hit', last.x, last.y - 8, state.tick);
+          // A death also throws debris, so the two read as one event rather than
+          // a spurt that leaves nothing behind.
+          this.spawnEffect('debris', last.x, last.y, state.tick);
+        }
+      }
+      // A conductive chain is an electrical event the simulation already reports,
+      // so it gets the shock strip rather than a generic hit.
+      if (conductive && conductive.key !== previous.conductiveKey) {
+        const target = combat.enemies.find(
+          (enemy) => enemy.id === conductive.targetIds[0],
+        );
+        if (target) {
+          this.spawnEffect('electric-shock', target.x, target.y, state.tick);
+        }
+      }
+    }
+    this.lastEffectBaseline = {
+      roomId,
+      playerHealth: player.health,
+      attackActiveTicks: player.attackActiveTicks,
+      playerProjectiles,
+      enemyHealth,
+      enemyPositions,
+      conductiveKey: conductive?.key ?? null,
+    };
+
+    // Advance every live effect from the run tick, so its life is a function of
+    // state a test can read rather than of wall-clock time.
+    for (let index = this.effects.length - 1; index >= 0; index -= 1) {
+      const effect = this.effects[index];
+      if (!effect) {
+        continue;
+      }
+      const frame = Math.floor((state.tick - effect.spawnTick) / effect.art.frameTicks);
+      if (frame >= EFFECT_FRAMES) {
+        effect.sprite.destroy();
+        this.effects.splice(index, 1);
+        continue;
+      }
+      effect.sprite.setFrame(frame).setVisible(true);
+    }
+  }
+
+  /**
+   * Floor decals, drawn from the room definition.
+   *
+   * Keyed by index and hidden when a room has fewer, so a doorway cannot leave
+   * the last room's damage lying on the new floor.
+   */
+  private syncDecals(room: WingRoomDefinition): void {
+    const decals = room.decals;
+    let drawn = 0;
+    for (let index = 0; index < decals.length; index += 1) {
+      const decal = decals[index];
+      if (!decal) {
+        continue;
+      }
+      const art = DECAL_ART[decal.kind];
+      if (!this.scene.textures.exists(art.texture)) {
+        continue;
+      }
+      const x = Math.round(decal.x);
+      const y = Math.round(decal.y);
+      let sprite = this.decalSprites[index];
+      if (!sprite) {
+        sprite = this.scene.add
+          .image(x, y, art.texture)
+          .setOrigin(0.5, 0.5)
+          .setDepth(DECAL_DEPTH);
+        this.decalSprites[index] = sprite;
+      }
+      sprite.setTexture(art.texture).setPosition(x, y).setVisible(true);
+      drawn += 1;
+    }
+    for (let index = decals.length; index < this.decalSprites.length; index += 1) {
+      this.decalSprites[index]?.setVisible(false);
+    }
+    this.decalsDrawn = drawn;
+  }
+
+  /** The enemy sheet's texture key, or undefined when it failed to load. */
+  private enemySpriteKey(kind: EnemyKind): string | undefined {
+    const art = ENEMY_ART[kind];
+    return this.scene.textures.exists(art.texture) ? art.texture : undefined;
+  }
+
+  /**
+   * Y of the top of an enemy's health bar, clear of whatever drew the body.
+   *
+   * The Graphics pass sits at depth 0 and sprites at depth 2, so a sprite would
+   * cover a bar drawn just above the collision circle. With a sprite present the
+   * bar moves above the sheet; the vector fallback keeps the original offset.
+   */
+  private enemyBarTop(enemy: EnemyState, hasSprite: boolean, fallbackOffset: number): number {
+    return hasSprite
+      ? enemy.y + enemy.radius - ENEMY_FRAME_SIZE - 6
+      : enemy.y - enemy.radius - fallbackOffset;
+  }
+
+  /**
+   * Enemy bodies as sprites, one per living enemy.
+   *
+   * `EnemyState` carries no heading -- only an aim vector and a phase -- so the
+   * facing is derived from the frame-to-frame movement delta, exactly as the
+   * player's walk facing is. That keeps presentation state out of the sim.
+   *
+   * Sprites are keyed by enemy id and destroyed when their id stops appearing,
+   * which also stops a room change from leaving ghosts behind.
+   */
+  private syncEnemySprites(state: MvpRunState): void {
+    const seen = new Set<number>();
+    for (const enemy of state.room.combat.enemies) {
+      const texture = this.enemySpriteKey(enemy.kind);
+      if (!texture) {
+        continue;
+      }
+      seen.add(enemy.id);
+
+      const last = this.lastEnemyPositions.get(enemy.id);
+      const dx = last ? enemy.x - last.x : 0;
+      const dy = last ? enemy.y - last.y : 0;
+      if (dx * dx + dy * dy > 0.25) {
+        this.enemyFacing.set(enemy.id, alexDirectionFor(dx, dy));
+      }
+      this.lastEnemyPositions.set(enemy.id, { x: enemy.x, y: enemy.y });
+
+      const frame = alexIdleFrame(this.enemyFacing.get(enemy.id) ?? 'south');
+      const feetX = Math.round(enemy.x);
+      const feetY = Math.round(enemy.y + enemy.radius);
+      let sprite = this.enemySprites.get(enemy.id);
+      if (!sprite) {
+        sprite = this.scene.add
+          .sprite(feetX, feetY, texture, frame)
+          .setOrigin(0.5, 1)
+          .setDepth(2);
+        this.enemySprites.set(enemy.id, sprite);
+      }
+      sprite.setTexture(texture, frame).setPosition(feetX, feetY).setVisible(true);
+    }
+
+    for (const [id, sprite] of [...this.enemySprites]) {
+      if (seen.has(id)) {
+        continue;
+      }
+      sprite.destroy();
+      this.enemySprites.delete(id);
+      this.enemyFacing.delete(id);
+      this.lastEnemyPositions.delete(id);
+    }
+  }
+
   private drawEnemy(enemy: EnemyState): void {
     const graphics = this.graphics;
-    if (enemy.kind === 'hanger') {
-      graphics.lineStyle(4, 0x8a3038, 1);
-      graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x, enemy.y - 10);
-      graphics.lineBetween(enemy.x, enemy.y - 10, enemy.x + 12, enemy.y + 9);
-      graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x + 12, enemy.y + 9);
-      graphics.fillStyle(0xd35f55, 1);
-      graphics.fillCircle(enemy.x, enemy.y - 10, 5);
-    } else {
-      if (enemy.phase === 'telegraph') {
-        graphics.lineStyle(3, 0xffd45d, 0.95);
-        graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 8);
-        graphics.lineStyle(2, 0xffd45d, 0.7);
-        graphics.lineBetween(
-          enemy.x,
-          enemy.y,
-          enemy.x + enemy.telegraphAimX * 52,
-          enemy.y + enemy.telegraphAimY * 52,
-        );
-      }
-      graphics.fillStyle(0x4d2c59, 1);
-      graphics.fillRect(enemy.x - 13, enemy.y - 13, 26, 26);
-      graphics.fillStyle(0xc984d8, 1);
-      graphics.fillRect(enemy.x - 6, enemy.y - 5, 12, 8);
+    const hasSprite = this.enemySpriteKey(enemy.kind) !== undefined;
+
+    // The telegraph runs whether or not a sheet loaded: it is a gameplay readout
+    // of where the shot will go, not decoration on the body.
+    if (enemy.kind !== 'hanger' && enemy.phase === 'telegraph') {
+      graphics.lineStyle(3, 0xffd45d, 0.95);
+      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 8);
+      graphics.lineStyle(2, 0xffd45d, 0.7);
+      graphics.lineBetween(
+        enemy.x,
+        enemy.y,
+        enemy.x + enemy.telegraphAimX * 52,
+        enemy.y + enemy.telegraphAimY * 52,
+      );
     }
+
+    // The sheet supplies the body when it loaded; this vector body is the
+    // fallback, so the run stays playable if the art is missing.
+    if (!hasSprite) {
+      if (enemy.kind === 'hanger') {
+        graphics.lineStyle(4, 0x8a3038, 1);
+        graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x, enemy.y - 10);
+        graphics.lineBetween(enemy.x, enemy.y - 10, enemy.x + 12, enemy.y + 9);
+        graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x + 12, enemy.y + 9);
+        graphics.fillStyle(0xd35f55, 1);
+        graphics.fillCircle(enemy.x, enemy.y - 10, 5);
+      } else {
+        graphics.fillStyle(0x4d2c59, 1);
+        graphics.fillRect(enemy.x - 13, enemy.y - 13, 26, 26);
+        graphics.fillStyle(0xc984d8, 1);
+        graphics.fillRect(enemy.x - 6, enemy.y - 5, 12, 8);
+      }
+    }
+
     this.drawEnemyStatuses(enemy);
+    const barTop = this.enemyBarTop(enemy, hasSprite, 12);
     graphics.fillStyle(0x2a2424, 0.9);
-    graphics.fillRect(enemy.x - 15, enemy.y - enemy.radius - 12, 30, 4);
+    graphics.fillRect(enemy.x - 15, barTop, 30, 4);
     graphics.fillStyle(0xd85c54, 1);
     graphics.fillRect(
       enemy.x - 15,
-      enemy.y - enemy.radius - 12,
+      barTop,
       30 * Math.max(0, Math.min(1, enemy.health / 8)),
       4,
     );
@@ -468,18 +777,22 @@ export class MvpRunView {
       graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 16);
     }
     this.drawEnemyStatuses(enemy);
-    graphics.fillStyle(0x5c2936, 1);
-    graphics.fillCircle(enemy.x, enemy.y, enemy.radius);
-    graphics.lineStyle(3, 0xf6d365, 1);
-    graphics.strokeCircle(enemy.x, enemy.y, enemy.radius);
-    graphics.fillStyle(0xf6d365, 1);
-    graphics.fillCircle(enemy.x, enemy.y, 5);
+    const hasSprite = this.enemySpriteKey(enemy.kind) !== undefined;
+    if (!hasSprite) {
+      graphics.fillStyle(0x5c2936, 1);
+      graphics.fillCircle(enemy.x, enemy.y, enemy.radius);
+      graphics.lineStyle(3, 0xf6d365, 1);
+      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius);
+      graphics.fillStyle(0xf6d365, 1);
+      graphics.fillCircle(enemy.x, enemy.y, 5);
+    }
+    const barTop = this.enemyBarTop(enemy, hasSprite, 14);
     graphics.fillStyle(0x2a2424, 0.9);
-    graphics.fillRect(enemy.x - 24, enemy.y - enemy.radius - 14, 48, 5);
+    graphics.fillRect(enemy.x - 24, barTop, 48, 5);
     graphics.fillStyle(0xd85c54, 1);
     graphics.fillRect(
       enemy.x - 24,
-      enemy.y - enemy.radius - 14,
+      barTop,
       48 * Math.max(0, Math.min(1, enemy.health / BOSS_MAX_HEALTH)),
       5,
     );
@@ -720,6 +1033,17 @@ export class MvpRunView {
     this.playerSprite = undefined;
     this.carSprite?.destroy();
     this.carSprite = undefined;
+    for (const sprite of this.enemySprites.values()) {
+      sprite.destroy();
+    }
+    this.enemySprites.clear();
+    this.enemyFacing.clear();
+    this.lastEnemyPositions.clear();
+    for (const effect of this.effects) {
+      effect.sprite.destroy();
+    }
+    this.effects.length = 0;
+    this.lastEffectBaseline = undefined;
     for (const sprite of this.fixtureSprites) {
       sprite.destroy();
     }

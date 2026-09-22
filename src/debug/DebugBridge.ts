@@ -6,6 +6,8 @@ export type DebugMode = 'shift' | 'lab' | 'shop' | 'bench';
 
 export type DebugSnapshot = {
   mode: DebugMode;
+  /** Null when the bridge is built without an engine getter. */
+  audio: { created: boolean; running: boolean; muted: boolean; played: number } | null;
   generation: number;
   tick: number;
   paused: boolean;
@@ -46,6 +48,8 @@ export type WingDebugSnapshot = {
   recentChange: string;
   behaviorTrace: readonly string[];
   summary: WingState['summary'];
+  /** Null when the bridge is built without an engine getter. */
+  audio: { created: boolean; running: boolean; muted: boolean; played: number } | null;
 };
 
 declare global {
@@ -56,10 +60,40 @@ declare global {
   }
 }
 
+/**
+ * The engine surface the debug snapshots report, so acceptance can prove the
+ * sound layer actually acted rather than only that nothing threw.
+ */
+export type DebugAudioSource = {
+  readonly created: boolean;
+  readonly running: boolean;
+  readonly isMuted: boolean;
+  readonly played: number;
+};
+
+/** Shared shaping of the audio field, so every bridge reports it identically. */
+export function debugAudioFrom(getAudio?: () => DebugAudioSource | undefined): {
+  created: boolean;
+  running: boolean;
+  muted: boolean;
+  played: number;
+} | null {
+  const engine = getAudio?.();
+  return engine
+    ? {
+        created: engine.created,
+        running: engine.running,
+        muted: engine.isMuted,
+        played: engine.played,
+      }
+    : null;
+}
+
 export function installDebugBridge(
   getRun: () => RunState,
   getGeneration: () => number,
   getMode: () => DebugMode,
+  getAudio?: () => DebugAudioSource | undefined,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -68,6 +102,7 @@ export function installDebugBridge(
         const state = getRun();
         return {
           mode: getMode(),
+          audio: debugAudioFrom(getAudio),
           generation: getGeneration(),
           tick: state.tick,
           paused: state.paused,
@@ -97,6 +132,7 @@ export function installDebugBridge(
 export function installWingDebugBridge(
   getWing: () => WingState,
   getGeneration: () => number,
+  getAudio?: () => DebugAudioSource | undefined,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -105,6 +141,7 @@ export function installWingDebugBridge(
         const state = getWing();
         return {
           mode: 'shop',
+          audio: debugAudioFrom(getAudio),
           generation: getGeneration(),
           tick: state.tick,
           paused: state.paused,
@@ -169,11 +206,14 @@ export type BenchDebugSnapshot = {
   }>;
   recentChange: string;
   behaviorTrace: readonly string[];
+  /** Null when the bridge is built without an engine getter. */
+  audio: { created: boolean; running: boolean; muted: boolean; played: number } | null;
 };
 
 export function installBenchDebugBridge(
   getBench: () => import('../sim/bench/types').BenchRunState,
   getGeneration: () => number,
+  getAudio?: () => DebugAudioSource | undefined,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -182,6 +222,7 @@ export function installBenchDebugBridge(
         const state = getBench();
         return {
           mode: 'bench',
+          audio: debugAudioFrom(getAudio),
           generation: getGeneration(),
           tick: state.tick,
           paused: state.paused,
@@ -296,6 +337,16 @@ export type MvpRunDebugSnapshot = {
     /** Cues actually scheduled as voices, not merely decided. */
     played: number;
   } | null;
+  /**
+   * Effect counters, so acceptance can prove an effect was spawned rather than
+   * only that its art loaded. Null without a view getter.
+   */
+  effects: { spawned: number; active: number } | null;
+  /**
+   * Decals on screen for the current room, so acceptance can prove the authored
+   * floor damage reached the renderer rather than only the generator.
+   */
+  decals: { visible: number } | null;
 };
 
 export function installMvpRunDebugBridge(
@@ -304,6 +355,8 @@ export function installMvpRunDebugBridge(
   getAudio?: () =>
     | { created: boolean; running: boolean; isMuted: boolean; played: number }
     | undefined,
+  getEffects?: () => { spawned: number; active: number } | undefined,
+  getDecals?: () => { visible: number } | undefined,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -356,6 +409,8 @@ export function installMvpRunDebugBridge(
             };
           }),
           previewOpen: state.preview !== null,
+          effects: getEffects?.() ?? null,
+          decals: getDecals?.() ?? null,
           audio: (() => {
             const engine = getAudio?.();
             return engine

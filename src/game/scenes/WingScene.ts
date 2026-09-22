@@ -10,6 +10,8 @@ import { itemDefinitionName, type WingState } from '../../sim/shop/types';
 import { WingInputAdapter } from '../input/WingInputAdapter';
 import { WingHud } from '../ui/WingHud';
 import { WingView } from '../view/WingView';
+import { GameAudioEngine } from '../audio/engine';
+import { audioSnapshotFromWing } from '../audio/cues';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -26,6 +28,7 @@ export class WingScene extends Phaser.Scene {
   private wingView: WingView | undefined;
   private hud: WingHud | undefined;
   private removeDebugBridge: (() => void) | undefined;
+  private audio: GameAudioEngine | undefined;
 
   public constructor() {
     super(WingScene.KEY);
@@ -40,6 +43,13 @@ export class WingScene extends Phaser.Scene {
       () => this.setPaused(!this.wing.paused),
       () => this.setPaused(true),
     );
+    // The shoplifting loop has its own economy, so it takes the sound layer for
+    // purchases, thefts and confiscations. Web Audio may only start from a real
+    // user gesture, so the first pointer or key press anywhere unlocks it.
+    this.audio = new GameAudioEngine();
+    window.addEventListener('pointerdown', this.unlockAudio);
+    window.addEventListener('keydown', this.unlockAudio);
+    window.addEventListener('keydown', this.toggleAudioMute);
     this.wingView = new WingView(this);
     this.hud = new WingHud(this.restartLoop, this.returnToTitle);
 
@@ -47,6 +57,7 @@ export class WingScene extends Phaser.Scene {
       this.removeDebugBridge = installWingDebugBridge(
         () => this.wing,
         () => this.generation,
+        () => this.audio,
       );
     }
 
@@ -159,6 +170,7 @@ export class WingScene extends Phaser.Scene {
     this.wing = this.createInitialRun();
     this.accumulator = 0;
     this.inputAdapter?.clearHeld();
+    this.audio?.resetBaseline();
     this.syncView();
   };
 
@@ -166,12 +178,33 @@ export class WingScene extends Phaser.Scene {
     window.dispatchEvent(new CustomEvent(RETURN_TO_TITLE_EVENT));
   };
 
+  /** The wing maps its own status vocabulary, so the cue source is its adapter. */
   private syncView(): void {
     this.wingView?.sync(this.wing);
     this.hud?.sync(this.wing);
+    this.audio?.syncTo(audioSnapshotFromWing(this.wing));
   }
 
+  private readonly unlockAudio = (): void => {
+    this.audio?.resume();
+  };
+
+  /**
+   * Mutes from the keyboard. The loop has no mute control in its HUD, so the key
+   * goes straight to the engine rather than through a button with no label.
+   */
+  private readonly toggleAudioMute = (event: KeyboardEvent): void => {
+    if (event.key === 'm' || event.key === 'M') {
+      this.audio?.toggleMuted();
+    }
+  };
+
   private readonly destroyWing = (): void => {
+    window.removeEventListener('pointerdown', this.unlockAudio);
+    window.removeEventListener('keydown', this.unlockAudio);
+    window.removeEventListener('keydown', this.toggleAudioMute);
+    this.audio?.destroy();
+    this.audio = undefined;
     this.inputAdapter?.destroy();
     this.inputAdapter = undefined;
     this.wingView?.destroy();

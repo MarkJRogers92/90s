@@ -1,10 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
+import { aimPointFor, cameraScrollFor } from '../../src/game/view/viewport';
 
 type LifecycleSnapshot = {
   generation: number;
   tick: number;
   status: 'playing' | 'won' | 'dead';
-  player: { health: number; attackCooldownTicks: number };
+  player: { x: number; y: number; health: number; attackCooldownTicks: number };
   enemies: Array<{
     id: number;
     kind: 'hanger' | 'spitter';
@@ -42,10 +43,11 @@ async function defeatEnemy(page: Page, kind: 'hanger' | 'spitter'): Promise<void
     return;
   }
 
-  await page.mouse.move(
-    box.x + (target.x / 960) * box.width,
-    box.y + (target.y / 480) * box.height,
-  );
+  // Aim along the direction to the target: the camera window is smaller than the
+  // room, so the enemy itself may not be clickable.
+  const scroll = cameraScrollFor(before.player.x, before.player.y);
+  const point = aimPointFor(before.player, target, scroll, box.width, box.height);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await expect
     .poll(() => snapshot(page).then((state) => state.enemies.some((enemy) => enemy.id === target.id)))

@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { aimPointFor, cameraScrollFor } from '../../src/game/view/viewport';
 
 type BenchSnapshot = {
   mode: 'bench';
@@ -153,10 +154,13 @@ test('fused car is the sampled projectile origin', async ({ page }) => {
   if (!box) {
     return;
   }
-  await page.mouse.move(
-    box.x + (600 / 960) * box.width,
-    box.y + (240 / 480) * box.height,
-  );
+  // Aim along the direction to the firing point. The camera window is smaller
+  // than the room, so the world point itself is not reliably clickable, and the
+  // scroll depends on where the player stands, which made this intermittent.
+  const beforeFire = await benchSnapshot(page);
+  const scroll = cameraScrollFor(beforeFire.player.x, beforeFire.player.y);
+  const point = aimPointFor(beforeFire.player, { x: 600, y: 240 }, scroll, box.width, box.height);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await expect
     .poll(

@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { centreCameraOnPlayer } from './camera';
 import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../../sim/core/geometry';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import { BENCH_KIOSK, doorwayForRoom, wallsForRoom } from '../../sim/bench/scenarios';
@@ -7,7 +8,7 @@ import type { BenchRoomId, BenchRunState } from '../../sim/bench/types';
 export class BenchView {
   private readonly graphics: Phaser.GameObjects.Graphics;
 
-  public constructor(scene: Phaser.Scene) {
+  public constructor(private readonly scene: Phaser.Scene) {
     this.graphics = scene.add.graphics();
   }
 
@@ -64,6 +65,8 @@ export class BenchView {
     this.drawTether(state);
     this.drawCarrier(state);
     this.drawPlayer(state);
+
+    centreCameraOnPlayer(this.scene, state.combat.player.x, state.combat.player.y);
   }
 
   private drawPlayer(state: BenchRunState): void {

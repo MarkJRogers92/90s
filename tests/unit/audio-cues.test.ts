@@ -69,7 +69,7 @@ function cuesAfter(mutate: (state: MvpRunState) => void): AudioCue[] {
   const state = createMvpRun(9);
   const previous = createAudioSnapshot(state);
   mutate(state);
-  return deriveAudioCues(previous, state);
+  return deriveAudioCues(previous, createAudioSnapshot(state));
 }
 
 /**
@@ -83,7 +83,7 @@ function cuesBetween(
 ): AudioCue[] {
   const previous = createAudioSnapshot(state);
   mutate(state);
-  return deriveAudioCues(previous, state);
+  return deriveAudioCues(previous, createAudioSnapshot(state));
 }
 
 describe('audio cue derivation', () => {
@@ -170,13 +170,15 @@ describe('audio cue derivation', () => {
     state.room.combat.enemies = [makeBoss()];
     const before = createAudioSnapshot(state);
     state.room.combat.enemies = [makeBoss({ bossPhase: 2 })];
-    expect(deriveAudioCues(before, state)).toContain('boss_phase');
+    expect(deriveAudioCues(before, createAudioSnapshot(state))).toContain('boss_phase');
 
     const telegraph = createMvpRun(9);
     telegraph.room.combat.enemies = [makeBoss()];
     const beforeTelegraph = createAudioSnapshot(telegraph);
     telegraph.room.combat.enemies = [makeBoss({ phase: 'telegraph' })];
-    expect(deriveAudioCues(beforeTelegraph, telegraph)).toContain('boss_telegraph');
+    expect(deriveAudioCues(beforeTelegraph, createAudioSnapshot(telegraph))).toContain(
+      'boss_telegraph',
+    );
 
     const volley = createMvpRun(9);
     volley.room.combat.enemies = [makeBoss({ bossPhase: 2 })];
@@ -184,7 +186,7 @@ describe('audio cue derivation', () => {
     volley.room.combat.enemies = [
       makeBoss({ bossPhase: 2, bossVolleyTelegraphTicks: 45 }),
     ];
-    expect(deriveAudioCues(beforeVolley, volley)).toContain('boss_volley');
+    expect(deriveAudioCues(beforeVolley, createAudioSnapshot(volley))).toContain('boss_volley');
   });
 
   it('reports a swing on the attack window opening', () => {

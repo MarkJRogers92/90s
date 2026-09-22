@@ -1,0 +1,36 @@
+{
+  "group_id": "cf6642d2-bec2-4dc1-bb20-33ef0cf32f17",
+  "states": [
+    {
+      "character": {
+        "id": "221c5ec8-e1ae-415e-a364-678ab7fefcd2",
+        "name": "Idle",
+        "prompt": "A boss creature for a 1990s American shopping mall horror roguelite: the Loss Prevention Manager, corrupted. A large imposing humanoid in the remains of a 1990s mall security uniform: a dark navy jacket with a blank shoulder patch containing NO lettering, a peaked uniform cap, and a duty belt carrying a radio and a ring of keys. The body has grown too large and asymmetric: one shoulder is massively swollen with a fused mass of small dead CRT security monitors, cables run up the neck into the jaw, the jaw is distended, and one eye is clouded white. Still clearly a mall security manager underneath. POSTURE: standing tall and broad with the arms held out from the body, noticeably bigger than a normal person. CRITICAL: the navy uniform, peaked cap and duty belt keep the retail security role recognisable. STYLE: detailed late-SNES pixel art, crisp hard pixels, clean deliberate clusters, selective outlines, minimal dithering, no anti-aliasing, no blur. LIGHTING: neutral overhead fluorescent mall lighting. No text, no letters, no numbers, no logos anywhere.",
+        "size": {
+          "width": 96,
+          "height": 96
+        },
+        "template_id": "mannequin",
+        "directions": 8,
+        "view": "low top-down",
+        "created_at": "2026-09-22T04:56:09.750728+00:00"
+      },
+      "folder": "Idle",
+      "frames": {
+        "rotations": {
+          "south": "Idle/rotations/south.png",
+          "south-east": "Idle/rotations/south-east.png",
+          "east": "Idle/rotations/east.png",
+          "north-east": "Idle/rotations/north-east.png",
+          "north": "Idle/rotations/north.png",
+          "north-west": "Idle/rotations/north-west.png",
+          "west": "Idle/rotations/west.png",
+          "south-west": "Idle/rotations/south-west.png"
+        },
+        "animations": {}
+      }
+    }
+  ],
+  "export_version": "3.1",
+  "export_date": "2026-09-22T05:02:49.323866"
+}

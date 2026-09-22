@@ -1,10 +1,11 @@
 import Phaser from 'phaser';
+import { centreCameraOnPlayer } from './camera';
 import type { WingState } from '../../sim/shop/types';
 
 export class WingView {
   private readonly graphics: Phaser.GameObjects.Graphics;
 
-  public constructor(scene: Phaser.Scene) {
+  public constructor(private readonly scene: Phaser.Scene) {
     this.graphics = scene.add.graphics();
   }
 
@@ -103,6 +104,8 @@ export class WingView {
       state.player.x + state.player.facing.x * (state.player.radius + 6),
       state.player.y + state.player.facing.y * (state.player.radius + 6),
     );
+
+    centreCameraOnPlayer(this.scene, state.player.x, state.player.y);
   }
 
   public destroy(): void {

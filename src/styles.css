@@ -107,6 +107,45 @@ h1 {
   box-shadow: 0 0 0 2px #4d5147, 0 20px 80px rgb(0 0 0 / 65%);
 }
 
+/*
+ * Pixel icons ahead of a HUD stat label.
+ *
+ * Decorative only: every row keeps its text, so an icon never carries meaning on
+ * its own and the HUD stays readable if an image fails. Rows are targeted by the
+ * unique id of the value they hold, which keeps this a stylesheet change with no
+ * markup or layout rework. `image-rendering: pixelated` is what stops a 16px
+ * sprite being smoothed when the page is scaled.
+ */
+.hud-row .hud-label::before {
+  content: '';
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: -3px;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 16px 16px;
+  image-rendering: pixelated;
+}
+
+.hud-row:has(#health-value) .hud-label::before,
+.hud-row:has(#mvp-run-health) .hud-label::before {
+  background-image: url('/assets/hud/hud-health.png');
+}
+
+.hud-row:has(#mvp-run-cash) .hud-label::before {
+  background-image: url('/assets/hud/hud-coins.png');
+}
+
+.hud-row:has(#mvp-run-heat) .hud-label::before {
+  background-image: url('/assets/hud/hud-warning.png');
+}
+
+.hud-row:has(#mvp-run-room) .hud-label::before {
+  background-image: url('/assets/hud/hud-map.png');
+}
+
 .run-hud {
   position: absolute;
   z-index: 2;

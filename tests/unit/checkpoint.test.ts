@@ -8,6 +8,7 @@ import {
 } from '../../src/sim/run/checkpoint';
 import type { MvpCheckpoint } from '../../src/sim/run/checkpoint';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
+import { generateWing } from '../../src/sim/wing/generateWing';
 import { buyRunOffer } from '../../src/sim/run/economy';
 import { enterDoorway, tickMvpRun } from '../../src/sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
@@ -74,14 +75,18 @@ function freshCheckpoint(seed = 31): MvpCheckpoint {
   return serializeCheckpoint(state);
 }
 
-function leaf(instanceId: string, itemDefinitionId = 'janitor_mop'): InventoryLeaf {
+function leaf(
+  instanceId: string,
+  itemDefinitionId = 'janitor_mop',
+  sourceStockId = 'test-offer',
+): InventoryLeaf {
   return {
     kind: 'leaf',
     instanceId,
     itemDefinitionId,
     acquisitionKind: 'purchased',
     sourceLocationId: 'test-store',
-    sourceStockId: 'test-offer',
+    sourceStockId,
     acquisitionTick: 0,
   };
 }
@@ -295,6 +300,123 @@ describe('checkpoint validation', () => {
     expect(parsed.ok).toBe(false);
     if (!parsed.ok) {
       expect(parsed.reason).toMatch(/boss room/i);
+    }
+  });
+
+  it('rejects a checkpoint that clears a room ahead of its current room', () => {
+    const checkpoint = freshCheckpoint();
+    const wing = generateWing(checkpoint.seed);
+    const ahead = wing.rooms[checkpoint.roomIndex + 1];
+    expect(ahead).toBeDefined();
+    if (!ahead) {
+      return;
+    }
+
+    const parsed = parseCheckpoint({
+      ...checkpoint,
+      clearedRoomIds: [...checkpoint.clearedRoomIds, ahead.id],
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      expect(parsed.reason).toMatch(/ahead of its current room/i);
+    }
+  });
+
+  it('rejects a next composite id that would collide with an existing transaction', () => {
+    const checkpoint = freshCheckpoint();
+    // The composite's leaves must claim offers the status map marks consumed.
+    // Otherwise the offer/inventory agreement check rejects this fixture first,
+    // and the collision check under test would never be reached.
+    const offerIds = Object.keys(checkpoint.offerStatus);
+    const primaryOffer = offerIds[0]!;
+    const carrierOffer = offerIds[1]!;
+    const composite = {
+      kind: 'composite' as const,
+      instanceId: 'emitter-mount-1',
+      recipeId: 'emitter_mount' as const,
+      createdTick: 0,
+      transactionId: 'emitter-mount-tx-1',
+      // A fusion needs a projectile primary and an emitter carrier, so the
+      // fixture uses the real catalog roles rather than the mop default.
+      primary: leaf('collision-leaf-a', 'pump_soaker', primaryOffer),
+      carrier: leaf('collision-leaf-b', 'rc_car', carrierOffer),
+    };
+
+    // A save that kept the committed transaction but rewound `nextCompositeId`
+    // would mint a duplicate id on the next fusion.
+    const parsed = parseCheckpoint({
+      ...checkpoint,
+      offerStatus: Object.fromEntries(
+        offerIds.map((id) => [
+          id,
+          id === primaryOffer || id === carrierOffer ? 'consumed' : 'available',
+        ]),
+      ),
+      inventory: {
+        ...checkpoint.inventory,
+        inventory: [composite],
+        selectedPrimaryInstanceId: 'emitter-mount-1',
+        nextCompositeId: 1,
+        committedTransactions: [
+          {
+            transactionId: 'emitter-mount-tx-1',
+            recipeId: 'emitter_mount',
+            primaryInstanceId: 'collision-leaf-a',
+            carrierInstanceId: 'collision-leaf-b',
+            compositeInstanceId: 'emitter-mount-1',
+            fee: 4,
+            committedRevision: 1,
+          },
+        ],
+      },
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      expect(parsed.reason).toMatch(/collides/i);
+    }
+  });
+
+  it('rejects a consumed offer the inventory has no item for', () => {
+    const checkpoint = freshCheckpoint();
+    const available = Object.entries(checkpoint.offerStatus).find(
+      ([, status]) => status === 'available',
+    );
+    expect(available).toBeDefined();
+    if (!available) {
+      return;
+    }
+
+    const parsed = parseCheckpoint({
+      ...checkpoint,
+      offerStatus: { ...checkpoint.offerStatus, [available[0]]: 'consumed' },
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      expect(parsed.reason).toMatch(/owns no item/i);
+    }
+  });
+
+  it('rejects an owned item for an offer that is still available', () => {
+    const checkpoint = freshCheckpoint();
+    const consumed = Object.entries(checkpoint.offerStatus).find(
+      ([, status]) => status === 'consumed',
+    );
+    expect(consumed).toBeDefined();
+    if (!consumed) {
+      return;
+    }
+
+    const parsed = parseCheckpoint({
+      ...checkpoint,
+      offerStatus: { ...checkpoint.offerStatus, [consumed[0]]: 'available' },
+    });
+
+    expect(parsed.ok).toBe(false);
+    if (!parsed.ok) {
+      expect(parsed.reason).toMatch(/still available/i);
     }
   });
 
