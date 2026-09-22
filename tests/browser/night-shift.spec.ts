@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { worldToCanvas } from './projection';
 
 type RunSnapshot = {
   mode: 'run';
@@ -426,10 +427,8 @@ test('the Bench Warrant kiosk previews and fuses the car, and shots then start a
   // Re-aim just short of the car so it holds roughly still while firing: the
   // car steers toward the pointer, so aiming at its own position stops it
   // drifting during the shot that is being measured.
-  await page.mouse.move(
-    box.x + (carAtFire.x - 2) * (box.width / 960),
-    box.y + carAtFire.y * (box.height / 480),
-  );
+  const point = await worldToCanvas(page, carAtFire.x - 2, carAtFire.y);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.waitForTimeout(80);
 
   await page.mouse.down();

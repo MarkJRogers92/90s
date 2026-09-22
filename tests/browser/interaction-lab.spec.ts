@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { worldToCanvas } from './projection';
 
 type LabSnapshot = {
   mode: 'shift' | 'lab';
@@ -65,8 +66,8 @@ async function snapshot(page: Page): Promise<LabSnapshot> {
   });
 }
 
-async function launchInteractionLab(page: Page): Promise<void> {
-  await page.goto('/');
+async function launchInteractionLab(page: Page, fixture?: string): Promise<void> {
+  await page.goto(fixture === undefined ? '/' : `/?fixture=${fixture}`);
   const launch = page.getByRole('button', { name: 'Interaction Lab', exact: true });
   await expect(launch).toBeVisible();
   await launch.click();
@@ -84,7 +85,8 @@ async function fireAtWorld(page: Page, worldX: number, worldY: number): Promise<
   if (!box) {
     return;
   }
-  await page.mouse.move(box.x + (worldX / 960) * box.width, box.y + (worldY / 480) * box.height);
+  const point = await worldToCanvas(page, worldX, worldY);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await page.waitForTimeout(80);
   await page.mouse.up();
@@ -131,7 +133,9 @@ test('Soaker + Bath + Rewinder fires one authoritative outbound/return burst fro
 }) => {
   test.setTimeout(60_000);
   const errors = collectErrors(page);
-  await launchInteractionLab(page);
+  // pointer-proof parks the spitter at (300,240), next to the player's (180,240)
+  // spawn, so it is inside the camera window and can actually be aimed at.
+  await launchInteractionLab(page, 'pointer-proof');
   const lab = page.getByRole('region', { name: 'Interaction Lab' });
 
   const before = await snapshot(page);

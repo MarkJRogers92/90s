@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { worldToCanvas } from './projection';
 
 type DebugSnapshot = {
   tick: number;
@@ -81,10 +82,8 @@ test('scaled canvas pointer aim damages only the intended enemy', async ({ page 
     return;
   }
 
-  await page.mouse.move(
-    box.x + (target.x / 960) * box.width,
-    box.y + (target.y / 480) * box.height,
-  );
+  const point = await worldToCanvas(page, target.x, target.y);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await expect
     .poll(() =>

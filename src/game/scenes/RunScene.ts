@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { installDebugBridge, type DebugMode } from '../../debug/DebugBridge';
+import { installDebugBridge, installWorldToCanvas, type DebugMode } from '../../debug/DebugBridge';
 import { createRun } from '../../sim/createRun';
 import { tickRun } from '../../sim/tickRun';
 import type { RunState } from '../../sim/model';
@@ -7,6 +7,7 @@ import { InputAdapter } from '../input/InputAdapter';
 import { Hud } from '../ui/Hud';
 import { InteractionLab, defaultLabSelection, type LabLoadoutSelection } from '../ui/InteractionLab';
 import { EntityView } from '../view/EntityView';
+import { boundCameraToPlayfield, centreCameraOn, worldToCanvas } from '../view/projection';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -46,17 +47,23 @@ export class RunScene extends Phaser.Scene {
       () => this.setPaused(true),
     );
     this.entityView = new EntityView(this);
+    boundCameraToPlayfield(this);
     this.hud = new Hud(this.restartRun, this.mode);
     if (this.mode === 'lab') {
       this.interactionLab = new InteractionLab(this.applyLabLoadout);
     }
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
-      this.removeDebugBridge = installDebugBridge(
+      const removeBridge = installDebugBridge(
         () => this.run,
         () => this.generation,
         () => this.mode,
       );
+      const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
+      this.removeDebugBridge = () => {
+        removeProjection();
+        removeBridge();
+      };
     }
 
     this.syncView();
@@ -91,14 +98,26 @@ export class RunScene extends Phaser.Scene {
   }
 
   private createInitialRun(): RunState {
-    if (this.mode === 'lab') {
-      return createRun(LAB_SEED, {
-        itemIds: this.labSelection.itemIds,
-        selectedItemId: this.labSelection.selectedPrimaryId,
-      });
-    }
+    const run =
+      this.mode === 'lab'
+        ? createRun(LAB_SEED, {
+            itemIds: this.labSelection.itemIds,
+            selectedItemId: this.labSelection.selectedPrimaryId,
+          })
+        : createRun(1997);
+    return this.applyDevFixture(run);
+  }
 
-    const run = createRun(1997);
+  /**
+   * Debug-only positioning, so a test can rely on where things are.
+   *
+   * Applied in lab mode as well as shift mode. The lab path used to return
+   * before this ran, which was invisible while the whole 960x480 room was on
+   * screen; now that the camera follows the player into a 640x360 window, a
+   * fixture is the only way to guarantee a target is inside the view. A target
+   * off-screen is an ordinary consequence of having a camera, not a defect.
+   */
+  private applyDevFixture(run: RunState): RunState {
     if (!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true')) {
       return run;
     }
@@ -171,6 +190,9 @@ export class RunScene extends Phaser.Scene {
     this.entityView?.sync(this.run);
     this.hud?.sync(this.run);
     this.interactionLab?.sync(this.run);
+    // The camera follows the authoritative player position. The view never
+    // decides where the player is; it reads the same state everything else does.
+    centreCameraOn(this, this.run.player.x, this.run.player.y);
   }
 
   private readonly destroyRun = (): void => {

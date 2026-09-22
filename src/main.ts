@@ -93,8 +93,13 @@ function launch(mode: RunMode): void {
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: 'game-host',
-      width: 960,
-      height: 480,
+      // 640x360, not the playfield's 960x480: the playfield is the room the
+      // simulation is authored against, this is the window onto it. 640x360
+      // integer-scales to 1920x1080 exactly, which 960x480 cannot (x2 leaves a
+      // 120px letterbox, x2.25 is uneven). The camera in each scene follows the
+      // player, so a viewport smaller than the room is the intended arrangement.
+      width: 640,
+      height: 360,
       backgroundColor: '#252926',
       render: {
         antialias: false,
@@ -149,8 +154,13 @@ function launchRun(checkpoint: MvpCheckpoint | null, seed: number): void {
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: 'game-host',
-      width: 960,
-      height: 480,
+      // 640x360, not the playfield's 960x480: the playfield is the room the
+      // simulation is authored against, this is the window onto it. 640x360
+      // integer-scales to 1920x1080 exactly, which 960x480 cannot (x2 leaves a
+      // 120px letterbox, x2.25 is uneven). The camera in each scene follows the
+      // player, so a viewport smaller than the room is the intended arrangement.
+      width: 640,
+      height: 360,
       backgroundColor: '#252926',
       render: {
         antialias: false,

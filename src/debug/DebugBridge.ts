@@ -52,8 +52,39 @@ declare global {
   interface Window {
     __DEAD_MALL_DEBUG__?: {
       snapshot(): DebugSnapshot | WingDebugSnapshot | BenchDebugSnapshot | MvpRunDebugSnapshot;
+      /**
+       * World point -> canvas-relative CSS pixels.
+       *
+       * Browser tests used to compute this themselves as `(worldX / 960) *
+       * canvasWidth`, which hardcoded the playfield size, assumed no camera
+       * scroll, and ignored the scale manager's letterboxing. Every one of those
+       * assumptions was true only while the viewport matched the room exactly.
+       */
+      worldToCanvas?(x: number, y: number): { x: number; y: number };
     };
   }
+}
+
+/**
+ * Attach the world->canvas projection to whatever debug bridge the current
+ * scene installed.
+ *
+ * Kept separate from the four `install*DebugBridge` functions so their
+ * signatures stay stable: only scenes that own a camera need to supply a
+ * projection, and a scene without one is simply not projectable rather than
+ * silently wrong.
+ */
+export function installWorldToCanvas(
+  project: (x: number, y: number) => { x: number; y: number },
+): () => void {
+  const bridge = window.__DEAD_MALL_DEBUG__;
+  if (!bridge) {
+    return () => {};
+  }
+  bridge.worldToCanvas = project;
+  return () => {
+    delete bridge.worldToCanvas;
+  };
 }
 
 export function installDebugBridge(

@@ -9,7 +9,7 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import Phaser from 'phaser';
-import { installMvpRunDebugBridge } from '../../debug/DebugBridge';
+import { installMvpRunDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
   InMemoryCheckpointStore,
   type CheckpointStore,
@@ -35,6 +35,7 @@ import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
 import { GameAudioEngine } from '../audio/engine';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
+import { boundCameraToPlayfield, centreCameraOn, worldToCanvas } from '../view/projection';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -235,6 +236,7 @@ export class MvpRunScene extends Phaser.Scene {
     window.addEventListener('pointerdown', this.unlockAudio);
     window.addEventListener('keydown', this.unlockAudio);
     this.runView = new MvpRunView(this);
+    boundCameraToPlayfield(this);
     this.hud = new MvpRunHud(
       () => this.restartRun(),
       () => this.returnToTitle(),
@@ -244,11 +246,16 @@ export class MvpRunScene extends Phaser.Scene {
     );
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
-      this.removeDebugBridge = installMvpRunDebugBridge(
+      const removeBridge = installMvpRunDebugBridge(
         () => this.run,
         () => this.generation,
         () => this.audio,
       );
+      const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
+      this.removeDebugBridge = () => {
+        removeProjection();
+        removeBridge();
+      };
     }
 
     this.syncCheckpoint();
@@ -388,6 +395,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   private syncView(): void {
     this.runView?.sync(this.run);
+    centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.

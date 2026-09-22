@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { worldToCanvas } from './projection';
 
 type BenchSnapshot = {
   mode: 'bench';
@@ -153,10 +154,8 @@ test('fused car is the sampled projectile origin', async ({ page }) => {
   if (!box) {
     return;
   }
-  await page.mouse.move(
-    box.x + (600 / 960) * box.width,
-    box.y + (240 / 480) * box.height,
-  );
+  const point = await worldToCanvas(page, 600, 240);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await expect
     .poll(
