@@ -1,14 +1,31 @@
 # DEAD MALL art production workspace
 
-Scratch + tooling for producing DEAD MALL pixel art. Nothing here is wired into
-the game repo (`~/Documents/Github Code/90s`) — the game currently draws
-everything with Phaser `Graphics` primitives and has no asset pipeline at all.
+Scratch + tooling for producing DEAD MALL pixel art.
+
+**CORRECTED 2026-09-22 — this file used to say the game "has no asset pipeline at
+all". That is false and has been for a while.** Verified in the code: the game
+loads 54 real PNGs from `public/assets/` via registries in
+`src/game/assets.ts`, consumed by `MvpRunScene.preload()`. It is data-driven and
+deliberately incremental — a registry entry with no art yet falls back to the
+vector marker, so art can land one asset at a time.
+
+Two asset classes, and they load differently, which is the thing to know:
+
+| Class | Example | Path | How it loads |
+|---|---|---|---|
+| World sprites | props, items, fx, enemies, Alex | `public/assets/{props,items,fx,enemies,characters}/` | Phaser textures, from `src/game/assets.ts`, loaded in `MvpRunScene.preload()` |
+| UI art | character portraits | `public/assets/portraits/` | **DOM `<img>`** — the HUD is plain HTML, so these never touch Phaser |
+
+So "produce art" is only half the job. An asset is *usable* when it is copied into
+`public/assets/`, declared in the game, and covered by
+`tests/unit/portraits.test.ts` (presence + declared size) and
+`tools/validate_runtime_tree.py` (binary alpha + palette).
 
 ## Settled decisions (2026-09-19)
 
 | Question | Ruling |
 |---|---|
-| Internal viewport | **960×480 — the shipped code governs.** The art bible says 640×360 in three files and they have NOT been corrected. |
+| Internal viewport | **640×360, and it is not in conflict with the code.** `src/game/view/viewport.ts` exports `VIEWPORT_WIDTH/HEIGHT = 640/360` and `src/main.ts` renders that. The 960×480 that appears throughout `src/sim` is the **world/room** size (`PLAYFIELD_WIDTH`, `ROOM_WIDTH`, `WING_WIDTH`), not a rival viewport — the camera shows a 640×360 window onto a 960×480 room. Do not "fix" the 960×480 world constants. |
 | Palette source | **`DEAD_MALL_APPROVED_ART_REFERENCE_PACK.zip`**, supplied by the user. Not yet received. |
 
 Why the viewport mattered: 960×480 is 2:1 and 640×360 is 16:9, so 640×360 art at

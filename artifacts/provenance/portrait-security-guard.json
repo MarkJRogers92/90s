@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "asset": "portrait-security-guard",
+  "assetVersion": "v1",
+  "generator": null,
+  "generatorNote": "Origin unconfirmed. This portrait predates the 09-22 provenance pass and PixelLab exposes no listing tool for raw images or portraits, so no prompt, seed or job id could be recovered. The hashes below are measured, not inherited.",
+  "prompt": null,
+  "seed": null,
+  "jobId": null,
+  "reportedCost": null,
+  "rawSha256": null,
+  "masterSha256": "e2627132a2acf4b23f86339c0551b130784d811c92958876a150b4779104d47f",
+  "runtimeSha256": "bf55e5410b3ea72abff551a912f87eccf5c44a735a4b9fd1734468c487c96cb8",
+  "masterPath": "docs/art/work/portraits/out/portrait-security-guard.png",
+  "paletteSource": "deadmall-portrait-union.json",
+  "dimensions": [
+    160,
+    160
+  ],
+  "anchor": "none",
+  "runtimeTransform": "backdrop removed to alpha 0 by border flood fill (the art tree copy is an opaque #48454c plate, which cannot composite)",
+  "generatedAt": null,
+  "validator": "PASS: dimensions as declared, binary alpha, colours on the 123-swatch union palette"
+}

@@ -55,6 +55,7 @@ import {
 import { GameAudioEngine } from '../audio/engine';
 import { createAudioSnapshot } from '../audio/cues';
 import { MvpRunHud } from '../ui/MvpRunHud';
+import { PortraitPanel } from '../ui/PortraitPanel';
 import { MvpRunView } from '../view/MvpRunView';
 
 const STEP_MS = 1000 / 60;
@@ -223,6 +224,7 @@ export class MvpRunScene extends Phaser.Scene {
   private hud: MvpRunHud | undefined;
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
+  private portraitPanel: PortraitPanel | undefined;
 
   public constructor() {
     super(MvpRunScene.KEY);
@@ -316,6 +318,9 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.runView?.effectCounts,
         () => (this.runView ? { visible: this.runView.drawnDecalCount } : undefined),
       );
+      // Asset viewer for the portrait art, behind the same dev gate. It has no
+      // gameplay consumer yet; see PortraitPanel for why it exists at all.
+      this.portraitPanel = new PortraitPanel();
     }
 
     this.syncCheckpoint();
@@ -581,6 +586,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.audio = undefined;
     this.removeDebugBridge?.();
     this.removeDebugBridge = undefined;
+    this.portraitPanel?.destroy();
+    this.portraitPanel = undefined;
     this.accumulator = 0;
   };
 }

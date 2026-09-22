@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "asset": "portrait-vendor",
+  "assetVersion": "v1",
+  "generator": null,
+  "generatorNote": "Origin unconfirmed. This portrait predates the 09-22 provenance pass and PixelLab exposes no listing tool for raw images or portraits, so no prompt, seed or job id could be recovered. The hashes below are measured, not inherited.",
+  "prompt": null,
+  "seed": null,
+  "jobId": null,
+  "reportedCost": null,
+  "rawSha256": null,
+  "masterSha256": "8098eac3b88465be1d25382987afe432508cb229634ad10089213e2988639bb0",
+  "runtimeSha256": "4a16ef48ec0d2d0159f1136c95c5ad4d874e8e471e8ef372f468f055aa8653b3",
+  "masterPath": "docs/art/work/portraits/out/portrait-vendor.png",
+  "paletteSource": "deadmall-portrait-union.json",
+  "dimensions": [
+    160,
+    160
+  ],
+  "anchor": "none",
+  "runtimeTransform": "backdrop removed to alpha 0 by border flood fill (the art tree copy is an opaque #48454c plate, which cannot composite)",
+  "generatedAt": null,
+  "validator": "PASS: dimensions as declared, binary alpha, colours on the 123-swatch union palette"
+}

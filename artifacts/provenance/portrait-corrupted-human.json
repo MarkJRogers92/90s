@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "asset": "portrait-corrupted-human",
+  "assetVersion": "v1",
+  "generator": null,
+  "generatorNote": "Origin unconfirmed. This portrait predates the 09-22 provenance pass and PixelLab exposes no listing tool for raw images or portraits, so no prompt, seed or job id could be recovered. The hashes below are measured, not inherited.",
+  "prompt": null,
+  "seed": null,
+  "jobId": null,
+  "reportedCost": null,
+  "rawSha256": null,
+  "masterSha256": "b75628be66df25f67b7d82f40e15a9cb062466282f8609f635f3ea0ff9237c26",
+  "runtimeSha256": "9cfcd906653d44fe481ff38fad883e43e4d3f462e3546b50a6ab33a428194e6a",
+  "masterPath": "docs/art/work/portraits/out/portrait-corrupted-human.png",
+  "paletteSource": "deadmall-portrait-union.json",
+  "dimensions": [
+    160,
+    160
+  ],
+  "anchor": "none",
+  "runtimeTransform": "backdrop removed to alpha 0 by border flood fill (the art tree copy is an opaque #48454c plate, which cannot composite)",
+  "generatedAt": null,
+  "validator": "PASS: dimensions as declared, binary alpha, colours on the 123-swatch union palette"
+}

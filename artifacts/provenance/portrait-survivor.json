@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "asset": "portrait-survivor",
+  "assetVersion": "v1",
+  "generator": null,
+  "generatorNote": "Origin unconfirmed. This portrait predates the 09-22 provenance pass and PixelLab exposes no listing tool for raw images or portraits, so no prompt, seed or job id could be recovered. The hashes below are measured, not inherited.",
+  "prompt": null,
+  "seed": null,
+  "jobId": null,
+  "reportedCost": null,
+  "rawSha256": null,
+  "masterSha256": "1c411fb3dd06d1711286affcffacd1693ebf8a4c3331c3719b4f4664975ff070",
+  "runtimeSha256": "6922d57b4f6c911ab7927799758401851a8ea2fcd1b9e9be47a1260c52cc480f",
+  "masterPath": "docs/art/work/portraits/out/portrait-survivor.png",
+  "paletteSource": "deadmall-portrait-union.json",
+  "dimensions": [
+    160,
+    160
+  ],
+  "anchor": "none",
+  "runtimeTransform": "backdrop removed to alpha 0 by border flood fill (the art tree copy is an opaque #48454c plate, which cannot composite)",
+  "generatedAt": null,
+  "validator": "PASS: dimensions as declared, binary alpha, colours on the 123-swatch union palette"
+}
