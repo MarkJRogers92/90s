@@ -74,12 +74,21 @@ def bevel(img: np.ndarray, x: int, y: int, w: int, h: int,
         img[(y + dy) % SIZE, (x + w - 1) % SIZE] = dark
 
 
-def terrazzo(colours, seed: int = 20260919) -> np.ndarray:
+def terrazzo(colours, seed: int = 20260919, chip_count: int = 30,
+             greys: bool = True) -> np.ndarray:
     """Mall terrazzo: a textured beige ground with beveled, multi-scale chips.
 
     Every chip is a CLUSTER with a bevel, never a lone pixel and never a flat
     block.  Chips are placed mod SIZE so one running off an edge reappears on
     the opposite one and the join is invisible.
+
+    `chip_count` and `greys` are the calmness knobs, and they exist because
+    "restrained" is a density question and not a style one. The ground and its
+    dither are what make this a SURFACE, so a calmer terrazzo removes chips and
+    drops the cool grey; it must not flatten the field, because a flat field is
+    not a quiet floor, it is no floor. (Measured: 30 chips with grey reads as
+    busy at 1x, and a flat field measures 1 colour and zero deviation, which is
+    the fillRect this art replaced.)
     """
     rng = np.random.default_rng(seed)
     beige = ramp(colours, 11)     # MALL BEIGE/CREAM
@@ -105,14 +114,14 @@ def terrazzo(colours, seed: int = 20260919) -> np.ndarray:
         (beige[0], beige[0], beige[1], 4.0),
         (beige[2], beige[1], beige[3], 3.5),
         (beige[3], beige[2], beige[4], 2.0),
-        (tile[1], tile[0], tile[2], 1.2),
-        (tile[2], tile[1], tile[3], 0.8),
     ]
+    if greys:
+        chips += [(tile[1], tile[0], tile[2], 1.2), (tile[2], tile[1], tile[3], 0.8)]
     weights = np.array([c[3] for c in chips], dtype=float)
     weights /= weights.sum()
     shapes = [(3, 2), (2, 2), (3, 3), (4, 2), (2, 3), (3, 4), (4, 3), (2, 2)]
 
-    for _ in range(30):
+    for _ in range(chip_count):
         body, light, dark, _ = chips[int(rng.choice(len(chips), p=weights))]
         w, h = shapes[int(rng.integers(0, len(shapes)))]
         bevel(img, int(rng.integers(0, SIZE)), int(rng.integers(0, SIZE)), w, h,
@@ -120,7 +129,7 @@ def terrazzo(colours, seed: int = 20260919) -> np.ndarray:
     return img
 
 
-def floortile(colours) -> np.ndarray:
+def floortile(colours, subtiles: int = 1) -> np.ndarray:
     """Beige ceramic: grout, a lit bevel, a dithered sheen, and an inset motif.
 
     Grout on every edge means two adjacent tiles make a 2px line, so the joint is
@@ -128,7 +137,12 @@ def floortile(colours) -> np.ndarray:
     shaded bottom-right) and carries a diagonal sheen built from dithered steps
     rather than one flat value -- a single flat value is what makes a tiled floor
     read as graph paper.
+
+    `subtiles` draws a finer grid of tiles into the same 32px texture; see
+    subtiled() for why the tile size is an art decision and not an engine one.
     """
+    if subtiles > 1:
+        return subtiled(colours, subtiles, field=0, grout=3, shade=2, dot=2)
     beige = ramp(colours, 11)
     img = np.zeros((SIZE, SIZE, 3), dtype=np.uint8)
     img[:, :] = beige[0]                      # field, lightest step
@@ -177,13 +191,68 @@ def wrap_diamond(img: np.ndarray, cx: int, cy: int, r: int, rgb) -> None:
             img[(cy + dy) % SIZE, (cx + dx) % SIZE] = rgb
 
 
-def accent_tile(colours) -> np.ndarray:
+def subtiled(colours, subtiles: int, field: int, grout: int, shade: int,
+             dot: int | None) -> np.ndarray:
+    """Draw `subtiles` x `subtiles` floor tiles INTO the one 32px texture.
+
+    This is the tile-size knob, and it is an art knob rather than an engine one.
+    A 32px floor tile is not a tile here, it is a paving slab: at this scale Alex
+    is 48px tall, so one 32px tile measures about 1.17 m across, where a real
+    12-inch mall tile is about 0.30 m. That is 8px at this scale -- so four 8px
+    tiles drawn into the 32px texture give a plausible floor, and because the
+    texture still repeats on the same 32px grid the runtime needs no change at
+    all. Four identical 8px tiles in one texture look exactly like four 8px tiles.
+
+    Each cell draws its own top and left grout pixel, so every grid line is one
+    pixel wide whether it is an internal line or the line where two textures
+    meet -- drawing a border on all four sides instead would double the line at
+    every join.
+    """
+    beige = ramp(colours, 11)
+    cell = SIZE // subtiles
+    img = np.full((SIZE, SIZE, 3), beige[field], dtype=np.uint8)
+    for cy in range(subtiles):
+        for cx in range(subtiles):
+            x0, y0 = cx * cell, cy * cell
+            img[y0, x0:x0 + cell] = beige[grout]
+            img[y0:y0 + cell, x0] = beige[grout]
+            if cell >= 6:
+                # Shaded inside the bottom-right, so the cell reads as recessed
+                # between its grout lines without needing a lit edge as well --
+                # on a light field a lit edge is invisible anyway.
+                img[y0 + cell - 1, x0 + 2:x0 + cell] = beige[shade]
+                img[y0 + 2:y0 + cell, x0 + cell - 1] = beige[shade]
+            if dot is not None and cell >= 8:
+                # Proportional, not fixed. A fixed radius turns the centre dot
+                # into a dominant repeating motif at small cell sizes: a 5px
+                # diamond is 8% of an 8px cell but 0.4% of the 32px one, so the
+                # floor stops being a floor and becomes a dot pattern.
+                r = max(0, cell // 8 - 1)
+                cxx, cyy = x0 + cell // 2, y0 + cell // 2
+                for dy in range(-r, r + 1):
+                    span = r - abs(dy)
+                    for dx in range(-span, span + 1):
+                        x, y = cxx + dx, cyy + dy
+                        if x0 < x < x0 + cell and y0 < y < y0 + cell:
+                            img[y, x] = beige[dot]
+    # The texture's own bottom and right edge must be grout, to match the top and
+    # left edge the neighbouring texture draws. Without this the last cell's
+    # SHADED edge lands on the join and meets a grout line, which is a hard step
+    # the seam test flags -- it did, on the darker accent tile.
+    img[-1, :] = beige[grout]
+    img[:, -1] = beige[grout]
+    return img
+
+
+def accent_tile(colours, subtiles: int = 1) -> np.ndarray:
     """The darker companion to the beige tile, for checkerboards and borders.
 
     Same geometry as floortile() so the two interlock; only the value
     relationships invert, which is what makes a mixed field read as a pattern
     rather than as noise.
     """
+    if subtiles > 1:
+        return subtiled(colours, subtiles, field=2, grout=1, shade=3, dot=4)
     beige = ramp(colours, 11)
     img = np.zeros((SIZE, SIZE, 3), dtype=np.uint8)
     img[:, :] = beige[2]
@@ -194,13 +263,23 @@ def accent_tile(colours) -> np.ndarray:
     return img
 
 
-def carpet(colours, damaged: bool = False, seed: int = 20260919) -> np.ndarray:
-    """Mall carpet: a piled navy field with a bevelled brass diamond lattice.
+def carpet(colours, damaged: bool = False, seed: int = 20260919,
+           motif: bool = True, pile: int = 1, wear: int = 5) -> np.ndarray:
+    """Mall carpet: a piled navy field, and optionally a brass diamond lattice.
 
     The lattice sits on an 8px grid and the pile on 2px/4px steps. All of those
     divide 32, so the whole thing is periodic and the join is invisible in both
     axes -- a lattice step of 3 would look fine on one tile and drift across the
     seam.
+
+    `motif` is the calmness switch, and it exists because the lattice is
+    DECORATION while the pile is the SURFACE. Sixteen bevelled brass diamonds per
+    32px tile is a great deal of decoration on a floor the player reads small
+    figures against, so a calmer carpet drops the lattice and keeps the pile.
+    Flattening the field instead would delete the nap and leave a colour, which
+    measures as 1 colour and zero deviation. `pile` picks the navy ramp step used
+    for the nap (lower is lighter and reads harder), and `wear` is how many torn
+    patches the damaged variant gets.
     """
     rng = np.random.default_rng(seed)
     denim = ramp(colours, 4)
@@ -213,28 +292,29 @@ def carpet(colours, damaged: bool = False, seed: int = 20260919) -> np.ndarray:
     # what the brief forbids.
     for y in range(0, SIZE, 2):
         for x in range(0, SIZE, 4):
-            img[y, x] = denim[1]
+            img[y, x] = denim[pile]
             if (x // 4 + y // 2) % 3 == 0:
-                img[(y + 1) % SIZE, x] = denim[1]
+                img[(y + 1) % SIZE, x] = denim[pile]
 
     # Motif: bevelled diamond, lit on its top-left half, outlined on the edge.
-    for cy in range(4, SIZE, 8):
-        for cx in range(4, SIZE, 8):
-            for dy in range(-3, 4):
-                span = 3 - abs(dy)
-                for dx in range(-span, span + 1):
-                    x, y = (cx + dx) % SIZE, (cy + dy) % SIZE
-                    if abs(dx) == span or abs(dy) == 3:
-                        img[y, x] = brass[3]      # outline
-                    else:
-                        img[y, x] = brass[0] if (dx + dy) < 0 else brass[1]
-            img[(cy - 3) % SIZE, cx] = brass[0]   # lit apex
-            img[(cy + 3) % SIZE, cx] = brass[4]   # shaded foot
+    if motif:
+        for cy in range(4, SIZE, 8):
+            for cx in range(4, SIZE, 8):
+                for dy in range(-3, 4):
+                    span = 3 - abs(dy)
+                    for dx in range(-span, span + 1):
+                        x, y = (cx + dx) % SIZE, (cy + dy) % SIZE
+                        if abs(dx) == span or abs(dy) == 3:
+                            img[y, x] = brass[3]      # outline
+                        else:
+                            img[y, x] = brass[0] if (dx + dy) < 0 else brass[1]
+                img[(cy - 3) % SIZE, cx] = brass[0]   # lit apex
+                img[(cy + 3) % SIZE, cx] = brass[4]   # shaded foot
 
     if damaged:
         # Wear is CLUSTERED and low-count: torn patches plus a couple of runs of
         # frayed edge, not a scatter of single pixels.
-        for _ in range(5):
+        for _ in range(wear):
             wrap_dot(img, int(rng.integers(0, SIZE)), int(rng.integers(0, SIZE)),
                      int(rng.integers(2, 5)), int(rng.integers(2, 4)), shadow[1])
         for _ in range(3):
@@ -309,6 +389,10 @@ def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--gpl", default="work/deadmall-global.gpl")
     parser.add_argument("--outdir", default="work/tiles")
+    parser.add_argument("--variants", default=None,
+                        help="also emit calm density variants for review as "
+                             "cand-<kind>-<n>.png into this directory; they clear the "
+                             "same palette and join gates or they are not written")
     args = parser.parse_args(argv)
 
     colours = load_palette(args.gpl)
@@ -317,11 +401,17 @@ def main(argv: list[str]) -> int:
     os.makedirs(args.outdir, exist_ok=True)
 
     tiles = {
-        "floor-terrazzo-32": terrazzo(colours),
-        "floor-tile-beige-32": floortile(colours),
-        "floor-tile-accent-32": accent_tile(colours),
-        "floor-carpet-32": carpet(colours),
-        "floor-carpet-damaged-32": carpet(colours, damaged=True),
+        # The calm densities and the 16px tile size chosen 2026-09-22, so this
+        # tool regenerates what the game actually ships. For the record, the
+        # previous look was `terrazzo(colours)` (30 chips, greys on),
+        # `carpet(colours)` / `carpet(colours, damaged=True)` (full brass lattice,
+        # 5 wear patches), and `floortile(colours)` / `accent_tile(colours)` at
+        # one 32px tile per texture -- a ~1.17m paving slab at this game's scale.
+        "floor-terrazzo-32": terrazzo(colours, chip_count=10, greys=False),
+        "floor-tile-beige-32": floortile(colours, subtiles=2),
+        "floor-tile-accent-32": accent_tile(colours, subtiles=2),
+        "floor-carpet-32": carpet(colours, motif=False),
+        "floor-carpet-damaged-32": carpet(colours, damaged=True, motif=False, wear=2),
     }
 
     report = {}
@@ -359,6 +449,47 @@ def main(argv: list[str]) -> int:
               f"{'  <-- OUTLIER' if seam['seam_is_outlier'] else '  (within range)'}")
         if seam["seam_is_outlier"]:
             failures.append(f"{name}: seam is an outlier")
+
+    if args.variants:
+        # Calm density levels for the three tiles whose density was questioned.
+        # These go through the SAME two gates as the shipped tiles, and a variant
+        # that fails one is reported and NOT written: a candidate that does not
+        # tile cannot be chosen, so putting it in a comparison would only waste
+        # the reader's attention.
+        # Only the OPEN question is emitted. The terrazzo and carpet densities
+        # were decided on 2026-09-22 and are now the defaults above, so listing
+        # them here would only re-offer a candidate identical to the shipped tile.
+        variants = [
+            # Tile SIZE, not density: 16px and 8px apparent tiles drawn into the
+            # same 32px texture. At this game's scale 8px is roughly a real
+            # 12-inch mall tile.
+            ("floor-tile-beige", floortile(colours, subtiles=2)),
+            ("floor-tile-beige", floortile(colours, subtiles=4)),
+            ("floor-tile-accent", accent_tile(colours, subtiles=2)),
+            ("floor-tile-accent", accent_tile(colours, subtiles=4)),
+        ]
+        os.makedirs(args.variants, exist_ok=True)
+        written: dict[str, int] = {}
+        print(f"\ncalm variants -> {args.variants}")
+        print(f"{'kind':22s} {'cols':>4s} {'offpal':>6s}  {'join':9s} {'seam':9s} result")
+        for kind, tile in variants:
+            grid = assemble(tile)
+            pal = palette_report(tile, colours)
+            pixels = seam_pixels(grid, SIZE)
+            seam = seam_report(grid)
+            clean = (pal["off_palette_pixels"] == 0 and not pixels["is_outlier"]
+                     and not seam["seam_is_outlier"])
+            name = ""
+            if clean:
+                written[kind] = written.get(kind, 0) + 1
+                name = f"cand-{kind}-{written[kind]}.png"
+                Image.fromarray(tile).save(os.path.join(args.variants, name))
+            print(f"{kind:22s} {pal['unique_colours']:4d} {pal['off_palette_pixels']:6d}  "
+                  f"{'clean' if not pixels['is_outlier'] else 'VISIBLE':9s} "
+                  f"{'ok' if not seam['seam_is_outlier'] else 'OUTLIER':9s} "
+                  f"{'written ' + name if name else 'REJECTED'}")
+        if not written:
+            print("   nothing written")
 
     with open(os.path.join(args.outdir, "report.json"), "w", encoding="utf-8") as handle:
         json.dump(report, handle, indent=2)

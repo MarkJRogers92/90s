@@ -1,0 +1,465 @@
+{
+  "schemaVersion": 1,
+  "batch": "mall-props-2026-09-22",
+  "count": 24,
+  "pipeline": "identical forced palette for every asset, and one shared style tail cloned from the accepted bench-warrant-kiosk prompt, so the set is cohesive by construction",
+  "note": "candidates. Not wired into the game: no WingFixtureKind exists for these yet.",
+  "assets": [
+    {
+      "name": "planter",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "08ec56b1-729e-4f2c-bd79-1a95e1b56b07",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a large square concrete planter with a small dusty indoor shrub, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "5ea0538b0d46d103c3decb17bcb5d82fba7c52d4677b03c4bac475f66b219280",
+      "runtimeCandidate": "planter-25x25.png",
+      "runtimeSha256": "a880e515705fffc6c53be7b009e494c9d21846c5d9778d2f737f6963ba6c3076",
+      "dimensions": [
+        25,
+        25
+      ],
+      "approxMetres": 0.91,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "rubbish-bin",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "793d64bd-c3d2-464d-b702-95cad99a1236",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a rubbish bin, a rectangular metal waste container with a domed lid and a small ashtray top, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "286f0f38c1484e38b85e6ff0f9a3a8cf4d21e1c9adfff85be987b637c5de08b2",
+      "runtimeCandidate": "rubbish-bin-20x25.png",
+      "runtimeSha256": "a550cf63d2d39de784b15822ae82d08ce99eb1d421e85392926627b5f3047afd",
+      "dimensions": [
+        20,
+        25
+      ],
+      "approxMetres": 0.91,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "mall-directory",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "065023f9-f955-47f3-8b05-15b868db1af4",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a mall directory board, a tall thin wayfinding sign on a metal post with a rectangular panel of tiny unreadable markings, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "491f97a8c17e8735b2a1b6ae57264338f9beea9037a6e8bc5942bf7b84fb1b4c",
+      "runtimeCandidate": "mall-directory-17x54.png",
+      "runtimeSha256": "3eaf1ddfb90c83bb0b5263a32bd0ee743549068dbd881b50b07978e5bb41d3d6",
+      "dimensions": [
+        17,
+        54
+      ],
+      "approxMetres": 1.97,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "atm",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "e09e6e5e-0ab6-470e-8536-0261a0978c33",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a standing cash machine, a boxy ATM with a dark screen, a keypad and a cash slot, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "f6c48b3249ae04a8f79bb54e688045d88910fc14bc3c65285f38c29a1100b19f",
+      "runtimeCandidate": "atm-29x47.png",
+      "runtimeSha256": "8d35a54b91b52886c72a5594dafdcfe9a080662906b02b7ffeb8f360393e0f0c",
+      "dimensions": [
+        29,
+        47
+      ],
+      "approxMetres": 1.71,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "payphone",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "6c90341b-52d8-47ec-8150-5cb80a2b2471",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a public payphone, a standing telephone unit with a handset on a coiled cord, a coin slot and a small hooded enclosure, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "696740b7795012b952aef3713b71f4511d2380e348180a426f4a5185c5f06435",
+      "runtimeCandidate": "payphone-31x63.png",
+      "runtimeSha256": "8c569b779a3f4e4e26e1f3248c8cafcc39c212a5965596dc50fec5d9e8878edb",
+      "dimensions": [
+        31,
+        63
+      ],
+      "approxMetres": 2.3,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "food-court-table",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "cb478e3f-5971-4bdb-81c9-3b896b111e18",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a food court table, a round table with four attached swivel stools on one central pedestal base, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "aa9a8d4edecd68ba43620e67cc8bf5a963dc4a1e7f511d86ee632a42abb149d1",
+      "runtimeCandidate": "food-court-table-25x21.png",
+      "runtimeSha256": "500f69e736e52f8fc2588973ecbfb6174ecd186efe5b5f8456926c6241314c41",
+      "dimensions": [
+        25,
+        21
+      ],
+      "approxMetres": 0.77,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "arcade-cabinet",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "94e48851-dfd7-4aac-80af-c360d8427812",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: an arcade cabinet, an upright coin operated video game machine with a screen, a marquee panel and a control panel with a joystick and buttons, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "41d54ac7b0735d86ef62ac6540b5fbb595c89acc9415c0345da01134fa360624",
+      "runtimeCandidate": "arcade-cabinet-27x59.png",
+      "runtimeSha256": "6942d90bd30262522d294fcf29d6b67b0bec8d5284188ddbfe06baf0dfaab80f",
+      "dimensions": [
+        27,
+        59
+      ],
+      "approxMetres": 2.15,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "claw-machine",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "7ab58a1a-af5d-46c3-a792-680798afb7c8",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a claw machine, a glass fronted arcade grabber cabinet full of small plush toys with a joystick and a coin slot, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "6e34591a0bcb1bebfa68110c9085a9f40d632eea62e4983bc311110f1de6c9b6",
+      "runtimeCandidate": "claw-machine-32x57.png",
+      "runtimeSha256": "623bb82d5a4ed15e155e0e19ff544453a60767530f84242594cfc9bc9f076d31",
+      "dimensions": [
+        32,
+        57
+      ],
+      "approxMetres": 2.08,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "vhs-shelf",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "5d102655-f68f-4dcc-ac58-e4ad1a73ebf4",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a video rental store shelf, a low wooden shelving unit with rows of small video tape spines in dull colours, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "f5bbbe65a7ded7beb411beff901b3648288a039ca8c0bee3115080c9dfdd15ab",
+      "runtimeCandidate": "vhs-shelf-48x30.png",
+      "runtimeSha256": "a981f2eb00156b2b4bf4aa65029f1a8566baad5141ae7161fc68d146511bada5",
+      "dimensions": [
+        48,
+        30
+      ],
+      "approxMetres": 1.09,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "clothing-rack",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "cd10bee3-7af7-432d-b167-2ae3d1e03fad",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a retail clothing rack, a metal rail on a wheeled frame with a short row of hanging clothes on hangers in dull colours, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "517b1bef21dc95f3418bf3d58385d5fa4747a5161cac21638c6d7f22fa664a41",
+      "runtimeCandidate": "clothing-rack-36x34.png",
+      "runtimeSha256": "b2c4d3b88ad510a66dbb479c907bf9997302227fedd61678faabd7b43ecf0bf6",
+      "dimensions": [
+        36,
+        34
+      ],
+      "approxMetres": 1.24,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "wet-floor-sign",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "fadeaef0-f533-45da-b1f9-fefeff32068c",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a folding wet floor caution sign, a small A frame warning sign in muted yellow with a dark pictogram, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "3fdeb4a9bea74bea92d071093789b94f0d941db3b64a6a8dc3ce67309e330cf5",
+      "runtimeCandidate": "wet-floor-sign-19x16.png",
+      "runtimeSha256": "524f470a110a2c9ce9185c6f4fe926c08999e387f74c9d8c173e0ba7d0ecb47a",
+      "dimensions": [
+        19,
+        16
+      ],
+      "approxMetres": 0.58,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "security-turnstile",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "9c749d98-6894-41a9-9367-612c8ccfba07",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a mall security turnstile, a metal pedestal barrier gate with three rotating arms and a small indicator light, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "2e13eefb21b27a11d9ff84052abf35f63fa7956eb10b77cb5a15e99e1b80dd67",
+      "runtimeCandidate": "security-turnstile-24x29.png",
+      "runtimeSha256": "08386f237ca27f476639eb7889cb6a0b290d6ec999c84eb6fc0e09e639a9ca22",
+      "dimensions": [
+        24,
+        29
+      ],
+      "approxMetres": 1.06,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "potted-palm",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "d15d5284-b241-41ff-be07-6d2a3faf17bd",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a tall potted indoor palm tree in a large concrete planter pot, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "2cefb3509460d089626feba7a1f64ee8dc81e93e00d1aa5000dac0dc73fb2df1",
+      "runtimeCandidate": "potted-palm-38x58.png",
+      "runtimeSha256": "689cce9cc10e2750ca8c0f088b34c426db5c05feca93429865ff3f45c3c25d22",
+      "dimensions": [
+        38,
+        58
+      ],
+      "approxMetres": 2.11,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "drinking-fountain",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "0a793ced-6809-4a70-a520-7d69d0c563ed",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a public drinking fountain, a low pedestal water bubbler with a metal spout and a small basin, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "f29e1476f3fe2a7cc04b60a346150aeafb4f009925ddbbb9820b697ef8f9e320",
+      "runtimeCandidate": "drinking-fountain-20x22.png",
+      "runtimeSha256": "75a592c7bbd467ea74885dbed60b1c0311fbbc92b455055ffcda8200729e17ab",
+      "dimensions": [
+        20,
+        22
+      ],
+      "approxMetres": 0.8,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "kiddie-ride",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "6ec0be87-1093-4f22-bfbb-1eee0f55a77f",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a coin operated childrens ride, a small fibreglass ride shaped like a little rocket car on a spring base, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "563c70c73429102fc9d1bfa7ef8b873e8a8c8b83aad4055c5d885a4422275c25",
+      "runtimeCandidate": "kiddie-ride-41x31.png",
+      "runtimeSha256": "724910cefcdd002fa8a98bb7dbc62b57c0344bdc29833869737a3b36f1708088",
+      "dimensions": [
+        41,
+        31
+      ],
+      "approxMetres": 1.13,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "shopping-cart",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "422f04f4-4466-4632-8def-35e20c83723c",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a metal wire shopping trolley cart with small wheels, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "30cad5ca4772fcbea236dea9822708708e75ca47d63216609c80b4bfcacbb0dd",
+      "runtimeCandidate": "shopping-cart-37x33.png",
+      "runtimeSha256": "f76c062e0360dfa37cb3d668af1364328bffbc24c31a68b19386b19ff48aabf0",
+      "dimensions": [
+        37,
+        33
+      ],
+      "approxMetres": 1.2,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "checkout-counter",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "b89bf4e9-0010-4636-81e5-00ada70b79c2",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a store checkout counter, a low shop counter with a cash register on top and a small bagging ledge, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "ae34e85a392d575b5ff03e875f164c955d9688316264f14ed0e233ad771e1dbd",
+      "runtimeCandidate": "checkout-counter-32x29.png",
+      "runtimeSha256": "97c7219d73b57e5a369969639c86ea0de9e01f902aaf3501f02eceaf517d5a6a",
+      "dimensions": [
+        32,
+        29
+      ],
+      "approxMetres": 1.06,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "condiment-stand",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "ded17ef8-9cf5-450c-951c-206ee71286b2",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a food court condiment stand, a small table with napkin dispensers, tall sauce pumps and a waste bin, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "4bdac963398e219320b598e2ae2154d878651f71d998139a0f8323919a899700",
+      "runtimeCandidate": "condiment-stand-41x36.png",
+      "runtimeSha256": "beb60b94a07654838ff471dcd7035165cda8c4f8be87f48e61d8c9fdab767b14",
+      "dimensions": [
+        41,
+        36
+      ],
+      "approxMetres": 1.31,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "air-hockey-table",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "a2e9bb3b-a01b-4434-9cf4-8816537ac2ae",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: an air hockey table, a long low arcade game table with a goal slot at each end and a small puck, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "efa7c45d848202279164802f228a88d004a9296f277ecae9d6d99acbfa288e4b",
+      "runtimeCandidate": "air-hockey-table-32x28.png",
+      "runtimeSha256": "0cd323c67f9f308015b9656a1fbe0b72753fc0e31187dfe2e797c143c2d32fd4",
+      "dimensions": [
+        32,
+        28
+      ],
+      "approxMetres": 1.02,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "food-court-chair",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "9fe6cde6-9673-4fd4-9d84-4e7a57f8ee02",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a food court chair, a moulded plastic stacking chair with metal legs, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "9d3c892a1f3e892e81311c11695f67634380bee8346a116e58f1aee4009e8238",
+      "runtimeCandidate": "food-court-chair-19x27.png",
+      "runtimeSha256": "763c25d754597adcef4bc2a467aee4037f3216d18e400d18909f74ad10931c5f",
+      "dimensions": [
+        19,
+        27
+      ],
+      "approxMetres": 0.98,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "poster-stand",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "8cd04cd4-2e4f-4671-9892-2b8dd59a6929",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a free standing poster stand, a thin metal frame holding a rectangular advertising panel, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "dd9838bd8c54040de95701b4bf0a61c05371942574140f748c20b7ff1bc23ae9",
+      "runtimeCandidate": "poster-stand-38x53.png",
+      "runtimeSha256": "fbbecb2f7e2b02623f155194c5edd9bca964d0e896477c15a7d8daf89fe03a60",
+      "dimensions": [
+        38,
+        53
+      ],
+      "approxMetres": 1.93,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "info-kiosk",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "8bd0337c-13db-47e4-94a6-af131aa37477",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a small mall information kiosk, a freestanding desk counter with a raised panel above it, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "06c849c4a6c1443afd1a47c27d333a206e1b58df10a379a7e628e9aa96fa78c7",
+      "runtimeCandidate": "info-kiosk-26x34.png",
+      "runtimeSha256": "98a46a9195a9c4eadee247c3148733c1c5897f483ef80268151ac63e1f6fce6b",
+      "dimensions": [
+        26,
+        34
+      ],
+      "approxMetres": 1.24,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "shoe-bench",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "49ad354d-c0aa-40a8-ba6e-73b004301aa3",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: a shoe shop fitting bench, a low padded bench seat with a small angled mirror on one end, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "78c7c6c6da0c3ed9cac624daf0b933765fc5750ea13c95272314052d51eea55e",
+      "runtimeCandidate": "shoe-bench-41x22.png",
+      "runtimeSha256": "bb56f384190399128b9ee1af15fd108a9e3b361cf5c9e92f5642318954e65cc5",
+      "dimensions": [
+        41,
+        22
+      ],
+      "approxMetres": 0.8,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    },
+    {
+      "name": "arcade-stool",
+      "generator": "PixelLab create_image_pixflux",
+      "jobId": "067f147a-7459-4979-8ac9-6ac18aa11d05",
+      "prompt": "Furniture for an abandoned 1990s American shopping mall: an arcade bar stool, a round padded stool with a chrome base in brighter arcade colours, readable chunky silhouette, detailed late-SNES pixel art, low top-down three-quarter view, non-isometric, centered, base touches the bottom of the canvas, no words, no logos, no people",
+      "reportedCost": "1 generation",
+      "rawSha256": "863c04d8e73e66e425eaf4291be6be0c1b785c4bed9d2da39f4fdc1fd88aaed9",
+      "runtimeCandidate": "arcade-stool-24x21.png",
+      "runtimeSha256": "8f4f9f214fd4bada74ac7a975ca698c91728ec270cdcb327e2638fad5185f3d9",
+      "dimensions": [
+        24,
+        21
+      ],
+      "approxMetres": 0.77,
+      "anchor": "bottom-center",
+      "forcedPalette": true,
+      "paletteSource": "deadmall-global.json",
+      "validator": "PASS: approved palette, binary alpha, bottom anchor, centred"
+    }
+  ]
+}

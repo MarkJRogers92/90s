@@ -100,16 +100,32 @@ def column(colours) -> np.ndarray:
     band(img, 6, 19, 6, 25, steel[0])               # lit top face
     band(img, 17, 19, 6, 25, steel[1])              # face-to-side transition
     band(img, 7, 8, 7, 24, steel[1])
-    band(img, 26, 29, 9, 26, shadow[1], alpha=150)  # contact shadow, down-right
+    # Contact shadow, down-right. DITHERED rather than semi-transparent: the
+    # runtime contract is binary alpha, and a 50% checker is the pixel-art way to
+    # read as a soft edge -- the same trick floortile() uses for its sheen. This
+    # band was the last alpha=150 in the tree, and it failed the validator.
+    for y in range(26, 29):
+        for x in range(9, 26):
+            if (x + y) % 2 == 0:
+                img[y, x] = (shadow[1][0], shadow[1][1], shadow[1][2], 255)
     return img
 
 
 def railing_glass(colours) -> np.ndarray:
-    """Glass balustrade; posts on an 8px grid so it repeats."""
+    """Glass balustrade; posts on an 8px grid so it repeats.
+
+    The panes are OPAQUE. They used to be `denim[0]` at alpha 110, which broke
+    the runtime contract that alpha is binary (0 or 255) -- and the validator has
+    no way to declare an intentional exception, since its `--allow` list covers
+    off-palette debt only. Opaque is also the better read here: a 43% pane
+    blends with whatever floor is behind it and goes muddy, whereas a solid pale
+    denim still reads as glass against this palette. `denim[0]` is already the
+    ramp's lightest step, so this is a transparency change, not a tone shift.
+    """
     steel, denim = ramp(colours, 9), ramp(colours, 4)
     img = rgba(SIZE, SIZE, steel[1], alpha=0)
     band(img, 4, 6, 0, SIZE, steel[0])
-    band(img, 6, 16, 0, SIZE, denim[0], alpha=110)
+    band(img, 6, 16, 0, SIZE, denim[0])
     band(img, 16, 18, 0, SIZE, steel[2])
     for x in range(0, SIZE, 8):
         band(img, 4, 18, x, x + 2, steel[1])

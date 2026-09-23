@@ -107,10 +107,20 @@ export const ROOM_VARIANTS: Readonly<
       enemyCount: { min: 0, max: 0 },
       benchKiosk: { x: 480, y: 60 },
       // Placed clear of the two interior walls at y 70-100 and y 380-410.
+      // Hand-placed clear of this layout's walls. Dressed 2026-09-23 from the
+      // generated mall-prop library: the corridor is the first room the player
+      // crosses, so it carries the wayfinding and services a concourse has.
       fixtures: [
         { kind: 'store-gondola', x: 300, y: 200 },
         { kind: 'vending-machine', x: 660, y: 200 },
         { kind: 'mall-bench', x: 480, y: 300 },
+        { kind: 'planter', x: 160, y: 240 },
+        { kind: 'potted-palm', x: 400, y: 170 },
+        { kind: 'mall-directory', x: 480, y: 140 },
+        { kind: 'rubbish-bin', x: 560, y: 240 },
+        { kind: 'poster-stand', x: 820, y: 160 },
+        { kind: 'info-kiosk', x: 760, y: 300 },
+        { kind: 'wet-floor-sign', x: 420, y: 260 },
       ],
       // Below the second interior wall's band at y 380-410, so no decal lies on
       // top of masonry.
@@ -143,6 +153,12 @@ export const ROOM_VARIANTS: Readonly<
         { kind: 'store-gondola', x: 620, y: 180 },
         { kind: 'vending-machine', x: 300, y: 400 },
         { kind: 'mall-bench', x: 480, y: 450 },
+        { kind: 'planter', x: 480, y: 240 },
+        { kind: 'rubbish-bin', x: 560, y: 400 },
+        { kind: 'shopping-cart', x: 400, y: 420 },
+        { kind: 'atm', x: 300, y: 360 },
+        { kind: 'payphone', x: 700, y: 340 },
+        { kind: 'wet-floor-sign', x: 480, y: 150 },
       ],
       // Clear of both aisle walls, which run x 180-210 and x 750-780 between
       // y 110 and y 370; a 32px decal centred too near an edge still overlaps.
@@ -173,6 +189,17 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 2, max: 4 },
       benchKiosk: null,
+      // The food court's own furniture: tables, chairs and the condiment stand,
+      // placed clear of the four table-bank walls.
+      fixtures: [
+        { kind: 'food-court-table', x: 420, y: 240 },
+        { kind: 'food-court-table', x: 540, y: 240 },
+        { kind: 'food-court-chair', x: 370, y: 250 },
+        { kind: 'food-court-chair', x: 590, y: 250 },
+        { kind: 'condiment-stand', x: 480, y: 180 },
+        { kind: 'rubbish-bin', x: 480, y: 420 },
+        { kind: 'info-kiosk', x: 120, y: 400 },
+      ],
       // Hand-placed clear of this layout's walls and fixtures.
       decals: [
         { kind: 'scorch-mark', x: 480, y: 240 },
@@ -197,6 +224,14 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 3, max: 4 },
       benchKiosk: null,
+      fixtures: [
+        { kind: 'food-court-table', x: 200, y: 240 },
+        { kind: 'food-court-chair', x: 250, y: 250 },
+        { kind: 'condiment-stand', x: 760, y: 240 },
+        { kind: 'rubbish-bin', x: 820, y: 300 },
+        { kind: 'planter', x: 120, y: 180 },
+        { kind: 'arcade-stool', x: 250, y: 410 },
+      ],
       // Hand-placed clear of this layout's walls and fixtures.
       decals: [
         { kind: 'blood-splash', x: 480, y: 225 },
@@ -223,6 +258,13 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 2, max: 4 },
       benchKiosk: null,
+      fixtures: [
+        { kind: 'shopping-cart', x: 200, y: 240 },
+        { kind: 'rubbish-bin', x: 420, y: 240 },
+        { kind: 'security-turnstile', x: 800, y: 240 },
+        { kind: 'poster-stand', x: 480, y: 430 },
+        { kind: 'payphone', x: 120, y: 200 },
+      ],
       // Hand-placed clear of this layout's walls and fixtures.
       decals: [
         { kind: 'broken-glass', x: 480, y: 240 },
@@ -247,6 +289,13 @@ export const ROOM_VARIANTS: Readonly<
       ],
       enemyCount: { min: 2, max: 3 },
       benchKiosk: null,
+      fixtures: [
+        { kind: 'shopping-cart', x: 480, y: 180 },
+        { kind: 'rubbish-bin', x: 480, y: 430 },
+        { kind: 'security-turnstile', x: 820, y: 180 },
+        { kind: 'wet-floor-sign', x: 150, y: 400 },
+        { kind: 'planter', x: 150, y: 240 },
+      ],
       // Hand-placed clear of this layout's walls and fixtures.
       decals: [
         { kind: 'broken-glass', x: 480, y: 200 },
@@ -270,6 +319,14 @@ export const SECURITY_OFFICE_VARIANT: AuthoredRoomVariant = {
   spawnSlots: [],
   enemyCount: { min: 0, max: 0 },
   benchKiosk: null,
+  // The security office keeps its services close at hand: a gate on the way in,
+  // a poster stand, and the machines a staffed desk would have.
+  fixtures: [
+    { kind: 'security-turnstile', x: 200, y: 240 },
+    { kind: 'poster-stand', x: 600, y: 200 },
+    { kind: 'info-kiosk', x: 480, y: 430 },
+    { kind: 'atm', x: 150, y: 430 },
+  ],
   // Clear of the two desk walls at y 120-160 and y 320-360.
   decals: [
     { kind: 'blood-pool', x: 560, y: 240 },
@@ -347,6 +404,15 @@ export type AuthoredStoreTemplate = {
    * store with a clean floor is a legitimate store. Positions are centres.
    */
   readonly decals?: readonly WingDecal[];
+  /**
+   * Shop fit-out: counters, racks and shelving, placed inside the shop.
+   *
+   * Optional for the same reason the decals are, and `x, y` is the fixture's
+   * BASE rather than its centre, because these are upright sprites sitting on
+   * the shop floor. Without this a shop had a floor, a fascia and a sign but an
+   * empty interior, which is the thinnest part of reading the wing as a mall.
+   */
+  readonly fixtures?: readonly WingFixture[];
 };
 
 export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
@@ -354,6 +420,12 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'mall-mart',
     name: 'Mall Mart',
     bounds: { x: 250, y: 70, width: 460, height: 300 },
+    // Shop fit-out clear of the two offer rows at y 150 and y 290.
+    fixtures: [
+      { kind: 'checkout-counter', x: 285, y: 330 },
+      { kind: 'clothing-rack', x: 670, y: 340 },
+      { kind: 'store-gondola', x: 390, y: 340 },
+    ],
     // Inside the shop, below the offer row on the back wall.
     decals: [
       { kind: 'cracked-tile', x: 340, y: 300 },
@@ -380,6 +452,12 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'cinema-snacks',
     name: 'Cinema Snacks',
     bounds: { x: 230, y: 90, width: 500, height: 280 },
+    // A snack counter and its condiment stand, between the offer rows.
+    fixtures: [
+      { kind: 'checkout-counter', x: 300, y: 200 },
+      { kind: 'condiment-stand', x: 660, y: 200 },
+      { kind: 'rubbish-bin', x: 660, y: 340 },
+    ],
     // Inside the shop, below the offer row on the back wall.
     decals: [
       { kind: 'organic-residue', x: 320, y: 300 },
@@ -406,6 +484,14 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'arcade-annex',
     name: 'Arcade Annex',
     bounds: { x: 270, y: 80, width: 440, height: 290 },
+    // The arcade's own machines, along the shop's walls and clear of the offers.
+    fixtures: [
+      { kind: 'arcade-cabinet', x: 300, y: 200 },
+      { kind: 'arcade-cabinet', x: 690, y: 200 },
+      { kind: 'claw-machine', x: 400, y: 340 },
+      { kind: 'air-hockey-table', x: 560, y: 340 },
+      { kind: 'arcade-stool', x: 480, y: 200 },
+    ],
     // Inside the shop, below the offer row on the back wall.
     decals: [
       { kind: 'broken-glass', x: 340, y: 300 },
@@ -432,6 +518,13 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
     id: 'department-outlet',
     name: 'Department Outlet',
     bounds: { x: 240, y: 70, width: 480, height: 300 },
+    // Racks and shelving for a soft-goods floor, clear of the offer rows.
+    fixtures: [
+      { kind: 'clothing-rack', x: 300, y: 200 },
+      { kind: 'vhs-shelf', x: 660, y: 200 },
+      { kind: 'shoe-bench', x: 300, y: 340 },
+      { kind: 'checkout-counter', x: 660, y: 340 },
+    ],
     // Inside the shop, below the offer row on the back wall.
     decals: [
       { kind: 'torn-carpet', x: 330, y: 300 },

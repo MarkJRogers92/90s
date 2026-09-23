@@ -9,6 +9,8 @@
  */
 import Phaser from 'phaser';
 import { centreCameraOnPlayer } from './camera';
+import { planRoomEnvironment, planStorefront } from './RoomEnvironment';
+import type { PlanRect } from './RoomEnvironment';
 import { latestConductiveFeedback } from './visualState';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
 import { runOfferPriceLabel } from '../../sim/run/economy';
@@ -30,9 +32,12 @@ import {
   ENEMY_ART,
   ENEMY_FRAME_SIZE,
   FIXTURE_ART,
+  FLOOR_ART,
   ITEM_ART,
   RC_CAR_TEXTURE,
   rcCarFrame,
+  STOREFRONT_ART,
+  WALL_ART,
   type AlexDirection,
   type EffectArt,
   type EffectName,
@@ -70,6 +75,40 @@ const EFFECT_DEPTH = 4;
 const DECAL_DEPTH = 0.5;
 /** Bound on concurrent effects, so a burst of hits cannot grow the list without limit. */
 const MAX_ACTIVE_EFFECTS = 24;
+
+/**
+ * The room's static environment, on its own layer beneath everything else.
+ *
+ * The floor and the walls are not combat overlays: they are the surface the whole
+ * scene stands on, so they sit below the shared Graphics pass at depth 0 rather
+ * than inside it. Wall pieces are nudged upward by a fraction of their own sort
+ * y, so two walls that overlap still draw back to front while the whole layer
+ * stays under the pass.
+ *
+ * This deliberately does NOT occlude entities yet. PROJECTION.md's band 4 sorts
+ * walls and entities together, but entities here are drawn by the depth-0
+ * Graphics pass, so interleaving the two is a separate change. A wall that hid
+ * the player would be a worse bug than a wall that never occludes, so the layer
+ * stays beneath and every entity remains readable.
+ */
+const ENVIRONMENT_DEPTH = -10;
+/** Keeps one wall's y-sort fraction far below the gap to the next layer. */
+const WALL_SORT_EPSILON = 1 / 100000;
+
+/**
+ * A shop's sign board, above the floor and everything lying on it.
+ *
+ * A board hangs in the air over the shopfront, so it is the one piece of the
+ * environment that must draw over a floor decal rather than under it. This is not
+ * hypothetical: the Department Outlet places a blood pool inside the shop
+ * directly beneath where the board hangs, and if the board sat down on the
+ * environment layer that pool would paint over it.
+ *
+ * It sits below the fixtures at 1 deliberately. A shop with a counter near its
+ * front is better served by the counter drawing over the board than by the board
+ * hiding the furniture the player has to read.
+ */
+const SIGN_DEPTH = 0.6;
 
 /** One playing effect: its strip, when it started, and how fast it runs. */
 type ActiveEffect = {
@@ -119,6 +158,13 @@ export class MvpRunView {
   private effectsSpawned = 0;
   private readonly decalSprites: Phaser.GameObjects.Image[] = [];
   private decalsDrawn = 0;
+  /** Which room the environment layer was built for, so it rebuilds only on a change. */
+  private environmentKey: string | undefined;
+  private floorSprite: Phaser.GameObjects.TileSprite | undefined;
+  private readonly wallSprites: Phaser.GameObjects.Image[] = [];
+  private storeFloorSprite: Phaser.GameObjects.TileSprite | undefined;
+  /** The shop's frontage and sign, in creation order, torn down with the room. */
+  private readonly storefrontSprites: Phaser.GameObjects.GameObject[] = [];
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -146,29 +192,24 @@ export class MvpRunView {
     }
     graphics.clear();
 
-    graphics.fillStyle(0x1d2124, 1);
-    graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
-    graphics.fillStyle(0x8c8873, 1);
-    graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
-    graphics.lineStyle(1, 0x74705f, 0.35);
-    for (let x = room.bounds.x; x <= room.bounds.x + room.bounds.width; x += 32) {
-      graphics.lineBetween(x, room.bounds.y, x, room.bounds.y + room.bounds.height);
-    }
-    for (let y = room.bounds.y; y <= room.bounds.y + room.bounds.height; y += 32) {
-      graphics.lineBetween(room.bounds.x, y, room.bounds.x + room.bounds.width, y);
+    // The room's own surface: real tiled floor and wall art, on a layer beneath
+    // this Graphics pass so everything below still lands on top of it.
+    this.syncEnvironment(room);
+
+    // Fallback for a missing floor texture, so a failed load degrades to the old
+    // flat room rather than a black one.
+    if (!this.floorSprite) {
+      graphics.fillStyle(0x8c8873, 1);
+      graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
     }
 
-    for (const wall of room.walls) {
-      graphics.fillStyle(0x41453f, 1);
-      graphics.fillRect(wall.x, wall.y, wall.width, wall.height);
-      graphics.lineStyle(2, 0xc4b878, 0.45);
-      graphics.strokeRect(wall.x, wall.y, wall.width, wall.height);
-    }
-
+    // A doorway is a hole in a wall, and tile art cannot say that on its own: both
+    // sides of the opening are wall. This lit threshold band keeps the one cue the
+    // flat yellow rect used to carry, in the floor's own lightest tone.
     for (const doorway of room.doorways) {
-      graphics.fillStyle(0xf6d365, 1);
+      graphics.fillStyle(0xecd1ba, 1);
       graphics.fillRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
-      graphics.lineStyle(2, 0x12130f, 0.9);
+      graphics.lineStyle(1, 0x796453, 0.8);
       graphics.strokeRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
     }
 
@@ -219,6 +260,133 @@ export class MvpRunView {
    * the player needs to judge leash range, plus a distinct fill for the two
    * modes: an independent companion versus the steered emitter mount.
    */
+  /**
+   * The room's static environment: the tiled floor and the real wall art.
+   *
+   * Rebuilt only when the room changes, because a room's environment is static for
+   * the whole visit. The plan is pure, so re-planning it every tick would destroy
+   * and recreate ~90 sprites sixty times a second for no visible difference.
+   *
+   * The floor is one repeating TileSprite rather than 450 blitted tiles: the plan
+   * describes the grid, and a tiled sprite is the renderer's cheapest faithful
+   * reading of "this texture, this rectangle, drawn 1:1". The walls are one image
+   * per module, each cropped to the piece's `source`, which is how a module that
+   * the run's leftover or the room's edge cuts short is drawn at its true size
+   * instead of being stretched or overflowing floor it does not own.
+   */
+  private syncEnvironment(room: WingRoomDefinition): void {
+    const key = `${room.id}:${room.variantId}`;
+    if (this.environmentKey === key) {
+      return;
+    }
+    this.floorSprite?.destroy();
+    this.floorSprite = undefined;
+    for (const sprite of this.wallSprites) {
+      sprite.destroy();
+    }
+    this.wallSprites.length = 0;
+    this.storeFloorSprite?.destroy();
+    this.storeFloorSprite = undefined;
+    for (const displayObject of this.storefrontSprites) {
+      displayObject.destroy();
+    }
+    this.storefrontSprites.length = 0;
+    this.environmentKey = key;
+
+    const plan = planRoomEnvironment(room);
+    const floorArt = FLOOR_ART[plan.floorKind];
+    if (this.scene.textures.exists(floorArt.texture)) {
+      this.floorSprite = this.scene.add
+        .tileSprite(
+          plan.floor.originX,
+          plan.floor.originY,
+          plan.floor.columns * plan.floor.tileSize,
+          plan.floor.rows * plan.floor.tileSize,
+          floorArt.texture,
+        )
+        .setOrigin(0, 0)
+        .setDepth(ENVIRONMENT_DEPTH);
+    }
+
+    // Back to front, so a wall standing in front of another covers it.
+    const pieces = [...plan.wallPieces].sort((left, right) => left.orderY - right.orderY);
+    for (const piece of pieces) {
+      const art = WALL_ART[piece.kind];
+      if (!this.scene.textures.exists(art.texture)) {
+        continue;
+      }
+      const sprite = this.scene.add
+        .image(piece.rect.x, piece.rect.y, art.texture)
+        .setOrigin(0, 0)
+        .setCrop(piece.source.x, piece.source.y, piece.source.width, piece.source.height)
+        .setDepth(ENVIRONMENT_DEPTH + piece.orderY * WALL_SORT_EPSILON);
+      this.wallSprites.push(sprite);
+    }
+
+    this.syncStorefront(room);
+  }
+
+  /**
+   * A shop's own floor, frontage and sign.
+   *
+   * The shop's floor is laid first and at the same depth as the room floor, so
+   * being created after it is what puts it on top: the shop changes material at
+   * its threshold, which is most of what makes it read as a separate space
+   * instead of a coloured rectangle painted on the mall.
+   *
+   * The frontage is a repeating band, two strips flanking the doorway, and the
+   * sign hangs over the door. The frontage lives on the environment layer beneath
+   * the depth-0 pass, so it never hides an entity, for the reason the walls do
+   * not. The sign is the one exception, and says so where its depth is defined.
+   */
+  private syncStorefront(room: WingRoomDefinition): void {
+    const store = room.store;
+    if (!store) {
+      return;
+    }
+    const plan = planStorefront(store);
+
+    const floorArt = FLOOR_ART[plan.floor.kind];
+    if (this.scene.textures.exists(floorArt.texture)) {
+      this.storeFloorSprite = this.scene.add
+        .tileSprite(
+          plan.floor.rect.x,
+          plan.floor.rect.y,
+          plan.floor.rect.width,
+          plan.floor.rect.height,
+          floorArt.texture,
+        )
+        .setOrigin(0, 0)
+        .setDepth(ENVIRONMENT_DEPTH);
+    }
+
+    const fasciaArt = STOREFRONT_ART['storefront-fascia'];
+    if (this.scene.textures.exists(fasciaArt.texture)) {
+      for (const band of plan.fascia) {
+        const bandSprite = this.scene.add
+          .tileSprite(
+            band.rect.x,
+            band.rect.y,
+            band.rect.width,
+            band.rect.height,
+            fasciaArt.texture,
+          )
+          .setOrigin(0, 0)
+          .setDepth(ENVIRONMENT_DEPTH + band.orderY * WALL_SORT_EPSILON);
+        this.storefrontSprites.push(bandSprite);
+      }
+    }
+
+    const signArt = STOREFRONT_ART[plan.sign.kind];
+    if (this.scene.textures.exists(signArt.texture)) {
+      const signSprite = this.scene.add
+        .image(plan.sign.rect.x, plan.sign.rect.y, signArt.texture)
+        .setOrigin(0, 0)
+        .setDepth(SIGN_DEPTH);
+      this.storefrontSprites.push(signSprite);
+    }
+  }
+
   private drawCarrier(state: MvpRunState): void {
     const carrier = state.carrier;
     if (carrier === null) {
@@ -420,9 +588,12 @@ export class MvpRunView {
       return;
     }
     const carriedHere = state.carried.some((theft) => theft.sourceStoreId === store.templateId);
-    graphics.fillStyle(carriedHere ? 0x4a3f57 : 0x35383a, 1);
-    graphics.fillRect(store.bounds.x, store.bounds.y, store.bounds.width, store.bounds.height);
-    graphics.lineStyle(2, carriedHere ? 0xf6d365 : 0xc4b878, carriedHere ? 1 : 0.6);
+    // The shop's floor, frontage and sign are real art now, drawn on the
+    // environment layer beneath this pass (see `syncStorefront`). What stays here
+    // is the one thing art cannot say: whether you have already stolen from this
+    // shop. A raised outline carries that, so it no longer needs a filled slab
+    // covering the floor the shop just gained.
+    graphics.lineStyle(carriedHere ? 3 : 1, carriedHere ? 0xf6d365 : 0x2a2620, carriedHere ? 1 : 0.5);
     graphics.strokeRect(store.bounds.x, store.bounds.y, store.bounds.width, store.bounds.height);
 
     const exit = store.exit.bounds;
@@ -446,7 +617,7 @@ export class MvpRunView {
     graphics.fillStyle(0xffd45d, 1);
     graphics.fillCircle(zone.origin.x, zone.origin.y, 4);
 
-    this.setLabel(`store:${templateId}`, store.name, store.bounds.x + 6, store.bounds.y - 4);
+    this.syncSignLabel(`store:${templateId}`, store.name, planStorefront(store).sign.rect);
 
     const offers = room?.offers ?? [];
     for (let index = 0; index < offers.length; index += 1) {
@@ -994,6 +1165,42 @@ export class MvpRunView {
       return;
     }
     label.setPosition(x, y);
+    if (label.text !== text) {
+      label.setText(text);
+    }
+  }
+
+  /**
+   * The shop's name, centred on its sign board.
+   *
+   * A dedicated text object rather than `setLabel`, because the board is only
+   * 96px wide and `setLabel` is 11px, at which "Department Outlet" is wider than
+   * the sign it hangs on. At 9px every authored store name fits, and centring is
+   * what makes the board look like it was meant to carry the name rather than the
+   * name having drifted off its edge.
+   *
+   * It keeps `setLabel`'s dark plate. The board is not a flat surface: it is lit
+   * panels separated by dark gaps, so bare dark text dropped out wherever it
+   * crossed a gap and the name read as fragments. The plate is what makes the
+   * words legible over both the warm and the cool board.
+   */
+  private syncSignLabel(key: string, text: string, rect: PlanRect): void {
+    let label = this.labels.get(key);
+    if (!label) {
+      label = this.scene.add
+        .text(rect.x + rect.width / 2, rect.y + rect.height / 2, text, {
+          fontFamily: '"Courier New", monospace',
+          fontSize: '9px',
+          color: '#f4edd8',
+          backgroundColor: 'rgba(9, 11, 13, 0.75)',
+          padding: { x: 3, y: 2 },
+        })
+        .setOrigin(0.5, 0.5)
+        .setDepth(10);
+      this.labels.set(key, label);
+      return;
+    }
+    label.setPosition(rect.x + rect.width / 2, rect.y + rect.height / 2);
     if (label.text !== text) {
       label.setText(text);
     }

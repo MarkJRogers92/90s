@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "asset": "mall-bench",
+  "assetVersion": "v2",
+  "generator": "PixelLab create_image_pixflux",
+  "prompt": "1990s American shopping mall public seating bench, a sturdy slatted bench with a low backrest and short metal legs, seen from a 3/4 top-down game camera looking slightly down and from the front, the bench stands on the very BOTTOM edge of the image with empty transparent space above it, clean pixel art, hard pixel edges, no antialiasing, no gradients, no readable text, no logo, centred",
+  "seed": 0,
+  "jobId": "466198b2-f907-46a7-b5ed-a5902c64c000",
+  "reportedCost": "1 generation",
+  "rawSha256": "8affbbe7ea512a46ecbdf8c1bf7ffe616a439f82449dec134c6f066237266a26",
+  "runtimeSha256": "5d521bbcfa2f4fe096caaea85171727e37cdb1fd9f11ee4b7a764df19d6d8315",
+  "paletteSource": "deadmall-global.json",
+  "dimensions": [
+    56,
+    30
+  ],
+  "anchor": "bottom-center",
+  "generatedAt": "2026-09-23T03:49:31.768309+00:00",
+  "cleanupApprovedAt": "2026-09-23T03:49:31.768309+00:00",
+  "forcedPalette": true,
+  "validator": "PASS: 56x30, approved palette, binary alpha, bottom anchor",
+  "note": "cropped to content (no scale factor); raw canvas 96x72 with 12 rows of empty space below the bench, which would have floated it above the floor",
+  "replaces": "the 32px-era prop of the same name, backed up in docs/art/work/sprites/"
+}

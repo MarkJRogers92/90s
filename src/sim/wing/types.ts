@@ -62,7 +62,36 @@ export type WingStoreInstance = {
 export type WingFixtureKind =
   | 'mall-bench'
   | 'vending-machine'
-  | 'store-gondola';
+  | 'store-gondola'
+  // Concourse, wayfinding and services. Added 2026-09-23 from the generated
+  // mall-prop library (docs/art/work/mall-props-2026-09-22/BATCH.json).
+  | 'planter'
+  | 'potted-palm'
+  | 'rubbish-bin'
+  | 'mall-directory'
+  | 'poster-stand'
+  | 'info-kiosk'
+  | 'atm'
+  | 'payphone'
+  | 'drinking-fountain'
+  | 'wet-floor-sign'
+  | 'security-turnstile'
+  | 'kiddie-ride'
+  | 'shopping-cart'
+  // Food court.
+  | 'food-court-table'
+  | 'food-court-chair'
+  | 'condiment-stand'
+  // Retail fit-out.
+  | 'checkout-counter'
+  | 'clothing-rack'
+  | 'vhs-shelf'
+  | 'shoe-bench'
+  // Arcade.
+  | 'arcade-cabinet'
+  | 'claw-machine'
+  | 'air-hockey-table'
+  | 'arcade-stool';
 
 /** `x, y` is the fixture's BASE, matching the base-anchored sprite convention. */
 export type WingFixture = {

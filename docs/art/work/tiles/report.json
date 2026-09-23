@@ -7,29 +7,29 @@
         95
       ],
       "seam_diffs": [
-        17.719,
-        17.719,
-        17.719
+        6.875,
+        6.875,
+        6.875
       ],
-      "interior_mean": 21.262,
-      "interior_sd": 9.407,
-      "worst_seam_deviation_sd": 0.38,
+      "interior_mean": 14.413,
+      "interior_sd": 6.273,
+      "worst_seam_deviation_sd": 1.2,
       "seam_is_outlier": false
     },
     "palette": {
-      "unique_colours": 9,
+      "unique_colours": 5,
       "off_palette_pixels": 0,
       "off_palette_examples": []
     },
     "seam_pixels": {
       "axis": "horizontal",
       "seam_mismatched_pixels": [
-        84,
-        84,
-        84
+        48,
+        48,
+        48
       ],
-      "interior_max_mismatched_pixels": 216,
-      "interior_mean_mismatched_pixels": 124.26,
+      "interior_max_mismatched_pixels": 168,
+      "interior_mean_mismatched_pixels": 90.58,
       "is_outlier": false
     }
   },
@@ -45,13 +45,13 @@
         0.0,
         0.0
       ],
-      "interior_mean": 16.534,
-      "interior_sd": 25.395,
-      "worst_seam_deviation_sd": 0.65,
+      "interior_mean": 20.606,
+      "interior_sd": 42.164,
+      "worst_seam_deviation_sd": 0.49,
       "seam_is_outlier": false
     },
     "palette": {
-      "unique_colours": 5,
+      "unique_colours": 3,
       "off_palette_pixels": 0,
       "off_palette_examples": []
     },
@@ -62,8 +62,8 @@
         0,
         0
       ],
-      "interior_max_mismatched_pixels": 336,
-      "interior_mean_mismatched_pixels": 79.74,
+      "interior_max_mismatched_pixels": 348,
+      "interior_mean_mismatched_pixels": 65.03,
       "is_outlier": false
     }
   },
@@ -79,9 +79,9 @@
         0.0,
         0.0
       ],
-      "interior_mean": 5.911,
-      "interior_sd": 15.139,
-      "worst_seam_deviation_sd": 0.39,
+      "interior_mean": 10.659,
+      "interior_sd": 20.533,
+      "worst_seam_deviation_sd": 0.52,
       "seam_is_outlier": false
     },
     "palette": {
@@ -96,8 +96,8 @@
         0,
         0
       ],
-      "interior_max_mismatched_pixels": 360,
-      "interior_mean_mismatched_pixels": 46.45,
+      "interior_max_mismatched_pixels": 348,
+      "interior_mean_mismatched_pixels": 65.03,
       "is_outlier": false
     }
   },
@@ -109,17 +109,17 @@
         95
       ],
       "seam_diffs": [
-        25.896,
-        25.896,
-        25.896
+        22.688,
+        22.688,
+        22.688
       ],
-      "interior_mean": 35.521,
-      "interior_sd": 13.848,
-      "worst_seam_deviation_sd": 0.7,
+      "interior_mean": 10.645,
+      "interior_sd": 10.999,
+      "worst_seam_deviation_sd": 1.09,
       "seam_is_outlier": false
     },
     "palette": {
-      "unique_colours": 6,
+      "unique_colours": 2,
       "off_palette_pixels": 0,
       "off_palette_examples": []
     },
@@ -130,8 +130,8 @@
         264,
         264
       ],
-      "interior_max_mismatched_pixels": 288,
-      "interior_mean_mismatched_pixels": 219.1,
+      "interior_max_mismatched_pixels": 264,
+      "interior_mean_mismatched_pixels": 123.87,
       "is_outlier": false
     }
   },
@@ -143,29 +143,29 @@
         95
       ],
       "seam_diffs": [
-        23.031,
-        23.031,
-        23.031
+        22.688,
+        22.688,
+        22.688
       ],
-      "interior_mean": 36.483,
-      "interior_sd": 13.751,
-      "worst_seam_deviation_sd": 0.98,
+      "interior_mean": 12.377,
+      "interior_sd": 10.604,
+      "worst_seam_deviation_sd": 0.97,
       "seam_is_outlier": false
     },
     "palette": {
-      "unique_colours": 8,
+      "unique_colours": 4,
       "off_palette_pixels": 0,
       "off_palette_examples": []
     },
     "seam_pixels": {
       "axis": "horizontal",
       "seam_mismatched_pixels": [
-        240,
-        240,
-        240
+        264,
+        264,
+        264
       ],
-      "interior_max_mismatched_pixels": 312,
-      "interior_mean_mismatched_pixels": 226.84,
+      "interior_max_mismatched_pixels": 288,
+      "interior_mean_mismatched_pixels": 135.48,
       "is_outlier": false
     }
   }

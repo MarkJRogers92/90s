@@ -69,16 +69,54 @@ describe('room fixtures', () => {
   });
 
   it('exercises every fixture-bearing variant, so placement is not untested', () => {
-    // Without this, the overlap checks below could pass while only one of the
-    // two authored layouts was ever generated -- false confidence rather than
-    // coverage.
-    const variants = new Set(
-      rooms.filter((room) => room.fixtures.length > 0).map((room) => room.variantId),
+    // Without this, the overlap checks below could pass while only some of the
+    // authored layouts were ever generated -- false confidence rather than
+    // coverage. Every combat variant, the boss room and every shop carries
+    // dressing as of 2026-09-23, when the mall-prop library was placed.
+    //
+    // Keyed on the store's template id rather than the room's variant id for the
+    // same reason the decal check is: every storefront room shares ONE variant
+    // id, so keying on the variant would see a single `storefront-open-plan`
+    // entry and stay green while three of the four shops went unauthored.
+    const layouts = new Set(
+      rooms
+        .filter((room) => room.fixtures.length > 0)
+        .map((room) => room.store?.templateId ?? room.variantId),
     );
-    expect([...variants].sort()).toEqual([
+    expect([...layouts].sort()).toEqual([
+      'arcade-annex',
+      'back-hall-crate-corners',
+      'back-hall-pillar-pairs',
+      'cinema-snacks',
+      'department-outlet',
+      'food-court-counter-row',
+      'food-court-scattered-tables',
+      'mall-mart',
+      'security-office-desk-grid',
       'service-corridor-locker-aisles',
       'service-corridor-utility-row',
     ]);
+  });
+
+  it('never overlaps two fixtures in the same room', () => {
+    // Fixtures have no collision, so an overlap is not a gameplay bug -- it is a
+    // layout bug: two objects drawn on top of each other read as one broken
+    // thing. Nothing checked this until 2026-09-23, when the dressing went from
+    // 6 pieces to 62 and hand-spaced coordinates needed a gate.
+    for (const room of rooms) {
+      const boxes = room.fixtures.map((fixture) => ({ fixture, box: footprint(fixture) }));
+      for (let i = 0; i < boxes.length; i += 1) {
+        for (let j = i + 1; j < boxes.length; j += 1) {
+          const a = boxes[i]!;
+          const b = boxes[j]!;
+          expect(
+            overlaps(a.box, b.box),
+            `${a.fixture.kind} at ${a.fixture.x},${a.fixture.y} overlaps ` +
+              `${b.fixture.kind} at ${b.fixture.x},${b.fixture.y} in ${room.id}`,
+          ).toBe(false);
+        }
+      }
+    }
   });
 
   it('keeps every fixture inside its room', () => {

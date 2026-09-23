@@ -235,13 +235,20 @@ export type FixtureArt = {
  * base-anchored, so the sprite's bottom edge sits on the fixture's world
  * position. Sizes are the authored canvases and are what the runtime validator
  * checks, so a mismatch here shows up as a prop drawn at the wrong scale.
+ *
+ * The bench and the gondola were regenerated larger on 2026-09-22 (see
+ * `artifacts/provenance/mall-bench.json`): their canvases are the art cropped
+ * to its content, so the base row is opaque and the sprite cannot float. Note
+ * that these sizes are not free -- `tests/unit/wing-fixtures.test.ts` derives
+ * each fixture's footprint from them and asserts fixtures do not overlap, so
+ * widening a prop can fail a placement test rather than a rendering one.
  */
 export const FIXTURE_ART: Record<WingFixtureKind, FixtureArt> = {
   'mall-bench': {
     texture: 'mall-bench',
     url: '/assets/props/mall-bench.png',
-    width: 32,
-    height: 24,
+    width: 56,
+    height: 30,
   },
   'vending-machine': {
     texture: 'vending-machine',
@@ -252,8 +259,156 @@ export const FIXTURE_ART: Record<WingFixtureKind, FixtureArt> = {
   'store-gondola': {
     texture: 'store-gondola',
     url: '/assets/props/store-gondola.png',
+    width: 30,
+    height: 46,
+  },
+  // Concourse, wayfinding and services.
+  planter: {
+    texture: 'planter',
+    url: '/assets/props/planter.png',
+    width: 25,
+    height: 25,
+  },
+  'potted-palm': {
+    texture: 'potted-palm',
+    url: '/assets/props/potted-palm.png',
+    width: 38,
+    height: 58,
+  },
+  'rubbish-bin': {
+    texture: 'rubbish-bin',
+    url: '/assets/props/rubbish-bin.png',
+    width: 20,
+    height: 25,
+  },
+  'mall-directory': {
+    texture: 'mall-directory',
+    url: '/assets/props/mall-directory.png',
+    width: 17,
+    height: 54,
+  },
+  'poster-stand': {
+    texture: 'poster-stand',
+    url: '/assets/props/poster-stand.png',
+    width: 38,
+    height: 53,
+  },
+  'info-kiosk': {
+    texture: 'info-kiosk',
+    url: '/assets/props/info-kiosk.png',
+    width: 26,
+    height: 34,
+  },
+  atm: {
+    texture: 'atm',
+    url: '/assets/props/atm.png',
+    width: 29,
+    height: 47,
+  },
+  payphone: {
+    texture: 'payphone',
+    url: '/assets/props/payphone.png',
+    width: 31,
+    height: 63,
+  },
+  'drinking-fountain': {
+    texture: 'drinking-fountain',
+    url: '/assets/props/drinking-fountain.png',
+    width: 20,
+    height: 22,
+  },
+  'wet-floor-sign': {
+    texture: 'wet-floor-sign',
+    url: '/assets/props/wet-floor-sign.png',
+    width: 19,
+    height: 16,
+  },
+  'security-turnstile': {
+    texture: 'security-turnstile',
+    url: '/assets/props/security-turnstile.png',
+    width: 24,
+    height: 29,
+  },
+  'kiddie-ride': {
+    texture: 'kiddie-ride',
+    url: '/assets/props/kiddie-ride.png',
+    width: 41,
+    height: 31,
+  },
+  'shopping-cart': {
+    texture: 'shopping-cart',
+    url: '/assets/props/shopping-cart.png',
+    width: 37,
+    height: 33,
+  },
+  // Food court.
+  'food-court-table': {
+    texture: 'food-court-table',
+    url: '/assets/props/food-court-table.png',
+    width: 25,
+    height: 21,
+  },
+  'food-court-chair': {
+    texture: 'food-court-chair',
+    url: '/assets/props/food-court-chair.png',
+    width: 19,
+    height: 27,
+  },
+  'condiment-stand': {
+    texture: 'condiment-stand',
+    url: '/assets/props/condiment-stand.png',
+    width: 41,
+    height: 36,
+  },
+  // Retail fit-out.
+  'checkout-counter': {
+    texture: 'checkout-counter',
+    url: '/assets/props/checkout-counter.png',
     width: 32,
-    height: 40,
+    height: 29,
+  },
+  'clothing-rack': {
+    texture: 'clothing-rack',
+    url: '/assets/props/clothing-rack.png',
+    width: 36,
+    height: 34,
+  },
+  'vhs-shelf': {
+    texture: 'vhs-shelf',
+    url: '/assets/props/vhs-shelf.png',
+    width: 48,
+    height: 30,
+  },
+  'shoe-bench': {
+    texture: 'shoe-bench',
+    url: '/assets/props/shoe-bench.png',
+    width: 41,
+    height: 22,
+  },
+  // Arcade.
+  'arcade-cabinet': {
+    texture: 'arcade-cabinet',
+    url: '/assets/props/arcade-cabinet.png',
+    width: 27,
+    height: 59,
+  },
+  'claw-machine': {
+    texture: 'claw-machine',
+    url: '/assets/props/claw-machine.png',
+    width: 32,
+    height: 57,
+  },
+  'air-hockey-table': {
+    texture: 'air-hockey-table',
+    url: '/assets/props/air-hockey-table.png',
+    width: 32,
+    height: 28,
+  },
+  'arcade-stool': {
+    texture: 'arcade-stool',
+    url: '/assets/props/arcade-stool.png',
+    width: 24,
+    height: 21,
   },
 };
 
@@ -359,3 +514,182 @@ export function alexWalkFrame(direction: AlexDirection, step: number): number {
   const column = ((step % ALEX_WALK_FRAMES) + ALEX_WALK_FRAMES) % ALEX_WALK_FRAMES;
   return row * ALEX_WALK_FRAMES + column;
 }
+
+/** Authored edge length of every floor tile, in pixels. */
+export const FLOOR_TILE_SIZE = 32;
+
+/** Authored height of an upright wall face: two tile-rows of vertical extent. */
+export const WALL_FACE_HEIGHT = 64;
+
+/** Authored edge length of the wall-top surface, in pixels: one square tile. */
+export const WALL_TOP_SIZE = 32;
+
+export type FloorKind =
+  | 'floor-tile-beige'
+  | 'floor-terrazzo'
+  | 'floor-tile-accent'
+  | 'floor-carpet'
+  | 'floor-carpet-damaged';
+
+/**
+ * One 32x32 floor tile per kind. The texture is the kind string itself, so the
+ * floor a room names is the texture the renderer loads, with no second mapping
+ * to drift out of step with the PNGs on disk.
+ *
+ * Every tile here was validated seam-safe (each join no worse than the tile's
+ * own worst interior transition) with zero off-palette pixels; see
+ * `docs/art/work/tiles/report.json`. Promote a new floor by adding its kind
+ * here, never by pointing at a preview (`-x8`), a tiled proof (`-tiled-4x4`), or
+ * a source file (`.aseprite`).
+ *
+ * These tiles are opaque, so the renderer paints them over the room rect rather
+ * than compositing them.
+ */
+export const FLOOR_ART: Record<FloorKind, FixtureArt> = {
+  'floor-tile-beige': {
+    texture: 'floor-tile-beige',
+    url: '/assets/tiles/floor-tile-beige-32.png',
+    width: 32,
+    height: 32,
+  },
+  'floor-terrazzo': {
+    texture: 'floor-terrazzo',
+    url: '/assets/tiles/floor-terrazzo-32.png',
+    width: 32,
+    height: 32,
+  },
+  'floor-tile-accent': {
+    texture: 'floor-tile-accent',
+    url: '/assets/tiles/floor-tile-accent-32.png',
+    width: 32,
+    height: 32,
+  },
+  'floor-carpet': {
+    texture: 'floor-carpet',
+    url: '/assets/tiles/floor-carpet-32.png',
+    width: 32,
+    height: 32,
+  },
+  'floor-carpet-damaged': {
+    texture: 'floor-carpet-damaged',
+    url: '/assets/tiles/floor-carpet-damaged-32.png',
+    width: 32,
+    height: 32,
+  },
+};
+
+export type WallPieceKind =
+  | 'wall-face'
+  | 'wall-top'
+  | 'wall-corner'
+  | 'column'
+  | 'railing-glass'
+  | 'security-gate';
+
+/**
+ * The 64-tall wall family. A face and a corner stand two tile-rows high, because
+ * height is what makes a wall read as a wall; a separate 32x32 top covers runs
+ * seen from above. `overlay: true` marks the RGBA pieces (column, railing-glass)
+ * that are built on a transparent canvas and so stand on any floor; the other
+ * four are opaque and replace what is beneath them.
+ *
+ * Do NOT promote `wall-h-32`, `wall-v-32`, or `wall-corner-32`. Those are a
+ * superseded 32-tall set that passed every automated check and still read as
+ * panelling, because nothing about a one-tile wall says "this has vertical
+ * extent". The `PIECES` list in `docs/art/tools/make_walls.py` is the authority
+ * for which pieces belong to this family.
+ */
+export const WALL_ART: Record<WallPieceKind, FixtureArt & { readonly overlay: boolean }> = {
+  'wall-face': {
+    texture: 'wall-face',
+    url: '/assets/walls/wall-face-32x64.png',
+    width: 32,
+    height: 64,
+    overlay: false,
+  },
+  'wall-top': {
+    texture: 'wall-top',
+    url: '/assets/walls/wall-top-32.png',
+    width: 32,
+    height: 32,
+    overlay: false,
+  },
+  'wall-corner': {
+    texture: 'wall-corner',
+    url: '/assets/walls/wall-corner-32x64.png',
+    width: 32,
+    height: 64,
+    overlay: false,
+  },
+  column: {
+    texture: 'column',
+    url: '/assets/walls/column-32.png',
+    width: 32,
+    height: 32,
+    overlay: true,
+  },
+  'railing-glass': {
+    texture: 'railing-glass',
+    url: '/assets/walls/railing-glass-32.png',
+    width: 32,
+    height: 32,
+    overlay: true,
+  },
+  'security-gate': {
+    texture: 'security-gate',
+    url: '/assets/walls/security-gate-32.png',
+    width: 32,
+    height: 32,
+    overlay: false,
+  },
+};
+
+export type StorefrontArtKind = 'storefront-fascia' | 'sign-warm' | 'sign-cool';
+
+/**
+ * Storefront art: the shopfront band, and the two lit signs that hang above a
+ * shop's door.
+ *
+ * The fascia is a repeating 64x32 band that runs along a store's front edge on
+ * both sides of its opening. The signs are 96x24 — the doorway's own width — so
+ * a sign sits flush over the door with nothing to align by hand.
+ *
+ * These three were generated with this project's palette forced, so they arrived
+ * with zero off-palette pixels, and were authored large (192x48 and 128x64) then
+ * integer-downscaled by two: asking the model for a 96x24 canvas directly trades
+ * away the very detail the downscale is meant to keep.
+ *
+ * The warm board needed one repair first. The generator returned its face as
+ * transparent pixels with only the frame and the light panels opaque, so the
+ * floor showed straight through the middle of the sign. Enclosed transparent
+ * pixels were filled with the board's own frame colour, which leaves the cool
+ * board untouched because its transparency is an outside margin, not a hole.
+ * That is also why the two disagree on `overlay`: the cool board is a cutout that
+ * keeps its margin, the warm one is now a solid slab.
+ */
+export const STOREFRONT_ART: Record<
+  StorefrontArtKind,
+  FixtureArt & { readonly overlay: boolean }
+> = {
+  'storefront-fascia': {
+    texture: 'storefront-fascia',
+    url: '/assets/storefront/storefront-fascia-64x32.png',
+    width: 64,
+    height: 32,
+    overlay: false,
+  },
+  'sign-warm': {
+    texture: 'sign-warm',
+    url: '/assets/storefront/sign-warm-96x24.png',
+    width: 96,
+    height: 24,
+    overlay: false,
+  },
+  'sign-cool': {
+    texture: 'sign-cool',
+    url: '/assets/storefront/sign-cool-96x24.png',
+    width: 96,
+    height: 24,
+    overlay: true,
+  },
+};

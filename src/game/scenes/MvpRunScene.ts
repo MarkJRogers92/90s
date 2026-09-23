@@ -47,10 +47,13 @@ import {
   ENEMY_ART,
   ENEMY_FRAME_SIZE,
   FIXTURE_ART,
+  FLOOR_ART,
   ITEM_ART,
   RC_CAR_FRAME_SIZE,
   RC_CAR_TEXTURE,
   RC_CAR_URL,
+  STOREFRONT_ART,
+  WALL_ART,
 } from '../assets';
 import { GameAudioEngine } from '../audio/engine';
 import { createAudioSnapshot } from '../audio/cues';
@@ -270,6 +273,18 @@ export class MvpRunScene extends Phaser.Scene {
       this.load.image(art.texture, art.url);
     }
     for (const art of Object.values(ITEM_ART)) {
+      this.load.image(art.texture, art.url);
+    }
+    // Floors and walls: the room's own surface. One 32px tile per floor kind, and
+    // the 64-tall wall family (faces, tops, corners) plus the RGBA overlay props.
+    for (const art of Object.values(FLOOR_ART)) {
+      this.load.image(art.texture, art.url);
+    }
+    for (const art of Object.values(WALL_ART)) {
+      this.load.image(art.texture, art.url);
+    }
+    // Storefronts: the shopfront band and the two lit sign boards.
+    for (const art of Object.values(STOREFRONT_ART)) {
       this.load.image(art.texture, art.url);
     }
   }

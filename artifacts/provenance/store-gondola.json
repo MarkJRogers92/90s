@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "asset": "store-gondola",
+  "assetVersion": "v2",
+  "generator": "PixelLab create_image_pixflux",
+  "prompt": "1990s American mall retail store gondola shelving unit, a freestanding double sided shop shelf with four tiers of small colourful packaged goods, seen from a 3/4 top-down game camera looking slightly down and from the front, the unit stands on the very BOTTOM edge of the image with empty transparent space above it, clean pixel art, hard pixel edges, no antialiasing, no gradients, no readable text, no brand, no logo, centred",
+  "seed": 0,
+  "jobId": "d48f59c7-5bb1-4b4f-b22b-41e781ed7d1c",
+  "reportedCost": "1 generation",
+  "rawSha256": "d9e8e3a535498846a4211135ba020b9e62bcec695aa81ff3467d8216328809ce",
+  "runtimeSha256": "277545d4cc15e95d8eb899b0406dfd7c3ca7199bafd7a529667cb468b8ce153a",
+  "paletteSource": "deadmall-global.json",
+  "dimensions": [
+    30,
+    46
+  ],
+  "anchor": "bottom-center",
+  "generatedAt": "2026-09-23T03:49:31.768309+00:00",
+  "cleanupApprovedAt": "2026-09-23T03:49:31.768309+00:00",
+  "forcedPalette": true,
+  "validator": "PASS: 30x46, approved palette, binary alpha, bottom anchor",
+  "note": "cropped to content then halved x2 (raw canvas 96x120 with 12 rows of empty space below the unit)",
+  "replaces": "the 32px-era prop of the same name, backed up in docs/art/work/sprites/"
+}

@@ -289,6 +289,7 @@ function storefrontRoom(
     store: instance.store,
     offers: instance.offers,
     decals: (template.decals ?? []).map((decal) => ({ ...decal })),
+    fixtures: (template.fixtures ?? []).map((fixture) => ({ ...fixture })),
   };
 }
 

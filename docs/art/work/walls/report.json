@@ -69,8 +69,8 @@
     "size": "32x32",
     "overlay": true,
     "palette": {
-      "opaque_pixels": 492,
-      "transparent_pixels": 532,
+      "opaque_pixels": 466,
+      "transparent_pixels": 558,
       "off_palette_pixels": 0,
       "off_palette_examples": []
     }
@@ -86,13 +86,13 @@
     },
     "repeat_horizontal": {
       "axis": "horizontal",
-      "interior_mean": 2.258,
-      "interior_sd": 4.181,
-      "interior_max": 10.0,
+      "interior_mean": 3.269,
+      "interior_sd": 6.054,
+      "interior_max": 14.479,
       "seam_values": [
-        10.0,
-        10.0,
-        10.0
+        14.479,
+        14.479,
+        14.479
       ],
       "is_outlier": false
     }
