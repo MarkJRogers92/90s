@@ -845,6 +845,26 @@ body[data-mode='bench'] {
   text-transform: uppercase;
 }
 
+.mvp-run-store-clerk {
+  margin: 0 0 0.6rem;
+}
+
+.mvp-run-store-clerk img {
+  display: block;
+  width: 160px;
+  height: 160px;
+  border: 2px solid rgb(246 211 101 / 45%);
+  background: rgb(0 0 0 / 35%);
+  image-rendering: pixelated;
+}
+
+.mvp-run-store-clerk p {
+  margin: 0.25rem 0 0;
+  color: #8bc9b8;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+
 .mvp-run-offer-list {
   display: grid;
   gap: 0.4rem;

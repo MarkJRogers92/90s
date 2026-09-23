@@ -1,5 +1,12 @@
 # Handoff — the portrait art, and getting it into the game
 
+**Update 2026-09-22:** Section 4's store clerk recommendation has been
+implemented on this branch. Mall Mart, Cinema Snacks, Arcade Annex, and
+Department Outlet now show their assigned clerk portraits in Night Shift's
+store HUD. The stranger, survivor, and corrupted-human portraits still have no
+gameplay role. The boss continues to use the security-guard expression sheet.
+See `STATUS.md` and `TEST_EVIDENCE.md` for the current validation gate.
+
 Written 2026-09-22 at commit `acd077e`. **Read `AGENTS.md`, `STATUS.md` and
 `NEXT_SESSION.md` first** — this file covers one workstream, not the whole repo,
 and `AGENTS.md` is the authority on how to work here. Where the two disagree,
@@ -17,9 +24,9 @@ and `AGENTS.md` is the authority on how to work here. Where the two disagree,
 | Art versioned copy | `docs/art/` inside this worktree |
 | Art production docs | `docs/art/README.md`, `docs/art/tools/` |
 
-`codex/pixellab-aseprite-proof` is pushed and clean at `acd077e` (verified
-against the remote: 0 unpushed). There are 6 other worktrees for milestones
-M2–M5; this worktree is the art + in-game-art branch.
+At the original handoff, `codex/pixellab-aseprite-proof` was pushed and clean
+at `acd077e`. Recheck Git status before relying on that historical snapshot.
+This worktree is the art + in-game-art branch.
 
 Toolchain: node v24.20.0, npm 11.19.0. No CI — the gates are run by hand.
 
@@ -53,8 +60,8 @@ Other dev fixtures: `mvp-bench`, `mvp-boss-win`, `mvp-storefront`.
 
 ```sh
 npm run typecheck                      # tsc --noEmit
-npm test                               # vitest, 532 tests
-npm run test:browser                   # playwright, 64 tests
+npm test -- --no-file-parallelism      # vitest, 537 tests
+npm run test:browser                   # playwright, 65 tests
 python3 docs/art/tools/validate_runtime_tree.py public/assets --quiet
                                        # expect: PASS — 70 files, binary alpha and on-palette
 ```
@@ -94,15 +101,15 @@ Check which layer you are writing for before reaching for a Node API.
 
 ---
 
-## 4. What is NOT done — and this is the actual work
+## 4. Original next-step design — store clerk is now done
 
-### 4a. The archetypes have no gameplay home yet (DECISION NEEDED FIRST)
+### 4a. Original decision record
 
 The eight subjects are **mall archetypes** — teenager, employee, security guard,
-store manager, stranger, survivor, vendor, corrupted human. Nothing in the game
-draws them except the boss, which uses `security-guard`. There is **no dialogue
-system, no NPC to attach a portrait to, and no player portrait** (the protagonist
-is Alex, and the archetypes are not him).
+store manager, stranger, survivor, vendor, corrupted human. At the original
+handoff, only the boss drew one. The store clerk implementation now gives four
+more archetypes a gameplay home. There is still no dialogue system, NPC, or
+player portrait (the protagonist is Alex, and the archetypes are not him).
 
 Options, with the hook each would hang on:
 
@@ -112,9 +119,9 @@ Options, with the hook each would hang on:
 | NPC / dialogue | none | Largest — a dialogue system is a new subsystem |
 | Enemy inspect | `EnemyKind` is `hanger \| spitter \| lp_manager` — all creatures, none human | Poor fit; the archetypes don't map |
 
-**Recommendation: the store clerk.** It is the only option where the game already
-has the identity to key on, and a store's clerk is a real thing a 90s mall
-simulation would have.
+**Implemented:** the store clerk uses the current room's authored store ID and
+name. It displays a static detailed portrait because the simulation has no clerk
+expression state; the boss still uses its state-driven expression sheet.
 
 Note the precedent set by the boss portrait when you build it: the expression is
 derived from the **simulation's own authoritative state**, reading the same
@@ -210,9 +217,10 @@ From `AGENTS.md`, repeated because they bite:
 
 ---
 
-## 7. If you only do one thing
+## 7. Current handoff
 
-Build the **store clerk portrait**, failing test first. It is the only next step
-where the game already holds the identity to key a portrait on, it reuses the
-pattern the boss portrait established, and it turns 8 validated-but-unused
-assets into something a player actually sees.
+The store clerk portrait is implemented and verified. The next decision is
+whether the stranger, survivor, and corrupted-human archetypes belong in later
+gameplay; they currently have no matching character or interaction. Playtest
+the illustrated Night Shift and integrate this branch with `main` when that
+work is authorized.

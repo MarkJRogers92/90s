@@ -10,6 +10,7 @@ import {
   PORTRAIT_SHEET_WIDTH,
   bossPortraitExpression,
   portraitExpressionFrame,
+  storeClerkPortraitKind,
 } from '../../src/game/portraits';
 import type { EnemyState } from '../../src/sim/model';
 
@@ -54,6 +55,21 @@ describe('portrait catalogue', () => {
   it('gives every kind its own files rather than sharing one', () => {
     const urls = PORTRAIT_KINDS.flatMap((k) => [PORTRAIT_ART[k].url, PORTRAIT_ART[k].expressionUrl]);
     expect(new Set(urls).size).toBe(PORTRAIT_KINDS.length * 2);
+  });
+});
+
+describe('store clerk portraits', () => {
+  it.each([
+    ['mall-mart', 'employee'],
+    ['cinema-snacks', 'vendor'],
+    ['arcade-annex', 'teenager'],
+    ['department-outlet', 'store-manager'],
+  ])('uses the %s clerk art', (storeId, kind) => {
+    expect(storeClerkPortraitKind(storeId)).toBe(kind);
+  });
+
+  it('does not invent a clerk for an unknown store', () => {
+    expect(storeClerkPortraitKind('unlisted-store')).toBeNull();
   });
 });
 

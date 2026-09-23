@@ -15,6 +15,7 @@ import {
   PORTRAIT_SHEET_WIDTH,
   bossPortraitExpression,
   portraitExpressionFrame,
+  storeClerkPortraitKind,
 } from '../portraits';
 import {
   itemDefinitionName,
@@ -98,6 +99,9 @@ export class MvpRunHud {
   private readonly carrierLine: HTMLElement;
   private readonly trace: HTMLElement;
   private readonly offers: HTMLElement;
+  private readonly storeClerk: HTMLElement;
+  private readonly storeClerkImage: HTMLImageElement;
+  private readonly storeClerkName: HTMLElement;
   private readonly bench: HTMLElement;
   private readonly benchIngredients: HTMLElement;
   private readonly benchFee: HTMLElement;
@@ -147,6 +151,9 @@ export class MvpRunHud {
     this.carrierLine = requireElement<HTMLElement>('#mvp-run-carrier');
     this.trace = requireElement<HTMLElement>('#mvp-run-trace');
     this.offers = requireElement<HTMLElement>('#mvp-run-offers');
+    this.storeClerk = requireElement<HTMLElement>('#mvp-run-store-clerk');
+    this.storeClerkImage = requireElement<HTMLImageElement>('#mvp-run-store-clerk-image');
+    this.storeClerkName = requireElement<HTMLElement>('#mvp-run-store-clerk-name');
     this.bench = requireElement<HTMLElement>('#mvp-run-bench');
     this.benchIngredients = requireElement<HTMLElement>('#mvp-run-bench-ingredients');
     this.benchFee = requireElement<HTMLElement>('#mvp-run-bench-fee');
@@ -212,6 +219,7 @@ export class MvpRunHud {
     this.suspicion.textContent = `SUSPICION ${Math.floor(state.suspicion)}`;
 
     this.syncBoss(state);
+    this.syncStoreClerk(state);
     this.syncInteraction(state);
     this.syncEconomy(state);
     this.syncCarrier(state);
@@ -279,6 +287,26 @@ export class MvpRunHud {
     this.bossFace.style.backgroundPosition =
       `-${portraitExpressionFrame(expression) * PORTRAIT_EXPRESSION_SIZE * 2}px 0`;
     this.bossExpression.textContent = `LOSS PREVENTION // ${expression}`;
+  }
+
+  private syncStoreClerk(state: MvpRunState): void {
+    const store = state.wing.rooms[state.roomIndex]?.store;
+    const kind = store ? storeClerkPortraitKind(store.templateId) : null;
+    if (!store || !kind || state.status !== 'playing') {
+      this.storeClerk.hidden = true;
+      this.storeClerkImage.removeAttribute('src');
+      this.storeClerkImage.alt = '';
+      this.storeClerkName.textContent = '';
+      return;
+    }
+
+    const url = PORTRAIT_ART[kind].url;
+    if (this.storeClerkImage.getAttribute('src') !== url) {
+      this.storeClerkImage.src = url;
+    }
+    this.storeClerkImage.alt = `${store.name} clerk`;
+    this.storeClerkName.textContent = `${store.name} // CLERK`;
+    this.storeClerk.hidden = false;
   }
 
   private syncInteraction(state: MvpRunState): void {

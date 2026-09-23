@@ -150,3 +150,23 @@ test.describe('the boss portrait', () => {
     await expect(page.locator('#mvp-run-boss-portrait')).toBeHidden();
   });
 });
+
+test('the current store shows its clerk portrait and leaving the store hides it', async ({ page }) => {
+  await page.setViewportSize({ width: 800, height: 600 });
+  await page.goto('/?fixture=mvp-storefront&seed=4242');
+  await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
+
+  const portrait = page.locator('#mvp-run-store-clerk');
+  await expect(portrait).toBeVisible();
+  await expect(page.locator('#mvp-run-store-clerk-image')).toHaveJSProperty('naturalWidth', 160);
+  await expect(page.locator('#mvp-run-store-clerk-image')).toHaveAttribute(
+    'src', '/assets/portraits/vendor.png',
+  );
+  await expect(page.locator('#mvp-run-store-clerk-image')).toHaveAttribute('alt', 'Cinema Snacks clerk');
+  await expect(page.locator('#mvp-run-store-clerk-name')).toHaveText('Cinema Snacks // CLERK');
+  await expect(page.locator('#mvp-run-offers')).toContainText('Cinema Snacks');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(800);
+
+  await page.getByRole('button', { name: 'Restart run' }).click();
+  await expect(portrait).toBeHidden();
+});

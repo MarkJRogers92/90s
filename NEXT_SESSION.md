@@ -1,5 +1,13 @@
 # Next session
 
+**Art branch update (2026-09-22):** The store clerk portrait is implemented on
+`codex/pixellab-aseprite-proof`. Start this worktree with `npm run dev`, choose
+Night Shift, and use `/?fixture=mvp-storefront&seed=4242` to see the Cinema
+Snacks vendor immediately. The portrait hides on leaving or restarting the
+store. `main` does not yet include this art branch. The stranger, survivor, and
+corrupted-human portraits still need real gameplay roles before they should
+appear; do not invent NPC or dialogue state merely to display them.
+
 M5 is implemented on codex/m5-mvp in the linked worktree `.worktrees/m5-mvp`,
 started from the M4 tip `ff2dcf5`, with the in-run Bench Warrant fusion repaired
 on 2026-09-19. Verify the actual branch and working tree before trusting this

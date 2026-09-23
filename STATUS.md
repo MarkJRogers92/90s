@@ -1,5 +1,14 @@
 # Status
 
+**2026-09-22 art branch update:** Night Shift's store HUD now shows a clerk
+portrait selected from the current store's authored ID: Mall Mart uses the
+employee, Cinema Snacks the vendor, Arcade Annex the teenager, and Department
+Outlet the store manager. The portrait is hidden outside a playing store room.
+The boss portrait remains unchanged. Verified with 537 unit tests, all 65
+Chromium tests, a production build, and the 70-file runtime art validator.
+This work is on `codex/pixellab-aseprite-proof`; `main` still has the earlier M5
+presentation. The other three archetype portraits have no gameplay consumer yet.
+
 **Current milestone:** M5 MVP run implemented, with in-run Bench Warrant fusion repaired and verified locally on 2026-09-19; ready for user playtest.
 
 **2026-09-19 repair:** M5's acceptance list claimed in-run bench fusion and

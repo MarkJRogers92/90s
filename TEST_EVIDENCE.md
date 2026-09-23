@@ -1,5 +1,18 @@
 # Test evidence
 
+## 2026-09-22 — Night Shift store clerk portrait
+
+- Red: five new unit cases failed because `storeClerkPortraitKind` did not
+  exist; the focused Chromium test failed because the clerk element was absent.
+- Green: `npm test -- --no-file-parallelism` — 31 files, 537 tests passed.
+- `npx playwright test tests/browser/portraits.spec.ts tests/browser/night-shift.spec.ts`
+  — 31 Chromium tests passed, including the 800×600 storefront portrait,
+  decoded 160px image, store name, and hiding after restart.
+- `npm run test:browser` — all 65 Chromium tests passed across the game modes.
+- `npm run build` — passed. Existing large-chunk warning remains.
+- `python3 docs/art/tools/validate_runtime_tree.py public/assets --quiet`
+  — passed, 70 files with binary alpha and approved palette.
+
 ## 2026-09-13 — M0 foundation
 
 Environment: macOS, Node 24.20.0, npm 11.19.0, Playwright Chromium desktop profile.

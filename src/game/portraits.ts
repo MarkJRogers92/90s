@@ -110,6 +110,18 @@ export const PORTRAIT_SHEET_WIDTH = PORTRAIT_EXPRESSION_SIZE * PORTRAIT_EXPRESSI
  */
 export const BOSS_PORTRAIT_KIND: PortraitKind = 'security-guard';
 
+/** Existing authored stores and the mall archetype pictured at each counter. */
+const STORE_CLERK_KINDS: Readonly<Record<string, PortraitKind>> = {
+  'mall-mart': 'employee',
+  'cinema-snacks': 'vendor',
+  'arcade-annex': 'teenager',
+  'department-outlet': 'store-manager',
+};
+
+export function storeClerkPortraitKind(storeId: string): PortraitKind | null {
+  return Object.hasOwn(STORE_CLERK_KINDS, storeId) ? STORE_CLERK_KINDS[storeId] ?? null : null;
+}
+
 /**
  * Which expression the boss wears, from state the simulation already keeps.
  *
