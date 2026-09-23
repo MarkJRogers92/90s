@@ -136,6 +136,10 @@ test('launches Night Shift with one canvas, one HUD, and the service corridor', 
   await expect(page.locator('#mvp-run-cash')).toContainText('$30');
   await expect(page.locator('#mvp-run-seed')).toContainText(`seed ${state.seed}`);
   await expect(page.locator('#mvp-run-room')).toContainText('Service Corridor');
+  await expect(page.locator('.mvp-run-goal')).toContainText('defeat the Loss Prevention Manager');
+  await expect(page.locator('#mvp-run-objective')).toContainText('Hold D');
+  await expect(page.locator('#mvp-run-offers-wrap')).toBeHidden();
+  await expect(page.locator('#mvp-run-trace')).toBeHidden();
   await expect(page.locator('#mvp-run-checkpoint')).toContainText('saved');
 
   expect(errors.pageErrors).toEqual([]);
@@ -419,6 +423,14 @@ test('offers are identical for one seed and vary across seeds', async ({ page })
   const errors = collectErrors(page);
 
   await launchRun(page, '/?fixture=mvp-storefront&seed=4242');
+  await expect(page.locator('#mvp-run-objective')).toContainText('E to buy or F to steal');
+  await expect(page.locator('#mvp-run-offers-wrap')).toBeVisible();
+  await expect(page.locator('#mvp-run-store-help')).toContainText('carry it past the store exit');
+  await page.setViewportSize({ width: 800, height: 600 });
+  const firstOfferTop = await page.locator('#mvp-run-offers .mvp-run-offer').first().evaluate(
+    (element) => element.getBoundingClientRect().top,
+  );
+  expect(firstOfferTop).toBeLessThan(500);
   const first = await offerTexts(page);
   expect(first.length).toBeGreaterThan(0);
   expect((await runSnapshot(page)).seed).toBe(4242);
@@ -678,6 +690,7 @@ test('the Bench Warrant kiosk previews and fuses the car, and shots then start a
   await expect(page.locator('#mvp-run-bench')).toContainText('Party Popper');
   await expect(page.locator('#mvp-run-bench')).toContainText('RC Car');
   await expect(page.locator('#mvp-run-bench')).toContainText(/FEE: \$\d+ \(base \$6/);
+  await expect(page.locator('#mvp-run-bench-operation')).toContainText('car loses autonomous seeking and bump damage');
   expect((await runSnapshot(page)).previewOpen).toBe(true);
 
   await page.getByRole('button', { name: 'Confirm fusion', exact: true }).click();

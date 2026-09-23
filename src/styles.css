@@ -738,6 +738,7 @@ body[data-mode='bench'] {
 }
 
 .mvp-run-objective,
+.mvp-run-goal,
 .mvp-run-suspicion,
 .mvp-run-boss,
 .mvp-run-nearby,
@@ -756,6 +757,11 @@ body[data-mode='bench'] {
 
 .mvp-run-objective {
   color: #f6d365;
+  font-weight: 700;
+}
+
+.mvp-run-goal {
+  color: #8bc9b8;
   font-weight: 700;
 }
 
@@ -845,8 +851,15 @@ body[data-mode='bench'] {
   text-transform: uppercase;
 }
 
-.mvp-run-store-clerk {
+.mvp-run-store-help {
   margin: 0 0 0.6rem;
+  color: #f4edd8;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.mvp-run-store-clerk {
+  margin: 0.6rem 0;
 }
 
 .mvp-run-store-clerk img {

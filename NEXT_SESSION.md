@@ -1,5 +1,14 @@
 # Next session
 
+**2026-09-22 playtest response:** The user found Night Shift's store and fusion
+choices confusing. The local art worktree now shows the goal and a concrete
+next step, puts store choices above the portrait and inventory, explains the
+buy/steal trade, and gives the kiosk's RC-car-plus-ranged-weapon requirement
+and fusion trade in plain language. These edits are local until separately
+published; inspect branch and `git status` before continuing. The remaining
+human gate is a hands-on read of the store/fusion flow and whether the overall
+game loop feels coherent. The floor/walls are still graybox art.
+
 **Art branch update (2026-09-22):** The store clerk portrait is implemented on
 `codex/pixellab-aseprite-proof`. Start this worktree with `npm run dev`, choose
 Night Shift, and use `/?fixture=mvp-storefront&seed=4242` to see the Cinema

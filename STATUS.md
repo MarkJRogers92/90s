@@ -1,5 +1,13 @@
 # Status
 
+**2026-09-22 playtest guidance update (local worktree):** Night Shift now states
+the run goal and a concrete next step, explains buying versus stealing in store
+rooms, and describes the Bench Warrant trade in plain language. Store offers
+appear before the clerk portrait and detailed inventory so the first choices
+are visible at 800×600. The trace is hidden from the player HUD; the debug
+state remains available to development tests. The six-room run and art are
+otherwise still the M5 prototype. See TEST_EVIDENCE.md for the current checks.
+
 **2026-09-22 art branch update:** Night Shift's store HUD now shows a clerk
 portrait selected from the current store's authored ID: Mall Mart uses the
 employee, Cinema Snacks the vendor, Arcade Annex the teenager, and Department

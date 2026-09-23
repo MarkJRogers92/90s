@@ -79,6 +79,35 @@ export function bossHudParts(boss: EnemyState): string[] {
   return parts;
 }
 
+/** Player-facing next step, derived from the same room and combat state as the HUD. */
+export function runObjectiveText(state: MvpRunState): string {
+  if (state.status === 'won') return 'Shift survived.';
+  if (state.status === 'dead') return 'Shift ended.';
+  const room = state.wing.rooms[state.roomIndex];
+  if (!room) return '—';
+
+  const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
+  if (living.some((enemy) => enemy.kind === 'lp_manager')) {
+    return 'Defeat the Loss Prevention Manager to survive the shift.';
+  }
+  if (living.length > 0) {
+    return `Aim with the pointer and click to attack. Clear ${living.length} enemies, then head right.`;
+  }
+  if (room.id === 'service_corridor') {
+    return 'Hold D to follow the corridor right to the first store. The kiosk is for later.';
+  }
+  const available = room.offers.filter(
+    (offer) => (state.offerStatus[offer.id] ?? 'available') === 'available',
+  );
+  if (room.store && available.length > 0) {
+    return 'Walk near an item: E to buy or F to steal. Then walk right through the next door.';
+  }
+  if (state.roomIndex < state.wing.rooms.length - 1) {
+    return 'Walk right through the east doorway to continue the shift.';
+  }
+  return '—';
+}
+
 export class MvpRunHud {
   private readonly root: HTMLElement;
   private readonly seed: HTMLElement;
@@ -98,6 +127,7 @@ export class MvpRunHud {
   private readonly primary: HTMLElement;
   private readonly carrierLine: HTMLElement;
   private readonly trace: HTMLElement;
+  private readonly offersWrap: HTMLElement;
   private readonly offers: HTMLElement;
   private readonly storeClerk: HTMLElement;
   private readonly storeClerkImage: HTMLImageElement;
@@ -150,6 +180,7 @@ export class MvpRunHud {
     this.primary = requireElement<HTMLElement>('#mvp-run-primary');
     this.carrierLine = requireElement<HTMLElement>('#mvp-run-carrier');
     this.trace = requireElement<HTMLElement>('#mvp-run-trace');
+    this.offersWrap = requireElement<HTMLElement>('#mvp-run-offers-wrap');
     this.offers = requireElement<HTMLElement>('#mvp-run-offers');
     this.storeClerk = requireElement<HTMLElement>('#mvp-run-store-clerk');
     this.storeClerkImage = requireElement<HTMLImageElement>('#mvp-run-store-clerk-image');
@@ -210,7 +241,7 @@ export class MvpRunHud {
     this.room.textContent = room
       ? `${room.name} (${state.roomIndex + 1} / ${state.wing.rooms.length})`
       : '—';
-    this.objective.textContent = `OBJECTIVE: ${this.objectiveText(state)}`;
+    this.objective.textContent = `NEXT: ${runObjectiveText(state)}`;
 
     const health = state.room.combat.player.health;
     this.health.textContent = `${health} / 6`;
@@ -232,37 +263,6 @@ export class MvpRunHud {
     this.recent.textContent = `RECENT: ${recent}`;
 
     this.syncSummary(state);
-  }
-
-  private objectiveText(state: MvpRunState): string {
-    if (state.status === 'won') {
-      return 'Shift survived.';
-    }
-    if (state.status === 'dead') {
-      return 'Shift ended.';
-    }
-    const room = state.wing.rooms[state.roomIndex];
-    if (!room) {
-      return '—';
-    }
-    const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
-    const boss = living.find((enemy) => enemy.kind === 'lp_manager');
-    if (boss) {
-      return 'Defeat the Loss Prevention Manager.';
-    }
-    if (living.length > 0) {
-      return `Clear the room (${living.length} enemies left).`;
-    }
-    const available = room.offers.filter(
-      (offer) => (state.offerStatus[offer.id] ?? 'available') === 'available',
-    );
-    if (room.store && available.length > 0) {
-      return 'Shop the offers (E buy · F steal) or move on.';
-    }
-    if (state.roomIndex < state.wing.rooms.length - 1) {
-      return 'Head east to continue the shift.';
-    }
-    return '—';
   }
 
   private syncBoss(state: MvpRunState): void {
@@ -325,9 +325,16 @@ export class MvpRunHud {
     } else if (interaction.kind === 'bench') {
       // Never advertise a key the sim would refuse: without an owned carrier the
       // kiosk has no proposal to offer, so the prompt says what is missing.
-      this.controls.textContent = canOpenRunFusionPreview(state)
-        ? 'E PREVIEW FUSION · ' + movementControls(state)
-        : 'BENCH WARRANT NEEDS AN OWNED EMITTER CARRIER · ' + movementControls(state);
+      if (canOpenRunFusionPreview(state)) {
+        this.controls.textContent = 'E PREVIEW FUSION · ' + movementControls(state);
+      } else if (state.carrier === null) {
+        this.controls.textContent =
+          'KIOSK FOR LATER: BRING A REMOTE-CONTROL CAR AND A RANGED WEAPON';
+      } else if (state.carrier.mode === 'independent') {
+        this.controls.textContent = 'KIOSK NEEDS A RANGED PRIMARY · ' + movementControls(state);
+      } else {
+        this.controls.textContent = 'CAR ALREADY FUSED · ' + movementControls(state);
+      }
     } else if (interaction.kind === 'offer') {
       this.controls.textContent = 'E BUY · F STEAL · ' + movementControls(state);
     } else {
@@ -376,9 +383,10 @@ export class MvpRunHud {
       `FEE: $${preview.fee} (base $${preview.baseFee} − clean discount $${preview.cleanDiscount})` +
       ` · CASH $${state.cash}`;
     this.benchOperation.textContent =
-      `RESULT: attack origin ${preview.operation.attackOrigin} · steering ` +
-      `${preview.operation.steering} · recall ${preview.operation.recallKey} · ` +
-      `${preview.operation.lostBehavior} lost`;
+      `AFTER FUSION: ${preview.primaryName} fires from the ${preview.carrierName}. ` +
+      `Steer it with the ${preview.operation.steering} and press ` +
+      `${preview.operation.recallKey} to recall. The car loses ` +
+      `${preview.operation.lostBehavior}.`;
     this.benchRetained.textContent =
       `RETAINED: ${preview.retainedInstanceIds.join(', ') || 'nothing else'}`;
     this.benchExcluded.textContent = `EXCLUDED: ${preview.excludedNotes.join(' ')}`;
@@ -438,6 +446,7 @@ export class MvpRunHud {
 
   private syncOffers(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
+    this.offersWrap.hidden = !room?.store;
     const seen = new Set<string>();
     if (room?.store) {
       const carryLimit = runCarryLimit(state);

@@ -147,6 +147,7 @@
             <span class="hud-label">ROOM</span>
             <strong id="mvp-run-room">—</strong>
           </div>
+          <p class="mvp-run-goal">GOAL: Cross the mall and defeat the Loss Prevention Manager.</p>
           <p id="mvp-run-objective" class="mvp-run-objective">OBJECTIVE: —</p>
           <div class="hud-row">
             <span class="hud-label">JANITOR // HEALTH</span>
@@ -173,18 +174,22 @@
           </div>
           <p id="mvp-run-nearby" class="mvp-run-nearby" role="status" aria-live="polite">NEARBY: —</p>
           <p id="mvp-run-carried" class="mvp-run-carried">CARRIED: none</p>
-          <p id="mvp-run-inventory" class="mvp-run-inventory">SECURED: —</p>
-          <p id="mvp-run-primary" class="mvp-run-primary">PRIMARY: —</p>
-          <p id="mvp-run-carrier" class="mvp-run-carrier">CAR: none</p>
-          <p id="mvp-run-trace" class="mvp-run-trace">TRACE: none yet</p>
-          <div class="mvp-run-offers-wrap">
+          <div id="mvp-run-offers-wrap" class="mvp-run-offers-wrap" hidden>
             <h3 class="mvp-run-offers-title">Store offers</h3>
+            <p id="mvp-run-store-help" class="mvp-run-store-help">
+              E BUY: pay cash and keep it now. F STEAL: carry it past the store exit to keep it;
+              security may take it back, and escaping raises Heat.
+            </p>
+            <ul id="mvp-run-offers" class="mvp-run-offer-list"></ul>
             <div id="mvp-run-store-clerk" class="mvp-run-store-clerk" hidden>
               <img id="mvp-run-store-clerk-image" width="160" height="160" alt="" />
               <p id="mvp-run-store-clerk-name"></p>
             </div>
-            <ul id="mvp-run-offers" class="mvp-run-offer-list"></ul>
           </div>
+          <p id="mvp-run-inventory" class="mvp-run-inventory">SECURED: —</p>
+          <p id="mvp-run-primary" class="mvp-run-primary">PRIMARY: —</p>
+          <p id="mvp-run-carrier" class="mvp-run-carrier">CAR: none</p>
+          <p id="mvp-run-trace" class="mvp-run-trace" hidden>TRACE: none yet</p>
           <div id="mvp-run-bench" class="mvp-run-bench" data-testid="mvp-run-bench" hidden>
             <h3 class="mvp-run-bench-title">BENCH WARRANT // EMITTER MOUNT</h3>
             <p id="mvp-run-bench-ingredients" class="mvp-run-bench-line">—</p>

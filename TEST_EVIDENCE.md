@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-09-22 — Night Shift choice guidance
+
+- Red: three new guidance cases failed before implementation.
+- `npm test -- --no-file-parallelism` — 32 files, 540 tests passed.
+- `npm run build` — passed; existing large-chunk warning remains.
+- `npx playwright test tests/browser/night-shift.spec.ts` — 26 Chromium tests
+  passed after the guidance changes and before the final store layout reorder.
+- Manual Chromium view at 800×600 revealed that the first store items were below
+  the HUD scroll area. After moving offers above the clerk portrait and inventory,
+  the first two items are visible without scrolling. Screenshot:
+  `/private/tmp/deadmall-store-guidance.png`.
+- `npx playwright test tests/browser/night-shift.spec.ts --grep 'offers are identical'`
+  — 1 Chromium test passed after the layout reorder, including a first-offer
+  viewport assertion at 800×600.
+
 ## 2026-09-22 — Night Shift store clerk portrait
 
 - Red: five new unit cases failed because `storeClerkPortraitKind` did not

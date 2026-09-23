@@ -165,7 +165,7 @@ export function openRunFusionPreview(state: MvpRunState): MvpCommandResult {
   }
   const carrier = findRunCarrierLeaf(state);
   if (carrier === null) {
-    return rejected('No emitter carrier is available for Emitter Mount fusion.');
+    return rejected('Come back with a Remote-Control Car and a ranged weapon to use this kiosk.');
   }
   const resolution = resolveEmitterMount(
     state.inventory,

@@ -421,7 +421,7 @@ describe('mvp interactions', () => {
     const withoutCarrier = tryInteract(corridor);
     expect(withoutCarrier.accepted).toBe(false);
     if (!withoutCarrier.accepted) {
-      expect(withoutCarrier.reason).toContain('emitter carrier');
+      expect(withoutCarrier.reason).toContain('Remote-Control Car');
     }
     expect(corridor.preview).toBeNull();
 
