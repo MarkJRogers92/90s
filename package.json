@@ -10,6 +10,7 @@
     "test:watch": "vitest",
     "test:browser": "playwright test",
     "build": "tsc --noEmit && vite build",
+    "art:gallery": "python3 docs/art/tools/make_art_gallery.py",
     "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
   },
   "dependencies": {

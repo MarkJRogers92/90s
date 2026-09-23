@@ -4,10 +4,12 @@ Scratch + tooling for producing DEAD MALL pixel art.
 
 **CORRECTED 2026-09-22 — this file used to say the game "has no asset pipeline at
 all". That is false and has been for a while.** Verified in the code: the game
-loads 54 real PNGs from `public/assets/` via registries in
+loads 84 real PNGs from `public/assets/` via registries in
 `src/game/assets.ts`, consumed by `MvpRunScene.preload()`. It is data-driven and
 deliberately incremental — a registry entry with no art yet falls back to the
-vector marker, so art can land one asset at a time.
+vector marker, so art can land one asset at a time. (The count, and the state of
+every one of those files, is reported by `npm run art:gallery` — treat that as the
+authority rather than this line.)
 
 Two asset classes, and they load differently, which is the thing to know:
 
@@ -20,6 +22,37 @@ So "produce art" is only half the job. An asset is *usable* when it is copied in
 `public/assets/`, declared in the game, and covered by
 `tests/unit/portraits.test.ts` (presence + declared size) and
 `tools/validate_runtime_tree.py` (binary alpha + palette).
+
+## `tools/make_art_gallery.py`
+
+Renders the whole shipped art tree — every file under `public/assets/**` — into
+one self-contained html page:
+
+```
+npm run art:gallery        # -> public/gallery.html, served at /gallery.html
+```
+
+The dev server then serves it at `http://127.0.0.1:5173/gallery.html`, and
+`vite build` carries it into `dist/` with the game. It is **gitignored**: it is one
+file with every PNG inlined as a data URI, so committing it would put a ~630 KB
+blob diff on every art change for something nothing needs to read. A fresh clone
+has the generator and not the page — one command, about a second. Because every
+image is inlined it also opens straight off disk with no server at all.
+
+It derives three things from the source rather than asserting them by hand, which
+is why it sits alongside the other validators:
+
+| Check | How |
+|---|---|
+| declared vs present | a file counts as declared when its `/assets/...` url appears in `src/`, or when its filename stem appears as a quoted string. The second rule is what catches the registries built from a helper — `decalArt('blood-drops')` and portraits' `` `${DIR}/${kind}.png` `` never write the filename out in full. **`.css` counts too**: the four HUD icons are named only in `src/styles.css`, because the run HUD is DOM rather than Phaser, and a `.ts`-only scan reports all four as undeclared art. |
+| declared size vs the PNG | the tables that write `width`/`height` as literals are compared against the decoded PNG header |
+| selected vs declared | every floor kind and wall piece that `FLOOR_ART` / `WALL_ART` / `STOREFRONT_ART` declares, against the kinds `FLOOR_FOR_ROOM_ROLE`, `FLOOR_FOR_STORE_TEMPLATE` and `SIGN_FOR_STORE_TEMPLATE` can return. A kind that is declared and drawn but reachable by no room is the case worth seeing. |
+
+Tiles are shown genuinely tiled, because repeat-safety is a judgement made by eye
+and a single 32×32 swatch hides it. Whether a wall piece may be shown tiled at all
+is read from the `PIECES` table in `make_walls.py`, where `axes=None` means the
+piece is *placed*: repeating a corner in a grid would claim a repeat-safety it was
+never built for.
 
 ## Settled decisions (2026-09-19)
 

@@ -5,3 +5,8 @@ test-results/
 .DS_Store
 .superpowers/
 .worktrees/
+
+# Generated, not authored: `npm run art:gallery` rebuilds it in about a second.
+# It is one file with every runtime PNG inlined, so committing it would put a
+# ~630 KB blob diff on every art change for something nothing needs to read.
+public/gallery.html
