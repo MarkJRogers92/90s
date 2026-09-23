@@ -39,6 +39,48 @@ function browserCheckpointStorage(): CheckpointStorageLike | null {
   }
 }
 
+/**
+ * Snap the canvas to the largest WHOLE multiple of the internal resolution, and
+ * keep it there across resizes.
+ *
+ * Phaser has no integer scale mode — the modes are `NONE`, `FIT`, `ENVELOP`,
+ * `RESIZE` and the two single-axis controls — so whole-multiple scaling is done by
+ * hand. With `mode: NONE` the canvas buffer stays at the internal resolution and
+ * `setZoom(n)` sets its CSS size to exactly n times that, which is the only way an
+ * art pixel keeps a whole number of screen pixels.
+ *
+ * Why it matters: at a fractional factor (FIT gave 1.563x at a 1000px window and
+ * 2.911x even at 1080p) one art pixel covers two screen pixels and its neighbour
+ * covers one, so every edge lands on an irregular grid. `pixelArt: true` means
+ * nearest-neighbour sampling, so the result is uneven rather than blurred — but it
+ * still reads as a low-resolution image, which is what it was reported as.
+ */
+function pinIntegerZoom(instance: Phaser.Game): void {
+  const host = requireElement<HTMLElement>('#game-host');
+  const apply = (): void => {
+    // Return to title and every mode swap destroy the game and clear the module
+    // handle. This observer outlives that, and scaling a destroyed game throws on
+    // a null canvas (`Cannot read properties of null (reading 'style')`), so it
+    // must bail on anything that is no longer the live instance.
+    if (game !== instance) {
+      return;
+    }
+    const zoom = Math.max(
+      1,
+      Math.floor(Math.min(host.clientWidth / VIEWPORT_WIDTH, host.clientHeight / VIEWPORT_HEIGHT)),
+    );
+    game.scale.setZoom(zoom);
+  };
+  apply();
+  // A ResizeObserver catches layout changes that never resize the window (the HUD
+  // appearing, a mode swap), which a window listener alone would miss.
+  if (typeof ResizeObserver === 'function') {
+    new ResizeObserver(apply).observe(host);
+  } else {
+    window.addEventListener('resize', apply);
+  }
+}
+
 function seedFromUrl(): number {
   const raw = new URLSearchParams(window.location.search).get('seed');
   if (raw === null || raw.trim() === '') {
@@ -110,11 +152,12 @@ function launch(mode: RunMode): void {
         roundPixels: true,
       },
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.NONE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
       scene: [BootScene, RunScene, WingScene, BenchScene],
     });
+    pinIntegerZoom(game);
 
     startupStatus.textContent = '';
   } catch (error) {
@@ -166,11 +209,12 @@ function launchRun(checkpoint: MvpCheckpoint | null, seed: number): void {
         roundPixels: true,
       },
       scale: {
-        mode: Phaser.Scale.FIT,
+        mode: Phaser.Scale.NONE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
       },
       scene: [MvpRunScene],
     });
+    pinIntegerZoom(game);
 
     startupStatus.textContent = '';
   } catch (error) {

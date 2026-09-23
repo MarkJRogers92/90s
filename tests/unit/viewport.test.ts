@@ -10,7 +10,14 @@ import {
 
 describe('camera window', () => {
   it('centres on the player when the window fits inside the room', () => {
-    expect(cameraScrollFor(480, 240)).toEqual({ scrollX: 160, scrollY: 60 });
+    // Written against the constants rather than literal numbers. The previous
+    // version asserted { scrollX: 160, scrollY: 60 }, which were just the room
+    // centre minus half of the then-current 640x360 viewport -- so it silently
+    // encoded the viewport size and broke the moment the viewport changed.
+    expect(cameraScrollFor(480, 240)).toEqual({
+      scrollX: 480 - VIEWPORT_WIDTH / 2,
+      scrollY: 240 - VIEWPORT_HEIGHT / 2,
+    });
   });
 
   it('clamps at every room edge so the window never leaves the room', () => {

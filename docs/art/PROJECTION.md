@@ -31,18 +31,35 @@ plain 2D world space. This is the entire payoff of the `AGENTS.md` rule that
 
 | Thing | Size | Why |
 |---|---|---|
-| internal viewport | **640 × 360** | ×3 = **1920×1080 exactly** |
-| floor tile | 32 × 32 | drawn 1:1, no skew |
+| internal viewport | **320 × 180** | ×6 = **1920×1080 exactly**, and whole-number multiples fit ordinary windows too |
+| floor tile | 32 × 32 texture, drawn 1:1 | carries a **2×2 grid of 16px tiles**, so the apparent tile is 16px |
 | wall-normal | 32 wide × **64** tall | two tile-rows of presence |
 | wall-low | 32 × 32 | sightline-critical corridors only |
 
-**The viewport was reopened because 960×480 cannot integer-scale to 1080p:** at ×2
-it gives 1920×960 and leaves 120px of letterbox; at ×2.25 it fills the screen but
-every pixel is unevenly sized. 640×360 × 3 is exact. Pixel art wants integer
-scaling, so 640×360 is the correct internal resolution and 960×480 was the
-outlier — the three art-bible files were right and the code was not.
+**Revised 2026-09-23: the viewport is 320×180 and the zoom is pinned by hand.**
+Two measurements changed it. First, `Phaser.Scale.FIT` was stretching the canvas to
+a **non-integer** factor at almost every window size — 1.563× at a 1000px window and
+2.911× even at 1080p, because the page layout constrains the canvas to 1863px, so
+the "exact ×3" this table used to claim never actually happened. `pixelArt: true`
+means nearest-neighbour sampling, so the result was **uneven rather than blurred** —
+one art pixel covering two screen pixels and its neighbour one — but uneven edges
+read as low resolution. Phaser has no integer scale mode (the modes are `NONE`,
+`FIT`, `ENVELOP`, `RESIZE` and the two single-axis controls), so `src/main.ts` uses
+`NONE` plus a `ResizeObserver` that sets `setZoom` to the largest whole multiple
+that fits. Second, objects were reported as too small: art is drawn 1:1, so an
+object's share of the screen is its pixel count over the viewport height, and Alex
+at 48px was 13% of a 360-tall view. At 180 he is 27%. **Halving the viewport is the
+only lever that makes objects bigger without redrawing them** — zoom shows fewer
+world units at the same pixel density, so it adds no detail.
 
-At 360 tall, 360 / 32 = **11.25 floor rows** are visible.
+The cost is framing: a 320×180 window shows a third of a 960-wide room, so walls
+take more of the frame and enemies arrive with less warning. 960×480 still cannot
+integer-scale to 1080p directly (×2 gives 1920×960 and leaves 120px of letterbox);
+320×180 × 6 is exact.
+
+At 180 tall and 16px apparent tiles, 180 / 16 = **11.25 floor rows** are visible —
+the same count the old 640×360 view had with 32px tiles, so the floor still reads at
+the same scale even though everything standing on it got twice as big.
 
 ## Draw order
 
@@ -88,6 +105,12 @@ a corner is the mechanic.
 | `wall-h-32`, `wall-v-32`, `wall-corner-32` | **right orientation, wrong size** — base already at the bottom, lit surface already at the top; they need to grow 32 → 64 tall, not be redesigned |
 
 ## The code change, when it lands
+
+> **Landed 2026-09-22**, though not in the shape below: the projection work went
+> into a new `src/game/view/RoomEnvironment.ts` planner rather than into
+> `EntityView`, and entity/wall interleaving is still not implemented (the
+> environment layer sits *beneath* the depth-0 pass instead, so walls occlude
+> nothing). The list is kept as the original intent, not as pending work.
 
 Bounded, and it must land **with** the wall rewrite because both touch the same
 file:

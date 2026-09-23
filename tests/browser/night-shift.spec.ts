@@ -801,7 +801,14 @@ test('the sound layer starts on a real gesture and can be muted', async ({ page 
   // engine must actually schedule a voice: a created context only proves the
   // layer exists, whereas this proves it acted on a cue.
   const playedBefore = (await runSnapshot(page)).audio?.played ?? 0;
-  await page.mouse.move(200, 400);
+  // Canvas-relative, like every other pointer test here. A raw page coordinate
+  // only worked while the canvas filled the window; with whole-number scaling the
+  // canvas is centred inside the host, so a fixed point can miss it entirely.
+  const playfield = await page.locator('canvas').boundingBox();
+  if (!playfield) {
+    throw new Error('the canvas has no bounding box to click');
+  }
+  await page.mouse.move(playfield.x + playfield.width * 0.5, playfield.y + playfield.height * 0.5);
   await page.mouse.down();
   await page.waitForTimeout(400);
   await page.mouse.up();

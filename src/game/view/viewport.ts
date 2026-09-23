@@ -1,17 +1,34 @@
 import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../../sim/core/geometry';
 
 /**
- * Internal render resolution. 640x360 is exactly one ninth of 1920x1080, so it
- * integer-scales x3 to a 1080p display; 960x480 does not (x2 leaves 120px of
- * letterbox and x2.25 makes every pixel an uneven size).
+ * Internal render resolution. 320x180 integer-scales x6 to 1920x1080 exactly, and
+ * its smaller multiples fit ordinary windows too (x3 = 960x540, x4 = 1280x720),
+ * which is what makes `Phaser.Scale.INTEGER` usable: every art pixel lands on a
+ * whole number of screen pixels.
+ *
+ * Two changes landed here on 2026-09-23, and they answer different halves of the
+ * same complaint:
+ *
+ *  * the SCALE MODE went from `FIT` to `INTEGER`, because measuring showed FIT was
+ *    stretching the canvas to a non-integer factor at almost every window size --
+ *    1.563x at 1000px wide, 2.25x at 1440, and 2.911x even at 1080p, since the
+ *    page layout constrains the canvas to 1863px so the intended x3 never
+ *    happened. Uneven art pixels read as low resolution.
+ *  * the VIEWPORT went 640x360 -> 320x180, which is what makes objects bigger:
+ *    art is drawn 1:1, so an object's share of the screen is its pixel count over
+ *    the viewport height. Alex at 48px was 13% of a 360-tall view; at 180 he is
+ *    27%. No art changed -- the same pixels simply occupy twice the screen.
+ *
+ * The cost is framing: a 320x180 window shows a third of a 960-wide room, so
+ * walls take up more of the frame and enemies arrive with less warning.
  *
  * This is the camera window, not the world. Rooms are 960x480 — see
- * `PLAYFIELD_WIDTH`/`PLAYFIELD_HEIGHT` — so the view shows a 640x360 slice of a
+ * `PLAYFIELD_WIDTH`/`PLAYFIELD_HEIGHT` — so the view shows a 320x180 slice of a
  * larger room. Nothing in `src/sim` changes: the simulation stays in 960x480
  * world units.
  */
-export const VIEWPORT_WIDTH = 640;
-export const VIEWPORT_HEIGHT = 360;
+export const VIEWPORT_WIDTH = 320;
+export const VIEWPORT_HEIGHT = 180;
 
 /** Whole-pixel camera scroll, in world units. */
 export type CameraScroll = {
