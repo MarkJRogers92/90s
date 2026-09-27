@@ -654,6 +654,25 @@ test('the compact HUD leaves the opening concourse landmark clear at 1440x900', 
   expect(errors.consoleErrors).toEqual([]);
 });
 
+test('store offer details stay collapsed until opened at 800x600', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 800, height: 600 });
+  await launchRun(page, '/?fixture=mvp-storefront&seed=4242');
+
+  const offers = page.locator('#mvp-run-offers-wrap');
+  await expect(offers).toBeVisible();
+  await expect(offers).not.toHaveAttribute('open', '');
+  await expect(page.locator('#mvp-run-offers li').first()).toBeHidden();
+  await page.getByText('Store offers', { exact: true }).click();
+  await expect(offers).toHaveAttribute('open', '');
+  await expect(page.locator('#mvp-run-offers li').first()).toBeVisible();
+  await page.getByText('Store offers', { exact: true }).click();
+  await expect(offers).not.toHaveAttribute('open', '');
+  await expect(page.getByText('Store offers', { exact: true })).toBeFocused();
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
 test('the compact HUD keeps pause and restart reachable from real input', async ({ page }) => {
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 800, height: 600 });

@@ -994,6 +994,11 @@ body[data-mode='run'] {
 .mvp-run-offers-wrap {
   margin-top: 6px;
   padding-top: 6px;
+  pointer-events: auto;
+}
+
+.mvp-run-offers-wrap summary {
+  cursor: pointer;
 }
 
 .mvp-run-offer-list {

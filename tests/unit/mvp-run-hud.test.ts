@@ -39,7 +39,8 @@ describe('compact Night Shift HUD markup', () => {
   it('keeps contextual shop and fusion actions in reachable disclosure regions', () => {
     const markup = hudMarkup();
 
-    expect(markup).toMatch(/id="mvp-run-offers-wrap"[^>]*hidden/);
+    expect(markup).toMatch(/<details id="mvp-run-offers-wrap"[^>]*hidden/);
+    expect(markup).toMatch(/<summary class="mvp-run-offers-title">Store offers<\/summary>/);
     expect(markup).toContain('id="mvp-run-bench"');
     expect(markup).toContain('id="mvp-bench-confirm"');
     expect(markup).toContain('id="mvp-bench-cancel"');

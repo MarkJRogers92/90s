@@ -31,3 +31,14 @@ No external network, paid generation, push, merge, publish, deploy, or release a
 ## Concern
 
 The inspection disclosure stays closed by default, as intended. Its expanded height is intentionally bounded and scrolls internally on 800x600; contextual offers and fusion controls are exposed only when their simulation state is active.
+
+## Correction round 1 — collapsed store detail
+
+Independent review correctly found that entering a store unhid the offer list outside the inspection disclosure. The offer region is now its own native `details` disclosure: it stays closed by default on storefront entry, continues to receive authoritative offer/status updates while closed, expands from the keyboard-accessible `Store offers` summary, and restores focus to that summary when closed. Leaving a store closes it again.
+
+Test-first correction evidence: the new real-store Chromium assertion initially failed at `tests/browser/night-shift.spec.ts:665` because the first offer card was visible. After the correction, the following output passed:
+
+- `npx vitest run tests/unit/mvp-run-hud.test.ts` — 3/3 passed.
+- `npm run typecheck` — passed.
+- `npx playwright test --config playwright.task7.config.ts tests/browser/night-shift.spec.ts --grep 'store offer details stay collapsed|run HUD fits|Bench Warrant kiosk' --workers=1` — 3/3 passed.
+- `git diff --check` — passed.

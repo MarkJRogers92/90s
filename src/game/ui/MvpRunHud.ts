@@ -98,7 +98,8 @@ export class MvpRunHud {
   private readonly recent: HTMLElement;
   private readonly summary: HTMLElement;
   private readonly controls: HTMLElement;
-  private readonly offersWrap: HTMLElement;
+  private readonly offersWrap: HTMLDetailsElement;
+  private readonly offersSummary: HTMLElement;
   private readonly inspection: HTMLDetailsElement;
   private readonly inspectionSummary: HTMLElement;
   private readonly restartButton: HTMLButtonElement;
@@ -147,7 +148,8 @@ export class MvpRunHud {
     this.recent = requireElement<HTMLElement>('#mvp-run-recent');
     this.summary = requireElement<HTMLElement>('#mvp-run-summary');
     this.controls = requireElement<HTMLElement>('#mvp-run-controls');
-    this.offersWrap = requireElement<HTMLElement>('#mvp-run-offers-wrap');
+    this.offersWrap = requireElement<HTMLDetailsElement>('#mvp-run-offers-wrap');
+    this.offersSummary = requireElement<HTMLElement>('#mvp-run-offers-wrap summary');
     this.inspection = requireElement<HTMLDetailsElement>('#mvp-run-inspection');
     this.inspectionSummary = requireElement<HTMLElement>('#mvp-run-inspection summary');
     this.restartButton = requireElement<HTMLButtonElement>('#mvp-restart-run');
@@ -166,6 +168,7 @@ export class MvpRunHud {
     this.cancelFusionButton.addEventListener('click', this.onCancelFusion);
     this.muteButton.addEventListener('click', this.handleToggleMute);
     this.inspection.addEventListener('toggle', this.handleInspectionToggle);
+    this.offersWrap.addEventListener('toggle', this.handleOffersToggle);
     this.syncMuteLabel(false);
   }
 
@@ -187,6 +190,12 @@ export class MvpRunHud {
   private readonly handleInspectionToggle = (): void => {
     if (!this.inspection.open && document.activeElement !== this.inspectionSummary) {
       this.inspectionSummary.focus();
+    }
+  };
+
+  private readonly handleOffersToggle = (): void => {
+    if (!this.offersWrap.open && document.activeElement !== this.offersSummary) {
+      this.offersSummary.focus();
     }
   };
 
@@ -399,6 +408,9 @@ export class MvpRunHud {
     const room = state.wing.rooms[state.roomIndex];
     const seen = new Set<string>();
     this.offersWrap.hidden = !room?.store;
+    if (!room?.store) {
+      this.offersWrap.open = false;
+    }
     if (room?.store) {
       const carryLimit = runCarryLimit(state);
       for (const offer of room.offers) {
@@ -515,6 +527,7 @@ export class MvpRunHud {
     this.cancelFusionButton.removeEventListener('click', this.onCancelFusion);
     this.muteButton.removeEventListener('click', this.handleToggleMute);
     this.inspection.removeEventListener('toggle', this.handleInspectionToggle);
+    this.offersWrap.removeEventListener('toggle', this.handleOffersToggle);
     this.offerCards.clear();
     this.offers.textContent = '';
     this.bench.hidden = true;
