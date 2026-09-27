@@ -15,6 +15,7 @@ type PresentationSnapshot = {
     phase: string;
   }>;
   presentation: null | {
+    themeId: string;
     staticDisplayObjectCount: number;
     staticTextureCount: number;
     dynamicDisplayObjectCount: number;
@@ -105,11 +106,28 @@ async function moveUntil(
   await page.keyboard.up(key);
 }
 
+/**
+ * Re-centres the janitor on a row with bounded real key taps. Under a loaded
+ * parallel gate a held key can outrun the poll by tens of pixels, carrying the
+ * janitor past a 96px doorway before keyup; the same correction the
+ * night-shift spec uses keeps the east-door approach inside the opening.
+ */
+async function nudgePlayerY(page: Page, target: number, tolerance = 16): Promise<void> {
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    const y = (await snapshot(page)).player.y;
+    if (Math.abs(y - target) <= tolerance) return;
+    await page.keyboard.press(y < target ? 's' : 'w', { delay: 25 });
+  }
+  expect((await snapshot(page)).player.y).toBeCloseTo(target, -1);
+}
+
 async function enterFirstCombat(page: Page): Promise<void> {
   await moveUntil(page, 'w', (state) => state.player.y < 50);
   await moveUntil(page, 'd', (state) => state.player.x > 900);
-  await moveUntil(page, 's', (state) => state.player.y > 235);
+  await moveUntil(page, 's', (state) => state.player.y > 220);
+  await nudgePlayerY(page, 240);
   await moveUntil(page, 'd', (state) => state.roomId === 'storefront_a');
+  await nudgePlayerY(page, 240);
   await moveUntil(page, 'd', (state) => state.roomId === 'food_court', 30_000);
 }
 

@@ -1,5 +1,22 @@
 # Next session
 
+## Claude neon overhaul — start here
+
+Branch `claude/neon-overhaul` in `.worktrees/neon-overhaul`. Read
+[`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first.
+
+    npm install
+    VITE_ENABLE_DEBUG_BRIDGE=true npx vite --host 127.0.0.1 --port 4180 --strictPort
+
+Open http://127.0.0.1:4180, choose **Night Shift**. Before/after captures are
+in `artifacts/neon-overhaul/` (`before/` holds the baseline's own evidence).
+If port 5173 is taken by another worktree, run the browser gate with
+`PW_PORT=4191 npx playwright test`.
+
+Open follow-ups: a purpose-made Alex portrait, folding the duplicate DOM
+status bar into an off-canvas panel, and device/Safari performance checks.
+Nothing is pushed, merged or published.
+
 The Opening Concourse production-presentation vertical slice is implemented on
 `codex/presentation-3quarter` in `.worktrees/presentation-3quarter`. Verify the
 actual branch and working tree before trusting this note.

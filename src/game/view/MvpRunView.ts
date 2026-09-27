@@ -75,6 +75,7 @@ export class MvpRunView {
   private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedOfferIcons = new Set<string>();
   private readonly storeGraphics: Phaser.GameObjects.Graphics;
+  private readonly tokenSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly shadows = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedShadows = new Set<string>();
   private concourseAmbience: ConcourseAmbienceSnapshot | null = null;
@@ -242,6 +243,7 @@ export class MvpRunView {
         effect: presentationDepth('effect', 1),
       },
     };
+    this.drawTokens(state);
     this.feedback.sync(actorScope, state.tick, state.room.combat.enemies, player, state.paused || state.status !== 'playing');
     for (const light of this.feedback.drainLights()) opening?.addLight(light);
     for (const projectile of state.room.combat.projectiles) {
@@ -718,6 +720,33 @@ export class MvpRunView {
     shadow.setPosition(Math.round(x), Math.round(y + 2)).setScale(scale, scale).setVisible(true);
   }
 
+  /** Dropped Mall Tokens: spinning brass coins with their own little glow. */
+  private drawTokens(state: MvpRunState): void {
+    const live = new Set<string>();
+    for (const token of state.room.tokens) {
+      live.add(token.id);
+      let sprite = this.tokenSprites.get(token.id);
+      if (!sprite) {
+        sprite = this.scene.add.image(token.x, token.y, FX_TEXTURES.token).setDepth(presentationDepth('actor', token.y - 1));
+        this.tokenSprites.set(token.id, sprite);
+      }
+      const age = state.tick - token.droppedTick;
+      // A short pop out of the body, then a lazy spin and bob on the floor.
+      const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 14 : 0;
+      const spin = Math.abs(Math.cos((state.tick + token.x) / 9));
+      sprite.setPosition(Math.round(token.x), Math.round(token.y - 6 - hop - Math.sin(state.tick / 11) * 1.5))
+        .setScale(Math.max(0.2, spin) * 1.6, 1.6);
+      this.contactShadow(`token:${token.id}`, token.x, token.y, 0.35);
+      this.openingConcourse?.addLight({ x: token.x, y: token.y - 6, radius: 30, color: 0xffd84a, intensity: 0.65 });
+    }
+    for (const [id, sprite] of this.tokenSprites) {
+      if (!live.has(id)) {
+        sprite.destroy();
+        this.tokenSprites.delete(id);
+      }
+    }
+  }
+
   private pruneShadows(): void {
     for (const [id, shadow] of this.shadows) {
       if (!this.usedShadows.has(id)) {
@@ -761,6 +790,8 @@ export class MvpRunView {
   public destroy(): void {
     for (const shadow of this.shadows.values()) shadow.destroy();
     this.shadows.clear();
+    for (const sprite of this.tokenSprites.values()) sprite.destroy();
+    this.tokenSprites.clear();
     for (const icon of this.offerIcons.values()) icon.destroy();
     this.offerIcons.clear();
     this.feedback.destroy();

@@ -1,5 +1,28 @@
 # Status
 
+## 2026-09-27 — Claude neon overhaul (branch `claude/neon-overhaul`)
+
+Night Shift now renders every room as a lit, dressed 90s mall instead of the
+opening-only slice plus gray vector rooms. Baseline for comparison:
+`codex/presentation-3quarter` (unchanged). Full write-up and the extension
+playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
+
+- All six room roles are themed by a pure dressing planner (storefront wall,
+  props on every collision rectangle, lights, neon) with a multiply lightmap,
+  additive glow and adaptive bloom.
+- Whole-room fixed 960x600 stage (Isaac framing) with a 3/4 storefront band.
+- PixelLab art: 11 storefront/counter panels, 8 props, animated Hanger and Loss
+  Prevention Manager sheets, plus the earlier pass's enemies, items, portraits
+  and decals (manifest: `public/assets/neon/manifest.json`).
+- In-canvas HUD (portrait, hearts, hotbar, minimap, objectives, pickup log,
+  boss bar, area title) derived from state by a pure model.
+- Combat feedback: damage numbers, blood decals, sparks, shake, hurt flash.
+- Gameplay: **Mall Tokens** drop from defeated monsters and pay into cash.
+- The opening fountain is authored collision south of the door lane.
+
+Verification is recorded in TEST_EVIDENCE.md. Not merged, pushed or approved;
+awaiting the user's review against the baseline.
+
 ## 2026-09-27 — Opening presentation vertical slice: correction complete, visual approval pending
 
 The production-presentation work is integrated on `codex/presentation-3quarter`

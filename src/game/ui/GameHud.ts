@@ -201,14 +201,15 @@ export class GameHud {
   private drawLog(state: MvpRunState): void {
     if (state.recentChange && state.recentChange !== this.lastRecent) {
       this.lastRecent = state.recentChange;
-      this.log.unshift({ text: state.recentChange.toUpperCase().slice(0, 40), tick: state.tick });
+      const text = state.recentChange.toUpperCase();
+      this.log.unshift({ text: text.length > 40 ? `${text.slice(0, 39)}.` : text, tick: state.tick });
       this.log.length = Math.min(this.log.length, 4);
     }
-    const x = SCREEN_W - 236;
+    const x = SCREEN_W - 272;
     const y = SCREEN_H - 14 - 58;
     const visible = this.log.filter((entry) => state.tick - entry.tick < 60 * 8);
     if (visible.length === 0) return;
-    this.panel(x, y, 226, 58, 0x4a3d62);
+    this.panel(x, y, 262, 58, 0x4a3d62);
     visible.forEach((entry, index) => {
       const age = state.tick - entry.tick;
       const alpha = index === 0 ? 1 : Math.max(0.35, 1 - age / 480);

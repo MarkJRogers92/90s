@@ -216,6 +216,11 @@ export class MallRoomView {
     const floorLines = this.graphics(this.decal);
     const halo = this.scene.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
     this.glow.add(halo);
+    for (const ring of this.plan.neonRings) {
+      floorLines.lineStyle(3, ring.color, 1).strokeEllipse(ring.x, ring.y, ring.width, ring.height);
+      halo.lineStyle(10, ring.color, 0.12).strokeEllipse(ring.x, ring.y, ring.width, ring.height);
+      halo.lineStyle(3, ring.color, 0.45).strokeEllipse(ring.x, ring.y, ring.width, ring.height);
+    }
     for (const strip of this.plan.neonStrips) {
       floorLines.lineStyle(3, strip.color, 1).lineBetween(strip.x1, strip.y1, strip.x2, strip.y2);
       halo.lineStyle(10, strip.color, 0.12).lineBetween(strip.x1, strip.y1, strip.x2, strip.y2);

@@ -314,6 +314,7 @@ test('Opening Concourse civilians evacuate monotonically from real input and res
   await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000, intervals: [20] })
     .toBeGreaterThan(220);
   await page.keyboard.up('s');
+  await nudgePlayerY(page, 240);
   await page.keyboard.down('d');
   await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 20_000 })
     .toBe('storefront_a');
@@ -384,6 +385,7 @@ test('actor presentation follows real movement, attack, and the first Food Court
   await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000, intervals: [20] })
     .toBeGreaterThan(235);
   await page.keyboard.up('s');
+  await nudgePlayerY(page, 240);
   await page.keyboard.down('d');
   await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 20_000 })
     .toBe('storefront_a');

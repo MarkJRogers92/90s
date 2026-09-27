@@ -1,5 +1,44 @@
 # Test evidence
 
+## 2026-09-27 — Claude neon overhaul (`claude/neon-overhaul`)
+
+Environment: macOS (Apple M2), Node 24, Playwright 1.63 Chromium.
+
+- `npx tsc --noEmit` — exit 0.
+- `npx vitest run` — 37 files, **533 tests passed** (was 513). New:
+  `room-dressing.test.ts` (11: every room dressed, facades in bounds and
+  non-overlapping, every interior collision rect covered, no decor in door
+  lanes, registered textures only, mood darkens through the shift, shoppers
+  only in the opening, signs name the rolled store, fountain collision valid
+  and clear of the door lane), `game-hud-model.test.ts` (4), and
+  `mall-tokens.test.ts` (5: empty on entry, drop on death by kind, collect
+  into cash with inventory cash in step, left behind on room change,
+  deterministic). The token tests were written first and observed failing.
+- `PW_PORT=4193 npx playwright test` — **57/57 Chromium tests passed** on a
+  clean run (2.4 min). Two earlier full runs lost 1–3 tests to movement
+  overshoot while GPU capture scripts shared the machine; the evidence route
+  and two night-shift routes now use the existing bounded-tap `nudgePlayerY`
+  before the east door, and the clean run passed.
+- `npm run build` — exit 0; the built JavaScript contains no debug bridge or
+  fixture names (grep of `dist/assets/*.js`).
+- Frame rate, headless SwiftShader: ~17 fps with bloom, ~50 fps without;
+  bloom is therefore skipped on software renderers and dropped at runtime
+  below 45 fps. Captures use Chromium on Metal (ANGLE, Apple M2) with bloom.
+- Scripted Food Court fight (`scripts/playtest-fight.mjs`): cleared the room
+  at 5/6 HP with cash $30 → $36 from Mall Tokens in one run; the bot is crude
+  and also lost a run, which is not a balance signal.
+
+Tests changed on purpose (the old assertions described the replaced camera
+and view, not gameplay): the scroll test now asserts the fixed-stage contract
+(camera holds still while the janitor moves; aim stays correct after resize);
+"presentation is null outside the opening" now asserts the opening view was
+replaced; evidence captures pin the new 960x600 stage; the civilian-lane unit
+test uses whole-room bounds; the wing-validation fixture point moved off the
+new fountain collision.
+
+Captures: `artifacts/neon-overhaul/` (1440x900 and 800x600 after-shots,
+`before/` = the baseline's own evidence, `comparison.png` side by side).
+
 ## 2026-09-27 — production presentation vertical slice proof
 
 Environment: macOS, Node 24.20.0, Playwright 1.63 Chromium desktop profile.

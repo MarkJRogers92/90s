@@ -24,7 +24,9 @@ const SHOTS = {
   boss: { fixture: 'mvp-boss-entry', walk: [['d', 900]], wait: 2500 },
 };
 
-const browser = await chromium.launch();
+// Real GPU (Metal/ANGLE) so captures include the bloom a player sees; the
+// game skips bloom on software renderers.
+const browser = await chromium.launch({ args: ['--use-angle=metal', '--ignore-gpu-blocklist', '--enable-gpu'] });
 for (const name of shots.length ? shots : Object.keys(SHOTS)) {
   const shot = SHOTS[name];
   if (!shot) continue;

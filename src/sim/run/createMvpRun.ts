@@ -67,6 +67,7 @@ export function createMvpRun(seed: number): MvpRunState {
       combat,
       cleared: !hasLivingEnemies(combat),
       enteredFrom: 'west',
+      tokens: [],
     },
     clearedRooms: [],
     inventory,

@@ -394,6 +394,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
       combat,
       cleared: !hasLivingEnemies(combat),
       enteredFrom: checkpoint.enteredFrom,
+      tokens: [],
     },
     clearedRooms: [...checkpoint.clearedRoomIds],
     inventory,

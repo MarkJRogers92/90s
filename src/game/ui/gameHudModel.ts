@@ -85,6 +85,10 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   } else if (room?.benchKiosk) {
     objectives.push({ text: 'CHECK THE BENCH WARRANT', done: state.inventory.committedTransactions.length > 0 });
   }
+  if (state.room.tokens.length > 0) {
+    const worth = state.room.tokens.reduce((sum, token) => sum + token.value, 0);
+    objectives.push({ text: `SWEEP UP TOKENS  $${worth}`, done: false });
+  }
   objectives.push({ text: state.heat > 0 ? `LOSE THE HEAT  ${state.heat}` : 'STAY OFF THE RADAR', done: state.heat === 0 });
 
   const cleared = new Set(state.clearedRooms);

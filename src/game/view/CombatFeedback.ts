@@ -105,14 +105,14 @@ export class CombatFeedback {
     const label = ensurePixelLabel(this.scene, `${hit.amount}`, hit.amount >= 3 ? '#ffd84a' : '#ffffff', 2, '#3a0010');
     const image = this.scene.add.image(hit.x + (this.random() - 0.5) * 10, hit.y - 30, label.key).setDepth(presentationDepth('prompt', 10));
     this.floaters.push({ image, born: tick, vx: (this.random() - 0.5) * 0.6, vy: -1.1 });
-    this.addDecal(hit.x, hit.y, this.random() < 0.5 ? DECAL_TEXTURE_KEYS.bloodDrops : DECAL_TEXTURE_KEYS.bloodSplash, 0.9 + this.random() * 0.5, hit.kind);
+    this.addDecal(hit.x, hit.y, this.random() < 0.5 ? DECAL_TEXTURE_KEYS.bloodDrops : DECAL_TEXTURE_KEYS.bloodSplash, 1.5 + this.random() * 0.6, hit.kind);
     for (let i = 0; i < 6; i += 1) this.spark(hit.x, hit.y - 12, tick, hit.kind === 'spitter' ? 0x9aff6a : 0xff3a4a);
     this.pendingLights.push({ x: hit.x, y: hit.y, radius: 70, color: 0xffe0c0, intensity: 0.8 });
   }
 
   private onDeath(death: Tracked, tick: number): void {
-    this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : DECAL_TEXTURE_KEYS.bloodPool, death.kind === 'lp_manager' ? 2.4 : 1.5, death.kind);
-    this.addDecal(death.x + 14, death.y + 8, DECAL_TEXTURE_KEYS.bloodDrag, 1.2, death.kind);
+    this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : DECAL_TEXTURE_KEYS.bloodPool, death.kind === 'lp_manager' ? 3.2 : 2.2, death.kind);
+    this.addDecal(death.x + 14, death.y + 8, DECAL_TEXTURE_KEYS.bloodDrag, 1.8, death.kind);
     for (let i = 0; i < 18; i += 1) this.spark(death.x, death.y - 14, tick, death.kind === 'spitter' ? 0x9aff6a : 0xff2a3a);
     this.pendingLights.push({ x: death.x, y: death.y, radius: 120, color: 0xff6a4a, intensity: 0.9 });
     this.scene.cameras.main.shake(120, 0.004);
@@ -133,7 +133,8 @@ export class CombatFeedback {
       .setScale(scale)
       .setRotation(this.random() * Math.PI * 2)
       .setAlpha(0.92);
-    if (kind === 'spitter') decal.setTint(0xb8ff9a);
+    // Fresh blood reads bright under the mall lights, even on the red food-court tile.
+    decal.setTint(kind === 'spitter' ? 0xc8ff9a : 0xff8a8a);
     this.decals.push(decal);
     if (this.decals.length > MAX_DECALS) this.decals.shift()?.destroy();
   }

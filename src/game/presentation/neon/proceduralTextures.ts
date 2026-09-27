@@ -16,6 +16,7 @@ export const FX_TEXTURES = {
   shadow: 'fx:contact-shadow',
   spark: 'fx:spark',
   vignette: 'fx:vignette',
+  token: 'fx:mall-token',
 } as const;
 
 export type FloorStyle =
@@ -99,6 +100,33 @@ export function ensureFxTextures(scene: Phaser.Scene): void {
       context.fillStyle = '#ffffff';
       context.fillRect(1, 0, 2, 4);
       context.fillRect(0, 1, 4, 2);
+      canvas.refresh();
+    }
+  }
+  if (!textures.exists(FX_TEXTURES.token)) {
+    // A brass arcade-style Mall Token: outlined disc, stamped M, one highlight.
+    const rows = [
+      '...####...',
+      '..#yyyy#..',
+      '.#yhyyyy#.',
+      '#yyMyyMyy#',
+      '#yyMMMMyy#',
+      '#yyMyyMyy#',
+      '#yyMyyMyy#',
+      '.#yyyyyd#.',
+      '..#dddd#..',
+      '...####...',
+    ];
+    const palette: Record<string, string> = { '#': '#3a2208', y: '#ffc83a', h: '#fff2b0', M: '#b86a10', d: '#d8901a' };
+    const canvas = textures.createCanvas(FX_TEXTURES.token, 10, 10);
+    if (canvas) {
+      const context = canvas.getContext();
+      rows.forEach((row, y) => [...row].forEach((cell, x) => {
+        const color = palette[cell];
+        if (!color) return;
+        context.fillStyle = color;
+        context.fillRect(x, y, 1, 1);
+      }));
       canvas.refresh();
     }
   }

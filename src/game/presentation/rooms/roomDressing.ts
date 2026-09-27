@@ -117,6 +117,8 @@ export type NeonStrip = {
   readonly color: number;
 };
 
+export type NeonRing = { readonly x: number; readonly y: number; readonly width: number; readonly height: number; readonly color: number };
+
 export type DressingPlan = {
   readonly themeId: RoomThemeId;
   /** Player-facing area name shown on arrival. */
@@ -127,6 +129,8 @@ export type DressingPlan = {
   readonly props: readonly DressingProp[];
   readonly lights: readonly PointLight[];
   readonly neonStrips: readonly NeonStrip[];
+  /** Elliptical floor inlays, e.g. around the atrium fountain. */
+  readonly neonRings: readonly NeonRing[];
   /** Floor-level neon signs (hanging banners, floor logos). */
   readonly floorSigns: ReadonlyArray<NeonSignSpec & { readonly x: number; readonly y: number }>;
   readonly storeZone: { readonly bounds: Rect; readonly floor: FloorStyle; readonly accent: number } | null;
@@ -389,7 +393,10 @@ function openingConcourse(room: WingRoomDefinition): DressingPlan {
     lights,
     neonStrips: [
       { x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.cyan },
-      { x1: 20, y1: 324, x2: 940, y2: 324, color: NEON.magenta },
+    ],
+    neonRings: [
+      { x: 480, y: 348, width: 236, height: 92, color: NEON.magenta },
+      { x: 480, y: 348, width: 262, height: 108, color: NEON.cyan },
     ],
     floorSigns: [],
     storeZone: null,
@@ -449,6 +456,7 @@ function storefront(room: WingRoomDefinition): DressingPlan {
           { x1: store.exit.bounds.x + store.exit.bounds.width, y1: store.bounds.y + store.bounds.height, x2: store.bounds.x + store.bounds.width, y2: store.bounds.y + store.bounds.height, color: look.neon },
         ]
       : [],
+    neonRings: [],
     floorSigns: [],
     storeZone: store ? { bounds: store.bounds, floor: look.floor, accent: look.neon } : null,
     civilians: false,
@@ -485,6 +493,7 @@ function foodCourt(room: WingRoomDefinition): DressingPlan {
       ...ceilingGrid(NEON.warm, 0.5, 160, [180, 380], [200, 480, 760], (i) => (i === 4 ? 'buzz' : undefined)),
     ],
     neonStrips: [],
+    neonRings: [],
     floorSigns: [],
     storeZone: null,
     civilians: false,
@@ -517,6 +526,7 @@ function backHall(room: WingRoomDefinition): DressingPlan {
       ...ceilingGrid(0xd8f0ff, 0.62, 150, [140, 360], [160, 480, 800], (i) => (i % 3 === 1 ? 'buzz' : undefined)),
     ],
     neonStrips: [],
+    neonRings: [],
     floorSigns: [],
     storeZone: null,
     civilians: false,
@@ -553,6 +563,7 @@ function securityOffice(room: WingRoomDefinition): DressingPlan {
       { x1: 580, y1: 110, x2: 940, y2: 110, color: NEON.red },
       { x1: 580, y1: 370, x2: 940, y2: 370, color: NEON.red },
     ],
+    neonRings: [],
     floorSigns: [],
     storeZone: null,
     civilians: false,

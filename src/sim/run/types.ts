@@ -12,6 +12,7 @@ import type { EmitterMountProposal, FusionInventoryState } from '../fusion/types
 import type { RunState } from '../model';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
+import type { MallTokenPickup } from './tokens';
 
 export type MvpRunStatus = 'playing' | 'won' | 'dead';
 
@@ -28,6 +29,8 @@ export type MvpRoomState = {
   combat: RunState;
   cleared: boolean;
   enteredFrom: MvpRoomEntryFrom;
+  /** Mall Tokens dropped in this room and not yet collected. Never checkpointed. */
+  tokens: MallTokenPickup[];
 };
 
 /** Renderer-neutral held input for exactly one fixed simulation tick. */

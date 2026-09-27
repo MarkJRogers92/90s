@@ -1,7 +1,8 @@
 import { defineConfig, devices } from '@playwright/test';
 
 // Several worktrees can run at once; PW_PORT moves this one off the default.
-const port = Number(process.env.PW_PORT ?? 5173);
+const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
+const port = Number(env.PW_PORT ?? 5173);
 const origin = `http://127.0.0.1:${port}`;
 
 export default defineConfig({
