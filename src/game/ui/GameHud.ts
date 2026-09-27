@@ -58,6 +58,8 @@ export class GameHud {
   private shiftStartTick: number | null = null;
   /** Everything the HUD would draw this frame; unchanged means skip the redraw. */
   private lastSignature = '';
+  private lastHealth: number | null = null;
+  private heartJoltTick: number | null = null;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -72,7 +74,7 @@ export class GameHud {
     this.portrait = portraitKey ? scene.add.image(12 + 40, SCREEN_H - 12 - 40, portraitKey).setDisplaySize(76, 76) : null;
     if (this.portrait) this.bottom.add(this.portrait);
     for (let i = 0; i < 3; i += 1) {
-      const heart = scene.add.image(0, 0, HEART_TEXTURES.full).setOrigin(0, 0);
+      const heart = scene.add.image(0, 0, HEART_TEXTURES.full);
       this.hearts.push(heart);
       this.bottom.add(heart);
     }
@@ -98,6 +100,7 @@ export class GameHud {
     const model = buildGameHudModel(state);
     if (this.shiftStartTick === null || state.tick < this.shiftStartTick) this.shiftStartTick = state.tick;
     this.trackNewItems(state, model);
+    this.joltHearts(state);
     if (state.recentChange && state.recentChange !== this.lastRecent) this.pushLog(state);
     // Rebuilding vector panels every frame is expensive on software renderers,
     // and most frames change nothing, so redraw only when the picture changes.
@@ -124,6 +127,30 @@ export class GameHud {
     }
   }
 
+  /**
+   * Losing health jolts the hearts: they pop oversized, wobble and settle.
+   * Scale and rotation only, so it never needs a panel redraw.
+   */
+  private joltHearts(state: MvpRunState): void {
+    const health = state.room.combat.player.health;
+    if (this.lastHealth !== null && health < this.lastHealth) this.heartJoltTick = state.tick;
+    // A restarted run rewinds the tick; never replay a jolt from the old one.
+    if (this.heartJoltTick !== null && state.tick < this.heartJoltTick) this.heartJoltTick = null;
+    this.lastHealth = health;
+    const age = this.heartJoltTick === null ? null : state.tick - this.heartJoltTick;
+    const active = age !== null && age >= 0 && age < 30;
+    this.hearts.forEach((heart, index) => {
+      if (!active) {
+        heart.setScale(1).setRotation(0);
+        return;
+      }
+      const t = age / 30;
+      const wobble = Math.sin(age * 1.3 + index) * 0.35 * (1 - t);
+      heart.setScale(1 + 0.8 * (1 - t) * (1 - t)).setRotation(wobble);
+    });
+    if (!active) this.heartJoltTick = null;
+  }
+
   /** Fades are quantised so a fade costs ten redraws, not sixty. */
   private signature(state: MvpRunState, model: GameHudModel): string {
     const bucket = (age: number | null) => (age === null ? -1 : Math.floor(age / 6));
@@ -133,7 +160,7 @@ export class GameHud {
     const logAges = this.log.map((entry) => bucket(state.tick - entry.tick)).join(',');
     const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
     return JSON.stringify([
-      model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt,
+      model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, this.windupActive(state),
       state.room.combat.player.y > 380,
       titleAge !== null && titleAge < 160 ? bucket(titleAge) : 'x',
       toastAge !== null && toastAge < 280 ? bucket(toastAge) : 'x',
@@ -242,7 +269,8 @@ export class GameHud {
     this.panel(g, px + 86, py + 6, 132, 74);
     this.text('name', 'ALEX', px + 96, py + 12, '#ffd84a', 1, true);
     model.hearts.forEach((heart, index) => {
-      this.hearts[index]?.setTexture(HEART_TEXTURES[heart]).setPosition(px + 96 + index * 26, py + 24);
+      const image = this.hearts[index];
+      image?.setTexture(HEART_TEXTURES[heart]).setPosition(px + 96 + index * 26 + image.width / 2, py + 24 + image.height / 2);
     });
     this.text('cash', `$${model.cash}`, px + 96, py + 54, '#6aff8a', 2, true);
     this.text('heat', `HEAT ${model.heat}`, px + 210, py + 54, model.heat > 0 ? '#ff3a4a' : MUTED, 2, true, 1, 'right');
@@ -435,8 +463,14 @@ export class GameHud {
     }
     if (!this.titleCard) return;
     const age = state.tick - this.titleCard.startedTick;
-    const alpha = age < 20 ? age / 20 : age < 110 ? 1 : Math.max(0, 1 - (age - 110) / 40);
+    const fade = age < 20 ? age / 20 : age < 110 ? 1 : Math.max(0, 1 - (age - 110) / 40);
+    // A wind-up must never hide behind the room title: it steps aside.
+    const alpha = Math.min(fade, this.windupActive(state) ? 0.2 : 1);
     for (const image of this.titleCard.images) image.setAlpha(alpha).setVisible(alpha > 0);
+  }
+
+  private windupActive(state: MvpRunState): boolean {
+    return state.room.combat.enemies.some((enemy) => enemy.health > 0 && (enemy.phase === 'telegraph' || (enemy.bossVolleyTelegraphTicks ?? 0) > 0));
   }
 
   public destroy(): void {

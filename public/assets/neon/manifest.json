@@ -928,5 +928,45 @@
       45
     ],
     "sha256": "0c0c044d82d7af343c036f02407981190ab95d2bfc2bf5807e7e07cb4752f99d"
+  },
+  {
+    "path": "public/assets/neon/enemies/spitter-attack.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-spitter-attack.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      792,
+      704
+    ],
+    "sha256": "309dc29a805f30096d3470bfed66d5c5c4297aa096024b1808ac4dc3d49e02a4"
+  },
+  {
+    "path": "public/assets/neon/enemies/spitter-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-spitter-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      448,
+      512
+    ],
+    "sha256": "659a4f1f6d93a2c507f6ce33b210599fc23e2c1cd1ef7ea302840cce7fd211fd"
+  },
+  {
+    "path": "public/assets/neon/enemies/lp-manager-attack.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-lp-manager-attack.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      792,
+      704
+    ],
+    "sha256": "c9b75f4c73b3d37aed19e53636af21ae68549d5e0e5dd2865ab6eaf6309e67e2"
+  },
+  {
+    "path": "public/assets/neon/enemies/lp-manager-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-lp-manager-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      448,
+      512
+    ],
+    "sha256": "ad5732219a0a9198a8df07eb533aca8a959186b84e30a3dc91fe7c4be741150b"
   }
 ]

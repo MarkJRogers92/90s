@@ -130,6 +130,41 @@ dropped at runtime if a real device cannot hold 45 fps.
   from the textures, so regenerating at another size needs no code change.
 - Replaced props: the Bench Warrant repair desk and a straight planter box.
 
+## Round 4 — combat readability: see it coming, feel it land
+
+Everything here is presentation read from authoritative state; no damage,
+timing or AI rule changed. Pure rules live in `src/game/view/combatBeats.ts`
+(tests: `tests/unit/combat-beats.test.ts`).
+
+- **Wind-ups** come from the simulation's own telegraph fields, so every
+  warning is the real attack: the Spitter's dashed spit lane along its locked
+  aim, the boss slam ring at the authored reach filling from the centre, the
+  volley's five real angles, and a big pixel "!". Hangers have no telegraph —
+  they hurt by touch — so they rear up and their claws flare red inside
+  `HANGER_WARN_DISTANCE`. Charging sprites swell/rise, tremble, glow the
+  attack colour and flash white on the release tick.
+- **Landing** (`CombatFeedback.ts`): the struck sprite goes solid white and
+  snaps back along the hit with a squash-and-stretch spring (`hitReaction`),
+  a comic impact star and ring pop at the contact point, blood sprays through
+  the enemy, damage numbers pop oversized, kills throw a splat, shockwave and
+  a word (WHAM! SPLAT! BONK! MOPPED! CLEANUP!; the boss gets CLOSING TIME!).
+  The slam shockwaves and scorches the floor whether or not it connects.
+  Getting hurt: star + shockwave on Alex, knockback, a red edge vignette,
+  OUCH!/CRUNCH!, a big -N, and the HUD hearts pop and wobble.
+- **Hit stop** (`MvpRunScene.update`): the fixed-step clock holds 45-160 ms
+  (420 ms on the boss kill) after a beat — exactly like a very short pause.
+  Held input stays held, queued presses wait. Beats in one frame never stack.
+- **Enemy globs** are drawn as outlined magenta blobs with a trail; the solid
+  core is the hitbox.
+- **Attack and death sheets**: when `enemies/<kind>-attack.png` loads, the
+  wind-up scrubs its first two-thirds in step with the telegraph so the strike
+  frame lands on the tick the simulation fires (`attackFrameFor`); a
+  `<kind>-death.png` plays where the enemy fell, facing the janitor. Both
+  are optional — without them the vector/pose effects still play.
+- `pack_character.py` now mirrors a missing east-side facing from its
+  west-side twin, so PixelLab animations need 5 directions, not 8.
+- `node scripts/capture-beats.mjs <baseUrl> <outDir>` screenshots each beat.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

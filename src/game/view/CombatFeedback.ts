@@ -360,7 +360,7 @@ export class CombatFeedback {
     const label = ensurePixelLabel(this.scene, `-${amount}`, '#ff4a5a', 4, '#1a0006');
     const image = this.scene.add.image(player.x, player.y - 56, label.key).setDepth(presentationDepth('prompt', 30));
     this.floaters.push({ image, born: tick, vx: 0, vy: -1.2, life: FLOAT_TICKS + 8, pop: 2 });
-    this.word(amount >= 2 ? 'CRUNCH!' : 'OUCH!', player.x + (dirX >= 0 ? 64 : -64), player.y - 96, tick, '#ffffff', 3);
+    this.word(amount >= 2 ? 'CRUNCH!' : 'OUCH!', player.x + (dirX >= 0 ? 96 : -96), player.y - 70, tick, '#ffffff', 3);
     this.addDecal(player.x, player.y + 4, DECAL_TEXTURE_KEYS.bloodDrops, 1.2, 'hanger');
     this.pendingLights.push({ x: player.x, y: player.y, radius: 140, color: 0xff2a3a, intensity: 1 });
     return { kind: 'playerHurt' };

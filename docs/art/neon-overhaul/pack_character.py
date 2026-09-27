@@ -3,8 +3,10 @@
 
 The game's actor sheets are rows of 48px (or 32x48) frames, one row per
 facing in ACTOR_DIRECTION_ORDER (south, south-west, west, north-west, north,
-north-east, east, south-east). A direction the export lacks borrows its
-nearest available neighbour so the sheet is always complete.
+north-east, east, south-east). A direction the export lacks is mirrored from
+its left/right twin when that exists (east from west, north-east from
+north-west, south-east from south-west), else borrows its nearest available
+neighbour, so the sheet is always complete.
 
   python3 pack_character.py EXPORT_DIR ANIMATION_NAME OUT.png
   python3 pack_character.py EXPORT_DIR --rotations OUT.png   # 1-row idle strip
@@ -18,6 +20,20 @@ from pathlib import Path
 from PIL import Image
 
 ORDER = ['south', 'south-west', 'west', 'north-west', 'north', 'north-east', 'east', 'south-east']
+
+
+MIRROR = {'east': 'west', 'west': 'east', 'north-east': 'north-west', 'north-west': 'north-east',
+          'south-east': 'south-west', 'south-west': 'south-east'}
+
+
+def source_for(direction: str, available: set[str]) -> tuple[str, bool]:
+    """The export direction to draw `direction` from, and whether to flip it."""
+    if direction in available:
+        return direction, False
+    twin = MIRROR.get(direction)
+    if twin in available:
+        return twin, True
+    return nearest(direction, available), False
 
 
 def nearest(direction: str, available: set[str]) -> str:
@@ -61,9 +77,12 @@ def main() -> None:
     width = height = max(width, height)
     sheet = Image.new('RGBA', (width * columns, height * 8), (0, 0, 0, 0))
     for row, direction in enumerate(ORDER):
-        cells = loaded[nearest(direction, available)]
+        source, flip = source_for(direction, available)
+        cells = loaded[source]
         for column in range(columns):
             frame = cells[column % len(cells)]
+            if flip:
+                frame = frame.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
             ox = column * width + (width - frame.width) // 2
             oy = row * height + (height - frame.height) // 2
             sheet.alpha_composite(frame, (ox, oy))
