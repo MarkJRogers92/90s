@@ -212,3 +212,60 @@ describe('audio cue derivation', () => {
     expect(cues).not.toContain('shot');
   });
 });
+
+describe('combat beat cues', () => {
+  function withEnemies(enemies: EnemyState[]): MvpRunState {
+    const state = createMvpRun(9);
+    state.room.combat.enemies = enemies;
+    return state;
+  }
+
+  it('reports a hit when an enemy loses health, and a heavy hit for a big one', () => {
+    const light = cuesBetween(withEnemies([makeHanger(1, 200, 240)]), (state) => {
+      state.room.combat.enemies[0]!.health -= 1;
+    });
+    expect(light).toContain('hit');
+    expect(light).not.toContain('hit_heavy');
+    const heavy = cuesBetween(withEnemies([makeHanger(1, 200, 240)]), (state) => {
+      state.room.combat.enemies[0]!.health -= 4;
+    });
+    expect(heavy).toContain('hit_heavy');
+    expect(heavy).not.toContain('hit');
+  });
+
+  it('does not also report a hit for the blow that kills', () => {
+    const cues = cuesBetween(withEnemies([makeHanger(1, 200, 240, 2)]), (state) => {
+      state.room.combat.enemies = [];
+    });
+    expect(cues).toContain('enemy_down');
+    expect(cues).not.toContain('hit');
+  });
+
+  it('gives the boss its own kill sting', () => {
+    const cues = cuesBetween(withEnemies([makeBoss({ health: 1 })]), (state) => {
+      state.room.combat.enemies = [];
+    });
+    expect(cues).toContain('boss_down');
+    expect(cues).not.toContain('enemy_down');
+  });
+
+  it('reports a spitter charging and then spitting', () => {
+    const spitter = { ...makeHanger(3, 300, 200), kind: 'spitter' as const, phase: 'recover' as const };
+    const charging = cuesBetween(withEnemies([spitter]), (state) => {
+      state.room.combat.enemies[0]!.phase = 'telegraph';
+    });
+    expect(charging).toContain('spit_charge');
+    const state = withEnemies([{ ...spitter, phase: 'telegraph' }]);
+    const fired = cuesBetween(state, (current) => {
+      current.room.combat.enemies[0]!.phase = 'recover';
+    });
+    expect(fired).toContain('spit');
+  });
+
+  it('reports the slam landing when the boss leaves its telegraph', () => {
+    const state = withEnemies([makeBoss({ phase: 'telegraph' })]);
+    expect(cuesBetween(state, (current) => {
+      current.room.combat.enemies[0]!.phase = 'recover';
+    })).toContain('slam');
+  });
+});

@@ -9,6 +9,7 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import Phaser from 'phaser';
+import { HIT_STOP_MS } from '../view/combatBeats';
 import { installMvpRunDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
   InMemoryCheckpointStore,
@@ -482,7 +483,10 @@ export class MvpRunScene extends Phaser.Scene {
 
   private syncView(): void {
     this.runView?.sync(this.run);
-    this.hitStopMs = Math.max(this.hitStopMs, this.runView?.takeHitStop() ?? 0);
+    const hold = this.runView?.takeHitStop() ?? 0;
+    this.hitStopMs = Math.max(this.hitStopMs, hold);
+    // Getting hurt (and the boss kill) ring the ears: the mix muffles while the frame holds.
+    if (hold >= HIT_STOP_MS.playerHurt) this.audio?.muffle(hold);
     centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);

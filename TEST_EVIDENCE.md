@@ -1,5 +1,15 @@
 # Test evidence
 
+## 2026-09-27 — round 4b: combat sound
+
+- `npx vitest run` — PASS: 39 files, 556 tests. New `combat beat cues` block in
+  `tests/unit/audio-cues.test.ts` (hit vs heavy hit, no hit on the killing blow,
+  boss kill sting, spitter charge then spit, slam on leaving telegraph); four
+  failed first for the missing cues.
+- Real fight with autoplay allowed: the engine scheduled 29 voices across the
+  Food Court fight with no page or audio errors (only headless GL perf notes).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.2 min).
+
 ## 2026-09-27 — round 4: combat readability (wind-ups, exaggerated hits, hit stop)
 
 - `npx vitest run` — PASS: 39 files, 551 tests (new `tests/unit/combat-beats.test.ts`,

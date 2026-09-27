@@ -164,6 +164,15 @@ timing or AI rule changed. Pure rules live in `src/game/view/combatBeats.ts`
 - `pack_character.py` now mirrors a missing east-side facing from its
   west-side twin, so PixelLab animations need 5 directions, not 8.
 - `node scripts/capture-beats.mjs <baseUrl> <outDir>` screenshots each beat.
+- **Sound for the beats** (`src/game/audio/`, still fully synthesized, no
+  files): enemy hits were silent before (the `hit` recipe existed but no cue
+  fired it) — now `hit` / `hit_heavy` fire when an enemy loses health without
+  dying, kills get a splat, thump and comic sting, the boss gets `boss_down`,
+  Spitters get a rising gargle for the whole telegraph plus a wet `spit`, and
+  the slam lands with a boom hit or miss. The boss wind-up rises for exactly
+  the 36-tick telegraph. Getting hurt plays a crunch, then the scene calls
+  `audio.muffle(ms)`: a master low-pass closes for the hit stop and reopens.
+  Cues are derived from state changes, so they fire on the frozen frame.
 
 ## Known gaps / next steps
 

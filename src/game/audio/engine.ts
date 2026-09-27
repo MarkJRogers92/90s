@@ -26,10 +26,20 @@ type Tone = {
   readonly atMs?: number;
 };
 
+type NoiseLayer = {
+  readonly ms: number;
+  readonly gain: number;
+  /** Low-pass cutoff at the start of the burst. */
+  readonly cutoff: number;
+  /** Cutoff at the end: a falling sweep turns hiss into a wet splat. */
+  readonly cutoffTo?: number;
+  readonly atMs?: number;
+};
+
 type Recipe = {
   readonly tones: readonly Tone[];
-  /** Optional noise burst layered under the tones, for whooshes and impacts. */
-  readonly noise?: { readonly ms: number; readonly gain: number; readonly cutoff: number };
+  /** Noise bursts layered under the tones, for whooshes and impacts. */
+  readonly noise?: readonly NoiseLayer[];
   /** Minimum ms between two plays of this cue, so cues cannot machine-gun. */
   readonly minGapMs: number;
 };
@@ -37,7 +47,7 @@ type Recipe = {
 const RECIPES: Record<AudioCue, Recipe> = {
   swing: {
     tones: [{ wave: 'triangle', from: 320, to: 140, ms: 130, gain: 0.16 }],
-    noise: { ms: 130, gain: 0.12, cutoff: 1800 },
+    noise: [{ ms: 130, gain: 0.12, cutoff: 1800 }],
     minGapMs: 120,
   },
   shot: {
@@ -46,16 +56,36 @@ const RECIPES: Record<AudioCue, Recipe> = {
   },
   splash: {
     tones: [{ wave: 'sine', from: 700, to: 300, ms: 150, gain: 0.08 }],
-    noise: { ms: 160, gain: 0.08, cutoff: 900 },
+    noise: [{ ms: 160, gain: 0.08, cutoff: 900 }],
     minGapMs: 90,
   },
   hit: {
-    tones: [{ wave: 'square', from: 170, to: 60, ms: 95, gain: 0.2 }],
-    noise: { ms: 70, gain: 0.1, cutoff: 1200 },
+    // A meaty thwack: a falling square for the crack, a sine sub for weight.
+    tones: [
+      { wave: 'square', from: 190, to: 55, ms: 90, gain: 0.2 },
+      { wave: 'sine', from: 120, to: 40, ms: 130, gain: 0.26 },
+    ],
+    noise: [{ ms: 60, gain: 0.16, cutoff: 3200, cutoffTo: 700 }],
+    minGapMs: 45,
+  },
+  hit_heavy: {
+    tones: [
+      { wave: 'sawtooth', from: 230, to: 45, ms: 150, gain: 0.22 },
+      { wave: 'sine', from: 95, to: 32, ms: 220, gain: 0.32 },
+    ],
+    noise: [
+      { ms: 35, gain: 0.2, cutoff: 7000 },
+      { ms: 110, gain: 0.18, cutoff: 2600, cutoffTo: 400 },
+    ],
     minGapMs: 45,
   },
   hurt: {
-    tones: [{ wave: 'sawtooth', from: 310, to: 90, ms: 280, gain: 0.24 }],
+    // Crunch, then a sick falling whine; the scene muffles the mix right after.
+    tones: [
+      { wave: 'sawtooth', from: 310, to: 90, ms: 300, gain: 0.22 },
+      { wave: 'sine', from: 130, to: 38, ms: 240, gain: 0.32 },
+    ],
+    noise: [{ ms: 180, gain: 0.24, cutoff: 2600, cutoffTo: 300 }],
     minGapMs: 180,
   },
   heal: {
@@ -81,7 +111,7 @@ const RECIPES: Record<AudioCue, Recipe> = {
       { wave: 'sawtooth', from: 200, to: 70, ms: 400, gain: 0.26 },
       { wave: 'square', from: 140, to: 60, ms: 300, gain: 0.14, atMs: 60 },
     ],
-    noise: { ms: 260, gain: 0.12, cutoff: 700 },
+    noise: [{ ms: 260, gain: 0.12, cutoff: 700 }],
     minGapMs: 400,
   },
   conduction: {
@@ -93,11 +123,58 @@ const RECIPES: Record<AudioCue, Recipe> = {
     minGapMs: 150,
   },
   enemy_down: {
-    tones: [{ wave: 'square', from: 300, to: 110, ms: 170, gain: 0.16 }],
+    // Splat and thump, then a quick comic two-note sting.
+    tones: [
+      { wave: 'sine', from: 150, to: 40, ms: 240, gain: 0.3 },
+      { wave: 'square', from: 880, to: 880, ms: 70, gain: 0.07, atMs: 90 },
+      { wave: 'square', from: 1320, to: 1320, ms: 120, gain: 0.07, atMs: 160 },
+    ],
+    noise: [{ ms: 240, gain: 0.24, cutoff: 1500, cutoffTo: 180 }],
     minGapMs: 60,
   },
+  boss_down: {
+    tones: [
+      { wave: 'sawtooth', from: 170, to: 30, ms: 950, gain: 0.26 },
+      { wave: 'sine', from: 75, to: 24, ms: 1300, gain: 0.36 },
+    ],
+    noise: [
+      { ms: 900, gain: 0.26, cutoff: 1400, cutoffTo: 120 },
+      { ms: 60, gain: 0.2, cutoff: 8000 },
+    ],
+    minGapMs: 1500,
+  },
+  spit_charge: {
+    // A rising, gargling wind-up that lasts as long as the spitter's telegraph.
+    tones: [
+      { wave: 'sawtooth', from: 85, to: 260, ms: 580, gain: 0.07 },
+      { wave: 'square', from: 170, to: 420, ms: 580, gain: 0.035 },
+    ],
+    noise: [{ ms: 560, gain: 0.045, cutoff: 400, cutoffTo: 1600 }],
+    minGapMs: 200,
+  },
+  spit: {
+    tones: [{ wave: 'sine', from: 460, to: 110, ms: 130, gain: 0.15 }],
+    noise: [{ ms: 150, gain: 0.2, cutoff: 2400, cutoffTo: 500 }],
+    minGapMs: 80,
+  },
+  slam: {
+    // A floor-shaking boom, whether or not it connects.
+    tones: [
+      { wave: 'sine', from: 95, to: 26, ms: 650, gain: 0.42 },
+      { wave: 'sawtooth', from: 70, to: 30, ms: 360, gain: 0.18 },
+    ],
+    noise: [
+      { ms: 40, gain: 0.22, cutoff: 5000 },
+      { ms: 520, gain: 0.3, cutoff: 700, cutoffTo: 90 },
+    ],
+    minGapMs: 300,
+  },
   boss_telegraph: {
-    tones: [{ wave: 'sine', from: 500, to: 780, ms: 300, gain: 0.16 }],
+    // Rises for the whole 36-tick slam wind-up, so the boom lands at its peak.
+    tones: [
+      { wave: 'sine', from: 260, to: 880, ms: 600, gain: 0.14 },
+      { wave: 'triangle', from: 130, to: 440, ms: 600, gain: 0.08 },
+    ],
     minGapMs: 250,
   },
   boss_volley: {
@@ -152,6 +229,9 @@ const RECIPES: Record<AudioCue, Recipe> = {
   },
 };
 
+const OPEN_CUTOFF = 18000;
+const MUFFLED_CUTOFF = 650;
+
 /** The most voices one frame may start, so a big tick cannot clip the master. */
 const MAX_VOICES_PER_FRAME = 6;
 
@@ -171,6 +251,8 @@ function audioContextCtor(): AudioContextCtor | null {
 export class GameAudioEngine {
   private context: AudioContext | null = null;
   private master: GainNode | null = null;
+  /** Always in the chain, wide open; `muffle` closes it for a moment. */
+  private tone: BiquadFilterNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
   private muted = false;
   private playedCount = 0;
@@ -216,9 +298,14 @@ export class GameAudioEngine {
         const context = new Ctor();
         const master = context.createGain();
         master.gain.value = this.muted ? 0 : 0.85;
-        master.connect(context.destination);
+        const tone = context.createBiquadFilter();
+        tone.type = 'lowpass';
+        tone.frequency.value = OPEN_CUTOFF;
+        master.connect(tone);
+        tone.connect(context.destination);
         this.context = context;
         this.master = master;
+        this.tone = tone;
         this.noiseBuffer = createNoiseBuffer(context);
       } catch {
         this.context = null;
@@ -235,6 +322,30 @@ export class GameAudioEngine {
     this.muted = muted;
     if (this.master !== null && this.context !== null) {
       this.master.gain.setValueAtTime(muted ? 0 : 0.85, this.context.currentTime);
+    }
+  }
+
+  /**
+   * Muffles the whole mix for about `ms`, like the janitor's ears ringing.
+   * The hurt crunch itself plays clean first; the mix closes just after it
+   * and opens back up as the hit stop ends.
+   */
+  public muffle(ms: number): void {
+    const context = this.context;
+    const tone = this.tone;
+    if (context === null || tone === null) {
+      return;
+    }
+    try {
+      const now = context.currentTime;
+      tone.frequency.cancelScheduledValues(now);
+      tone.frequency.setValueAtTime(OPEN_CUTOFF, now);
+      tone.frequency.setValueAtTime(OPEN_CUTOFF, now + 0.06);
+      tone.frequency.exponentialRampToValueAtTime(MUFFLED_CUTOFF, now + 0.09);
+      tone.frequency.setValueAtTime(MUFFLED_CUTOFF, now + 0.09 + ms / 1000);
+      tone.frequency.exponentialRampToValueAtTime(OPEN_CUTOFF, now + 0.09 + ms / 1000 + 0.35);
+    } catch {
+      // Silence on failure, never a broken frame.
     }
   }
 
@@ -282,8 +393,8 @@ export class GameAudioEngine {
     this.lastPlayedAt.set(cue, now);
 
     try {
-      if (recipe.noise) {
-        this.playNoise(context, master, now, recipe.noise);
+      for (const layer of recipe.noise ?? []) {
+        this.playNoise(context, master, now, layer);
       }
       for (const tone of recipe.tones) {
         this.playTone(context, master, now, tone);
@@ -320,29 +431,28 @@ export class GameAudioEngine {
     oscillator.stop(start + duration + 0.02);
   }
 
-  private playNoise(
-    context: AudioContext,
-    master: GainNode,
-    now: number,
-    noise: { readonly ms: number; readonly gain: number; readonly cutoff: number },
-  ): void {
+  private playNoise(context: AudioContext, master: GainNode, now: number, noise: NoiseLayer): void {
     if (this.noiseBuffer === null) {
       return;
     }
+    const start = now + (noise.atMs ?? 0) / 1000;
     const duration = noise.ms / 1000;
     const source = context.createBufferSource();
     source.buffer = this.noiseBuffer;
     const filter = context.createBiquadFilter();
     filter.type = 'lowpass';
-    filter.frequency.value = noise.cutoff;
+    filter.frequency.setValueAtTime(noise.cutoff, start);
+    if (noise.cutoffTo !== undefined && noise.cutoffTo !== noise.cutoff) {
+      filter.frequency.exponentialRampToValueAtTime(Math.max(20, noise.cutoffTo), start + duration);
+    }
     const gain = context.createGain();
-    gain.gain.setValueAtTime(noise.gain, now);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    gain.gain.setValueAtTime(noise.gain, start);
+    gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
     source.connect(filter);
     filter.connect(gain);
     gain.connect(master);
-    source.start(now);
-    source.stop(now + duration);
+    source.start(start);
+    source.stop(start + duration);
   }
 
   public destroy(): void {
@@ -351,6 +461,7 @@ export class GameAudioEngine {
     const context = this.context;
     this.context = null;
     this.master = null;
+    this.tone = null;
     this.noiseBuffer = null;
     if (context !== null) {
       void context.close().catch(() => undefined);
