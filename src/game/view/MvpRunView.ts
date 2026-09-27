@@ -39,13 +39,16 @@ type ActorFrameEvidence = {
   readonly frame: { readonly row: number; readonly column: number };
   readonly walking: boolean;
   readonly damageFlicker: boolean;
+  readonly damageCueVisible: boolean;
+  readonly damageCueDepth: number | null;
+  readonly lungeCueVisible: boolean;
+  readonly lungeCueDepth: number | null;
   readonly actorDepth: number;
-  readonly effectDepth: number;
 };
 
 export type ActorPresentationDebugSnapshot = {
-  readonly player: (ActorFrameEvidence & { readonly mopArcVisible: boolean }) | null;
-  readonly hangers: Array<ActorFrameEvidence & { readonly id: string; readonly lungeVisible: boolean }>;
+  readonly player: (ActorFrameEvidence & { readonly mopArcVisible: boolean; readonly mopArcDepth: number | null }) | null;
+  readonly hangers: Array<ActorFrameEvidence & { readonly id: string }>;
   readonly telegraphs: Array<{ readonly id: string; readonly visible: boolean; readonly effectDepth: number }>;
   readonly activeDeathEffectCount: number;
   readonly depthBands: { readonly tallForeground: number; readonly effect: number };
@@ -158,6 +161,11 @@ export class MvpRunView {
       }, state.tick, actorDepth) : null;
       const spriteActive = sprite?.spriteActive ?? false;
       if (sprite) {
+        this.drawActorEffectCues({
+          id: `enemy:${enemy.id}`, kind: 'hanger', x: enemy.x, y: enemy.y,
+          moveX: enemyDelta.x, moveY: enemyDelta.y,
+          attackTicks: 0, damaged: false, phase: enemy.phase,
+        }, sprite, effects);
         hangerEvidence.push({
           id: `enemy:${enemy.id}`,
           ...sprite,
@@ -193,19 +201,29 @@ export class MvpRunView {
       id: 'player', kind: 'alex', x: player.x, y: player.y, moveX: playerDelta.x, moveY: playerDelta.y,
       attackTicks: player.attackActiveTicks, damaged: player.invulnerableTicks > 0, phase: 'idle',
     }, state.tick, playerDepth);
+    const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.drawPlayer(
       state,
       opening?.actorGraphics('player', state.room.combat.player.y) ?? graphics,
-      opening?.effectGraphics('player') ?? this.effectGraphics,
+      playerEffects,
       !playerSprite.spriteActive,
+    );
+    this.drawActorEffectCues({
+      id: 'player', kind: 'alex', x: player.x, y: player.y,
+      moveX: playerDelta.x, moveY: playerDelta.y,
+      attackTicks: player.attackActiveTicks,
+      damaged: player.invulnerableTicks > 0,
+      phase: 'idle',
+    }, playerSprite, playerEffects);
+    const mopArcVisible = shouldDrawDirectAttackArc(
+      player.attackActiveTicks,
+      state.room.combat.compiledLoadout.primary.delivery,
     );
     this.actorDebug = {
       player: {
         ...playerSprite,
-        mopArcVisible: shouldDrawDirectAttackArc(
-          player.attackActiveTicks,
-          state.room.combat.compiledLoadout.primary.delivery,
-        ),
+        mopArcVisible,
+        mopArcDepth: mopArcVisible ? presentationDepth('effect', 1) : null,
       },
       hangers: hangerEvidence,
       telegraphs,
@@ -525,7 +543,7 @@ export class MvpRunView {
     }
   }
 
-  private syncActorSprite(snapshot: ActorSnapshot, tick: number, depth: number): ActorFrameEvidence & { lungeVisible: boolean } {
+  private syncActorSprite(snapshot: ActorSnapshot, tick: number, depth: number): ActorFrameEvidence {
     const visual = actorPresentation(this.actorMemory, snapshot, tick);
     const textureKey = actorTextureKey(snapshot.kind, visual.walking);
     const spec: SpriteSpec = snapshot.kind === 'hanger'
@@ -548,10 +566,47 @@ export class MvpRunView {
       frame,
       walking: visual.walking,
       damageFlicker: visual.damageFlicker,
-      lungeVisible: visual.lunge > 0,
+      damageCueVisible: visual.damageFeedback,
+      damageCueDepth: visual.damageFeedback ? presentationDepth('effect', 1) : null,
+      lungeCueVisible: visual.lunge > 0,
+      lungeCueDepth: visual.lunge > 0 ? presentationDepth('effect', 1) : null,
       actorDepth: depth,
-      effectDepth: presentationDepth('effect', 1),
     };
+  }
+
+  private drawActorEffectCues(
+    actor: ActorSnapshot,
+    evidence: ActorFrameEvidence,
+    effects: Phaser.GameObjects.Graphics,
+  ): void {
+    if (evidence.lungeCueVisible) {
+      const magnitude = Math.hypot(actor.moveX, actor.moveY);
+      if (magnitude > 0) {
+        const directionX = actor.moveX / magnitude;
+        const directionY = actor.moveY / magnitude;
+        const sideX = -directionY * 5;
+        const sideY = directionX * 5;
+        effects.lineStyle(2, 0xf6d365, 0.8);
+        effects.lineBetween(
+          actor.x - directionX * 22 + sideX,
+          actor.y - directionY * 22 + sideY,
+          actor.x - directionX * 8 + sideX,
+          actor.y - directionY * 8 + sideY,
+        );
+        effects.lineBetween(
+          actor.x - directionX * 22 - sideX,
+          actor.y - directionY * 22 - sideY,
+          actor.x - directionX * 8 - sideX,
+          actor.y - directionY * 8 - sideY,
+        );
+      }
+    }
+    if (evidence.damageCueVisible) {
+      effects.lineStyle(3, 0xffd45d, 0.95);
+      effects.strokeCircle(actor.x, actor.y, actor.kind === 'alex' ? 17 : 21);
+      effects.lineStyle(1, 0xf4edd8, 0.9);
+      effects.strokeCircle(actor.x, actor.y, actor.kind === 'alex' ? 21 : 25);
+    }
   }
 
   private drawDeathEffects(opening: OpeningConcourseView | undefined): void {

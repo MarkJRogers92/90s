@@ -48,6 +48,7 @@ export type ActorPresentation = {
   readonly walking: boolean;
   readonly attackLean: number;
   readonly damageFlicker: boolean;
+  readonly damageFeedback: boolean;
   readonly bobY: number;
   readonly lunge: number;
 };
@@ -104,7 +105,15 @@ export function actorPresentation(
   const direction = memory.directionFor(actor);
   const walking = actor.moveX !== 0 || actor.moveY !== 0;
   const state = actorVisualState({ moving: walking, attackTicks: actor.attackTicks, invulnerableTicks: actor.damaged ? 1 : 0, phase: actor.phase, isHanger: actor.kind === 'hanger', tick });
-  return { direction, walking: state.walking, attackLean: state.attackLean, damageFlicker: state.damageFlicker, bobY: state.bobY, lunge: state.lunge };
+  return {
+    direction,
+    walking: state.walking,
+    attackLean: state.attackLean,
+    damageFlicker: state.damageFlicker,
+    damageFeedback: state.damageFeedback,
+    bobY: state.bobY,
+    lunge: state.lunge,
+  };
 }
 
 export const ACTOR_DEATH_EFFECT_TICKS = 18;

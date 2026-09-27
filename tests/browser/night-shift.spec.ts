@@ -81,7 +81,9 @@ type RunSnapshot = {
       damageFlicker: boolean;
       mopArcVisible: boolean;
       actorDepth: number;
-      effectDepth: number;
+      mopArcDepth: number | null;
+      damageCueVisible: boolean;
+      damageCueDepth: number | null;
     } | null;
     hangers: Array<{
       id: string;
@@ -90,9 +92,9 @@ type RunSnapshot = {
       direction: string;
       frame: { row: number; column: number };
       walking: boolean;
-      lungeVisible: boolean;
+      lungeCueVisible: boolean;
       actorDepth: number;
-      effectDepth: number;
+      lungeCueDepth: number | null;
     }>;
     telegraphs: Array<{ id: string; visible: boolean; effectDepth: number }>;
     activeDeathEffectCount: number;
@@ -240,6 +242,8 @@ test('actor presentation follows real movement, attack, and the first Food Court
   expect(idle?.vectorFallbackActive).toBe(false);
   expect(idle?.walking).toBe(false);
   expect(idle?.textureKey).toBe('presentation:actor:alex-idle');
+  expect(idle?.damageCueVisible).toBe(false);
+  expect(idle?.damageCueDepth).toBeNull();
 
   await page.keyboard.down('w');
   await expect.poll(async () => {
@@ -250,7 +254,7 @@ test('actor presentation follows real movement, attack, and the first Food Court
   await expect.poll(() => runSnapshot(page).then((state) => state.actorPresentation?.player?.frame.column))
     .not.toBe(firstWalkFrame);
   await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000, intervals: [20] })
-    .toBeLessThan(75);
+    .toBeLessThan(50);
   await page.keyboard.up('w');
 
   const beforeAttack = await runSnapshot(page);
@@ -263,7 +267,7 @@ test('actor presentation follows real movement, attack, and the first Food Court
   await expect.poll(() => runSnapshot(page).then((state) => state.actorPresentation?.player?.mopArcVisible))
     .toBe(true);
   const attacking = (await runSnapshot(page)).actorPresentation!;
-  expect(attacking.player!.effectDepth).toBeGreaterThan(attacking.depthBands.tallForeground);
+  expect(attacking.player!.mopArcDepth).toBeGreaterThan(attacking.depthBands.tallForeground);
   await page.mouse.up();
 
   await page.keyboard.down('d');
@@ -285,19 +289,27 @@ test('actor presentation follows real movement, attack, and the first Food Court
 
   await expect.poll(async () => {
     const presentation = (await runSnapshot(page)).actorPresentation;
-    return presentation?.hangers.some((hanger) => hanger.spriteActive && hanger.lungeVisible) ?? false;
+    return presentation?.hangers.some((hanger) => hanger.spriteActive && hanger.lungeCueVisible) ?? false;
   }, { timeout: 15_000 }).toBe(true);
   const foodCourt = (await runSnapshot(page)).actorPresentation!;
   const hanger = foodCourt.hangers.find((candidate) => candidate.spriteActive);
   expect(hanger?.vectorFallbackActive).toBe(false);
-  expect(hanger?.effectDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
+  expect(hanger?.lungeCueDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
 
+  let observedDamageDepth: number | null = null;
+  let observedTelegraphDepth: number | null = null;
   await expect.poll(async () => {
-    const presentation = (await runSnapshot(page)).actorPresentation;
-    return presentation?.telegraphs.some((telegraph) => telegraph.visible) ?? false;
-  }, { timeout: 15_000 }).toBe(true);
-  const telegraph = (await runSnapshot(page)).actorPresentation!.telegraphs.find((entry) => entry.visible);
-  expect(telegraph?.effectDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
+    const state = await runSnapshot(page);
+    const presentation = state.actorPresentation;
+    if (state.player.health < 6 && presentation?.player?.damageCueVisible) {
+      observedDamageDepth = presentation.player.damageCueDepth;
+    }
+    const telegraph = presentation?.telegraphs.find((entry) => entry.visible);
+    if (telegraph) observedTelegraphDepth = telegraph.effectDepth;
+    return observedDamageDepth !== null && observedTelegraphDepth !== null;
+  }, { timeout: 15_000, intervals: [20] }).toBe(true);
+  expect(observedDamageDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
+  expect(observedTelegraphDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });

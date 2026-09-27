@@ -70,6 +70,16 @@ describe('snapshot-driven actor presentation', () => {
     expect(hanger.lunge).toBeGreaterThan(0);
   });
 
+  it('keeps hit feedback active across the full authoritative damage window', () => {
+    const memory = new ActorPresentationMemory();
+    const hit = actorPresentation(memory, {
+      id: 'alex', kind: 'alex', x: 0, y: 0, moveX: 0, moveY: 0,
+      attackTicks: 0, damaged: true, phase: 'idle',
+    }, 8);
+    expect(hit.damageFlicker).toBe(false);
+    expect(hit.damageFeedback).toBe(true);
+  });
+
   it('animates a real pursuing Hanger from movement without inventing a telegraph phase', () => {
     expect(actorVisualState({ moving: true, attackTicks: 0, invulnerableTicks: 0, phase: 'pursue', isHanger: true, tick: 5 }).lunge)
       .toBeGreaterThan(0);
