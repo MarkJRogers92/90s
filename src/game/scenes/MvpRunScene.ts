@@ -10,6 +10,7 @@
  */
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
+import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { installMvpRunDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
   InMemoryCheckpointStore,
@@ -98,8 +99,19 @@ class MvpRunInputAdapter {
   private pendingCycle = 0;
   /** Returns a weapon slot when a click lands on the HUD hotbar, else null. */
   public hudSlotAt: ((x: number, y: number) => number | null) | null = null;
+  /** The end-of-shift card, when it is open: its buttons and key actions. */
+  public endCard: {
+    readonly isOpen: () => boolean;
+    readonly buttonAt: (x: number, y: number) => ShiftCardAction | null;
+    readonly act: (action: ShiftCardAction) => void;
+  } | null = null;
 
   private readonly handlePointerDown = (pointer: Phaser.Input.Pointer): void => {
+    const endAction = this.endCard?.buttonAt(pointer.x, pointer.y) ?? null;
+    if (endAction !== null) {
+      this.endCard?.act(endAction);
+      return;
+    }
     // A click on the hotbar equips that weapon instead of swinging it.
     const slot = this.hudSlotAt?.(pointer.x, pointer.y) ?? null;
     if (slot !== null) {
@@ -120,6 +132,11 @@ class MvpRunInputAdapter {
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
     if (event.repeat) {
       return;
+    }
+    if (this.endCard?.isOpen()) {
+      if (event.code === 'KeyR' || event.code === 'Enter') this.endCard.act('retry');
+      else if (event.code === 'KeyT') this.endCard.act('title');
+      if (event.code !== 'KeyM') return;
     }
     if (event.code === 'KeyE') {
       this.pendingInteract = true;
@@ -246,6 +263,7 @@ export class MvpRunScene extends Phaser.Scene {
   private runView: MvpRunView | undefined;
   private hud: MvpRunHud | undefined;
   private gameHud: GameHud | undefined;
+  private shiftCard: ShiftCard | undefined;
   private removeBloom: (() => void) | undefined;
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
@@ -303,6 +321,13 @@ export class MvpRunScene extends Phaser.Scene {
     this.gameHud = new GameHud(this);
     const hud = this.gameHud;
     this.inputAdapter.hudSlotAt = (x, y) => hud.weaponSlotAt(x, y);
+    const card = new ShiftCard(this);
+    this.shiftCard = card;
+    this.inputAdapter.endCard = {
+      isOpen: () => card.open,
+      buttonAt: (x, y) => card.buttonAt(x, y),
+      act: (action) => (action === 'retry' ? this.restartRun() : this.returnToTitle()),
+    };
     this.hud = new MvpRunHud(
       () => this.restartRun(),
       () => this.returnToTitle(),
@@ -490,6 +515,9 @@ export class MvpRunScene extends Phaser.Scene {
     centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);
+    const pointer = this.input.activePointer;
+    this.shiftCard?.hover(pointer.x, pointer.y);
+    this.shiftCard?.sync(this.run);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
@@ -611,6 +639,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.hud = undefined;
     this.gameHud?.destroy();
     this.gameHud = undefined;
+    this.shiftCard?.destroy();
+    this.shiftCard = undefined;
     this.removeBloom?.();
     this.removeBloom = undefined;
     window.removeEventListener('pointerdown', this.unlockAudio);

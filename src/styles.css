@@ -1447,3 +1447,16 @@ body[data-mode='run'] .marquee {
 .run-shell[data-mode='run'] .mvp-run-identity strong {
   white-space: nowrap;
 }
+
+/* The in-canvas HUD and end-of-shift card now carry everything the DOM status
+   bar and summary showed. Both stay in the page, off-screen at their natural
+   size, so screen readers (and the browser tests) still read the live status
+   and the terminal summary; only the action row stays on screen. */
+.run-shell[data-mode='run'] .mvp-run-status-bar,
+.run-shell[data-mode='run'] .mvp-run-summary {
+  position: absolute !important;
+  left: -10000px !important;
+  top: 0 !important;
+  width: max-content !important;
+  max-width: none !important;
+}

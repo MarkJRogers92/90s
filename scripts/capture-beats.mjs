@@ -43,7 +43,11 @@ async function fight(fixture, frames, { approach = true } = {}) {
   for (let frame = 0; frame < frames; frame++) {
     const s = await snap();
     if (s.status !== 'playing') {
-      if (s.status === 'dead') { await page.waitForTimeout(900); await once(`${fixture ?? 'foodcourt'}-dead`); }
+      if (s.status === 'dead') {
+        await page.waitForTimeout(900); await once(`${fixture ?? 'foodcourt'}-dead`);
+        await page.waitForTimeout(2400); await once(`${fixture ?? 'foodcourt'}-card`);
+      }
+      if (s.status === 'won') { await page.waitForTimeout(3200); await once(`${fixture ?? 'foodcourt'}-card-won`); }
       break;
     }
     const hurt = s.player.health < last.player.health;
@@ -56,7 +60,9 @@ async function fight(fixture, frames, { approach = true } = {}) {
     const charging = s.enemies.find((e) => e.phase === 'telegraph');
     if (charging) await once(`${fixture ?? 'foodcourt'}-windup-${charging.kind}`);
     last = s;
-    const enemy = [...s.enemies].sort((a, b) => Math.hypot(a.x - s.player.x, a.y - s.player.y) - Math.hypot(b.x - s.player.x, b.y - s.player.y))[0];
+    const byDistance = [...s.enemies].sort((a, b) => Math.hypot(a.x - s.player.x, a.y - s.player.y) - Math.hypot(b.x - s.player.x, b.y - s.player.y));
+    // The win capture goes straight for the boss instead of its summons.
+    const enemy = (fixture === 'mvp-boss-win' && s.enemies.find((e) => e.kind === 'lp_manager')) || byDistance[0];
     if (!enemy) break;
     const p = await toCanvas(enemy.x, enemy.y);
     await page.mouse.move(box.x + p.x, box.y + p.y);
@@ -77,5 +83,6 @@ async function fight(fixture, frames, { approach = true } = {}) {
 
 await fight('mvp-storefront', 260);
 await fight('mvp-boss-entry', 320);
+await fight('mvp-boss-win', 240);
 console.log([...taken].join('\n'));
 await browser.close();
