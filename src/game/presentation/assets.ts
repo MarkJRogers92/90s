@@ -28,6 +28,13 @@ export const ENVIRONMENT_TEXTURE_KEYS = {
 
 export type EnvironmentTextureKey = (typeof ENVIRONMENT_TEXTURE_KEYS)[keyof typeof ENVIRONMENT_TEXTURE_KEYS];
 
+export const ACTOR_TEXTURE_KEYS = {
+  alexIdle: 'presentation:actor:alex-idle',
+  alexWalk: 'presentation:actor:alex-walk',
+  hangerIdle: 'presentation:actor:hanger-idle',
+} as const;
+export type ActorTextureKey = (typeof ACTOR_TEXTURE_KEYS)[keyof typeof ACTOR_TEXTURE_KEYS];
+
 const environment = (
   key: EnvironmentTextureKey,
   frameWidth: number,
@@ -39,6 +46,14 @@ const environment = (
   frameWidth,
   frameHeight,
   requiredFor: 'environment',
+});
+
+const actor = (key: ActorTextureKey, frameWidth: number, frameHeight: number): PresentationAsset => ({
+  key,
+  url: `/assets/presentation/actors/${key.slice('presentation:actor:'.length)}.png`,
+  frameWidth,
+  frameHeight,
+  requiredFor: 'actor',
 });
 
 /** Approved presentation assets that may decorate the vector MVP scene. */
@@ -59,4 +74,7 @@ export const PRESENTATION_ASSETS: readonly PresentationAsset[] = [
   environment(ENVIRONMENT_TEXTURE_KEYS.wallCorner, 32, 64, 'wall-corner-32x64'),
   environment(ENVIRONMENT_TEXTURE_KEYS.wallFace, 32, 64, 'wall-face-32x64'),
   environment(ENVIRONMENT_TEXTURE_KEYS.wallTop, 32, 32, 'wall-top-32'),
+  actor(ACTOR_TEXTURE_KEYS.alexIdle, 32, 48),
+  actor(ACTOR_TEXTURE_KEYS.alexWalk, 32, 48),
+  actor(ACTOR_TEXTURE_KEYS.hangerIdle, 48, 48),
 ];

@@ -210,6 +210,45 @@
       "palettePath": "docs/art/palettes/deadmall-global.json",
       "approvalDate": "2026-09-26",
       "status": "newly-authored"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/actors/alex-idle.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/actors/alex-janitor-idle.aseprite",
+      "originalCandidatePath": "public/assets/characters/alex-idle.png",
+      "pinnedCommit": "3a70214",
+      "dimensions": [256, 48],
+      "layout": "eight horizontal 32x48 direction frames: south, southwest, west, northwest, north, northeast, east, southeast",
+      "sha256": "2f6d7f11748ec655eb9f940b91ab7a1b463a489cdd86bd1bb086eff1acb26130",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "cleanupReview": "Task 5 Janitor redraw correction 1; original anatomy/folds retained, backpack reconstructed as work shirt.",
+      "status": "locally-redrawn"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/actors/alex-walk.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/actors/alex-janitor-walk.aseprite",
+      "originalCandidatePath": "public/assets/characters/alex-walk.png",
+      "pinnedCommit": "3a70214",
+      "dimensions": [192, 384],
+      "layout": "six 32x48 columns by eight direction rows: south, southwest, west, northwest, north, northeast, east, southeast",
+      "sha256": "dc4097bbf62891dd929173abcf15903444e6d015a5514086cece9202bccac789",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "cleanupReview": "Task 5 Janitor redraw correction 1; original walk timing and foot poses retained.",
+      "status": "locally-redrawn"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/actors/hanger-idle.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/actors/hanger-idle.aseprite",
+      "originalCandidatePath": "public/assets/enemies/hanger-idle.png",
+      "pinnedCommit": "3a70214",
+      "dimensions": [384, 48],
+      "layout": "eight horizontal 48x48 direction frames: south, southwest, west, northwest, north, northeast, east, southeast",
+      "sha256": "38975f1a45f533bee53a97f58db3dea513b4293a6a8b382b92f16b0db55382a4",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "cleanupReview": "Native Aseprite import reviewed at 48x48: binary alpha, one-pixel outline, palette, and frame alignment retained; pixels unchanged from approved source.",
+      "status": "reused"
     }
   ]
 }

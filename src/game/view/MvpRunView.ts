@@ -14,12 +14,18 @@ import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/m
 import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
 import { presentationDepth } from '../presentation/depth';
+import { usableTextureKey } from '../presentation/assetFallback';
+import { ACTOR_TEXTURE_KEYS } from '../presentation/assets';
+import { ActorPresentationMemory, ActorSpriteView, actorFrameFor, actorPresentation, type ActorSnapshot } from './ActorSpriteView';
 import { OpeningConcourseView } from './OpeningConcourseView';
 
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly labels = new Map<string, Phaser.GameObjects.Text>();
+  private readonly actorMemory = new ActorPresentationMemory();
+  private readonly actorSprites = new Map<string, ActorSpriteView>();
+  private readonly lastActorPositions = new Map<string, { x: number; y: number }>();
   private openingConcourse: OpeningConcourseView | undefined;
 
   public constructor(scene: Phaser.Scene) {
@@ -95,10 +101,16 @@ export class MvpRunView {
     for (const enemy of state.room.combat.enemies) {
       const body = opening?.actorGraphics(`enemy:${enemy.id}`, enemy.y) ?? graphics;
       const effects = opening?.effectGraphics(`enemy:${enemy.id}`) ?? body;
+      const enemyDelta = this.movementFor(`enemy:${enemy.id}`, enemy.x, enemy.y);
+      const spriteActive = enemy.kind === 'hanger' && this.syncActorSprite({
+        id: `enemy:${enemy.id}`, kind: 'hanger', x: enemy.x, y: enemy.y,
+        moveX: enemyDelta.x, moveY: enemyDelta.y,
+        attackTicks: 0, damaged: false, phase: enemy.phase,
+      }, state.tick, ACTOR_TEXTURE_KEYS.hangerIdle, 48, 48, 0.8, presentationDepth('actor', enemy.y));
       if (enemy.kind === 'lp_manager') {
         this.drawBoss(enemy, body, effects);
       } else {
-        this.drawEnemy(enemy, body, effects);
+        this.drawEnemy(enemy, body, effects, !spriteActive);
       }
     }
 
@@ -111,10 +123,17 @@ export class MvpRunView {
       state.carrier ? opening?.actorGraphics('carrier', state.carrier.y) ?? graphics : graphics,
       state.carrier ? opening?.effectGraphics('carrier') ?? graphics : graphics,
     );
+    const player = state.room.combat.player;
+    const playerDelta = this.movementFor('player', player.x, player.y);
+    const playerSprite = this.syncActorSprite({
+      id: 'player', kind: 'alex', x: player.x, y: player.y, moveX: playerDelta.x, moveY: playerDelta.y,
+      attackTicks: player.attackActiveTicks, damaged: player.invulnerableTicks > 0, phase: 'idle',
+    }, state.tick, playerDelta.x !== 0 || playerDelta.y !== 0 ? ACTOR_TEXTURE_KEYS.alexWalk : ACTOR_TEXTURE_KEYS.alexIdle, 32, 48, 0.9, presentationDepth('actor', player.y));
     this.drawPlayer(
       state,
       opening?.actorGraphics('player', state.room.combat.player.y) ?? graphics,
       opening?.effectGraphics('player') ?? graphics,
+      !playerSprite,
     );
     opening?.endFrame();
     this.pruneLabels(state);
@@ -233,14 +252,21 @@ export class MvpRunView {
     enemy: EnemyState,
     graphics = this.graphics,
     effects = graphics,
+    drawBody = true,
   ): void {
     if (enemy.kind === 'hanger') {
-      graphics.lineStyle(4, 0x8a3038, 1);
-      graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x, enemy.y - 10);
-      graphics.lineBetween(enemy.x, enemy.y - 10, enemy.x + 12, enemy.y + 9);
-      graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x + 12, enemy.y + 9);
-      graphics.fillStyle(0xd35f55, 1);
-      graphics.fillCircle(enemy.x, enemy.y - 10, 5);
+      if (drawBody) {
+        graphics.lineStyle(4, 0x8a3038, 1);
+        graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x, enemy.y - 10);
+        graphics.lineBetween(enemy.x, enemy.y - 10, enemy.x + 12, enemy.y + 9);
+        graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x + 12, enemy.y + 9);
+        graphics.fillStyle(0xd35f55, 1);
+        graphics.fillCircle(enemy.x, enemy.y - 10, 5);
+      }
+      if (enemy.phase === 'telegraph') {
+        effects.lineStyle(2, 0xffd45d, 0.9);
+        effects.strokeCircle(enemy.x, enemy.y, enemy.radius + 8);
+      }
     } else {
       if (enemy.phase === 'telegraph') {
         effects.lineStyle(3, 0xffd45d, 0.95);
@@ -385,13 +411,16 @@ export class MvpRunView {
     state: MvpRunState,
     graphics = this.graphics,
     effects = graphics,
+    drawBody = true,
   ): void {
     const player = state.room.combat.player;
     const flicker = player.invulnerableTicks > 0 && Math.floor(state.tick / 12) % 2 === 0;
-    graphics.fillStyle(flicker ? 0xdce8c8 : 0x2f5f62, 1);
-    graphics.fillCircle(player.x, player.y, player.radius);
-    graphics.lineStyle(2, 0xf4edd8, 0.9);
-    graphics.strokeCircle(player.x, player.y, player.radius);
+    if (drawBody) {
+      graphics.fillStyle(flicker ? 0xdce8c8 : 0x2f5f62, 1);
+      graphics.fillCircle(player.x, player.y, player.radius);
+      graphics.lineStyle(2, 0xf4edd8, 0.9);
+      graphics.strokeCircle(player.x, player.y, player.radius);
+    }
     effects.lineStyle(3, 0xf6d365, 1);
     effects.lineBetween(
       player.x,
@@ -399,6 +428,24 @@ export class MvpRunView {
       player.x + player.facing.x * (player.radius + 6),
       player.y + player.facing.y * (player.radius + 6),
     );
+  }
+
+  private movementFor(id: string, x: number, y: number): { x: number; y: number } {
+    const previous = this.lastActorPositions.get(id);
+    this.lastActorPositions.set(id, { x, y });
+    return previous ? { x: x - previous.x, y: y - previous.y } : { x: 0, y: 0 };
+  }
+
+  private syncActorSprite(snapshot: ActorSnapshot, tick: number, textureKey: string, frameWidth: number, frameHeight: number, scale: number, depth: number): boolean {
+    const usable = usableTextureKey(this.scene.textures, textureKey) !== null;
+    let view = this.actorSprites.get(snapshot.id);
+    if (!view) {
+      view = new ActorSpriteView(this.scene, { textureKey, frameWidth, frameHeight, scale });
+      this.actorSprites.set(snapshot.id, view);
+    }
+    const visual = actorPresentation(this.actorMemory, snapshot, tick, new Set([snapshot.id]));
+    const frame = actorFrameFor(visual.walking && snapshot.kind === 'alex' ? 'walk' : 'idle', visual.direction, tick);
+    return view.sync(snapshot, frame, visual, usable, depth);
   }
 
   private setLabel(key: string, text: string, x: number, y: number): void {
@@ -455,6 +502,9 @@ export class MvpRunView {
       this.clearLabel(key);
     }
     this.graphics.destroy();
+    for (const sprite of this.actorSprites.values()) sprite.destroy();
+    this.actorSprites.clear();
+    this.lastActorPositions.clear();
   }
 
   public resetForRun(): void {
