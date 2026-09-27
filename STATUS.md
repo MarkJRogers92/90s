@@ -7,6 +7,11 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 4 (combat readability): enemy wind-ups drawn from the sim's telegraph
+state, exaggerated hit/kill/hurt feedback, a short hit stop, and PixelLab
+attack + death animations for the Spitter, Hanger and boss. See the playbook's
+"Round 4" section.
+
 - All six room roles are themed by a pure dressing planner (storefront wall,
   props on every collision rectangle, lights, neon) with a multiply lightmap,
   additive glow and adaptive bloom.

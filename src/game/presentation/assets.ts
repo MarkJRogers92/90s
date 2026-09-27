@@ -192,6 +192,8 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.spitterDeath, 'enemies/spitter-death.png'),
   neon(ENEMY_TEXTURE_KEYS.lpManagerAttack, 'enemies/lp-manager-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.lpManagerDeath, 'enemies/lp-manager-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.hangerAttack, 'enemies/hanger-attack.png'),
+  neon(ENEMY_TEXTURE_KEYS.hangerDeath, 'enemies/hanger-death.png'),
   neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
   ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),

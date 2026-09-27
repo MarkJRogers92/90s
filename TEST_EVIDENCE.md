@@ -1,5 +1,23 @@
 # Test evidence
 
+## 2026-09-27 — round 4: combat readability (wind-ups, exaggerated hits, hit stop)
+
+- `npx vitest run` — PASS: 39 files, 551 tests (new `tests/unit/combat-beats.test.ts`,
+  12 tests: wind-ups from authoritative telegraph fields, landed-attack diffing,
+  hit-stop ordering and non-stacking, hit-reaction spring, wind-up poses,
+  attack-sheet frame scrubbing). Observed failing first (module missing, then
+  `windupPose is not a function`) before implementation.
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.2 min) with hit stop on and
+  all six new attack/death sheets loaded. `npm run build` PASS.
+- Simulation change is export-only: `SPITTER_TELEGRAPH_TICKS`,
+  `SPITTER_RECOVER_TICKS`, `VOLLEY_ANGLE_OFFSETS_DEGREES`.
+- Captures: `node scripts/capture-beats.mjs` → `artifacts/neon-overhaul/beats/`
+  (spitter/boss wind-up, hit, kill, corpse, hurt).
+- Fixed during the round: a full-screen red hurt flash held by hit stop hid the
+  field (now an edge vignette); the room title covered the first wind-up (it
+  now dims while any enemy charges); a PixelLab-baked impact star in the
+  Hanger's south strike frame (replaced with the previous pose).
+
 ## 2026-09-27 — round 2: UI, weapon switching, swing, 64px characters
 
 - `npx tsc --noEmit` — exit 0. `npx vitest run` — 38 files, **539 passed**

@@ -45,7 +45,7 @@ type Burst = {
   readonly angle: number;
 };
 type Reaction = { born: number; dirX: number; dirY: number; heavy: boolean };
-type Corpse = { image: Phaser.GameObjects.Image; born: number; frames: number; frameSize: number; row: number; scale: number };
+type Corpse = { image: Phaser.GameObjects.Image; born: number; frames: number; frameSize: number; row: number; scale: number; feetY: number };
 
 const MAX_DECALS = 70;
 const FLOAT_TICKS = 46;
@@ -286,16 +286,20 @@ export class CombatFeedback {
     // It falls facing the janitor who killed it.
     const direction = directionForVector(player.x - death.x, player.y - death.y, 'south');
     const row = ACTOR_DIRECTION_ORDER.indexOf(direction);
-    const scale = (death.kind === 'lp_manager' ? 128 : 64) / 64;
+    // Death canvases are grown copies of the 64px idle canvas, centred on it,
+    // so pixel scale and the feet row come from the idle frame.
+    const idleFrame = 64;
+    const scale = (death.kind === 'lp_manager' ? 128 : 64) / idleFrame;
+    const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
     const image = this.scene.add.image(death.x, death.y, key).setDepth(presentationDepth('actor', death.y - 1)).setScale(scale);
-    this.corpses.push({ image, born: tick, frames, frameSize, row, scale });
+    this.corpses.push({ image, born: tick, frames, frameSize, row, scale, feetY });
     this.placeCorpse(this.corpses.at(-1)!, 0);
   }
 
   private placeCorpse(corpse: Corpse, frame: number): void {
     const { image, frameSize, row } = corpse;
     image.setCrop(frame * frameSize, row * frameSize, frameSize, frameSize);
-    image.setOrigin((frame * frameSize + frameSize / 2) / image.width, (row * frameSize + frameSize * 0.84) / image.height);
+    image.setOrigin((frame * frameSize + frameSize / 2) / image.width, (row * frameSize + corpse.feetY) / image.height);
   }
 
   private onEnemyAttack(attack: LandedAttack, tick: number): HitStopBeat | null {

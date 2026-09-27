@@ -39,6 +39,7 @@ async function fight(fixture, frames, { approach = true } = {}) {
     }
   };
   let last = await snap();
+  let corpseIn = -1;
   for (let frame = 0; frame < frames; frame++) {
     const s = await snap();
     if (s.status !== 'playing') break;
@@ -46,7 +47,8 @@ async function fight(fixture, frames, { approach = true } = {}) {
     const hit = s.enemies.some((e) => { const b = last.enemies.find((o) => o.id === e.id); return b && e.health < b.health; });
     const kill = s.enemies.length < last.enemies.length;
     if (hurt) await once(`${fixture ?? 'foodcourt'}-hurt`);
-    if (kill) await once(`${fixture ?? 'foodcourt'}-kill`);
+    if (kill) { await once(`${fixture ?? 'foodcourt'}-kill`); if (corpseIn < 0) corpseIn = 4; }
+    if (corpseIn > 0 && --corpseIn === 0) await once(`${fixture ?? 'foodcourt'}-corpse`);
     else if (hit) await once(`${fixture ?? 'foodcourt'}-hit`);
     const charging = s.enemies.find((e) => e.phase === 'telegraph');
     if (charging) await once(`${fixture ?? 'foodcourt'}-windup-${charging.kind}`);

@@ -4,6 +4,9 @@
 
 Branch `claude/neon-overhaul` in `.worktrees/neon-overhaul`. Read
 [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first.
+Round 4 added `src/game/view/combatBeats.ts` (pure rules) and reworked
+`CombatFeedback.ts`. Hit stop lives in `MvpRunScene.update`. New enemy
+animations are promoted with `docs/art/neon-overhaul/promote_anim.py`.
 
     npm install
     VITE_ENABLE_DEBUG_BRIDGE=true npx vite --host 127.0.0.1 --port 4180 --strictPort

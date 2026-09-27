@@ -968,5 +968,25 @@
       512
     ],
     "sha256": "ad5732219a0a9198a8df07eb533aca8a959186b84e30a3dc91fe7c4be741150b"
+  },
+  {
+    "path": "public/assets/neon/enemies/hanger-attack.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-hanger-attack.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      828,
+      736
+    ],
+    "sha256": "85ccb58b5d51d7c408f3a88d563260d389686a2b8be891ecd64932a069b30879"
+  },
+  {
+    "path": "public/assets/neon/enemies/hanger-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-hanger-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      792,
+      704
+    ],
+    "sha256": "2760925a486f8d0ea6b871f6d640e8e11876ea8cfae8ec6497f214b0b5e2523a"
   }
 ]
