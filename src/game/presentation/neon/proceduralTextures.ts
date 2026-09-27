@@ -297,3 +297,79 @@ function ensureFloorTexture(scene: Phaser.Scene, style: FloorStyle): void {
   }
   canvas.refresh();
 }
+
+/* ------------------------------------------------------------------------ */
+/* HUD glyphs                                                                 */
+/* ------------------------------------------------------------------------ */
+
+/**
+ * Pixel-font text with a one-pixel dark outline, cached per string. Used for
+ * damage numbers and every word in the in-canvas HUD, so interface text is the
+ * same typeface as the storefront neon.
+ */
+export function ensurePixelLabel(
+  scene: Phaser.Scene,
+  text: string,
+  color: string,
+  scale = 1,
+  outline = '#0a0610',
+): { key: string; width: number; height: number } {
+  const key = `label:${text}|${color}|${scale}|${outline}`;
+  const width = measurePixelText(text) * scale + 2;
+  const height = GLYPH_HEIGHT * scale + 2;
+  if (!scene.textures.exists(key)) {
+    const canvas = scene.textures.createCanvas(key, Math.max(1, width), height);
+    if (canvas) {
+      const context = canvas.getContext();
+      for (const [dx, dy] of [[0, 1], [2, 1], [1, 0], [1, 2], [0, 0], [2, 2], [0, 2], [2, 0]] as const) {
+        paintPixelText(context, text, dx, dy, scale, outline);
+      }
+      paintPixelText(context, text, 1, 1, scale, color);
+      canvas.refresh();
+    }
+  }
+  return { key, width, height };
+}
+
+export const HEART_TEXTURES = { full: 'hud:heart-full', half: 'hud:heart-half', empty: 'hud:heart-empty' } as const;
+
+const HEART_ROWS = [
+  '.##.##.',
+  '#######',
+  '#######',
+  '#######',
+  '.#####.',
+  '..###..',
+  '...#...',
+];
+
+/** Isaac-style hearts: each heart is two health, drawn full, half or empty. */
+export function ensureHeartTextures(scene: Phaser.Scene): void {
+  const scale = 2;
+  const size = { w: 7 * scale + 2, h: 7 * scale + 2 };
+  const draw = (key: string, fillColumns: number): void => {
+    if (scene.textures.exists(key)) return;
+    const canvas = scene.textures.createCanvas(key, size.w, size.h);
+    if (!canvas) return;
+    const context = canvas.getContext();
+    HEART_ROWS.forEach((row, y) => {
+      [...row].forEach((cell, x) => {
+        if (cell !== '#') return;
+        context.fillStyle = '#12060c';
+        context.fillRect(x * scale, y * scale, scale + 2, scale + 2);
+      });
+    });
+    HEART_ROWS.forEach((row, y) => {
+      [...row].forEach((cell, x) => {
+        if (cell !== '#') return;
+        const lit = x < fillColumns;
+        context.fillStyle = lit ? (y < 2 && x < 3 ? '#ff9aa8' : '#e8243c') : '#3a2230';
+        context.fillRect(x * scale + 1, y * scale + 1, scale, scale);
+      });
+    });
+    canvas.refresh();
+  };
+  draw(HEART_TEXTURES.full, 7);
+  draw(HEART_TEXTURES.half, 4);
+  draw(HEART_TEXTURES.empty, 0);
+}

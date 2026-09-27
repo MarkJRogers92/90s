@@ -17,11 +17,14 @@ describe('ConcourseAmbience', () => {
   it('keeps every possible opening civilian clearly inside the initial camera view', () => {
     const lanes = new ConcourseAmbience(99).debugLanes();
     expect(lanes).toHaveLength(6);
+    // Night Shift frames the whole 960x480 room, so every shopper must stand
+    // on open floor: clear of the side walls, the storefront kerb (y 40) and
+    // the balcony railing along the bottom (y 450+).
     for (const lane of lanes) {
       expect(lane.x).toBeGreaterThanOrEqual(48);
-      expect(lane.x).toBeLessThanOrEqual(592);
+      expect(lane.x).toBeLessThanOrEqual(912);
       expect(lane.y).toBeGreaterThanOrEqual(72);
-      expect(lane.y).toBeLessThanOrEqual(328);
+      expect(lane.y).toBeLessThanOrEqual(440);
     }
   });
 

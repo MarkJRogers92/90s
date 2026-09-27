@@ -1036,6 +1036,33 @@ body[data-mode='run'] {
   pointer-events: auto;
 }
 
+/* The neon overhaul draws the boss bar and store stock inside the canvas, so
+   the DOM copies shrink to compact chips tucked into the stage's top corner,
+   and the bench/summary dialogs open as centred modals over the room. */
+.mvp-run-boss,
+.mvp-run-offers-wrap {
+  width: fit-content;
+  max-width: min(440px, calc(100vw - 20px));
+  padding: 3px 8px;
+  border-color: rgb(255 63 200 / 60%);
+  background: rgb(11 7 20 / 88%);
+  font-size: 0.6rem;
+}
+
+.mvp-run-offers-wrap[open] {
+  padding: 8px;
+}
+
+.mvp-run-bench,
+.mvp-run-summary {
+  top: 30vh;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid #3ff0ff;
+  box-shadow: 0 0 0 2px rgb(255 63 200 / 55%), 0 0 24px rgb(63 240 255 / 35%);
+  background: rgb(11 7 20 / 96%);
+}
+
 .mvp-run-offers-wrap summary {
   cursor: pointer;
 }

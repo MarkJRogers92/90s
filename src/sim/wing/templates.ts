@@ -25,9 +25,11 @@ export const ROOM_BOUNDS: Rect = {
 /**
  * The Opening Concourse's atrium fountain basin. It is authored collision so
  * the room's centrepiece is solid: shoppers, and the player, walk around it.
- * The opening room spawns no enemies, so this changes no fight.
+ * It sits south of the west-east door lane (y 192-288), so the straight walk
+ * through the first room stays open. The opening room spawns no enemies, so
+ * this changes no fight.
  */
-export const OPENING_FOUNTAIN: Rect = { x: 425, y: 222, width: 110, height: 52 };
+export const OPENING_FOUNTAIN: Rect = { x: 425, y: 316, width: 110, height: 52 };
 
 export type AuthoredEnemyKind = 'hanger' | 'spitter';
 

@@ -113,6 +113,48 @@ export class LightingLayer {
   }
 }
 
+/** True when WebGL is running on a CPU rasterizer, where full-screen filters are costly. */
+export function isSoftwareRenderer(game: Phaser.Game): boolean {
+  const renderer = game.renderer as unknown as { gl?: WebGLRenderingContext };
+  const gl = renderer.gl;
+  if (!gl) return true;
+  const info = gl.getExtension('WEBGL_debug_renderer_info');
+  const name = info ? String(gl.getParameter(info.UNMASKED_RENDERER_WEBGL)) : String(gl.getParameter(gl.RENDERER));
+  return /swiftshader|llvmpipe|software|microsoft basic render/i.test(name);
+}
+
+/**
+ * Installs bloom when the device can afford it and removes it again if the
+ * frame rate sags, so neon glows on real GPUs without making a weak machine
+ * (or a headless test browser) unplayable. Returns a disposer.
+ */
+export function installAdaptiveBloom(scene: Phaser.Scene): () => void {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('nobloom') || isSoftwareRenderer(scene.game)) return () => undefined;
+  let remove: (() => void) | undefined = installBloom(scene.cameras.main);
+  let slowFrames = 0;
+  let sampled = 0;
+  const watch = (): void => {
+    if (!remove) return;
+    sampled += 1;
+    if (scene.game.loop.actualFps < 45) slowFrames += 1;
+    // After ~3 seconds, a mostly-slow sample means the effect is too expensive here.
+    if (sampled >= 180) {
+      if (slowFrames > 120) {
+        remove();
+        remove = undefined;
+      }
+      scene.events.off(Phaser.Scenes.Events.POST_UPDATE, watch);
+    }
+  };
+  scene.events.on(Phaser.Scenes.Events.POST_UPDATE, watch);
+  return () => {
+    scene.events.off(Phaser.Scenes.Events.POST_UPDATE, watch);
+    remove?.();
+    remove = undefined;
+  };
+}
+
 /**
  * A soft bloom on the world camera: bright pixels (neon, muzzle flashes,
  * lit windows) are thresholded, blurred and added back, so light bleeds the

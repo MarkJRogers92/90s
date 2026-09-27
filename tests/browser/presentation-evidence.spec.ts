@@ -69,14 +69,18 @@ async function launchRun(page: Page, viewport: { width: number; height: number }
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
 }
 
+// Night Shift renders a fixed 960x600 stage (the whole room plus the
+// storefront band), so native scale is x1 on a 1440x900 viewport.
+const STAGE = { width: 960, height: 600 } as const;
+
 async function setIntegerCanvasScale(page: Page, scale: 1 | 2): Promise<void> {
   // Phaser owns the canvas's inline dimensions and may rewrite them after its
   // ResizeObserver runs. An author-level important rule remains authoritative
   // even when that delayed inline update lands under the parallel full gate.
   await page.addStyleTag({ content: `
     #game-host canvas {
-      width: ${640 * scale}px !important;
-      height: ${360 * scale}px !important;
+      width: ${STAGE.width * scale}px !important;
+      height: ${STAGE.height * scale}px !important;
       max-width: none !important;
       max-height: none !important;
     }
@@ -84,7 +88,7 @@ async function setIntegerCanvasScale(page: Page, scale: 1 | 2): Promise<void> {
   await expect.poll(async () => {
     const box = await page.locator('canvas').boundingBox();
     return box ? { width: box.width, height: box.height } : null;
-  }).toEqual({ width: 640 * scale, height: 360 * scale });
+  }).toEqual({ width: STAGE.width * scale, height: STAGE.height * scale });
 }
 
 async function moveUntil(
@@ -146,7 +150,7 @@ test('captures the required opening presentation states at integer canvas scale'
   test.setTimeout(150_000);
   const assertLocalOnly = rejectExternalRequests(page);
   await launchRun(page, { width: 1440, height: 900 });
-  await setIntegerCanvasScale(page, 2);
+  await setIntegerCanvasScale(page, 1);
 
   const busy = await snapshot(page);
   expect(busy.roomId).toBe('service_corridor');
@@ -174,7 +178,7 @@ test('captures first combat while a live telegraph is visibly on screen', async 
   test.setTimeout(150_000);
   const assertLocalOnly = rejectExternalRequests(page);
   await launchRun(page, { width: 1440, height: 900 });
-  await setIntegerCanvasScale(page, 2);
+  await setIntegerCanvasScale(page, 1);
   await enterFirstCombat(page);
   await moveUntil(page, 'd', (state) => state.player.x > 300);
 
@@ -213,8 +217,9 @@ test('captures first combat while a live telegraph is visibly on screen', async 
 
 test('captures the compact 800x600 layout at native canvas scale', async ({ page }) => {
   const assertLocalOnly = rejectExternalRequests(page);
+  // A 960px stage cannot sit at integer scale inside 800px, so the compact
+  // capture keeps Phaser's own FIT scaling and asserts no overflow instead.
   await launchRun(page, { width: 800, height: 600 });
-  await setIntegerCanvasScale(page, 1);
 
   await expect(page.locator('#mvp-run-health')).toBeVisible();
   await expect(page.locator('#mvp-run-cash')).toBeVisible();
@@ -242,7 +247,7 @@ test('ten restart cycles keep one opening view, stable listeners, and one ambien
   test.setTimeout(150_000);
   const assertLocalOnly = rejectExternalRequests(page);
   await launchRun(page, { width: 1440, height: 900 });
-  await setIntegerCanvasScale(page, 2);
+  await setIntegerCanvasScale(page, 1);
   const session = await page.context().newCDPSession(page);
   const first = await snapshot(page);
   expect(first.presentation).not.toBeNull();
@@ -259,7 +264,8 @@ test('ten restart cycles keep one opening view, stable listeners, and one ambien
   await moveUntil(page, 'd', (state) => state.player.x > 850);
   await moveUntil(page, 's', (state) => state.player.y > 220);
   await moveUntil(page, 'd', (state) => state.roomId === 'storefront_a');
-  expect((await snapshot(page)).presentation).toBeNull();
+  // Every room now owns a dressed mall view; leaving the opening replaces it.
+  expect((await snapshot(page)).presentation?.themeId).not.toBe('opening_concourse');
 
   let generation = first.generation;
   for (let cycle = 1; cycle <= 10; cycle += 1) {

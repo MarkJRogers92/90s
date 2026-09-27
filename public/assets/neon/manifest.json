@@ -80,6 +80,16 @@
     "sha256": "48f3e861bcc397024ee60fb3ff012cfb4e7240bc8a36106c4ad8ec4d8613359f"
   },
   {
+    "path": "public/assets/neon/enemies/hanger-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-hanger-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      408,
+      544
+    ],
+    "sha256": "a83f5ce14c5e6433410f686f3c44a30840243e77a8638949aa9005ed961e2d64"
+  },
+  {
     "path": "public/assets/neon/enemies/lp-manager-idle.png",
     "source": "codex/pixellab-aseprite-proof:public/assets/enemies/lp-manager-idle.png",
     "generator": "PixelLab (earlier art pass)",
@@ -88,6 +98,16 @@
       48
     ],
     "sha256": "334deb5247c741bd92a2028d0b73673d693c47cba1bc0c687c092587e4e0c26f"
+  },
+  {
+    "path": "public/assets/neon/enemies/lp-manager-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-lp-manager-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      384,
+      384
+    ],
+    "sha256": "b638ac3b7f06085779fa0628100b5495475a4262f57df6ded3aa23dfb5c5e54c"
   },
   {
     "path": "public/assets/neon/enemies/spitter-idle.png",
@@ -198,6 +218,16 @@
       160
     ],
     "sha256": "60530eb698a04959405971c7a9715b7c1b6b406ad29b8ad04c3584ac36898656"
+  },
+  {
+    "path": "public/assets/neon/facades/wok-counter.png",
+    "source": "docs/art/neon-overhaul/pixellab/wok-counter.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      256,
+      160
+    ],
+    "sha256": "c05270bd0432d2762b7b1c5c5cb2de647cd8bf8bf288c0887173d197eb9e9c7d"
   },
   {
     "path": "public/assets/neon/items/anti-static-strap.png",
@@ -388,6 +418,16 @@
       32
     ],
     "sha256": "5599a483c09f5867e7c53e0d1b6066241adf5280dc428f3740f3c42255dbb8ed"
+  },
+  {
+    "path": "public/assets/neon/items/rc-car.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/rc-car.png (frame 0)",
+    "generator": "PixelLab (earlier art pass), cropped",
+    "size": [
+      48,
+      44
+    ],
+    "sha256": "b3b85daa74bf970019a722436cc9862114bf5fe78917756335de77fc87cb5bb4"
   },
   {
     "path": "public/assets/neon/items/receipt-wallet.png",
@@ -638,6 +678,16 @@
       16
     ],
     "sha256": "524f470a110a2c9ce9185c6f4fe926c08999e387f74c9d8c173e0ba7d0ecb47a"
+  },
+  {
+    "path": "public/assets/neon/portraits/alex.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/portraits/teenager.png",
+    "generator": "PixelLab (earlier art pass), chosen as Alex HUD portrait",
+    "size": [
+      160,
+      160
+    ],
+    "sha256": "29843af0f52d8ef01623902e3d0c870c6ab4ba416bfd85fdc27eef278a996ece"
   },
   {
     "path": "public/assets/neon/portraits/employee.png",

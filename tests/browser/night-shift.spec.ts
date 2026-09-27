@@ -268,7 +268,8 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 40_000 })
     .toBe('storefront_a');
   await page.keyboard.up('d');
-  expect((await runSnapshot(page)).presentation).toBeNull();
+  // Every room now owns a dressed mall view; leaving the opening replaces it.
+  expect((await runSnapshot(page)).presentation?.themeId).not.toBe('opening_concourse');
   await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(first.generation);
   const restarted = await runSnapshot(page);
@@ -749,20 +750,24 @@ test('the compact HUD keeps pause and restart reachable from real input', async 
   expect(errors.consoleErrors).toEqual([]);
 });
 
-test('real canvas input follows the camera after scrolling and resizing', async ({ page }) => {
+test('real canvas input stays aimed while the janitor moves and after resizing', async ({ page }) => {
   test.setTimeout(90_000);
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 800, height: 600 });
   await launchRun(page, '/?fixture=mvp-bench&seed=4242');
 
+  // Night Shift frames the whole room like an Isaac room: the camera holds
+  // still while the janitor walks, so a world point keeps its canvas spot.
   const fixedWorldPoint = { x: 0, y: 0 };
-  const beforeScroll = await worldToCanvas(page, fixedWorldPoint.x, fixedWorldPoint.y);
+  const before = await runSnapshot(page);
+  const beforeMove = await worldToCanvas(page, fixedWorldPoint.x, fixedWorldPoint.y);
   await page.keyboard.down('d');
   await page.waitForTimeout(1_200);
   await page.keyboard.up('d');
   const afterMove = await runSnapshot(page);
-  const afterScroll = await worldToCanvas(page, fixedWorldPoint.x, fixedWorldPoint.y);
-  expect(Math.abs(afterScroll.x - beforeScroll.x)).toBeGreaterThan(50);
+  const afterMoveProjection = await worldToCanvas(page, fixedWorldPoint.x, fixedWorldPoint.y);
+  expect(afterMove.player.x - before.player.x).toBeGreaterThan(50);
+  expect(Math.abs(afterMoveProjection.x - beforeMove.x)).toBeLessThan(1);
 
   await page.setViewportSize({ width: 1120, height: 760 });
   const target = { x: afterMove.player.x + 100, y: afterMove.player.y };

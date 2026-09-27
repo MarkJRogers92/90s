@@ -31,8 +31,8 @@ const PHASES: readonly ConcourseAmbiencePhase[] = ['busy', 'warning', 'evacuatin
 const AUTHORED_LANES: readonly Omit<ConcourseCivilianLane, 'appearance'>[] = [
   { id: 'north-window', x: 240, y: 157, exitX: 42 },
   { id: 'directory', x: 330, y: 222, exitX: 42 },
-  { id: 'fountain-west', x: 420, y: 310, exitX: 42 },
-  { id: 'fountain-east', x: 510, y: 326, exitX: 918 },
+  { id: 'fountain-west', x: 372, y: 330, exitX: 42 },
+  { id: 'fountain-east', x: 600, y: 334, exitX: 918 },
   { id: 'music-front', x: 565, y: 174, exitX: 918 },
   { id: 'east-gate', x: 585, y: 258, exitX: 918 },
 ];

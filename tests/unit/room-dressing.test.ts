@@ -106,6 +106,12 @@ describe('opening fountain collision', () => {
     }
   });
 
+  it('leaves the straight west-east door lane through the first room open', () => {
+    const laneTop = 192;
+    const laneBottom = 288;
+    expect(OPENING_FOUNTAIN.y >= laneBottom || OPENING_FOUNTAIN.y + OPENING_FOUNTAIN.height <= laneTop).toBe(true);
+  });
+
   it('is dressed with the globe fountain', () => {
     const opening = generateWing(0).rooms.find((room) => room.id === 'service_corridor')!;
     const fountain = planRoomDressing(opening).props.find((prop) => prop.prop === 'fountain');

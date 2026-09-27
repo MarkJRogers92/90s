@@ -106,3 +106,84 @@ export const PRESENTATION_ASSETS: readonly PresentationAsset[] = [
   civilian(CIVILIAN_TEXTURE_KEYS.securityIdle, 32, 48),
   civilian(CIVILIAN_TEXTURE_KEYS.securityWalk, 32, 48),
 ];
+
+/* ------------------------------------------------------------------------ */
+/* Neon overhaul runtime art (public/assets/neon, see manifest.json)          */
+/* ------------------------------------------------------------------------ */
+
+export const ENEMY_TEXTURE_KEYS = {
+  hangerIdle: 'neon:enemy:hanger-idle',
+  hangerWalk: 'neon:enemy:hanger-walk',
+  spitterIdle: 'neon:enemy:spitter-idle',
+  lpManagerIdle: 'neon:enemy:lp-manager-idle',
+  lpManagerWalk: 'neon:enemy:lp-manager-walk',
+} as const;
+
+/** Item icons keyed by the simulation's item definition id. */
+export const ITEM_ICON_FILES: Readonly<Record<string, string>> = {
+  janitor_mop: 'mop',
+  pump_soaker: 'pump-soaker',
+  bubble_bath: 'bubble-bath',
+  plasma_globe: 'plasma-globe',
+  vhs_rewinder: 'vhs-rewinder',
+  extension_cord: 'extension-cord',
+  gel_pens: 'gel-pens',
+  wide_nozzle: 'wide-nozzle',
+  receipt_wallet: 'receipt-wallet',
+  fanny_pack: 'fanny-pack',
+  rc_car: 'rc-car',
+  party_popper: 'party-popper',
+  bottle_rocket_pack: 'bottle-rocket-pack',
+  fire_extinguisher: 'fire-extinguisher',
+  paint_marker: 'paint-marker',
+  foam_ball_blaster: 'foam-ball-blaster',
+  slushie_cup: 'slushie-cup',
+  broken_broom_handle: 'broken-broom-handle',
+  box_cutter: 'box-cutter',
+  grease_gun: 'grease-gun',
+  anti_static_strap: 'anti-static-strap',
+  car_battery: 'car-battery',
+  needle_nozzle: 'needle-nozzle',
+  heavy_duty_spring: 'heavy-duty-spring',
+};
+
+export function itemIconKey(itemDefinitionId: string): string | null {
+  const file = ITEM_ICON_FILES[itemDefinitionId];
+  return file ? `neon:item:${file}` : null;
+}
+
+export const PORTRAIT_TEXTURE_KEYS = {
+  alex: 'neon:portrait:alex',
+  lpManager: 'neon:portrait:security-guard',
+} as const;
+
+export const DECAL_TEXTURE_KEYS = {
+  bloodPool: 'neon:decal:blood-pool',
+  bloodSplash: 'neon:decal:blood-splash',
+  bloodDrops: 'neon:decal:blood-drops',
+  bloodDrag: 'neon:decal:blood-drag',
+  residue: 'neon:decal:organic-residue',
+  scorch: 'neon:decal:scorch-mark',
+  glass: 'neon:decal:broken-glass',
+} as const;
+
+const neon = (key: string, file: string, frameWidth?: number, frameHeight?: number): PresentationAsset => ({
+  key,
+  url: `/assets/neon/${file}`,
+  ...(frameWidth ? { frameWidth } : {}),
+  ...(frameHeight ? { frameHeight } : {}),
+  requiredFor: 'actor',
+});
+
+/** Everything the neon presentation loads besides the dressing kit. */
+export const NEON_ASSETS: readonly PresentationAsset[] = [
+  neon(ENEMY_TEXTURE_KEYS.hangerIdle, 'enemies/hanger-idle.png', 48, 48),
+  neon(ENEMY_TEXTURE_KEYS.hangerWalk, 'enemies/hanger-walk.png', 48, 48),
+  neon(ENEMY_TEXTURE_KEYS.spitterIdle, 'enemies/spitter-idle.png', 48, 48),
+  neon(ENEMY_TEXTURE_KEYS.lpManagerIdle, 'enemies/lp-manager-idle.png', 48, 48),
+  neon(ENEMY_TEXTURE_KEYS.lpManagerWalk, 'enemies/lp-manager-walk.png', 48, 48),
+  neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
+  neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
+  ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),
+  ...Object.values(ITEM_ICON_FILES).map((file) => neon(`neon:item:${file}`, `items/${file}.png`)),
+];

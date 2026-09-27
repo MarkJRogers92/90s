@@ -1,12 +1,12 @@
 import Phaser from 'phaser';
-import { ACTOR_TEXTURE_KEYS, type ActorTextureKey } from '../presentation/assets';
+import { ACTOR_TEXTURE_KEYS, ENEMY_TEXTURE_KEYS, type ActorTextureKey } from '../presentation/assets';
 import { actorVisualState } from './visualState';
 
 export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
 ] as const;
 export type ActorDirection = (typeof ACTOR_DIRECTION_ORDER)[number];
-export type ActorKind = 'alex' | 'hanger';
+export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager';
 
 export type ActorSnapshot = {
   readonly id: string;
@@ -27,11 +27,17 @@ export function directionForVector(x: number, y: number, previous: ActorDirectio
   return ACTOR_DIRECTION_ORDER[((index % 8) + 8) % 8] ?? previous;
 }
 
-export function actorFrameFor(state: 'idle' | 'walk', direction: ActorDirection, tick: number): { row: number; column: number } {
+export function actorFrameFor(
+  state: 'idle' | 'walk',
+  direction: ActorDirection,
+  tick: number,
+  walkFrames = 6,
+  ticksPerFrame = 5,
+): { row: number; column: number } {
   const directionIndex = ACTOR_DIRECTION_ORDER.indexOf(direction);
   return state === 'idle'
     ? { row: 0, column: directionIndex }
-    : { row: directionIndex, column: Math.floor(tick / 5) % 6 };
+    : { row: directionIndex, column: Math.floor(tick / ticksPerFrame) % walkFrames };
 }
 
 export function shouldRenderActorSprite(key: string, available: ReadonlySet<string>): boolean {
@@ -40,7 +46,29 @@ export function shouldRenderActorSprite(key: string, available: ReadonlySet<stri
 
 export function actorTextureKey(kind: ActorKind, walking: boolean): ActorTextureKey {
   if (kind === 'hanger') return ACTOR_TEXTURE_KEYS.hangerIdle;
+  if (kind === 'spitter' || kind === 'lp_manager') return ACTOR_TEXTURE_KEYS.hangerIdle;
   return walking ? ACTOR_TEXTURE_KEYS.alexWalk : ACTOR_TEXTURE_KEYS.alexIdle;
+}
+
+/**
+ * The neon pass's enemy art: a walk sheet (one row per facing) when the enemy
+ * is moving and one exists, else the 8-facing idle strip. Returns null for the
+ * player, whose sheets are the approved presentation-slice art.
+ */
+export function enemySpriteSheet(
+  kind: ActorKind,
+  walking: boolean,
+): { idle: string; walk: string | null; walkFrames: number; walkFrameSize: number; ticksPerFrame: number; scale: number } | null {
+  switch (kind) {
+    case 'hanger':
+      return { idle: ENEMY_TEXTURE_KEYS.hangerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.hangerWalk : null, walkFrames: 6, walkFrameSize: 68, ticksPerFrame: 4, scale: 1 };
+    case 'spitter':
+      return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, walkFrames: 1, walkFrameSize: 48, ticksPerFrame: 5, scale: 1.05 };
+    case 'lp_manager':
+      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, walkFrames: 8, walkFrameSize: 48, ticksPerFrame: 6, scale: 2 };
+    default:
+      return null;
+  }
 }
 
 export type ActorPresentation = {

@@ -28,7 +28,11 @@ import {
   type ActorSnapshot,
   type SpriteSpec,
 } from './ActorSpriteView';
-import { OpeningConcourseView } from './OpeningConcourseView';
+import { MallRoomView } from './MallRoomView';
+import { CombatFeedback } from './CombatFeedback';
+import { enemySpriteSheet } from './ActorSpriteView';
+import { itemIconKey } from '../presentation/assets';
+import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
 import { shouldDrawDirectAttackArc } from './visualState';
 
@@ -59,13 +63,20 @@ export class MvpRunView {
   private readonly scene: Phaser.Scene;
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly effectGraphics: Phaser.GameObjects.Graphics;
-  private readonly labels = new Map<string, Phaser.GameObjects.Text>();
+  private readonly labels = new Map<string, Phaser.GameObjects.Image>();
   private readonly actorMemory = new ActorPresentationMemory();
   private readonly actorMovement = new ActorMovementMemory();
   private readonly deathEffects = new ActorDeathEffectLifecycle();
   private readonly actorSprites = new Map<string, ActorSpriteView>();
   private readonly usedActorSpriteIds = new Set<string>();
-  private openingConcourse: OpeningConcourseView | undefined;
+  private openingConcourse: MallRoomView | undefined;
+  private mallRoomKey = '';
+  private readonly feedback: CombatFeedback;
+  private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
+  private readonly usedOfferIcons = new Set<string>();
+  private readonly storeGraphics: Phaser.GameObjects.Graphics;
+  private readonly shadows = new Map<string, Phaser.GameObjects.Image>();
+  private readonly usedShadows = new Set<string>();
   private concourseAmbience: ConcourseAmbienceSnapshot | null = null;
   private actorDebug: ActorPresentationDebugSnapshot = this.emptyActorDebug();
 
@@ -73,6 +84,8 @@ export class MvpRunView {
     this.scene = scene;
     this.graphics = scene.add.graphics();
     this.effectGraphics = scene.add.graphics().setDepth(presentationDepth('effect', 1));
+    this.feedback = new CombatFeedback(scene);
+    this.storeGraphics = scene.add.graphics().setDepth(presentationDepth('decal', 800));
   }
 
   public sync(state: MvpRunState): void {
@@ -81,59 +94,37 @@ export class MvpRunView {
     if (!room) {
       return;
     }
-    if (room.id === 'service_corridor') {
-      this.openingConcourse ??= new OpeningConcourseView(this.scene, graphics, state);
-      this.openingConcourse.render(state);
-      this.concourseAmbience = this.openingConcourse.ambienceSnapshot();
-    } else if (this.openingConcourse) {
+    const roomKey = `${state.roomIndex}:${room.id}`;
+    if (this.openingConcourse && this.mallRoomKey !== roomKey) {
       this.concourseAmbience = this.openingConcourse.leaveRoom(state.tick);
       this.openingConcourse.destroy();
       this.openingConcourse = undefined;
     }
+    if (!this.openingConcourse) {
+      this.openingConcourse = new MallRoomView(this.scene, graphics, state);
+      this.mallRoomKey = roomKey;
+    }
+    this.openingConcourse.render(state);
+    if (room.id === 'service_corridor') {
+      this.concourseAmbience = this.openingConcourse.ambienceSnapshot();
+    }
     graphics.clear();
     this.effectGraphics.clear();
+    this.storeGraphics.clear();
     this.usedActorSpriteIds.clear();
-
-    if (!this.openingConcourse) {
-      graphics.fillStyle(0x1d2124, 1);
-      graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
-      graphics.fillStyle(0x8c8873, 1);
-      graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
-      graphics.lineStyle(1, 0x74705f, 0.35);
-      for (let x = room.bounds.x; x <= room.bounds.x + room.bounds.width; x += 32) {
-        graphics.lineBetween(x, room.bounds.y, x, room.bounds.y + room.bounds.height);
-      }
-      for (let y = room.bounds.y; y <= room.bounds.y + room.bounds.height; y += 32) {
-        graphics.lineBetween(room.bounds.x, y, room.bounds.x + room.bounds.width, y);
-      }
-
-      for (const wall of room.walls) {
-        graphics.fillStyle(0x41453f, 1);
-        graphics.fillRect(wall.x, wall.y, wall.width, wall.height);
-        graphics.lineStyle(2, 0xc4b878, 0.45);
-        graphics.strokeRect(wall.x, wall.y, wall.width, wall.height);
-      }
-
-      for (const doorway of room.doorways) {
-        graphics.fillStyle(0xf6d365, 1);
-        graphics.fillRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
-        graphics.lineStyle(2, 0x12130f, 0.9);
-        graphics.strokeRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
-      }
-    }
+    this.usedShadows.clear();
+    this.usedOfferIcons.clear();
 
     if (room.store) {
       this.drawStore(state, room.store.templateId);
     }
 
     if (room.benchKiosk) {
-      graphics.lineStyle(2, 0xd8e06a, 0.55);
-      graphics.strokeCircle(room.benchKiosk.x, room.benchKiosk.y, 48);
-      graphics.fillStyle(0x72566c, 1);
-      graphics.fillRect(room.benchKiosk.x - 43, room.benchKiosk.y - 12, 86, 24);
-      graphics.lineStyle(2, 0xf4edd8, 0.9);
-      graphics.strokeRect(room.benchKiosk.x - 43, room.benchKiosk.y - 12, 86, 24);
-      this.setLabel('bench', 'BENCH WARRANT', room.benchKiosk.x, room.benchKiosk.y - 22);
+      const pulse = 0.35 + 0.25 * Math.sin(state.tick / 12);
+      this.effectGraphics.lineStyle(2, 0x6aff8a, pulse);
+      this.effectGraphics.strokeEllipse(room.benchKiosk.x, room.benchKiosk.y + 24, 96, 30);
+      this.openingConcourse?.addLight({ x: room.benchKiosk.x, y: room.benchKiosk.y, radius: 90, color: 0x9aff9a, intensity: 0.55 + pulse * 0.4 });
+      this.setLabel('bench', 'BENCH WARRANT', room.benchKiosk.x - 40, room.benchKiosk.y - 58);
     } else {
       this.clearLabel('bench');
     }
@@ -158,22 +149,30 @@ export class MvpRunView {
       const effects = opening?.effectGraphics(`enemy:${enemy.id}`) ?? this.effectGraphics;
       const enemyDelta = this.actorMovement.movementFor(`enemy:${enemy.id}`, enemy.x, enemy.y);
       const actorDepth = presentationDepth('actor', enemy.y);
-      const sprite = enemy.kind === 'hanger' ? this.syncActorSprite({
-        id: `enemy:${enemy.id}`, kind: 'hanger', x: enemy.x, y: enemy.y,
-        moveX: enemyDelta.x, moveY: enemyDelta.y,
+      // Stationary spitters turn to face the janitor; everyone else faces their motion.
+      const player0 = state.room.combat.player;
+      const facing = enemy.kind === 'spitter'
+        ? { x: (player0.x - enemy.x) * 1e-3, y: (player0.y - enemy.y) * 1e-3 }
+        : enemyDelta;
+      const enemySnapshot: ActorSnapshot = {
+        id: `enemy:${enemy.id}`, kind: enemy.kind === 'lp_manager' ? 'lp_manager' : enemy.kind,
+        x: enemy.x, y: enemy.y, moveX: facing.x, moveY: facing.y,
         attackTicks: 0, damaged: false, phase: enemy.phase,
-      }, state.tick, actorDepth) : null;
-      const spriteActive = sprite?.spriteActive ?? false;
-      if (sprite) {
-        this.drawActorEffectCues({
-          id: `enemy:${enemy.id}`, kind: 'hanger', x: enemy.x, y: enemy.y,
-          moveX: enemyDelta.x, moveY: enemyDelta.y,
-          attackTicks: 0, damaged: false, phase: enemy.phase,
-        }, sprite, effects);
-        hangerEvidence.push({
-          id: `enemy:${enemy.id}`,
-          ...sprite,
-        });
+      };
+      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth);
+      const spriteActive = sprite.spriteActive;
+      this.drawActorEffectCues(enemySnapshot, sprite, effects);
+      if (enemy.kind === 'hanger') {
+        hangerEvidence.push({ id: `enemy:${enemy.id}`, ...sprite });
+      }
+      this.contactShadow(`enemy:${enemy.id}`, enemy.x, enemy.y, enemy.kind === 'lp_manager' ? 2.2 : 1.2);
+      if (enemy.phase === 'telegraph') {
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y, radius: enemy.kind === 'lp_manager' ? 190 : 80, color: 0xffd84a, intensity: 0.75 });
+      } else if (enemy.kind === 'lp_manager') {
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 110, color: 0xff3a4a, intensity: 0.45 });
+      } else {
+        // A faint sick underglow keeps every threat readable in the darker rooms.
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 8, radius: 44, color: enemy.kind === 'spitter' ? 0xb0ff8a : 0xff8aa0, intensity: 0.4 });
       }
       telegraphs.push({
         id: `enemy:${enemy.id}`,
@@ -181,7 +180,7 @@ export class MvpRunView {
         effectDepth: presentationDepth('effect', 1),
       });
       if (enemy.kind === 'lp_manager') {
-        this.drawBoss(enemy, body, effects);
+        this.drawBoss(enemy, body, effects, !spriteActive);
       } else {
         this.drawEnemy(enemy, body, effects, !spriteActive);
       }
@@ -206,6 +205,12 @@ export class MvpRunView {
       attackTicks: player.attackActiveTicks, damaged: player.invulnerableTicks > 0, phase: 'idle',
     }, state.tick, playerDepth);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
+    this.contactShadow('player', player.x, player.y, 1);
+    // The janitor carries a little warm light, so the player never loses themself in the dark.
+    opening?.addLight({ x: player.x, y: player.y - 10, radius: 96, color: 0xffe6c8, intensity: 0.62 });
+    if (player.attackActiveTicks > 0) {
+      opening?.addLight({ x: player.x + player.facing.x * 24, y: player.y + player.facing.y * 24 - 8, radius: 70, color: 0xfff4d0, intensity: 0.7 });
+    }
     this.drawPlayer(
       state,
       opening?.actorGraphics('player', state.room.combat.player.y) ?? graphics,
@@ -237,7 +242,16 @@ export class MvpRunView {
         effect: presentationDepth('effect', 1),
       },
     };
+    this.feedback.sync(actorScope, state.tick, state.room.combat.enemies, player, state.paused || state.status !== 'playing');
+    for (const light of this.feedback.drainLights()) opening?.addLight(light);
+    for (const projectile of state.room.combat.projectiles) {
+      const enemyShot = projectile.faction === 'enemy';
+      opening?.addLight({ x: projectile.x, y: projectile.y, radius: enemyShot ? 46 : 36, color: enemyShot ? 0xff3fc8 : 0x9ad8ff, intensity: 0.85 });
+    }
+    opening?.renderLighting(state.tick);
     opening?.endFrame();
+    this.pruneShadows();
+    this.pruneOfferIcons();
     this.pruneActorSprites();
     this.actorMovement.retain(new Set([
       'player',
@@ -294,24 +308,30 @@ export class MvpRunView {
   }
 
   private drawStore(state: MvpRunState, templateId: string): void {
-    const graphics = this.graphics;
     const room = state.wing.rooms[state.roomIndex];
     const store = room?.store;
     if (!store) {
       return;
     }
+    const floor = this.storeGraphics;
+    const cues = this.effectGraphics;
     const carriedHere = state.carried.some((theft) => theft.sourceStoreId === store.templateId);
-    graphics.fillStyle(carriedHere ? 0x4a3f57 : 0x35383a, 1);
-    graphics.fillRect(store.bounds.x, store.bounds.y, store.bounds.width, store.bounds.height);
-    graphics.lineStyle(2, carriedHere ? 0xf6d365 : 0xc4b878, carriedHere ? 1 : 0.6);
-    graphics.strokeRect(store.bounds.x, store.bounds.y, store.bounds.width, store.bounds.height);
+    if (carriedHere) {
+      // Carrying stolen stock out of this store: the shop outline goes hot.
+      floor.lineStyle(2, 0xffd84a, 0.5 + 0.3 * Math.sin(state.tick / 6));
+      floor.strokeRect(store.bounds.x, store.bounds.y, store.bounds.width, store.bounds.height);
+    }
 
+    // The door mat and anti-theft pillars at the exit.
     const exit = store.exit.bounds;
-    graphics.fillStyle(0x8bc9b8, 1);
-    graphics.fillRect(exit.x, exit.y, exit.width, exit.height);
-    graphics.lineStyle(2, 0x12130f, 0.8);
-    graphics.strokeRect(exit.x, exit.y, exit.width, exit.height);
+    floor.fillStyle(0x1a2a30, 1).fillRect(exit.x, exit.y - 6, exit.width, exit.height + 12);
+    floor.fillStyle(0x3ff0ff, 0.5).fillRect(exit.x, exit.y + exit.height / 2 - 1, exit.width, 2);
+    for (const px of [exit.x - 6, exit.x + exit.width + 2]) {
+      cues.fillStyle(0xc8d8e8, 1).fillRect(px, exit.y - 26, 4, 30);
+      cues.fillStyle(carriedHere ? 0xff3a4a : 0x6aff8a, 1).fillRect(px, exit.y - 26, 4, 3);
+    }
 
+    // The ceiling camera's sweep: a searchlight the player must read to steal.
     const zone = store.sightZone;
     const facing = securityFacingAtTick(zone, state.tick);
     const halfArc = ((zone.arcDegrees * Math.PI) / 180) / 2;
@@ -319,38 +339,42 @@ export class MvpRunView {
     const firstY = zone.origin.y + Math.sin(facing - halfArc) * zone.range;
     const secondX = zone.origin.x + Math.cos(facing + halfArc) * zone.range;
     const secondY = zone.origin.y + Math.sin(facing + halfArc) * zone.range;
-    graphics.fillStyle(0xffd45d, 0.22);
-    graphics.fillTriangle(zone.origin.x, zone.origin.y, firstX, firstY, secondX, secondY);
-    graphics.lineStyle(1, 0xffd45d, 0.6);
-    graphics.lineBetween(zone.origin.x, zone.origin.y, firstX, firstY);
-    graphics.lineBetween(zone.origin.x, zone.origin.y, secondX, secondY);
-    graphics.fillStyle(0xffd45d, 1);
-    graphics.fillCircle(zone.origin.x, zone.origin.y, 4);
+    cues.fillStyle(0xffd45d, 0.13);
+    cues.fillTriangle(zone.origin.x, zone.origin.y, firstX, firstY, secondX, secondY);
+    cues.lineStyle(1, 0xffd45d, 0.75);
+    cues.lineBetween(zone.origin.x, zone.origin.y, firstX, firstY);
+    cues.lineBetween(zone.origin.x, zone.origin.y, secondX, secondY);
+    cues.fillStyle(0x1a1422, 1).fillCircle(zone.origin.x, zone.origin.y, 6);
+    cues.fillStyle(state.tick % 40 < 20 ? 0xff3a4a : 0x6a1a22, 1).fillCircle(zone.origin.x, zone.origin.y, 3);
+    const reach = zone.range * 0.62;
+    this.openingConcourse?.addLight({
+      x: zone.origin.x + Math.cos(facing) * reach,
+      y: zone.origin.y + Math.sin(facing) * reach,
+      radius: 120,
+      color: 0xffe08a,
+      intensity: 0.5,
+      squash: 0.8,
+    });
 
-    this.setLabel(`store:${templateId}`, store.name, store.bounds.x + 6, store.bounds.y - 4);
+    this.setLabel(`store:${templateId}`, store.name.toUpperCase(), store.bounds.x + 6, store.bounds.y - 16);
 
     for (const offer of room?.offers ?? []) {
       const status = state.offerStatus[offer.id] ?? 'available';
       if (status === 'available') {
-        graphics.fillStyle(0x8bc9b8, 1);
-        graphics.fillCircle(offer.position.x, offer.position.y, 7);
-        graphics.lineStyle(2, 0x12130f, 0.9);
-        graphics.strokeCircle(offer.position.x, offer.position.y, 7);
+        floor.lineStyle(2, 0x6aff8a, 0.8).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       } else if (status === 'carried') {
-        graphics.lineStyle(2, 0xf6d365, 1);
-        graphics.strokeCircle(offer.position.x, offer.position.y, 7);
+        floor.lineStyle(2, 0xffd84a, 1).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       } else {
-        graphics.lineStyle(2, 0x5a5e55, 0.8);
-        graphics.lineBetween(offer.position.x - 6, offer.position.y - 6, offer.position.x + 6, offer.position.y + 6);
-        graphics.lineBetween(offer.position.x - 6, offer.position.y + 6, offer.position.x + 6, offer.position.y - 6);
+        floor.lineStyle(1, 0x5a5e55, 0.8).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       }
+      this.offerIcon(offer.id, offer.itemDefinitionId, offer.position.x, offer.position.y, state.tick, status);
       // The same run offer price the HUD card shows, so a world label can
       // never disagree with the discounted price the run actually charges.
       this.setLabel(
         `offer:${offer.id}`,
         runOfferPriceLabel(state, offer),
-        offer.position.x + 10,
-        offer.position.y - 8,
+        offer.position.x + 12,
+        offer.position.y - 12,
       );
     }
   }
@@ -386,27 +410,26 @@ export class MvpRunView {
           enemy.y + enemy.telegraphAimY * 52,
         );
       }
-      graphics.fillStyle(0x4d2c59, 1);
-      graphics.fillRect(enemy.x - 13, enemy.y - 13, 26, 26);
-      graphics.fillStyle(0xc984d8, 1);
-      graphics.fillRect(enemy.x - 6, enemy.y - 5, 12, 8);
+      if (drawBody) {
+        graphics.fillStyle(0x4d2c59, 1);
+        graphics.fillRect(enemy.x - 13, enemy.y - 13, 26, 26);
+        graphics.fillStyle(0xc984d8, 1);
+        graphics.fillRect(enemy.x - 6, enemy.y - 5, 12, 8);
+      }
     }
     this.drawEnemyStatuses(enemy, effects);
-    effects.fillStyle(0x2a2424, 0.9);
-    effects.fillRect(enemy.x - 15, enemy.y - enemy.radius - 12, 30, 4);
-    effects.fillStyle(0xd85c54, 1);
-    effects.fillRect(
-      enemy.x - 15,
-      enemy.y - enemy.radius - 12,
-      30 * Math.max(0, Math.min(1, enemy.health / 8)),
-      4,
-    );
+    const barY = enemy.y - 46;
+    effects.fillStyle(0x12060c, 0.9);
+    effects.fillRect(enemy.x - 14, barY, 28, 4);
+    effects.fillStyle(0xe8243c, 1);
+    effects.fillRect(enemy.x - 13, barY + 1, 26 * Math.max(0, Math.min(1, enemy.health / 8)), 2);
   }
 
   private drawBoss(
     enemy: EnemyState,
     graphics = this.graphics,
     effects = graphics,
+    drawBody = true,
   ): void {
     if (enemy.phase === 'telegraph') {
       // The ring is the authored slam reach itself, not a decorative radius: a
@@ -428,12 +451,14 @@ export class MvpRunView {
       effects.strokeCircle(enemy.x, enemy.y, enemy.radius + 16);
     }
     this.drawEnemyStatuses(enemy, effects);
-    graphics.fillStyle(0x5c2936, 1);
-    graphics.fillCircle(enemy.x, enemy.y, enemy.radius);
-    graphics.lineStyle(3, 0xf6d365, 1);
-    graphics.strokeCircle(enemy.x, enemy.y, enemy.radius);
-    graphics.fillStyle(0xf6d365, 1);
-    graphics.fillCircle(enemy.x, enemy.y, 5);
+    if (drawBody) {
+      graphics.fillStyle(0x5c2936, 1);
+      graphics.fillCircle(enemy.x, enemy.y, enemy.radius);
+      graphics.lineStyle(3, 0xf6d365, 1);
+      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius);
+      graphics.fillStyle(0xf6d365, 1);
+      graphics.fillCircle(enemy.x, enemy.y, 5);
+    }
     effects.fillStyle(0x2a2424, 0.9);
     effects.fillRect(enemy.x - 24, enemy.y - enemy.radius - 14, 48, 5);
     effects.fillStyle(0xd85c54, 1);
@@ -549,18 +574,24 @@ export class MvpRunView {
 
   private syncActorSprite(snapshot: ActorSnapshot, tick: number, depth: number): ActorFrameEvidence {
     const visual = actorPresentation(this.actorMemory, snapshot, tick);
-    const textureKey = actorTextureKey(snapshot.kind, visual.walking);
-    const spec: SpriteSpec = snapshot.kind === 'hanger'
-      ? { textureKey, frameWidth: 48, frameHeight: 48, scale: 0.8 }
-      : { textureKey, frameWidth: 32, frameHeight: 48, scale: 0.9 };
-    const usable = usableTextureKey(this.scene.textures, textureKey) !== null;
+    const sheet = enemySpriteSheet(snapshot.kind, visual.walking);
+    const walkKey = sheet?.walk && usableTextureKey(this.scene.textures, sheet.walk) ? sheet.walk : null;
+    const neonIdle = sheet && usableTextureKey(this.scene.textures, sheet.idle) ? sheet.idle : null;
+    const textureKey = walkKey ?? neonIdle ?? actorTextureKey(snapshot.kind, visual.walking);
+    const frameSize = walkKey && sheet ? sheet.walkFrameSize : 48;
+    const spec: SpriteSpec = sheet
+      ? { textureKey, frameWidth: frameSize, frameHeight: frameSize, scale: sheet.scale }
+      : { textureKey, frameWidth: 32, frameHeight: 48, scale: 1 };
+    const usable = usableTextureKey(this.scene.textures, textureKey) !== null
+      && (snapshot.kind === 'alex' || snapshot.kind === 'hanger' || neonIdle !== null);
     let view = this.actorSprites.get(snapshot.id);
     if (!view) {
       view = new ActorSpriteView(this.scene, spec);
       this.actorSprites.set(snapshot.id, view);
     }
     this.usedActorSpriteIds.add(snapshot.id);
-    const frame = actorFrameFor(visual.walking && snapshot.kind === 'alex' ? 'walk' : 'idle', visual.direction, tick);
+    const walkingFrames = (visual.walking && snapshot.kind === 'alex') || walkKey !== null;
+    const frame = actorFrameFor(walkingFrames ? 'walk' : 'idle', visual.direction, tick, sheet?.walkFrames ?? 6, sheet?.ticksPerFrame ?? 5);
     const spriteActive = view.sync(snapshot, frame, visual, usable, depth, spec);
     return {
       spriteActive,
@@ -613,7 +644,7 @@ export class MvpRunView {
     }
   }
 
-  private drawDeathEffects(opening: OpeningConcourseView | undefined): void {
+  private drawDeathEffects(opening: MallRoomView | undefined): void {
     for (const effect of this.deathEffects.snapshot()) {
       const graphics = opening?.effectGraphics(`death:${effect.id}`) ?? this.effectGraphics;
       const progress = 1 - effect.remainingTicks / ACTOR_DEATH_EFFECT_TICKS;
@@ -636,22 +667,17 @@ export class MvpRunView {
   }
 
   private setLabel(key: string, text: string, x: number, y: number): void {
+    const spec = ensurePixelLabel(this.scene, text.toUpperCase(), key.startsWith('offer:') ? '#6aff8a' : '#ffd84a');
     let label = this.labels.get(key);
     if (!label) {
-      label = this.scene.add.text(x, y, text, {
-        fontFamily: '"Courier New", monospace',
-        fontSize: '11px',
-        color: '#f4edd8',
-        backgroundColor: 'rgba(9, 11, 13, 0.75)',
-        padding: { x: 3, y: 2 },
-      });
+      label = this.scene.add.image(Math.round(x), Math.round(y), spec.key).setOrigin(0, 0);
       label.setDepth(presentationDepth('prompt', 0));
       this.labels.set(key, label);
       return;
     }
-    label.setPosition(x, y);
-    if (label.text !== text) {
-      label.setText(text);
+    label.setPosition(Math.round(x), Math.round(y));
+    if (label.texture.key !== spec.key) {
+      label.setTexture(spec.key);
     }
   }
 
@@ -682,7 +708,63 @@ export class MvpRunView {
     }
   }
 
+  private contactShadow(id: string, x: number, y: number, scale: number): void {
+    this.usedShadows.add(id);
+    let shadow = this.shadows.get(id);
+    if (!shadow) {
+      shadow = this.scene.add.image(x, y, FX_TEXTURES.shadow).setDepth(presentationDepth('lowProp', 900));
+      this.shadows.set(id, shadow);
+    }
+    shadow.setPosition(Math.round(x), Math.round(y + 2)).setScale(scale, scale).setVisible(true);
+  }
+
+  private pruneShadows(): void {
+    for (const [id, shadow] of this.shadows) {
+      if (!this.usedShadows.has(id)) {
+        shadow.destroy();
+        this.shadows.delete(id);
+      }
+    }
+  }
+
+  /** Store stock drawn as the actual item, bobbing on its shelf under a spotlight. */
+  private offerIcon(offerId: string, itemDefinitionId: string, x: number, y: number, tick: number, status: string): void {
+    const key = itemIconKey(itemDefinitionId);
+    const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+    if (!usable) return;
+    this.usedOfferIcons.add(offerId);
+    let icon = this.offerIcons.get(offerId);
+    if (!icon) {
+      icon = this.scene.add.image(x, y, usable);
+      this.offerIcons.set(offerId, icon);
+    }
+    const scale = Math.min(22 / icon.width, 22 / icon.height);
+    const bob = Math.sin((tick + x) / 14) * 2;
+    icon.setPosition(Math.round(x), Math.round(y - 30 + bob)).setScale(scale)
+      .setDepth(presentationDepth('effect', 5))
+      .setAlpha(status === 'available' ? 1 : status === 'carried' ? 0.9 : 0.25)
+      .setVisible(status !== 'purchased' && status !== 'secured');
+    if (status === 'available') {
+      this.openingConcourse?.addLight({ x, y: y - 20, radius: 44, color: 0xfff0b0, intensity: 0.6 });
+    }
+  }
+
+  private pruneOfferIcons(): void {
+    for (const [id, icon] of this.offerIcons) {
+      if (!this.usedOfferIcons.has(id)) {
+        icon.destroy();
+        this.offerIcons.delete(id);
+      }
+    }
+  }
+
   public destroy(): void {
+    for (const shadow of this.shadows.values()) shadow.destroy();
+    this.shadows.clear();
+    for (const icon of this.offerIcons.values()) icon.destroy();
+    this.offerIcons.clear();
+    this.feedback.destroy();
+    this.storeGraphics.destroy();
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
     this.concourseAmbience = null;
@@ -700,6 +782,8 @@ export class MvpRunView {
   }
 
   public resetForRun(): void {
+    this.feedback.resetRoom('');
+    this.mallRoomKey = '';
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
     this.concourseAmbience = null;
@@ -721,7 +805,7 @@ export class MvpRunView {
     return this.concourseAmbience ? { ...this.concourseAmbience } : null;
   }
 
-  public presentationSnapshot(): (ReturnType<OpeningConcourseView['debugSnapshot']> & {
+  public presentationSnapshot(): (ReturnType<MallRoomView['debugSnapshot']> & {
     promptDepths: Array<{ id: string; renderDepth: number }>;
   }) | null {
     if (!this.openingConcourse) return null;

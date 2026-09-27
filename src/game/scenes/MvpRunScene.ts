@@ -33,11 +33,14 @@ import {
 } from '../../sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
 import { GameAudioEngine } from '../audio/engine';
-import { PRESENTATION_ASSETS } from '../presentation/assets';
+import { NEON_ASSETS, PRESENTATION_ASSETS } from '../presentation/assets';
+import { installAdaptiveBloom } from '../presentation/lighting/LightingLayer';
+import { ensureFxTextures } from '../presentation/neon/proceduralTextures';
+import { STAGE_HEIGHT, STAGE_TOP, STAGE_WIDTH, dressingTextureFiles } from '../presentation/rooms/roomDressing';
+import { GameHud } from '../ui/GameHud';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
 import {
-  boundCameraToPlayfield,
   centreCameraOn,
   pointerToWorld,
   worldToCanvas,
@@ -46,6 +49,11 @@ import {
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
 const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
+const RUN_ASSETS = [
+  ...PRESENTATION_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
+  ...NEON_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
+  ...dressingTextureFiles(),
+];
 const PRESENTATION_ASSET_KEYS = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
 
 export type MvpRunLaunch = {
@@ -208,6 +216,8 @@ export class MvpRunScene extends Phaser.Scene {
   private inputAdapter: MvpRunInputAdapter | undefined;
   private runView: MvpRunView | undefined;
   private hud: MvpRunHud | undefined;
+  private gameHud: GameHud | undefined;
+  private removeBloom: (() => void) | undefined;
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
   private presentationLoadFailures = 0;
@@ -222,7 +232,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.load.once(Phaser.Loader.Events.COMPLETE, () => {
       this.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, this.countPresentationLoadFailure, this);
     });
-    for (const asset of PRESENTATION_ASSETS) {
+    for (const asset of RUN_ASSETS) {
       this.load.image(asset.key, asset.url);
     }
   }
@@ -254,8 +264,14 @@ export class MvpRunScene extends Phaser.Scene {
     // key press anywhere unlocks it; until then the engine is silent, not broken.
     window.addEventListener('pointerdown', this.unlockAudio);
     window.addEventListener('keydown', this.unlockAudio);
+    ensureFxTextures(this);
     this.runView = new MvpRunView(this);
-    boundCameraToPlayfield(this);
+    // The whole room is always on screen, like an Isaac room: the camera is
+    // fixed on the stage (playfield plus the storefront band above it).
+    this.cameras.main.setBounds(0, STAGE_TOP, STAGE_WIDTH, STAGE_HEIGHT);
+    this.cameras.main.setBackgroundColor('#07050c');
+    this.removeBloom = installAdaptiveBloom(this);
+    this.gameHud = new GameHud(this);
     this.hud = new MvpRunHud(
       () => this.restartRun(),
       () => this.returnToTitle(),
@@ -427,6 +443,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.runView?.sync(this.run);
     centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
+    this.gameHud?.sync(this.run);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
@@ -546,6 +563,10 @@ export class MvpRunScene extends Phaser.Scene {
     this.runView = undefined;
     this.hud?.destroy();
     this.hud = undefined;
+    this.gameHud?.destroy();
+    this.gameHud = undefined;
+    this.removeBloom?.();
+    this.removeBloom = undefined;
     window.removeEventListener('pointerdown', this.unlockAudio);
     window.removeEventListener('keydown', this.unlockAudio);
     this.audio?.destroy();

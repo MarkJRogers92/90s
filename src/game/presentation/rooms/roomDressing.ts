@@ -45,6 +45,7 @@ export const FACADE_TEXTURES = {
   cinema: { key: 'neon:facade:cinema-concession', file: 'facades/cinema-concession.png', width: 288 },
   pizza: { key: 'neon:facade:pizza-counter', file: 'facades/pizza-counter.png', width: 256 },
   burger: { key: 'neon:facade:burger-counter', file: 'facades/burger-counter.png', width: 256 },
+  wok: { key: 'neon:facade:wok-counter', file: 'facades/wok-counter.png', width: 256 },
   security: { key: 'neon:facade:security-office', file: 'facades/security-office.png', width: 288 },
   service: { key: 'neon:facade:back-hall-wall', file: 'facades/back-hall-wall.png', width: 288 },
 } as const;
@@ -376,7 +377,7 @@ function openingConcourse(room: WingRoomDefinition): DressingPlan {
     ...facadeSpillLights(facades),
     ...doorwayLights(room, NEON.cyan),
     ...ceilingGrid(NEON.warm, 0.55, 190, [150, 390], [140, 480, 820]),
-    { x: 480, y: 250, radius: 170, color: 0x7fdcff, intensity: 0.7, squash: 0.7 },
+    { x: 480, y: 330, radius: 170, color: 0x7fdcff, intensity: 0.7, squash: 0.7 },
   ];
   return {
     themeId: 'opening_concourse',
@@ -457,7 +458,7 @@ function storefront(room: WingRoomDefinition): DressingPlan {
 function foodCourt(room: WingRoomDefinition): DressingPlan {
   const facades = facadeRow([
     { facade: 'pizza', sign: sign('PIZZA PALACE', NEON.orange, 'HOT SLICES 99C', NEON.yellow), spill: 0xffb070 },
-    { facade: 'cinema', sign: sign('WOK N ROLL', NEON.red, 'CHINESE EXPRESS', NEON.yellow), spill: 0xffa060 },
+    { facade: 'wok', sign: sign('WOK N ROLL', NEON.red, 'CHINESE EXPRESS', NEON.yellow), spill: 0xffa060 },
     { facade: 'burger', sign: sign('BURGER ORBIT', NEON.cyan, 'OUT OF THIS WORLD', NEON.orange), spill: 0xa0fff0 },
   ]);
   const props: DressingProp[] = [];
@@ -484,7 +485,7 @@ function foodCourt(room: WingRoomDefinition): DressingPlan {
       ...ceilingGrid(NEON.warm, 0.5, 160, [180, 380], [200, 480, 760], (i) => (i === 4 ? 'buzz' : undefined)),
     ],
     neonStrips: [],
-    floorSigns: [sign('FOOD COURT', NEON.pink, undefined, undefined, 2)].map((spec) => ({ ...spec, x: 480, y: 470 })),
+    floorSigns: [],
     storeZone: null,
     civilians: false,
   };
@@ -547,7 +548,11 @@ function securityOffice(room: WingRoomDefinition): DressingPlan {
       ...ceilingGrid(0xb0ffc8, 0.55, 150, [160, 380], [240, 560], (i) => (i === 1 ? 'buzz' : undefined)),
       { x: 760, y: 240, radius: 190, color: NEON.red, intensity: 0.45, squash: 0.8, flicker: 'pulse' },
     ],
-    neonStrips: [{ x1: 540, y1: 60, x2: 540, y2: 440, color: NEON.red }],
+    neonStrips: [
+      { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.green },
+      { x1: 580, y1: 110, x2: 940, y2: 110, color: NEON.red },
+      { x1: 580, y1: 370, x2: 940, y2: 370, color: NEON.red },
+    ],
     floorSigns: [],
     storeZone: null,
     civilians: false,

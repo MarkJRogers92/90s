@@ -34,7 +34,7 @@ OUT = ROOT / 'public/assets/neon'
 
 FACADES = [
     'video-store', 'music-store', 'electronics-store', 'arcade', 'boutique',
-    'cinema-concession', 'pizza-counter', 'burger-counter', 'security-office',
+    'cinema-concession', 'pizza-counter', 'burger-counter', 'wok-counter', 'security-office',
     'back-hall-wall',
 ]
 PROPS = [
@@ -117,6 +117,26 @@ def main() -> None:
                 manifest.append({'path': str(dst.relative_to(ROOT)),
                                  'source': f'codex/pixellab-aseprite-proof:public/assets/{folder}/{src.name}',
                                  'generator': 'PixelLab (earlier art pass)', 'size': [w, h], 'sha256': sha256(dst)})
+
+    # The RC car only exists as an 8-facing strip; its first facing is the icon.
+    strip = args.legacy / 'props' / 'rc-car.png' if args.legacy else None
+    if strip and strip.exists():
+        car = Image.open(strip).convert('RGBA').crop((0, 0, 24, 22))
+        car = car.resize((48, 44), Image.NEAREST)
+        icon = OUT / 'items' / 'rc-car.png'
+        car.save(icon)
+        manifest.append({'path': str(icon.relative_to(ROOT)), 'source': 'codex/pixellab-aseprite-proof:public/assets/props/rc-car.png (frame 0)',
+                         'generator': 'PixelLab (earlier art pass), cropped', 'size': [48, 44], 'sha256': sha256(icon)})
+
+    # The HUD portrait for Alex reuses the earlier pass's grunge 'teenager' bust.
+    teenager = OUT / 'portraits' / 'teenager.png'
+    if teenager.exists():
+        alex = OUT / 'portraits' / 'alex.png'
+        shutil.copyfile(teenager, alex)
+        manifest.append({'path': str(alex.relative_to(ROOT)),
+                         'source': 'codex/pixellab-aseprite-proof:public/assets/portraits/teenager.png',
+                         'generator': 'PixelLab (earlier art pass), chosen as Alex HUD portrait',
+                         'size': [160, 160], 'sha256': sha256(alex)})
 
     (OUT / 'manifest.json').write_text(json.dumps(sorted(manifest, key=lambda e: e['path']), indent=2) + '\n')
     print(f'{len(manifest)} runtime assets written to {OUT.relative_to(ROOT)}')
