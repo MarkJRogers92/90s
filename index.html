@@ -139,36 +139,22 @@
           </div>
         </aside>
         <aside id="mvp-run-hud" class="mvp-run-hud" data-testid="mvp-run-hud" hidden>
-          <div class="hud-row">
-            <span class="hud-label">NIGHT SHIFT // SEED</span>
-            <strong id="mvp-run-seed">seed 0</strong>
-          </div>
-          <div class="hud-row">
-            <span class="hud-label">ROOM</span>
-            <strong id="mvp-run-room">—</strong>
-          </div>
-          <p id="mvp-run-objective" class="mvp-run-objective">OBJECTIVE: —</p>
-          <div class="hud-row">
-            <span class="hud-label">JANITOR // HEALTH</span>
-            <strong id="mvp-run-health">6 / 6</strong>
-          </div>
-          <div class="hud-row">
-            <span class="hud-label">CASH</span>
-            <strong id="mvp-run-cash">$30</strong>
-          </div>
-          <div class="hud-row">
-            <span class="hud-label">SECURITY HEAT</span>
-            <strong id="mvp-run-heat">HEAT 0</strong>
+          <div class="mvp-run-status-bar" aria-label="Night Shift status">
+            <div class="mvp-run-identity">
+              <span class="mvp-run-brand">NIGHT SHIFT</span>
+              <strong id="mvp-run-room">—</strong>
+            </div>
+            <div class="mvp-run-vitals">
+              <span>HP <strong id="mvp-run-health">6 / 6</strong></span>
+              <span>$ <strong id="mvp-run-cash">$30</strong></span>
+              <span><strong id="mvp-run-heat">HEAT 0</strong></span>
+            </div>
+            <p id="mvp-run-objective" class="mvp-run-objective">OBJECTIVE: —</p>
+            <p id="mvp-run-nearby" class="mvp-run-nearby" role="status" aria-live="polite">NEARBY: —</p>
           </div>
           <p id="mvp-run-suspicion" class="mvp-run-suspicion">SUSPICION 0</p>
           <p id="mvp-run-boss" class="mvp-run-boss" hidden></p>
-          <p id="mvp-run-nearby" class="mvp-run-nearby" role="status" aria-live="polite">NEARBY: —</p>
-          <p id="mvp-run-carried" class="mvp-run-carried">CARRIED: none</p>
-          <p id="mvp-run-inventory" class="mvp-run-inventory">SECURED: —</p>
-          <p id="mvp-run-primary" class="mvp-run-primary">PRIMARY: —</p>
-          <p id="mvp-run-carrier" class="mvp-run-carrier">CAR: none</p>
-          <p id="mvp-run-trace" class="mvp-run-trace">TRACE: none yet</p>
-          <div class="mvp-run-offers-wrap">
+          <div id="mvp-run-offers-wrap" class="mvp-run-offers-wrap" hidden>
             <h3 class="mvp-run-offers-title">Store offers</h3>
             <ul id="mvp-run-offers" class="mvp-run-offer-list"></ul>
           </div>
@@ -185,10 +171,21 @@
               <button id="mvp-bench-cancel" class="secondary-action" type="button">Cancel fusion</button>
             </div>
           </div>
-          <p id="mvp-run-checkpoint" class="mvp-run-checkpoint" role="status" aria-live="polite">CHECKPOINT: —</p>
-          <p id="mvp-run-recent" class="mvp-run-recent" role="status" aria-live="polite">RECENT: none yet</p>
           <div id="mvp-run-summary" class="mvp-run-summary" data-testid="mvp-run-summary" hidden></div>
           <p id="mvp-run-controls" class="mvp-run-controls">WASD MOVE · POINTER AIM · CLICK ATTACK · E INTERACT · F STEAL · R RECALL · ESC PAUSE</p>
+          <details id="mvp-run-inspection" class="mvp-run-inspection">
+            <summary>Inspect shift details</summary>
+            <div class="mvp-run-inspection-content">
+              <p id="mvp-run-seed" class="mvp-run-seed">seed 0</p>
+              <p id="mvp-run-carried" class="mvp-run-carried">CARRIED: none</p>
+              <p id="mvp-run-inventory" class="mvp-run-inventory">SECURED: —</p>
+              <p id="mvp-run-primary" class="mvp-run-primary">PRIMARY: —</p>
+              <p id="mvp-run-carrier" class="mvp-run-carrier">CAR: none</p>
+              <p id="mvp-run-trace" class="mvp-run-trace">TRACE: none yet</p>
+              <p id="mvp-run-checkpoint" class="mvp-run-checkpoint" role="status" aria-live="polite">CHECKPOINT: —</p>
+              <p id="mvp-run-recent" class="mvp-run-recent" role="status" aria-live="polite">RECENT: none yet</p>
+            </div>
+          </details>
           <div class="mvp-run-actions">
             <button id="mvp-restart-run" type="button">Restart run</button>
             <button id="mvp-return" class="secondary-action" type="button">Return to title</button>

@@ -605,18 +605,70 @@ test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) =>
 
   const layout = await page.evaluate(() => {
     const hud = document.querySelector('#mvp-run-hud') as HTMLElement | null;
+    const drawer = document.querySelector('#mvp-run-inspection') as HTMLDetailsElement | null;
     return {
       bodyWidth: document.body.scrollWidth,
       viewportWidth: window.innerWidth,
       hudVisible: Boolean(hud) && !hud!.hidden,
-      hudScrolls: hud ? hud.scrollHeight > hud.clientHeight : false,
+      drawerClosed: drawer ? !drawer.open : false,
     };
   });
 
   expect(layout.hudVisible).toBe(true);
   expect(layout.bodyWidth).toBeLessThanOrEqual(layout.viewportWidth);
+  expect(layout.drawerClosed).toBe(true);
+  await expect(page.locator('#mvp-run-health')).toBeVisible();
+  await expect(page.locator('#mvp-run-cash')).toBeVisible();
+  await expect(page.locator('#mvp-run-heat')).toBeVisible();
+  await expect(page.locator('#mvp-run-room')).toBeVisible();
+  await expect(page.locator('#mvp-run-objective')).toBeVisible();
+  await expect(page.locator('#mvp-run-nearby')).toBeVisible();
+  await page.getByText('Inspect shift details', { exact: true }).click();
+  await expect(page.locator('#mvp-run-inspection')).toHaveAttribute('open', '');
+  await page.getByText('Inspect shift details', { exact: true }).click();
+  await expect(page.locator('#mvp-run-inspection')).not.toHaveAttribute('open', '');
+  await expect(page.getByText('Inspect shift details', { exact: true })).toBeFocused();
   await expect(page.locator('canvas')).toHaveCount(1);
 
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the compact HUD leaves the opening concourse landmark clear at 1440x900', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await launchRun(page);
+
+  const canvas = await page.locator('canvas').boundingBox();
+  const hud = await page.locator('#mvp-run-hud').boundingBox();
+  expect(canvas).not.toBeNull();
+  expect(hud).not.toBeNull();
+  if (!canvas || !hud) {
+    return;
+  }
+  // The compact placard is constrained to the upper-left edge instead of the
+  // former inspector wall, leaving the center landmark and player route open.
+  expect(hud.x + hud.width).toBeLessThan(canvas.x + canvas.width * 0.5);
+  expect(hud.y + hud.height).toBeLessThan(canvas.y + canvas.height * 0.5);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the compact HUD keeps pause and restart reachable from real input', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 800, height: 600 });
+  await launchRun(page, '/?seed=5150');
+  const before = await runSnapshot(page);
+
+  await page.keyboard.press('Escape');
+  await expect.poll(() => runSnapshot(page).then((state) => state.paused)).toBe(true);
+  await expect(page.locator('#mvp-run-controls')).toContainText(/PAUSED/i);
+  await page.keyboard.press('Escape');
+  await expect.poll(() => runSnapshot(page).then((state) => state.paused)).toBe(false);
+
+  await page.getByRole('button', { name: 'Restart run', exact: true }).click();
+  await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(before.generation);
+  await expect(page.locator('#mvp-run-checkpoint')).toContainText('saved');
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });

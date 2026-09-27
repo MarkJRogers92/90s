@@ -98,6 +98,9 @@ export class MvpRunHud {
   private readonly recent: HTMLElement;
   private readonly summary: HTMLElement;
   private readonly controls: HTMLElement;
+  private readonly offersWrap: HTMLElement;
+  private readonly inspection: HTMLDetailsElement;
+  private readonly inspectionSummary: HTMLElement;
   private readonly restartButton: HTMLButtonElement;
   private readonly returnButton: HTMLButtonElement;
   private readonly confirmFusionButton: HTMLButtonElement;
@@ -144,6 +147,9 @@ export class MvpRunHud {
     this.recent = requireElement<HTMLElement>('#mvp-run-recent');
     this.summary = requireElement<HTMLElement>('#mvp-run-summary');
     this.controls = requireElement<HTMLElement>('#mvp-run-controls');
+    this.offersWrap = requireElement<HTMLElement>('#mvp-run-offers-wrap');
+    this.inspection = requireElement<HTMLDetailsElement>('#mvp-run-inspection');
+    this.inspectionSummary = requireElement<HTMLElement>('#mvp-run-inspection summary');
     this.restartButton = requireElement<HTMLButtonElement>('#mvp-restart-run');
     this.returnButton = requireElement<HTMLButtonElement>('#mvp-return');
     this.confirmFusionButton = requireElement<HTMLButtonElement>('#mvp-bench-confirm');
@@ -159,6 +165,7 @@ export class MvpRunHud {
     this.confirmFusionButton.addEventListener('click', this.onConfirmFusion);
     this.cancelFusionButton.addEventListener('click', this.onCancelFusion);
     this.muteButton.addEventListener('click', this.handleToggleMute);
+    this.inspection.addEventListener('toggle', this.handleInspectionToggle);
     this.syncMuteLabel(false);
   }
 
@@ -174,6 +181,13 @@ export class MvpRunHud {
 
   private readonly handleToggleMute = (): void => {
     this.toggleMute();
+  };
+
+  /** Native disclosure is keyboard-accessible; return to its invoker on close. */
+  private readonly handleInspectionToggle = (): void => {
+    if (!this.inspection.open && document.activeElement !== this.inspectionSummary) {
+      this.inspectionSummary.focus();
+    }
   };
 
   /** The button states what the sound is doing, not what clicking would do. */
@@ -384,6 +398,7 @@ export class MvpRunHud {
   private syncOffers(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
     const seen = new Set<string>();
+    this.offersWrap.hidden = !room?.store;
     if (room?.store) {
       const carryLimit = runCarryLimit(state);
       for (const offer of room.offers) {
@@ -499,6 +514,7 @@ export class MvpRunHud {
     this.confirmFusionButton.removeEventListener('click', this.onConfirmFusion);
     this.cancelFusionButton.removeEventListener('click', this.onCancelFusion);
     this.muteButton.removeEventListener('click', this.handleToggleMute);
+    this.inspection.removeEventListener('toggle', this.handleInspectionToggle);
     this.offerCards.clear();
     this.offers.textContent = '';
     this.bench.hidden = true;
