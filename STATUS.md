@@ -1,6 +1,6 @@
 # Status
 
-## 2026-09-27 — Opening presentation vertical slice: evidence complete, visual approval pending
+## 2026-09-27 — Opening presentation vertical slice: correction complete, visual approval pending
 
 The production-presentation work is integrated on `codex/presentation-3quarter`
 for one bounded slice: the stable `service_corridor` room is publicly presented
@@ -10,35 +10,47 @@ effects/depth/occlusion handling, and compact Night Shift HUD. The simulation,
 six-room order, checkpoint schema, collision, economy, and combat rules remain
 the M5 authority.
 
-**Gate status: DONE_WITH_CONCERNS, not visually approved.** The 27 runtime PNGs
-pass the shared-palette/alpha validator; typecheck, 40 focused presentation/HUD
-tests, 151 affected simulation/integration tests, all 510 unit/integration tests,
-the four-case evidence browser harness, and the production build pass. Ten
-restart cycles held the opening at 31 static objects, 13 textures, 3 dynamic
-objects, 16 scene display-list objects, one four-civilian ambience group, and
-identical window/document/canvas listener signatures. Browser request capture
-reported zero external HTTP(S) requests.
+**Gate status: DONE_WITH_CONCERNS, not visually approved.** The correction pass
+keeps the simulation unchanged while reserving a shallow HUD strip above the
+canvas, keeping the full room identity and critical controls visible at both
+1440x900 and 800x600, strengthening the opening's cyan/magenta signage and floor
+inlay, and placing four approved civilians fully inside the initial camera.
+The evidence bridge now reports their four distinct rendered IDs from actual
+cropped-frame bounds rather than merely counting the ambience model.
 
-The complete 57-case Chromium run is not green: 55 passed and two existing
-Night Shift assertions failed reproducibly. The fixed seed sample in the offer
-variation case produced identical first-store text, and the resized real-input
-projection case measured a direction cosine of `0.8480714938237034` against a
-strict `> 0.85` threshold. Task 8 did not alter those out-of-ownership tests or
-their production paths. The executable production scan found no home-directory
-path, debug bridge/flag, exact fixture literal, editable source-art path, or
-unexpected source-art file; its four absolute URL strings are Phaser attribution
-and W3 XML namespaces, not application endpoints.
+The 27 runtime PNGs pass the shared-palette/alpha validator; typecheck, 43
+focused presentation/HUD tests, 151 affected simulation/integration tests, all
+513 unit/integration tests, the four-case evidence browser harness, the complete
+57-case Chromium suite, and the production build pass. Ten restart cycles held
+the opening at 31 static objects, 13 textures, 3 dynamic objects, 16 scene
+display-list objects, one four-civilian in-frame ambience group, and identical
+window/document/canvas listener signatures. Browser request capture reported
+zero external HTTP(S) requests.
+
+The two previously red Chromium cases were test-observation defects, not seeded
+simulation or aim-threshold failures. Seeded offers had different live DOM data,
+but `innerText` returned empty strings from the intentionally collapsed offer
+disclosure; the test now reads trimmed text content. After a viewport resize,
+Chromium exposed the resized canvas box one frame before Phaser updated its
+camera projection; the test now waits for consecutive stable projection and
+canvas dimensions while retaining the strict `> 0.85` direction cosine. A
+separate parallel M4 origin check was also measuring a still-moving carrier
+after its projectile poll; it now parks and samples the carrier immediately
+before the real pointer press and tightens the allowed origin distance from 48
+to 12 units. No gameplay assertion was lowered.
 
 The four required browser captures are in
-`artifacts/presentation-vertical-slice/`. They prove a bright, specific concourse
-and a clearer live first-combat frame, but do **not** justify broad rollout:
-roughly two of the four rendered civilians are in the opening camera frame; the
-HUD masks a substantial upper-left area, truncates the room label, and overlaps
-a character (most visibly at 800x600); the palette reads predominantly beige and
-teal rather than neon-heavy; and the Food Court combat environment remains
-graybox/vector even though its yellow warning rings/lines are visible. Direct
-user review of the playable slice is still mandatory before any other room is
-converted.
+`artifacts/presentation-vertical-slice/`. Native-scale inspection confirms four
+distinct civilians plus the Janitor in the busy and compact opening captures;
+the HUD ends above the canvas and preserves the complete room title at both
+sizes. Cyan/magenta storefront signage, light bands, and floor borders now read
+clearly. These improvements still do **not** justify broad rollout: beige
+terrazzo remains the largest visual field, so the room is not uniformly
+neon-heavy; evacuation urgency remains subtle in a still; and the existing Food
+Court remains gray/olive vector graybox outside this opening-only art scope. The
+first-combat test captures a real telegraph state, but its cue is temporally
+subtle in the still and is not a polished continuation of the opening. Direct
+user review is still mandatory before any other room is converted.
 
 **Current milestone:** M5 MVP run implemented, with in-run Bench Warrant fusion repaired and verified locally on 2026-09-19; ready for user playtest.
 

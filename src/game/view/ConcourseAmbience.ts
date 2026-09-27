@@ -29,12 +29,12 @@ export type ConcourseAmbienceInput = {
 
 const PHASES: readonly ConcourseAmbiencePhase[] = ['busy', 'warning', 'evacuating', 'empty'];
 const AUTHORED_LANES: readonly Omit<ConcourseCivilianLane, 'appearance'>[] = [
-  { id: 'north-window', x: 146, y: 157, exitX: 42 },
-  { id: 'directory', x: 294, y: 222, exitX: 42 },
-  { id: 'fountain-west', x: 381, y: 310, exitX: 42 },
-  { id: 'fountain-east', x: 598, y: 328, exitX: 918 },
-  { id: 'music-front', x: 704, y: 174, exitX: 918 },
-  { id: 'east-gate', x: 850, y: 258, exitX: 918 },
+  { id: 'north-window', x: 240, y: 157, exitX: 42 },
+  { id: 'directory', x: 330, y: 222, exitX: 42 },
+  { id: 'fountain-west', x: 420, y: 310, exitX: 42 },
+  { id: 'fountain-east', x: 510, y: 326, exitX: 918 },
+  { id: 'music-front', x: 565, y: 174, exitX: 918 },
+  { id: 'east-gate', x: 585, y: 258, exitX: 918 },
 ];
 const APPEARANCES: readonly ConcourseCivilianLane['appearance'][] = ['shopper-a', 'shopper-b', 'clerk', 'security'];
 

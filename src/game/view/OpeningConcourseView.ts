@@ -4,6 +4,8 @@ import { usableTextureKey } from '../presentation/assetFallback';
 import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, type CivilianTextureKey, type EnvironmentTextureKey } from '../presentation/assets';
 import { presentationDepth } from '../presentation/depth';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
+import { OPENING_CONCOURSE_NEON } from '../presentation/openingTheme';
+import { croppedFrameOrigin } from './ActorSpriteView';
 import { ConcourseAmbience, type ConcourseAmbienceSnapshot, type ConcourseCivilianLane } from './ConcourseAmbience';
 
 type Layer = Phaser.GameObjects.Container;
@@ -11,6 +13,11 @@ type Rect = { readonly x: number; readonly y: number; readonly width: number; re
 type Occluder = {
   readonly object: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics;
   readonly rect: Rect;
+};
+
+type OpeningConcourseAmbienceSnapshot = ConcourseAmbienceSnapshot & {
+  readonly inFrameCount: number;
+  readonly inFrameIds: readonly string[];
 };
 
 /** Disposable environment for the existing safe entry room. Owns display only. */
@@ -158,10 +165,18 @@ export class OpeningConcourseView {
     }
 
     const inlay = this.graphics(this.decal);
-    inlay.fillStyle(0xf1f0d8, 0.42).fillRect(20, 178, 920, 124);
-    inlay.lineStyle(2, 0x5b9a9f, 0.72).strokeRect(22, 180, 916, 120);
-    inlay.fillStyle(0x35656c, 0.16).fillEllipse(480, 270, 124, 27);
-    inlay.fillStyle(0xe8faf7, 0.28).fillRect(450, 298, 62, 3);
+    inlay.fillStyle(0xf1f0d8, 0.48).fillRect(20, 178, 920, 124);
+    inlay.lineStyle(3, OPENING_CONCOURSE_NEON.cyanMid, 0.9).strokeRect(22, 180, 916, 120);
+    inlay.lineStyle(2, OPENING_CONCOURSE_NEON.magentaMid, 0.88).strokeRect(31, 189, 898, 102);
+    inlay.fillStyle(OPENING_CONCOURSE_NEON.cyanBright, 0.16).fillEllipse(480, 270, 196, 39);
+    inlay.fillStyle(OPENING_CONCOURSE_NEON.magentaBright, 0.14).fillEllipse(480, 270, 154, 31);
+    inlay.fillStyle(OPENING_CONCOURSE_NEON.fluorescent, 0.52).fillRect(438, 298, 86, 3);
+    // Crisp alternating floor flashes read as intentional early-90s geometry,
+    // without changing a single collision or interaction bound.
+    for (let x = 60; x <= 860; x += 160) {
+      inlay.fillStyle(OPENING_CONCOURSE_NEON.cyanBright, 0.34).fillTriangle(x, 286, x + 30, 286, x + 15, 297);
+      inlay.fillStyle(OPENING_CONCOURSE_NEON.magentaBright, 0.3).fillTriangle(x + 42, 181, x + 72, 181, x + 57, 193);
+    }
     for (const doorway of room.doorways) {
       inlay.fillStyle(0xe5d18b, 1).fillRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
       inlay.lineStyle(2, 0x27414a, 1).strokeRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
@@ -169,21 +184,24 @@ export class OpeningConcourseView {
 
     const masonry = this.graphics(this.structure);
     // Two shallow 3/4 retail fronts; their side returns give a visible depth cue.
-    for (const [x, accent, name] of [[72, 0x61c8ca, 'VIDEO WORLD'], [592, 0xd986bb, 'MUSIC MART']] as const) {
+    for (const [x, accent, name] of [[72, OPENING_CONCOURSE_NEON.cyanBright, 'VIDEO WORLD'], [592, OPENING_CONCOURSE_NEON.magentaBright, 'MUSIC MART']] as const) {
       masonry.fillStyle(0x233f4a, 1).fillRect(x, 22, 296, 103);
       masonry.fillStyle(0x355b66, 1).fillTriangle(x + 296, 22, x + 318, 40, x + 296, 125);
       masonry.fillStyle(0xb7d5d1, 1).fillRect(x + 8, 46, 280, 68);
-      masonry.fillStyle(0x406979, 1).fillRect(x + 13, 49, 270, 60);
-      masonry.fillStyle(0x8cc0bc, 0.38).fillRect(x + 18, 52, 4, 50);
+      masonry.fillStyle(0x263d5a, 1).fillRect(x + 13, 49, 270, 60);
+      masonry.fillStyle(accent, 0.38).fillRect(x + 18, 52, 4, 50);
       masonry.fillStyle(accent, 1).fillRect(x, 22, 296, 5);
-      masonry.fillStyle(0xf6e4aa, 1).fillRect(x, 114, 296, 6);
+      masonry.fillStyle(OPENING_CONCOURSE_NEON.fluorescent, 1).fillRect(x, 114, 296, 6);
       masonry.lineStyle(2, 0x1d343e, 1).strokeRect(x, 22, 296, 103);
       for (let panel = 0; panel < 4; panel += 1) {
         this.stamp(this.structure, ENVIRONMENT_TEXTURE_KEYS.storefrontFascia, x + panel * 64 + 19, 20, 64, 32, accent);
       }
       this.stamp(this.structure, ENVIRONMENT_TEXTURE_KEYS.signCool, x + 100, 28, 96, 24, accent);
-      const sign = this.scene.add.text(x + 109, 34, name, {
-        fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#fff1b7',
+      const sign = this.scene.add.text(x + 106, 82, name, {
+        fontFamily: '"Courier New", monospace',
+        fontSize: '11px',
+        color: accent === OPENING_CONCOURSE_NEON.cyanBright ? '#7de8ff' : '#ff78dc',
+        fontStyle: 'bold',
       });
       this.structure.add(sign);
     }
@@ -214,9 +232,19 @@ export class OpeningConcourseView {
     this.stamp(this.tallForeground, ENVIRONMENT_TEXTURE_KEYS.pottedPalm, 790, 286, 38, 58, 0x427c67, true);
 
     const light = this.graphics(this.lightsEffects);
-    light.fillStyle(0xffffdf, 0.12).fillRect(40, 0, 880, 38);
-    light.fillStyle(0x7ce7e1, 0.32).fillRect(82, 124, 272, 2);
-    light.fillStyle(0xf5a1dc, 0.32).fillRect(602, 124, 272, 2);
+    light.fillStyle(OPENING_CONCOURSE_NEON.fluorescent, 0.16).fillRect(40, 0, 880, 38);
+    light.fillStyle(OPENING_CONCOURSE_NEON.cyanBright, 0.16).fillRect(82, 126, 272, 22);
+    light.fillStyle(OPENING_CONCOURSE_NEON.magentaBright, 0.15).fillRect(602, 126, 272, 22);
+    light.lineStyle(5, OPENING_CONCOURSE_NEON.cyanMid, 0.28).lineBetween(82, 125, 354, 125);
+    light.lineStyle(2, OPENING_CONCOURSE_NEON.cyanBright, 0.95).lineBetween(82, 125, 354, 125);
+    light.lineStyle(5, OPENING_CONCOURSE_NEON.magentaMid, 0.28).lineBetween(602, 125, 874, 125);
+    light.lineStyle(2, OPENING_CONCOURSE_NEON.magentaBright, 0.95).lineBetween(602, 125, 874, 125);
+    for (const [x, color] of [[101, OPENING_CONCOURSE_NEON.cyanBright], [621, OPENING_CONCOURSE_NEON.magentaBright]] as const) {
+      light.lineStyle(3, color, 0.88).strokeRoundedRect(x, 31, 94, 21, 3);
+      light.fillStyle(color, 0.12).fillRect(x + 8, 52, 78, 46);
+      light.lineStyle(4, color, 0.24).strokeRoundedRect(x + 72, 74, 150, 27, 3);
+      light.lineStyle(1, color, 0.96).strokeRoundedRect(x + 72, 74, 150, 27, 3);
+    }
   }
 
   public render(snapshot: MvpRunState): void {
@@ -256,6 +284,12 @@ export class OpeningConcourseView {
       const column = walking ? Math.floor(this.ambience.debugAnimationTick() / 5 + index) % 6 : (index + (ambience.phase === 'warning' ? 2 : 0)) % 8;
       const row = walking ? (lane.exitX < lane.x ? 2 : 6) : 0;
       sprite.setCrop(column * 32, row * 48, 32, 48);
+      const origin = croppedFrameOrigin(
+        { row, column },
+        { width: sprite.width, height: sprite.height },
+        { width: 32, height: 48 },
+      );
+      sprite.setOrigin(origin.x, origin.y);
       if (sprite.visible) visibleCount += 1;
     }
     for (const [id, sprite] of this.civilianSprites) {
@@ -300,7 +334,7 @@ export class OpeningConcourseView {
     sceneDisplayObjectCount: number;
     actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
     effectDepths: Array<{ id: string; renderDepth: number }>;
-    ambience: ConcourseAmbienceSnapshot;
+    ambience: OpeningConcourseAmbienceSnapshot;
     depthBands: { tallForeground: number; effect: number; prompt: number };
   } {
     return {
@@ -340,8 +374,29 @@ export class OpeningConcourseView {
   }
 
   /** Debug reports the sprites actually rendered, not intended lane count. */
-  public ambienceSnapshot(): ConcourseAmbienceSnapshot {
-    return { phase: this.ambience.snapshot().phase, visibleCount: this.visibleCivilianCount };
+  public ambienceSnapshot(): OpeningConcourseAmbienceSnapshot {
+    const camera = this.scene.cameras.main.worldView;
+    const inFrameIds = [...this.civilianSprites].filter(([, sprite]) => {
+      if (!sprite.visible) return false;
+      // Images retain the full sprite-sheet dimensions after setCrop(), so
+      // getBounds() describes the sheet rather than the rendered 32x48 frame.
+      // Count the actual cropped frame around its documented (0.5, 0.84)
+      // origin, and require full containment rather than a one-pixel overlap.
+      const left = sprite.x - 16;
+      const right = sprite.x + 16;
+      const top = sprite.y - 48 * 0.84;
+      const bottom = top + 48;
+      return left >= camera.x
+        && right <= camera.right
+        && top >= camera.y
+        && bottom <= camera.bottom;
+    }).map(([id]) => id);
+    return {
+      phase: this.ambience.snapshot().phase,
+      visibleCount: this.visibleCivilianCount,
+      inFrameCount: inFrameIds.length,
+      inFrameIds,
+    };
   }
 
   public destroy(): void {

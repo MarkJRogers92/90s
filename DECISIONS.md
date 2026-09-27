@@ -18,10 +18,13 @@
   enemy, pickup, door, prompt, or telegraph or change authoritative behavior;
   required slice assets still fail validation/build review before release.
 - Treat the four screenshots and automated results as a user-review packet, not
-  visual approval. The observed HUD/camera/civilian framing, restrained rather
-  than neon-heavy palette, and graybox first-combat environment keep the broader
-  room rollout approval gate closed. No other room conversion begins without a
-  new explicit user decision.
+  visual approval. Reserve HUD space above the canvas at both review sizes and
+  require evidence to name four unique rendered civilian sprites fully contained
+  by the initial camera, not merely report a model count. The corrected opening
+  uses stronger cyan/magenta accents, but beige terrazzo remains dominant and the
+  Food Court remains out-of-scope graybox; those limits keep the broader room
+  rollout approval gate closed. No other room conversion begins without a new
+  explicit user decision.
 
 ## 2026-09-13
 

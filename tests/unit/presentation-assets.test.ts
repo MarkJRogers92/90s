@@ -11,6 +11,7 @@ import {
   PRESENTATION_ASSETS,
   type EnvironmentTextureKey,
 } from '../../src/game/presentation/assets';
+import { OPENING_CONCOURSE_NEON } from '../../src/game/presentation/openingTheme';
 
 const expectedDimensions = new Map<string, readonly [number, number]>([
   ['presentation:environment:atrium-fountain', [96, 64]],
@@ -110,5 +111,17 @@ describe('typed civilian keys', () => {
   it('maps every civilian key to a preloaded ambience manifest entry', () => {
     const manifestKeys = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
     for (const key of Object.values(CIVILIAN_TEXTURE_KEYS)) expect(manifestKeys.has(key)).toBe(true);
+  });
+});
+
+describe('opening concourse presentation palette', () => {
+  it('uses the approved bright cyan and magenta ramps for visible neon accents', () => {
+    expect(OPENING_CONCOURSE_NEON).toEqual({
+      cyanBright: 0x7de8ff,
+      cyanMid: 0x3ab7e2,
+      magentaBright: 0xff78dc,
+      magentaMid: 0xd040a8,
+      fluorescent: 0xdaeec7,
+    });
   });
 });

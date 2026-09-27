@@ -3,23 +3,26 @@
 ## 2026-09-27 — production presentation vertical slice proof
 
 Environment: macOS, Node 24.20.0, Playwright 1.63 Chromium desktop profile.
-Port 5173 was already owned by another worktree, so browser verification used a
-temporary Playwright/Vite config on `127.0.0.1:4176`; that config was removed
-afterward. Screenshot tests explicitly forced the 640x360 canvas to 1280x720
-(2x) inside a 1440x900 viewport and to 640x360 (1x) inside the 800x600 viewport.
+Port 5173 was already owned by another worktree, so initial browser verification
+used `127.0.0.1:4176` and the correction pass used an isolated temporary
+Playwright/Vite config on `127.0.0.1:4187`; the temporary config was removed
+afterward. Screenshot tests use an author-level `!important` rule so Phaser's
+delayed resize cannot replace the requested integer canvas size: 1280x720 (2x)
+inside a 1440x900 viewport and 640x360 (1x) inside the 800x600 viewport.
 
 ### Automated results
 
 - `python3 docs/art/tools/validate_runtime_tree.py public/assets/presentation --palette docs/art/palettes/deadmall-global.json` — PASS: 27 PNGs, binary alpha, all pixels within the 105-swatch shared palette.
-- `npm run typecheck` — the first run correctly failed in the new evidence harness because a CDP `objectId` was still typed as optional. An explicit runtime guard fixed the harness; the final run exited 0. No production code changed for this correction.
-- `npx vitest run tests/unit/projection.test.ts tests/unit/presentation-assets.test.ts tests/unit/presentation-depth.test.ts tests/unit/presentation-occlusion.test.ts tests/unit/presentation-actors.test.ts tests/unit/concourse-ambience.test.ts tests/unit/mvp-run-hud.test.ts` — PASS: 7 files, 40 tests.
+- `npm run typecheck` — PASS after the correction pass. The original evidence harness had first exposed an optional CDP `objectId`; its explicit runtime guard remains in place.
+- `npx vitest run tests/unit/projection.test.ts tests/unit/presentation-assets.test.ts tests/unit/presentation-depth.test.ts tests/unit/presentation-occlusion.test.ts tests/unit/presentation-actors.test.ts tests/unit/concourse-ambience.test.ts tests/unit/mvp-run-hud.test.ts` — PASS: 7 files, 43 tests. New coverage fixes the approved neon palette, cropped-frame foot origin, and all six potential civilian lanes inside the initial camera-safe region.
 - `npx vitest run tests/unit/combat.test.ts tests/unit/movement.test.ts tests/unit/checkpoint.test.ts tests/unit/checkpoint-store.test.ts tests/unit/wing-generation.test.ts tests/unit/mvp-economy.test.ts tests/unit/boss.test.ts tests/integration/mvp-run.test.ts tests/integration/run-lifecycle.test.ts tests/integration/loadout-combat.test.ts` — PASS: 10 files, 151 tests. Seeded generation, stable `service_corridor` identity/order, checkpoint behavior, collision/movement, combat/boss rules, lifecycle, and loadout integration stayed green; only the already-approved room display name differs.
-- `npm test` — PASS: 34 files, 510 tests.
-- `npx playwright test --config=playwright.task8.config.ts tests/browser/presentation-evidence.spec.ts --workers=1` — PASS: 4/4 after two harness-only corrections. Pausing cleared the transient live telegraph before capture, so capture now occurs immediately inside the successful live-state poll; seed 7's north wall requires `y < 50`, not merely `y < 75`, before moving east. Neither correction touched gameplay.
-- Ten restart/lifecycle cycles — PASS: one canvas, one HUD, one busy ambience group with 4 visible civilian sprites, and exact repeated presentation counts: 31 static display objects, 13 static textures, 3 dynamic display objects, 16 scene display-list objects, 4 occluders, 0 fallbacks. Window, document, and canvas listener signatures were captured through Chromium CDP and remained byte-for-byte equal after leaving the concourse, returning through the supported restart flow, and completing ten restarts. The run is forward-only, so restart is the supported return to the opening flow.
+- `npm test` — PASS: 34 files, 513 tests.
+- `npx playwright test --config=playwright.task8.config.ts tests/browser/presentation-evidence.spec.ts --workers=1` — PASS: 4/4. The busy capture proves exactly four unique rendered civilian IDs whose actual 32x48 cropped-frame bounds are fully contained in the current camera; it does not rely on total ambience count. The compact capture proves the HUD bottom is at or above the canvas top and the full room identity is unclipped.
+- Ten restart/lifecycle cycles — PASS: one canvas, one HUD, one busy ambience group with 4 visible and 4 in-frame civilian sprites (`north-window`, `directory`, `fountain-west`, `fountain-east`), and exact repeated presentation counts: 31 static display objects, 13 static textures, 3 dynamic display objects, 16 scene display-list objects, 4 occluders, 0 fallbacks. Window, document, and canvas listener signatures were captured through Chromium CDP and remained byte-for-byte equal after leaving the concourse, returning through the supported restart flow, and completing ten restarts. The run is forward-only, so restart is the supported return to the opening flow.
 - External-request assertion — PASS in all four evidence browser cases: every HTTP(S) request remained on `127.0.0.1`; zero external URLs were observed.
-- `npm run test:browser -- --config=playwright.task8.config.ts --workers=1` — **FAIL: 55/57 passed.** `offers are identical for one seed and vary across seeds` failed because seeds 7, 99, and 2024 rendered the same first-store offer text as 4242. `real canvas input follows the camera after scrolling and resizing` failed at a measured normalized direction cosine of `0.8480714938237034` against `> 0.85`. A targeted rerun reproduced both exact failures. All four new evidence cases and the other 51 passing existing Chromium cases stayed green. These two existing test/path owners are outside Task 8's assigned files, so this proof task records rather than silently edits them.
-- `npm run build` — PASS: 85 modules transformed; `dist/index.html` 13.70 kB, CSS 13.32 kB, JavaScript 1,602.87 kB (420.58 kB gzip), source map 11,786.04 kB. Vite warned that the JavaScript chunk exceeds 1,500 kB; no new split was introduced in this documentation task.
+- `npx playwright test --config=playwright.task8.config.ts` — PASS: 57/57 with 4 workers in 1.9 minutes after focused correction. The former seed failure was a DOM-observation error: `.allInnerTexts()` returned four empty strings because the authored offers sit inside a collapsed `<details>`, while direct inspection proved the seed-specific text content differed. The test now reads trimmed `.allTextContents()`. The former resized-aim failure was one-frame projection skew: immediately after resize the canvas box had changed while `worldToCanvas` still reported `(622.5, 75)`, then stabilized at `(871.5, 105)`. The test waits for two consecutive stable projection/canvas samples and retains the strict normalized direction-cosine assertion `> 0.85`.
+- Parallel stabilization also exposed `void-the-warranty.spec.ts › fused car is the sampled projectile origin`: the old test compared a shot's immutable origin with a later carrier position after the carrier continued steering during the projectile poll, so the `originToCarrier <= 48` check could fail under load even though the origin was correct. The correction moves the real pointer back to the carrier to stop that steering, samples carrier and player immediately before `mouse.down`, compares the shot to that pre-fire sample, tightens the allowance from 48 to 12 units, and retains `originToCarrier < originToPlayer`. The focused M4 spec and the final 57-case parallel suite pass; no fixture shortcut or simulation change was made.
+- `npm run build` — PASS: 86 modules transformed; `dist/index.html` 13.71 kB (2.97 kB gzip), CSS 14.47 kB (3.36 kB gzip), JavaScript 1,604.47 kB (421.15 kB gzip), source map 11,792.28 kB. Vite retains the known warning that the JavaScript chunk exceeds 1,500 kB.
 
 Production executable scan covered `dist/index.html`, `dist/assets/*.js`, and
 `dist/assets/*.css`:
@@ -37,19 +40,20 @@ Production executable scan covered `dist/index.html`, `dist/assets/*.js`, and
 
 ### Screenshot evidence and native-scale visual review
 
-- `artifacts/presentation-vertical-slice/opening-busy.png` — actual 1440x900 browser, canvas 1280x720 (2x). Strengths: crisp nearest-neighbor scaling, authored terrazzo/fountain/planters/benches/directory/storefront forms, bright public lighting, readable Janitor. Limits: debug reports four rendered civilians but only about two read clearly inside the current camera frame; the HUD covers the upper-left storefront/character area and truncates the room line; the dominant impression is beige/teal rather than neon-heavy 1993 retail.
-- `artifacts/presentation-vertical-slice/opening-evacuation.png` — actual 1440x900 browser, canvas 1280x720 (2x), captured while authoritative presentation phase was `evacuating` and visible count remained above zero. The shifted camera shows civilians moving out through the authored scene. The warning/flicker treatment is subtle in a still image and does not by itself strongly communicate panic.
-- `artifacts/presentation-vertical-slice/first-combat.png` — actual 1440x900 browser, canvas 1280x720 (2x), captured from the real first Food Court fight after moving the Janitor into frame. Large yellow warning rings/lines and the Hanger lunge streak are visible, with the player and finished Hanger readable. The room itself remains graybox/vector, two enemies still read as purple fallback-style blocks, and the presentation is not a polished continuation of the opening art direction.
-- `artifacts/presentation-vertical-slice/compact-800x600.png` — actual 800x600 browser, canvas 640x360 (1x). It has no horizontal overflow and all critical controls remain reachable, but the HUD occupies and masks a large fraction of the playfield, truncates the room identity, overlaps a character at the left edge, and leaves substantial black margin around the native-scale canvas.
+- `artifacts/presentation-vertical-slice/opening-busy.png` — actual 1440x900 browser, canvas 1280x720 (2x), SHA-256 `83f0d1d88d96981b691fbfe0872d87fc4040e5bab8da096fdc682beac4227bba`. Native inspection shows the Janitor plus four distinct civilians (blue shopper, magenta clerk, security employee, orange shopper). The HUD is entirely above the canvas with the full room title. Cyan Video World signage, magenta Music Mart treatment, and paired cyan/magenta inlay borders are materially stronger; beige terrazzo is still the largest field, so the overall room is not uniformly neon-heavy.
+- `artifacts/presentation-vertical-slice/opening-evacuation.png` — actual 1440x900 browser, canvas 1280x720 (2x), SHA-256 `7375e76208c4f53e9853d7526864797f7660454da12d1bcedcca5908614f26f8`, captured while authoritative presentation phase was `evacuating` and at least one unique cropped sprite remained fully in frame. The shifted camera shows civilians moving out through the authored scene. Warning/flicker treatment remains subtle in a still and does not by itself strongly communicate panic.
+- `artifacts/presentation-vertical-slice/first-combat.png` — actual 1440x900 browser, canvas 1280x720 (2x), SHA-256 `b953550c228b63975ff6e13bd381d4d0ae2c1f3d0c7fee9da8e5eb1c534cf30c`, captured from a real first Food Court fight while the debug snapshot observed an active telegraph. The corrected crop origin keeps the Janitor and Hanger anchored at their feet. The still's warning boxes/attack streak are less immediately legible than the live temporal cue, and the existing gray/olive Food Court remains a vector graybox outside this opening-only art scope.
+- `artifacts/presentation-vertical-slice/compact-800x600.png` — actual 800x600 browser, canvas 640x360 (1x), SHA-256 `52f812208fab618dc75caf8810ae3db4b625af6a12e83dc566287444623e9f22`. The HUD is entirely above the canvas, preserves the complete Opening Concourse identity, critical values, objective/context, actions and controls, and has no horizontal overflow. Native inspection shows the same four civilians plus the Janitor. The remaining black margin follows the requested native 1x canvas and beige terrazzo remains dominant.
 
 ### Acceptance status
 
 This packet proves the local asset gate, M5 simulation preservation, disposable
-opening presentation lifecycle, integer scaling, local-only requests, and a
-reproducible set of review images. It does not prove a clean complete Chromium
-gate and does not constitute visual approval. WebKit, Safari, Windows, physical
-devices, physical-device performance, and human feel remain untested. Broader
-room rollout is still closed.
+opening presentation lifecycle, integer scaling, local-only requests, a clean
+57-case Chromium gate, and a reproducible set of native-scale review images. It
+does not constitute visual approval. Beige dominance, subtle evacuation/telegraph
+readability in stills, and the out-of-scope Food Court graybox remain visible.
+WebKit, Safari, Windows, physical devices, physical-device performance, and
+human feel remain untested. Broader room rollout is still closed.
 
 ## 2026-09-13 — M0 foundation
 
@@ -553,7 +557,9 @@ Observed intermittent failure, recorded rather than hidden: one full
 `void-the-warranty.spec.ts:139 › fused car is the sampled projectile origin`,
 which is an M4 test unrelated to this change. It passes 7/7 when that spec is run
 alone and the full suite passed 45/45 on the next run. Nothing in the sound layer
-runs in the M4 bench scene, and the M4 debug bridge was not modified, so this is
-recorded as an existing timing-sensitive flake rather than a regression — and it
-is worth a proper look, because a flaky test is a test that will eventually be
-ignored.
+runs in the M4 bench scene, and the M4 debug bridge was not modified, so it was
+correctly recorded rather than attributed to sound. Task 8 later diagnosed the
+test defect: it compared an immutable projectile origin with a carrier position
+sampled after the carrier had kept moving. The current proof samples immediately
+before firing, tightens the allowance from 48 to 12 units, and passes in the
+57-case parallel gate; see the 2026-09-27 section above.

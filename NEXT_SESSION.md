@@ -22,34 +22,34 @@ with the pointer, attack with the primary mouse button, and press Escape to
 pause. The branch is not pushed, merged, published, deployed, released, or
 approved for broader art rollout.
 
-Review these concrete concerns before approval:
+The correction pass resolved the previous framing and HUD blockers: native-scale
+captures show four distinct civilians inside the initial camera; the HUD is
+entirely above the canvas at 1440x900 and 800x600; and the full room identity,
+critical values, objective/context, actions, and controls remain visible. Cyan
+and magenta signage, light bands, and floor borders are also materially stronger.
 
-- only about two of the four rendered civilians read clearly in the initial
-  camera frame;
-- the compact HUD covers a substantial upper-left part of the playfield,
-  truncates the room identity, and overlaps a character, especially at 800x600;
-- the opening reads bright and specific but predominantly beige/teal rather than
-  strongly neon-heavy;
-- the first Food Court combat has readable yellow warning rings/lines and the
-  finished Hanger, but its environment and two enemies still read as graybox or
-  fallback presentation.
+Review these remaining concrete concerns before approval:
+
+- beige terrazzo is still the dominant surface, so the opening is not uniformly
+  neon-heavy even with stronger cyan/magenta accents;
+- evacuation warning/flicker remains subtle in a single still;
+- the first-combat evidence is captured during a real telegraph, but the warning
+  boxes/streak are less clear in the still than in motion;
+- the existing Food Court remains gray/olive vector graybox. Converting it was
+  explicitly outside this opening-only correction scope.
 
 If the user requests corrections, keep them inside this same slice and get a new
 visual decision afterward. Do not treat correction authorization as permission
 to convert other rooms.
 
-The automated gate is also not fully clean. Asset validation, typecheck, 510
+The automated gate is clean for this scope: asset validation, typecheck, 513
 unit/integration tests, the 4-case evidence harness, 10 lifecycle cycles, local-
-request assertions, and production build passed. The complete Chromium suite
-passed 55/57; two existing Night Shift assertions reproduce red:
-
-- fixed seeds 7, 99, and 2024 currently show the same first-store text as seed
-  4242 in the browser variation test;
-- resized real-input aim measures cosine `0.8480714938237034` against a strict
-  `> 0.85` threshold.
-
-Diagnose those failures in a separately authorized owner pass before claiming a
-clean browser gate. Do not weaken either assertion merely to turn it green.
+request assertions, the complete 57-case Chromium suite, and the production
+build passed. The former seed test now reads the actual hidden offer text rather
+than empty `innerText`, and the resized-aim test waits for the camera projection
+to consume the resize while keeping its strict direction-cosine threshold. A
+parallel M4 origin check now samples the carrier immediately before firing and
+tightens its origin allowance rather than comparing with a later moving target.
 
 WebKit, Safari, Windows, physical devices, physical-device performance, and
 human feel remain untested. Broader room rollout remains explicitly unstarted.

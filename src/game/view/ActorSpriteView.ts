@@ -189,6 +189,18 @@ export class ActorDeathEffectLifecycle {
 
 export type SpriteSpec = { readonly textureKey: string; readonly frameWidth: number; readonly frameHeight: number; readonly scale: number };
 
+/** Full-sheet origin that places one cropped frame's feet at the world point. */
+export function croppedFrameOrigin(
+  frame: { readonly row: number; readonly column: number },
+  sheet: { readonly width: number; readonly height: number },
+  frameSize: { readonly width: number; readonly height: number },
+): { readonly x: number; readonly y: number } {
+  return {
+    x: (frame.column * frameSize.width + frameSize.width * 0.5) / sheet.width,
+    y: (frame.row * frameSize.height + frameSize.height * 0.84) / sheet.height,
+  };
+}
+
 /** Disposable Phaser adapter over snapshots; texture failure returns vector fallback control to the caller. */
 export class ActorSpriteView {
   private readonly scene: Phaser.Scene;
@@ -211,6 +223,12 @@ export class ActorSpriteView {
     this.sprite.setVisible(true).setPosition(actor.x + lunge.x * visual.lunge, actor.y + visual.bobY + lunge.y * visual.lunge).setDepth(depth);
     this.sprite.setAlpha(visual.damageFlicker ? 0.45 : 1).setScale(spec.scale, spec.scale);
     this.sprite.setCrop(frame.column * spec.frameWidth, frame.row * spec.frameHeight, spec.frameWidth, spec.frameHeight);
+    const origin = croppedFrameOrigin(
+      frame,
+      { width: this.sprite.width, height: this.sprite.height },
+      { width: spec.frameWidth, height: spec.frameHeight },
+    );
+    this.sprite.setOrigin(origin.x, origin.y);
     this.sprite.setRotation(visual.attackLean ? 0.08 : 0);
     return true;
   }

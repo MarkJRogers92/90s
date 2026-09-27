@@ -9,6 +9,7 @@ import {
   actorFrameFor,
   actorPresentation,
   actorTextureKey,
+  croppedFrameOrigin,
   directionForVector,
   shouldRenderActorSprite,
 } from '../../src/game/view/ActorSpriteView';
@@ -42,6 +43,14 @@ describe('actor direction and frame projection', () => {
     expect(actorFrameFor('walk', 'southwest', 0)).toEqual({ row: 1, column: 0 });
     expect(actorFrameFor('walk', 'southwest', 5)).toEqual({ row: 1, column: 1 });
     expect(actorFrameFor('walk', 'southwest', 30)).toEqual({ row: 1, column: 0 });
+  });
+
+  it('anchors a cropped frame instead of the full sprite sheet at the actor foot', () => {
+    expect(croppedFrameOrigin(
+      { row: 2, column: 3 },
+      { width: 192, height: 384 },
+      { width: 32, height: 48 },
+    )).toEqual({ x: 112 / 192, y: (96 + 48 * 0.84) / 384 });
   });
 
   it('selects the walk sheet only while Alex is moving', () => {

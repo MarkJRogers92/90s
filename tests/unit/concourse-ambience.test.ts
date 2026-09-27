@@ -14,6 +14,17 @@ describe('ConcourseAmbience', () => {
     expect(new Set(first.debugLanes().map((lane) => lane.y)).size).toBe(first.debugLanes().length);
   });
 
+  it('keeps every possible opening civilian clearly inside the initial camera view', () => {
+    const lanes = new ConcourseAmbience(99).debugLanes();
+    expect(lanes).toHaveLength(6);
+    for (const lane of lanes) {
+      expect(lane.x).toBeGreaterThanOrEqual(48);
+      expect(lane.x).toBeLessThanOrEqual(592);
+      expect(lane.y).toBeGreaterThanOrEqual(72);
+      expect(lane.y).toBeLessThanOrEqual(328);
+    }
+  });
+
   it('advances through the evacuation phases without rewinding', () => {
     const ambience = new ConcourseAmbience(7);
 

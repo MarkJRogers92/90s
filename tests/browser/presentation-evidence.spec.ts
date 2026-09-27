@@ -14,6 +14,8 @@ type PresentationSnapshot = {
     ambience: {
       phase: 'busy' | 'warning' | 'evacuating' | 'empty';
       visibleCount: number;
+      inFrameCount: number;
+      inFrameIds: string[];
     };
   };
   actorPresentation: null | {
@@ -61,10 +63,17 @@ async function launchRun(page: Page, viewport: { width: number; height: number }
 }
 
 async function setIntegerCanvasScale(page: Page, scale: 1 | 2): Promise<void> {
-  await page.locator('canvas').evaluate((canvas, factor) => {
-    canvas.style.width = `${640 * factor}px`;
-    canvas.style.height = `${360 * factor}px`;
-  }, scale);
+  // Phaser owns the canvas's inline dimensions and may rewrite them after its
+  // ResizeObserver runs. An author-level important rule remains authoritative
+  // even when that delayed inline update lands under the parallel full gate.
+  await page.addStyleTag({ content: `
+    #game-host canvas {
+      width: ${640 * scale}px !important;
+      height: ${360 * scale}px !important;
+      max-width: none !important;
+      max-height: none !important;
+    }
+  ` });
   await expect.poll(async () => {
     const box = await page.locator('canvas').boundingBox();
     return box ? { width: box.width, height: box.height } : null;
@@ -137,12 +146,18 @@ test('captures the required opening presentation states at integer canvas scale'
   expect(busy.presentation?.ambience.phase).toBe('busy');
   expect(busy.presentation?.ambience.visibleCount).toBeGreaterThanOrEqual(4);
   expect(busy.presentation?.ambience.visibleCount).toBeLessThanOrEqual(6);
+  expect(busy.presentation?.ambience.inFrameCount).toBe(busy.presentation?.ambience.visibleCount);
+  expect(busy.presentation?.ambience.inFrameIds).toHaveLength(4);
+  expect(new Set(busy.presentation?.ambience.inFrameIds).size).toBe(4);
   await page.screenshot({ path: `${ARTIFACT_ROOT}/opening-busy.png`, fullPage: true });
 
   await moveUntil(page, 'd', (state) => state.player.x >= 700);
   const evacuation = await snapshot(page);
   expect(evacuation.presentation?.ambience.phase).toBe('evacuating');
   expect(evacuation.presentation?.ambience.visibleCount).toBeGreaterThan(0);
+  expect(evacuation.presentation?.ambience.inFrameCount).toBeGreaterThan(0);
+  expect(new Set(evacuation.presentation?.ambience.inFrameIds).size)
+    .toBe(evacuation.presentation?.ambience.inFrameCount);
   await page.screenshot({ path: `${ARTIFACT_ROOT}/opening-evacuation.png`, fullPage: true });
 
   assertLocalOnly();
@@ -181,6 +196,19 @@ test('captures the compact 800x600 layout at native canvas scale', async ({ page
   await expect(page.locator('#mvp-run-health')).toBeVisible();
   await expect(page.locator('#mvp-run-cash')).toBeVisible();
   await expect(page.locator('#mvp-run-heat')).toBeVisible();
+  const layout = await page.evaluate(() => {
+    const hud = document.querySelector<HTMLElement>('#mvp-run-hud')!;
+    const canvas = document.querySelector<HTMLCanvasElement>('canvas')!;
+    const room = document.querySelector<HTMLElement>('#mvp-run-room')!;
+    const hudBox = hud.getBoundingClientRect();
+    const canvasBox = canvas.getBoundingClientRect();
+    return {
+      separated: hudBox.bottom <= canvasBox.top,
+      fullRoomVisible: room.scrollWidth <= room.clientWidth && room.scrollHeight <= room.clientHeight,
+    };
+  });
+  expect(layout.separated).toBe(true);
+  expect(layout.fullRoomVisible).toBe(true);
   expect(await page.evaluate(() => document.body.scrollWidth)).toBeLessThanOrEqual(800);
   await page.screenshot({ path: `${ARTIFACT_ROOT}/compact-800x600.png`, fullPage: true });
 

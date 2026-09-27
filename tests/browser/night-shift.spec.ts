@@ -68,7 +68,12 @@ type RunSnapshot = {
     actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
     effectDepths: Array<{ id: string; renderDepth: number }>;
     promptDepths: Array<{ id: string; renderDepth: number }>;
-    ambience: { phase: 'busy' | 'warning' | 'evacuating' | 'empty'; visibleCount: number };
+    ambience: {
+      phase: 'busy' | 'warning' | 'evacuating' | 'empty';
+      visibleCount: number;
+      inFrameCount: number;
+      inFrameIds: string[];
+    };
     depthBands: { tallForeground: number; effect: number; prompt: number };
   };
   concourseAmbience: { phase: 'busy' | 'warning' | 'evacuating' | 'empty'; visibleCount: number } | null;
@@ -142,7 +147,44 @@ async function waitForRun(page: Page): Promise<void> {
 }
 
 async function offerTexts(page: Page): Promise<string[]> {
-  return page.locator('#mvp-run-offers li').allInnerTexts();
+  // Offers intentionally live in a collapsed details element. innerText is
+  // empty for hidden descendants, while textContent still reports the actual
+  // seeded offer data rendered in the DOM.
+  return (await page.locator('#mvp-run-offers li').allTextContents()).map((text) => text.trim());
+}
+
+async function nudgePlayerY(page: Page, target: number, tolerance = 16): Promise<void> {
+  for (let attempt = 0; attempt < 120; attempt += 1) {
+    const y = (await runSnapshot(page)).player.y;
+    if (Math.abs(y - target) <= tolerance) return;
+    await page.keyboard.press(y < target ? 's' : 'w', { delay: 25 });
+  }
+  expect((await runSnapshot(page)).player.y).toBeCloseTo(target, -1);
+}
+
+async function stableWorldToCanvas(
+  page: Page,
+  worldX: number,
+  worldY: number,
+): Promise<{ x: number; y: number }> {
+  let previous: { x: number; y: number; width: number; height: number } | null = null;
+  let settled = { x: 0, y: 0 };
+  await expect.poll(async () => {
+    await page.evaluate(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
+    const point = await worldToCanvas(page, worldX, worldY);
+    const box = await page.locator('canvas').boundingBox();
+    if (!box) return false;
+    const current = { ...point, width: box.width, height: box.height };
+    const stable = previous !== null
+      && Math.abs(current.x - previous.x) < 0.01
+      && Math.abs(current.y - previous.y) < 0.01
+      && Math.abs(current.width - previous.width) < 0.01
+      && Math.abs(current.height - previous.height) < 0.01;
+    previous = current;
+    settled = point;
+    return stable;
+  }).toBe(true);
+  return settled;
 }
 
 test('launches Night Shift with one canvas, one HUD, and the Opening Concourse', async ({
@@ -172,7 +214,7 @@ test('launches Night Shift with one canvas, one HUD, and the Opening Concourse',
 });
 
 test('Opening Concourse keeps its static scene stable and exits through real movement', async ({ page }, testInfo) => {
-  test.setTimeout(90_000);
+  test.setTimeout(150_000);
   const errors = collectErrors(page);
   await launchRun(page, '/?seed=7');
   const first = await runSnapshot(page);
@@ -218,8 +260,12 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000 })
     .toBeGreaterThan(220);
   await page.keyboard.up('s');
+  // A loaded four-worker browser gate can advance several rendered frames
+  // between the poll match and keyup. Re-center with bounded real key taps so
+  // the east-door approach cannot remain south of its doorway.
+  await nudgePlayerY(page, 240);
   await page.keyboard.down('d');
-  await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 20_000 })
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 40_000 })
     .toBe('storefront_a');
   await page.keyboard.up('d');
   expect((await runSnapshot(page)).presentation).toBeNull();
@@ -238,7 +284,7 @@ test('Opening Concourse civilians evacuate monotonically from real input and res
   const errors = collectErrors(page);
   await launchRun(page, '/?seed=7');
   const first = await runSnapshot(page);
-  expect(first.presentation?.ambience).toEqual({ phase: 'busy', visibleCount: expect.any(Number) });
+  expect(first.presentation?.ambience).toMatchObject({ phase: 'busy', visibleCount: expect.any(Number) });
   expect(first.presentation!.ambience.visibleCount).toBeGreaterThanOrEqual(4);
   expect(first.presentation!.ambience.visibleCount).toBeLessThanOrEqual(6);
 
@@ -271,11 +317,11 @@ test('Opening Concourse civilians evacuate monotonically from real input and res
   await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 20_000 })
     .toBe('storefront_a');
   await page.keyboard.up('d');
-  expect((await runSnapshot(page)).concourseAmbience).toEqual({ phase: 'empty', visibleCount: 0 });
+  expect((await runSnapshot(page)).concourseAmbience).toMatchObject({ phase: 'empty', visibleCount: 0 });
 
   await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(first.generation);
-  expect((await runSnapshot(page)).presentation?.ambience).toEqual({
+  expect((await runSnapshot(page)).presentation?.ambience).toMatchObject({
     phase: 'busy', visibleCount: first.presentation!.ambience.visibleCount,
   });
   expect(errors.pageErrors).toEqual([]);
@@ -315,10 +361,18 @@ test('actor presentation follows real movement, attack, and the first Food Court
   if (!canvasBox) return;
   await page.mouse.move(canvasBox.x + aim.x, canvasBox.y + aim.y);
   await page.mouse.down();
-  await expect.poll(() => runSnapshot(page).then((state) => state.actorPresentation?.player?.mopArcVisible))
-    .toBe(true);
-  const attacking = (await runSnapshot(page)).actorPresentation!;
-  expect(attacking.player!.mopArcDepth).toBeGreaterThan(attacking.depthBands.tallForeground);
+  let observedMopArcDepth: number | null = null;
+  let observedTallForeground = 0;
+  await expect.poll(async () => {
+    const presentation = (await runSnapshot(page)).actorPresentation;
+    if (presentation?.player?.mopArcVisible) {
+      observedMopArcDepth = presentation.player.mopArcDepth;
+      observedTallForeground = presentation.depthBands.tallForeground;
+      return true;
+    }
+    return false;
+  }).toBe(true);
+  expect(observedMopArcDepth).toBeGreaterThan(observedTallForeground);
   await page.mouse.up();
 
   await page.keyboard.down('d');
@@ -634,7 +688,7 @@ test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) =>
   expect(errors.consoleErrors).toEqual([]);
 });
 
-test('the compact HUD leaves the opening concourse landmark clear at 1440x900', async ({ page }) => {
+test('the compact HUD is separated from the canvas and keeps the full room identity at 1440x900', async ({ page }) => {
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await launchRun(page);
@@ -646,10 +700,13 @@ test('the compact HUD leaves the opening concourse landmark clear at 1440x900', 
   if (!canvas || !hud) {
     return;
   }
-  // The compact placard is constrained to the upper-left edge instead of the
-  // former inspector wall, leaving the center landmark and player route open.
-  expect(hud.x + hud.width).toBeLessThan(canvas.x + canvas.width * 0.5);
-  expect(hud.y + hud.height).toBeLessThan(canvas.y + canvas.height * 0.5);
+  expect(hud.y + hud.height).toBeLessThanOrEqual(canvas.y);
+  const roomIdentity = await page.locator('#mvp-run-room').evaluate((room) => ({
+    text: room.textContent,
+    unclipped: room.scrollWidth <= room.clientWidth && room.scrollHeight <= room.clientHeight,
+  }));
+  expect(roomIdentity.text).toContain('Opening Concourse');
+  expect(roomIdentity.unclipped).toBe(true);
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });
@@ -709,7 +766,10 @@ test('real canvas input follows the camera after scrolling and resizing', async 
 
   await page.setViewportSize({ width: 1120, height: 760 });
   const target = { x: afterMove.player.x + 100, y: afterMove.player.y };
-  const point = await worldToCanvas(page, target.x, target.y);
+  // Chromium reports the new element box before Phaser has consumed the
+  // resize on its next frame. Aim only after both halves of the projection
+  // contract agree, exactly as a visible frame presented to a user does.
+  const point = await stableWorldToCanvas(page, target.x, target.y);
   const box = await page.locator('canvas').boundingBox();
   expect(box).not.toBeNull();
   if (!box) {
@@ -874,12 +934,22 @@ test('the sound layer starts on a real gesture and can be muted', async ({ page 
   await expect(muteButton).toContainText('SOUND: ON');
   await expect(muteButton).toHaveAttribute('aria-pressed', 'false');
   await expect.poll(() => runSnapshot(page).then((state) => state.audio?.muted)).toBe(false);
+  await expect.poll(() => runSnapshot(page).then((state) => state.audio?.running)).toBe(true);
 
   // Swing for real with sound live. This must not throw anywhere, and the
   // engine must actually schedule a voice: a created context only proves the
   // layer exists, whereas this proves it acted on a cue.
+  // The unlocking canvas click can also start a silent first swing before its
+  // AudioContext finishes resuming. Let that real attack's 27-tick cooldown
+  // clear so this assertion always measures a fresh, audible action.
+  await page.waitForTimeout(550);
   const playedBefore = (await runSnapshot(page)).audio?.played ?? 0;
-  await page.mouse.move(200, 400);
+  const beforeSwing = await runSnapshot(page);
+  const swingPoint = await worldToCanvas(page, beforeSwing.player.x + 80, beforeSwing.player.y);
+  const swingCanvas = await page.locator('canvas').boundingBox();
+  expect(swingCanvas).not.toBeNull();
+  if (!swingCanvas) return;
+  await page.mouse.move(swingCanvas.x + swingPoint.x, swingCanvas.y + swingPoint.y);
   await page.mouse.down();
   await page.waitForTimeout(400);
   await page.mouse.up();

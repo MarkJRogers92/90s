@@ -156,6 +156,18 @@ test('fused car is the sampled projectile origin', async ({ page }) => {
   }
   const point = await worldToCanvas(page, 600, 240);
   await page.mouse.move(box.x + point.x, box.y + point.y);
+  await expect.poll(async () => {
+    const moving = await benchSnapshot(page);
+    return Math.hypot(
+      moving.carrier.x - moving.player.x,
+      moving.carrier.y - moving.player.y,
+    );
+  }, { timeout: 15_000 }).toBeGreaterThan(60);
+  const moving = await benchSnapshot(page);
+  const stopPoint = await worldToCanvas(page, moving.carrier.x - 2, moving.carrier.y);
+  await page.mouse.move(box.x + stopPoint.x, box.y + stopPoint.y);
+  await page.waitForTimeout(100);
+  const atFire = await benchSnapshot(page);
   await page.mouse.down();
   await expect
     .poll(
@@ -173,11 +185,12 @@ test('fused car is the sampled projectile origin', async ({ page }) => {
   if (!shot) {
     return;
   }
-  const originToCarrier = Math.hypot(shot.originX - state.carrier.x, shot.originY - state.carrier.y);
-  // Deterministic allowance: the emitter car moves at most 4 units per tick,
-  // so 12 ticks of poll/render drift after the firing tick stays within 48 units.
-  expect(originToCarrier).toBeLessThanOrEqual(48);
-  const originToPlayer = Math.hypot(shot.originX - state.player.x, shot.originY - state.player.y);
+  const originToCarrier = Math.hypot(shot.originX - atFire.carrier.x, shot.originY - atFire.carrier.y);
+  // Compare against the sampled positions immediately before the real pointer
+  // press. Reading the live carrier after polling lets its steering drift make
+  // a correct origin look closer to the player under a loaded browser gate.
+  expect(originToCarrier).toBeLessThanOrEqual(12);
+  const originToPlayer = Math.hypot(shot.originX - atFire.player.x, shot.originY - atFire.player.y);
   expect(originToCarrier).toBeLessThan(originToPlayer);
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
