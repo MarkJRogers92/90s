@@ -43,6 +43,7 @@ type RunSnapshot = {
     y: number;
     radius: number;
     faction: 'enemy' | 'player';
+    phase?: 'outbound' | 'return';
     velocityX: number;
     velocityY: number;
     originX: number;
@@ -393,26 +394,30 @@ test('real canvas input follows the camera after scrolling and resizing', async 
   await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await expect
-    .poll(async () => (await runSnapshot(page)).projectiles.some((candidate) => candidate.faction === 'player'))
-    .toBe(true);
-  const shot = (await runSnapshot(page)).projectiles.find(
-    (candidate) => candidate.faction === 'player',
-  );
+    .poll(async () => {
+      const directions = (await runSnapshot(page)).projectiles
+        .filter(
+          (candidate) => candidate.faction === 'player' && candidate.phase === 'outbound',
+        )
+        .map((shot) => {
+          const directionToTarget = {
+            x: target.x - shot.originX,
+            y: target.y - shot.originY,
+          };
+          const targetLength = Math.hypot(directionToTarget.x, directionToTarget.y);
+          const attackLength = Math.hypot(shot.velocityX, shot.velocityY);
+          return targetLength === 0 || attackLength === 0
+            ? -1
+            : (shot.velocityX * directionToTarget.x + shot.velocityY * directionToTarget.y) /
+              (attackLength * targetLength);
+        });
+      return directions.length === 0 ? -1 : Math.max(...directions);
+    })
+    // A normalized dot product of 0.85 keeps the projectile within 32 degrees
+    // of the live world target, rejecting the broad forward-half-plane false
+    // positives that a simple positive dot product admitted.
+    .toBeGreaterThan(0.85);
   await page.mouse.up();
-  expect(shot).toBeDefined();
-  if (!shot) {
-    return;
-  }
-
-  const playerAtAttack = (await runSnapshot(page)).player;
-  const directionToTarget = {
-    x: target.x - playerAtAttack.x,
-    y: target.y - playerAtAttack.y,
-  };
-  const attackDirection = { x: shot.velocityX, y: shot.velocityY };
-  expect(
-    attackDirection.x * directionToTarget.x + attackDirection.y * directionToTarget.y,
-  ).toBeGreaterThan(0);
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

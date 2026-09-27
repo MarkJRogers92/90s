@@ -305,6 +305,8 @@ export type MvpRunDebugSnapshot = {
     radius: number;
     /** Who fired it, so acceptance can tell a volley from the player's fire. */
     faction: 'enemy' | 'player';
+    /** Player shots may replay back toward their origin after an outbound pass. */
+    phase: import('../sim/model').ProjectileState['phase'];
     /** Authoritative trajectory, exposed read-only for real-input assertions. */
     velocityX: number;
     velocityY: number;
@@ -386,6 +388,7 @@ export function installMvpRunDebugBridge(
               y: shot.y,
               radius: shot.radius,
               faction: shot.faction,
+              phase: shot.phase,
               velocityX: shot.velocityX,
               velocityY: shot.velocityY,
               originX: sampled?.x ?? shot.x,
