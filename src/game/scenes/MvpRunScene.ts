@@ -11,6 +11,8 @@
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
+import { PauseCard } from '../ui/PauseCard';
+import { heartbeatIntervalMs } from '../view/playerCues';
 import { installMvpRunDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
   InMemoryCheckpointStore,
@@ -270,6 +272,7 @@ export class MvpRunScene extends Phaser.Scene {
   private generation = 1;
   private accumulator = 0;
   private hitStopMs = 0;
+  private lastHeartbeat = -Infinity;
   private lastRoomIndex = 0;
   private lastCheckpointKey: string | null = null;
   private checkpointStatus = 'none yet';
@@ -278,6 +281,7 @@ export class MvpRunScene extends Phaser.Scene {
   private hud: MvpRunHud | undefined;
   private gameHud: GameHud | undefined;
   private shiftCard: ShiftCard | undefined;
+  private pauseCard: PauseCard | undefined;
   private removeBloom: (() => void) | undefined;
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
@@ -335,6 +339,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.gameHud = new GameHud(this);
     const hud = this.gameHud;
     this.inputAdapter.hudSlotAt = (x, y) => hud.weaponSlotAt(x, y);
+    this.pauseCard = new PauseCard(this);
     const card = new ShiftCard(this);
     this.shiftCard = card;
     this.inputAdapter.endCard = {
@@ -409,6 +414,8 @@ export class MvpRunScene extends Phaser.Scene {
     }
     if (this.run.roomIndex !== this.lastRoomIndex) {
       this.lastRoomIndex = this.run.roomIndex;
+      // A quick fade from the mall's own dark, so a door reads as a door.
+      this.cameras.main.fadeIn(240, 7, 5, 12);
       this.inputAdapter.clearHeld();
       clearMvpHeldActions(this.run);
     }
@@ -522,6 +529,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   private syncView(): void {
     this.runView?.sync(this.run);
+    this.syncHeartbeat();
     const hold = this.runView?.takeHitStop() ?? 0;
     this.hitStopMs = Math.max(this.hitStopMs, hold);
     // Getting hurt (and the boss kill) ring the ears: the mix muffles while the frame holds.
@@ -532,9 +540,23 @@ export class MvpRunScene extends Phaser.Scene {
     const pointer = this.input.activePointer;
     this.shiftCard?.hover(pointer.x, pointer.y);
     this.shiftCard?.sync(this.run);
+    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing');
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
+  }
+
+  /** At the last heart the janitor's pulse is audible and visible, on real time. */
+  private syncHeartbeat(): void {
+    const interval = this.run.status === 'playing' && !this.run.paused
+      ? heartbeatIntervalMs(this.run.room.combat.player.health)
+      : null;
+    const now = this.time.now;
+    if (interval !== null && now - this.lastHeartbeat >= interval) {
+      this.lastHeartbeat = now;
+      this.audio?.play('heartbeat');
+    }
+    this.runView?.heartbeat(interval !== null, now - this.lastHeartbeat);
   }
 
   private applyDevFixture(state: MvpRunState): MvpRunState {
@@ -655,6 +677,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.gameHud = undefined;
     this.shiftCard?.destroy();
     this.shiftCard = undefined;
+    this.pauseCard?.destroy();
+    this.pauseCard = undefined;
     this.removeBloom?.();
     this.removeBloom = undefined;
     window.removeEventListener('pointerdown', this.unlockAudio);

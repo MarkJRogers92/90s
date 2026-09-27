@@ -18,6 +18,7 @@ import { HEAVY_HIT_DAMAGE } from '../view/combatBeats';
 export type AudioCue =
   | 'swing'
   | 'dash'
+  | 'heartbeat'
   | 'shot'
   | 'splash'
   | 'hit'

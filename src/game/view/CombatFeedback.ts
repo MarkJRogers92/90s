@@ -205,6 +205,16 @@ export class CombatFeedback {
     return this.landed;
   }
 
+  /**
+   * The last-heart pulse: the red edge swells on each heartbeat and ebbs
+   * between them. Layered over (never under) a fresh hurt vignette.
+   */
+  public heartbeat(active: boolean, sinceBeatMs: number): void {
+    if (!active) return;
+    const pulse = 0.18 + 0.32 * Math.max(0, 1 - sinceBeatMs / 420);
+    this.vignette.setAlpha(Math.max(this.vignette.alpha, pulse));
+  }
+
   /** A scuff of dust kicked up where a dash starts. */
   public puff(x: number, y: number, tick: number, dirX: number, dirY: number): void {
     for (let i = 0; i < 9; i += 1) this.spark(x, y, tick, 0xd8d0e8, -dirX, -dirY);

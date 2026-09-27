@@ -31,6 +31,7 @@ import {
   type SpriteSpec,
 } from './ActorSpriteView';
 import { DASH_TICKS } from '../../sim/combat/dash';
+import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
 import { attackFrameFor, combinePoses, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
@@ -89,6 +90,15 @@ export class MvpRunView {
   private deadSince: number | null = null;
   /** Real time the shift ended (won or dead), for the effects clock. */
   private endedAt: number | null = null;
+  /** First effects tick each enemy was seen in this room, for its spawn-in. */
+  private readonly enemyFirstSeen = new Map<string, number>();
+  private enemyScope = '';
+  /** Dashes this run, so the SPACE DASH hint retires once it is learned. */
+  private dashesThisRun = 0;
+  private lastReadiness = 1;
+  private readyFlashTick = -100;
+  private dashHint: Phaser.GameObjects.Image | null = null;
+  private readonly threats: Array<{ enemy: { x: number; y: number }; windups: readonly Windup[] }> = [];
   /** Dash afterimages: frozen copies of the janitor fading out. */
   private readonly dashGhosts: Array<{ image: Phaser.GameObjects.Image; born: number }> = [];
   private actorDebug: ActorPresentationDebugSnapshot = this.emptyActorDebug();
@@ -170,6 +180,7 @@ export class MvpRunView {
     }
 
     const hangerEvidence: ActorPresentationDebugSnapshot['hangers'] = [];
+    this.threats.length = 0;
     const telegraphs: ActorPresentationDebugSnapshot['telegraphs'] = [];
     for (const enemy of state.room.combat.enemies) {
       const body = opening?.actorGraphics(`enemy:${enemy.id}`, enemy.y) ?? graphics;
@@ -192,7 +203,18 @@ export class MvpRunView {
         x: enemy.x, y: enemy.y, moveX: faced.x, moveY: faced.y,
         attackTicks: 0, damaged: false, phase: enemy.phase,
       };
-      const pose = combinePoses(windupPose(windups, state.tick), this.feedback.poseFor(`enemy:${enemy.id}`, fxTick));
+      const spawnAge = fxTick - this.firstSeen(actorScope, `enemy:${enemy.id}`, fxTick);
+      const pose = combinePoses(
+        combinePoses(windupPose(windups, state.tick), this.feedback.poseFor(`enemy:${enemy.id}`, fxTick)),
+        spawnInPose(spawnAge),
+      );
+      if (spawnAge >= 0 && spawnAge < SPAWN_IN_TICKS) {
+        // A floor ring opens under each arrival, so no enemy simply pops in.
+        const t = spawnAge / SPAWN_IN_TICKS;
+        const r = (enemy.kind === 'lp_manager' ? 70 : 34) * (0.4 + 0.6 * t);
+        effects.lineStyle(4 * (1 - t) + 1, enemy.kind === 'spitter' ? 0x9aff6a : 0xff3a5a, 1 - t).strokeEllipse(enemy.x, enemy.y, r * 2, r);
+      }
+      this.threats.push({ enemy, windups });
       const sheet = enemySpriteSheet(enemySnapshot.kind, false);
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
       const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
@@ -252,6 +274,7 @@ export class MvpRunView {
     }, state.tick, playerDepth, combinePoses(this.feedback.poseFor('player', fxTick), dashPose(player)), null, bodyAction);
     this.syncDashTrail(state, fxTick);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
+    this.drawDashReadiness(state, playerEffects, fxTick);
     this.contactShadow('player', player.x, player.y, 1);
     // The janitor carries a little warm light, so the player never loses themself in the dark.
     opening?.addLight({ x: player.x, y: player.y - 10, radius: 96, color: 0xffe6c8, intensity: 0.62 });
@@ -722,6 +745,67 @@ export class MvpRunView {
     };
   }
 
+  /** First tick an id was seen in this room; a new room starts a fresh map. */
+  private firstSeen(scope: string, id: string, tick: number): number {
+    if (scope !== this.enemyScope) {
+      this.enemyScope = scope;
+      this.enemyFirstSeen.clear();
+    }
+    let seen = this.enemyFirstSeen.get(id);
+    if (seen === undefined || seen > tick) {
+      seen = tick;
+      this.enemyFirstSeen.set(id, seen);
+    }
+    return seen;
+  }
+
+  /**
+   * A thin ring under the janitor that refills as the dash cools down and
+   * flashes once when it is ready again, plus a SPACE DASH hint over them when
+   * an attack is about to land on them and they have not learned the dash.
+   */
+  private drawDashReadiness(state: MvpRunState, effects: Phaser.GameObjects.Graphics, fxTick: number): void {
+    const player = state.room.combat.player;
+    const live = state.status === 'playing' && !state.paused;
+    const readiness = dashReadiness(player);
+    if ((player.dashTicks ?? 0) === DASH_TICKS) this.dashesThisRun += 1;
+    if (readiness >= 1 && this.lastReadiness < 1) this.readyFlashTick = fxTick;
+    this.lastReadiness = readiness;
+    if (live && readiness < 1) {
+      const start = -Math.PI / 2;
+      effects.lineStyle(2, 0x3a3050, 0.7).strokeEllipse(player.x, player.y + 2, 40, 16);
+      effects.lineStyle(3, 0x3ff0ff, 0.9);
+      effects.beginPath();
+      // An ellipse arc drawn as a short polyline, filling clockwise.
+      const steps = 20;
+      for (let i = 0; i <= steps; i += 1) {
+        const a = start + (Math.PI * 2 * readiness * i) / steps;
+        const x = player.x + Math.cos(a) * 20;
+        const y = player.y + 2 + Math.sin(a) * 8;
+        if (i === 0) effects.moveTo(x, y);
+        else effects.lineTo(x, y);
+      }
+      effects.strokePath();
+    }
+    const flashAge = fxTick - this.readyFlashTick;
+    if (live && flashAge >= 0 && flashAge < 10) {
+      effects.lineStyle(3, 0xffffff, 1 - flashAge / 10).strokeEllipse(player.x, player.y + 2, 40 + flashAge * 3, 16 + flashAge);
+    }
+    const hint = live && shouldHintDash(this.threats, player, readiness, this.dashesThisRun);
+    if (hint) {
+      const label = ensurePixelLabel(this.scene, 'SPACE: DASH!', '#3ff0ff', 2, '#06121a');
+      if (!this.dashHint) this.dashHint = this.scene.add.image(0, 0, label.key).setDepth(presentationDepth('prompt', 40));
+      if (this.dashHint.texture.key !== label.key) this.dashHint.setTexture(label.key);
+      const bob = Math.sin(fxTick / 4) * 2;
+      // Kept fully on screen even when the janitor hugs a wall.
+      const half = this.dashHint.width / 2 + 6;
+      const hx = Math.max(half, Math.min(960 - half, player.x));
+      this.dashHint.setVisible(true).setPosition(Math.round(hx), Math.round(Math.max(24, player.y - 78) + bob)).setScale(1 + Math.max(0, 0.15 * Math.sin(fxTick / 3)));
+    } else {
+      this.dashHint?.setVisible(false);
+    }
+  }
+
   /**
    * Afterimages while the janitor dashes: every other tick a frozen copy of
    * the current frame, tinted cyan and fading over ten ticks, plus a dust puff
@@ -1038,6 +1122,8 @@ export class MvpRunView {
 
   public destroy(): void {
     this.clearDashGhosts();
+    this.dashHint?.destroy();
+    this.dashHint = null;
     for (const shadow of this.shadows.values()) shadow.destroy();
     this.shadows.clear();
     for (const sprite of this.tokenSprites.values()) sprite.destroy();
@@ -1067,6 +1153,9 @@ export class MvpRunView {
     this.feedback.resetRoom('');
     this.weapon.reset();
     this.clearDashGhosts();
+    this.dashesThisRun = 0;
+    this.enemyFirstSeen.clear();
+    this.enemyScope = '';
     this.mallRoomKey = '';
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
@@ -1079,6 +1168,11 @@ export class MvpRunView {
     this.deathEffects.reset();
     this.effectGraphics.clear();
     this.actorDebug = this.emptyActorDebug();
+  }
+
+  /** Forwards the last-heart pulse to the feedback layer. */
+  public heartbeat(active: boolean, sinceBeatMs: number): void {
+    this.feedback.heartbeat(active, sinceBeatMs);
   }
 
   /** Milliseconds the scene should hold its clock for hits landed this frame. */

@@ -219,6 +219,23 @@ timing or AI rule changed. Pure rules live in `src/game/view/combatBeats.ts`
   60 p10 in a Food Court fight; SwiftShader software GL 30 / 29 (bloom
   auto-disabled). Real low-end laptops, Safari and Windows remain untested.
 
+## Round 7 — reading your own state
+
+Pure rules in `src/game/view/playerCues.ts` (tests: `player-cues.test.ts`).
+- **Dash readiness**: a thin cyan ring under the janitor refills over the
+  cooldown and flashes white when the dash is back.
+- **Dash hint**: `SPACE: DASH!` pops over the janitor when a spit (within
+  ~25 degrees of its aim), volley, or slam (inside its reach) past a third of
+  its wind-up is aimed at them and a dash is ready. Retires after 3 dashes a
+  run. Kept on screen near walls; hidden while paused.
+- **Last heart**: at 2 health or less a lub-dub heartbeat plays on a real-time
+  timer (faster at half a heart) and the red edge vignette pulses with it.
+- **Arrivals**: enemies rise out of the floor with a flash and a floor ring the
+  first time they are seen in a room (boss summons included), instead of
+  popping in; the camera fades in from the mall's dark on every door.
+- **Pause card** (`src/game/ui/PauseCard.ts`): neon PAUSED, the controls
+  (including SPACE DASH) and ESC TO RESUME, instead of one DOM line.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

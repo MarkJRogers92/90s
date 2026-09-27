@@ -50,6 +50,14 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 130, gain: 0.12, cutoff: 1800 }],
     minGapMs: 120,
   },
+  heartbeat: {
+    // Lub-dub, low and dull: played by the scene on a timer at the last heart.
+    tones: [
+      { wave: 'sine', from: 78, to: 48, ms: 120, gain: 0.34 },
+      { wave: 'sine', from: 70, to: 44, ms: 140, gain: 0.26, atMs: 170 },
+    ],
+    minGapMs: 300,
+  },
   dash: {
     // A quick rising whoosh with a scuff of sneaker.
     tones: [{ wave: 'triangle', from: 180, to: 520, ms: 150, gain: 0.08 }],

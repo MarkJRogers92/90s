@@ -1,5 +1,15 @@
 # Test evidence
 
+## 2026-09-27 — round 7: dash readiness/hint, last heart, arrivals, pause card
+
+- `npx vitest run` — PASS: 43 files, 583 tests (new `player-cues.test.ts`, 7
+  tests; failed first on the missing module).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.6 min) with the room
+  fade-in and pause card on.
+- Captures `artifacts/neon-overhaul/cues/` (spawn-in, dash recharge, dash hint,
+  pause). The first pass showed the hint clipped at the left wall and still
+  visible under the pause card; both fixed.
+
 ## 2026-09-27 — round 6: end card, fairness, dash, performance
 
 - `npx vitest run` — PASS: 42 files, 576 tests. New: `shift-card-model` (5),
