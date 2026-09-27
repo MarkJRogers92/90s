@@ -151,53 +151,53 @@
   },
   {
     "path": "public/assets/neon/enemies/hanger-idle.png",
-    "source": "codex/pixellab-aseprite-proof:public/assets/enemies/hanger-idle.png",
-    "generator": "PixelLab (earlier art pass)",
+    "source": "docs/art/neon-overhaul/pixellab/anim-hanger-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
     "size": [
-      384,
-      48
+      512,
+      64
     ],
-    "sha256": "48f3e861bcc397024ee60fb3ff012cfb4e7240bc8a36106c4ad8ec4d8613359f"
+    "sha256": "3fc03236e60b0fa5437f4da997344e77d19064dbef688d8afe5d079b153a9ee6"
   },
   {
     "path": "public/assets/neon/enemies/hanger-walk.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-hanger-walk.png",
     "generator": "PixelLab animate_character, packed by pack_character.py",
     "size": [
-      408,
-      544
+      552,
+      736
     ],
-    "sha256": "a83f5ce14c5e6433410f686f3c44a30840243e77a8638949aa9005ed961e2d64"
+    "sha256": "bb783a71cb68b66c66b601c8f506eb42d6d9ee817e5a9c26f60634a3bde77751"
   },
   {
     "path": "public/assets/neon/enemies/lp-manager-idle.png",
-    "source": "codex/pixellab-aseprite-proof:public/assets/enemies/lp-manager-idle.png",
-    "generator": "PixelLab (earlier art pass)",
+    "source": "docs/art/neon-overhaul/pixellab/anim-lp-manager-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
     "size": [
-      384,
-      48
+      512,
+      64
     ],
-    "sha256": "334deb5247c741bd92a2028d0b73673d693c47cba1bc0c687c092587e4e0c26f"
+    "sha256": "f6f1f5ff3db62043a1425a3cca8223854808172b3aeb1d215f963824195331f8"
   },
   {
     "path": "public/assets/neon/enemies/lp-manager-walk.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-lp-manager-walk.png",
     "generator": "PixelLab animate_character, packed by pack_character.py",
     "size": [
-      384,
-      384
+      512,
+      512
     ],
-    "sha256": "b638ac3b7f06085779fa0628100b5495475a4262f57df6ded3aa23dfb5c5e54c"
+    "sha256": "0e90c6d3a4ddabe5b8fac1e19ac3d6c7c7652af2fdfc46ef6b1f7f597bbdac51"
   },
   {
     "path": "public/assets/neon/enemies/spitter-idle.png",
-    "source": "codex/pixellab-aseprite-proof:public/assets/enemies/spitter-idle.png",
-    "generator": "PixelLab (earlier art pass)",
+    "source": "docs/art/neon-overhaul/pixellab/anim-spitter-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
     "size": [
-      384,
-      48
+      512,
+      64
     ],
-    "sha256": "79b34331b9a6b166ee51351152da83ca6c8e86df43ea88c1de8c2b6df54711d8"
+    "sha256": "41b31a54138b6e833572f67d7b919992ca308b2222bb6aa85d958467d574a319"
   },
   {
     "path": "public/assets/neon/facades/arcade.png",

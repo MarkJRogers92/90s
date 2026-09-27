@@ -132,11 +132,11 @@ dropped at runtime if a real device cannot hold 45 fps.
 
 ## Known gaps / next steps
 
-- Alex's HUD portrait is still the earlier pass's "teenager" bust; it no
-  longer matches the new 64px Alex (jumpsuit and green vest). A matching
-  portrait is a good next PixelLab job.
-- Enemies are still 48px sheets; regenerating them at 64px would match the
-  new player scale.
+- Round 3 finished the cast at 64px: a portrait generated from Alex's
+  sprite, and fresh 64px Hanger (skitter walk), Spitter and Loss Prevention
+  Manager (stalk walk, drawn at 2x as a boss). Two stalled Hanger directions
+  (east, south-east) are mirrors of west/south-west. Rotating an existing
+  sprite with PixelLab keeps its size, so upscaling needs fresh generation.
 - The DOM status bar above the canvas is still required by the browser tests
   (HP/cash/room/objective must stay visible there); it now duplicates the
   in-canvas HUD. Folding it into an accessible off-canvas panel is the next

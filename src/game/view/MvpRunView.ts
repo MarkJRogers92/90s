@@ -466,15 +466,9 @@ export class MvpRunView {
       graphics.fillStyle(0xf6d365, 1);
       graphics.fillCircle(enemy.x, enemy.y, 5);
     }
-    effects.fillStyle(0x2a2424, 0.9);
-    effects.fillRect(enemy.x - 24, enemy.y - enemy.radius - 14, 48, 5);
-    effects.fillStyle(0xd85c54, 1);
-    effects.fillRect(
-      enemy.x - 24,
-      enemy.y - enemy.radius - 14,
-      48 * Math.max(0, Math.min(1, enemy.health / BOSS_MAX_HEALTH)),
-      5,
-    );
+    // The boss's health lives in the HUD's boss bar; a world bar would cut
+    // across the 128px sprite.
+    void BOSS_MAX_HEALTH;
   }
 
   /**
@@ -591,7 +585,14 @@ export class MvpRunView {
       const source = this.scene.textures.get(textureKey).getSourceImage() as { width: number; height: number };
       const frameSize = characterFrameSize(source.height, walkKey ? 8 : 1);
       if (walkKey) walkFrames = Math.max(1, Math.round(source.width / frameSize));
-      spec = { textureKey, frameWidth: frameSize, frameHeight: frameSize, scale: sheet.displaySize / frameSize };
+      // Walk canvases are grown copies of the idle canvas at the same pixel
+      // scale, so the scale always comes from the idle frame size.
+      const idleSource = neonIdle ? (this.scene.textures.get(neonIdle).getSourceImage() as { height: number }) : source;
+      const idleFrame = neonIdle ? characterFrameSize(idleSource.height, 1) : frameSize;
+      // A grown walk canvas is centred on the idle canvas, so the feet sit
+      // half the growth lower than 84% of the idle frame.
+      const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
+      spec = { textureKey, frameWidth: frameSize, frameHeight: frameSize, scale: sheet.displaySize / idleFrame, feetY };
     } else if (snapshot.kind === 'hanger') {
       spec = { textureKey, frameWidth: 48, frameHeight: 48, scale: 1 };
     }

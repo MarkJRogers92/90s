@@ -68,9 +68,9 @@ export function enemySpriteSheet(
     case 'hanger':
       return { idle: ENEMY_TEXTURE_KEYS.hangerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.hangerWalk : null, walkFrames: 6, ticksPerFrame: 4, displaySize: 64 };
     case 'spitter':
-      return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, walkFrames: 1, ticksPerFrame: 5, displaySize: 66 };
+      return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, walkFrames: 1, ticksPerFrame: 5, displaySize: 64 };
     case 'lp_manager':
-      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, walkFrames: 8, ticksPerFrame: 6, displaySize: 100 };
+      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, walkFrames: 8, ticksPerFrame: 6, displaySize: 128 };
     default:
       return null;
   }
@@ -222,17 +222,25 @@ export class ActorDeathEffectLifecycle {
   }
 }
 
-export type SpriteSpec = { readonly textureKey: string; readonly frameWidth: number; readonly frameHeight: number; readonly scale: number };
+export type SpriteSpec = {
+  readonly textureKey: string;
+  readonly frameWidth: number;
+  readonly frameHeight: number;
+  readonly scale: number;
+  /** Pixel row of the feet inside a frame; defaults to 84% of the frame height. */
+  readonly feetY?: number;
+};
 
 /** Full-sheet origin that places one cropped frame's feet at the world point. */
 export function croppedFrameOrigin(
   frame: { readonly row: number; readonly column: number },
   sheet: { readonly width: number; readonly height: number },
   frameSize: { readonly width: number; readonly height: number },
+  feetY = frameSize.height * 0.84,
 ): { readonly x: number; readonly y: number } {
   return {
     x: (frame.column * frameSize.width + frameSize.width * 0.5) / sheet.width,
-    y: (frame.row * frameSize.height + frameSize.height * 0.84) / sheet.height,
+    y: (frame.row * frameSize.height + feetY) / sheet.height,
   };
 }
 
@@ -262,6 +270,7 @@ export class ActorSpriteView {
       frame,
       { width: this.sprite.width, height: this.sprite.height },
       { width: spec.frameWidth, height: spec.frameHeight },
+      spec.feetY,
     );
     this.sprite.setOrigin(origin.x, origin.y);
     this.sprite.setRotation(visual.attackLean ? 0.08 : 0);

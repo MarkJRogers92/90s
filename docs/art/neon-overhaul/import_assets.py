@@ -120,6 +120,9 @@ def main() -> None:
             source_dir = args.legacy / folder
             files = sorted(source_dir.glob('*.png')) if names is None else [source_dir / f'{n}.png' for n in names]
             for src in files:
+                # A newer PixelLab sheet (anim-<name>.png) supersedes the legacy file.
+                if folder == 'enemies' and (SOURCE / f'anim-{src.stem}.png').exists():
+                    continue
                 dst = OUT / ('legacy-props' if folder == 'props' else folder) / src.name
                 if folder == 'props':
                     w, h = crop_to_content(src, dst)

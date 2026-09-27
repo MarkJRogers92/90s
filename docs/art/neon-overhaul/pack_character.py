@@ -52,14 +52,21 @@ def main() -> None:
     frames = meta['states'][0]['frames']['animations'][animation]
     available = set(frames)
     columns = max(len(paths) for paths in frames.values())
-    first = Image.open(export / next(iter(frames.values()))[0])
-    width, height = first.size
+    # PixelLab grows the canvas per direction as limbs spread, so frames can
+    # differ in size. Every cell is the largest frame, each frame centred in
+    # it (PixelLab frames are pivot-centred), so the creature never jumps.
+    loaded = {d: [Image.open(export / p).convert('RGBA') for p in paths] for d, paths in frames.items()}
+    width = max(frame.width for frames_ in loaded.values() for frame in frames_)
+    height = max(frame.height for frames_ in loaded.values() for frame in frames_)
+    width = height = max(width, height)
     sheet = Image.new('RGBA', (width * columns, height * 8), (0, 0, 0, 0))
     for row, direction in enumerate(ORDER):
-        paths = frames[nearest(direction, available)]
+        cells = loaded[nearest(direction, available)]
         for column in range(columns):
-            frame = Image.open(export / paths[column % len(paths)]).convert('RGBA')
-            sheet.alpha_composite(frame, (column * width, row * height))
+            frame = cells[column % len(cells)]
+            ox = column * width + (width - frame.width) // 2
+            oy = row * height + (height - frame.height) // 2
+            sheet.alpha_composite(frame, (ox, oy))
     out.parent.mkdir(parents=True, exist_ok=True)
     sheet.save(out)
     print(f'{out}: {columns} frames x 8 facings of {width}x{height}')
