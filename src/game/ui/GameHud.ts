@@ -431,6 +431,7 @@ export class GameHud {
       ['WASD', 'MOVE'],
       ['MOUSE', 'AIM'],
       ['CLICK', 'ATTACK'],
+      ['SPACE', 'DASH'],
       ['E', 'BUY / USE'],
       ['F', 'STEAL'],
       ['1-9 Q', 'SWITCH WEAPON'],

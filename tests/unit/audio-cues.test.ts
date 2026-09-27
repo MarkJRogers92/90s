@@ -226,8 +226,13 @@ describe('combat beat cues', () => {
     });
     expect(light).toContain('hit');
     expect(light).not.toContain('hit_heavy');
-    const heavy = cuesBetween(withEnemies([makeHanger(1, 200, 240)]), (state) => {
+    const mop = cuesBetween(withEnemies([makeHanger(1, 200, 240)]), (state) => {
       state.room.combat.enemies[0]!.health -= 4;
+    });
+    // The starting mop's 4 is the normal hit; heavy is for harder blows.
+    expect(mop).toContain('hit');
+    const heavy = cuesBetween(withEnemies([makeHanger(1, 200, 240)]), (state) => {
+      state.room.combat.enemies[0]!.health -= 5;
     });
     expect(heavy).toContain('hit_heavy');
     expect(heavy).not.toContain('hit');
@@ -267,5 +272,19 @@ describe('combat beat cues', () => {
     expect(cuesBetween(state, (current) => {
       current.room.combat.enemies[0]!.phase = 'recover';
     })).toContain('slam');
+  });
+});
+
+describe('dash cue', () => {
+  it('whooshes on the tick a dash starts, not while it runs', () => {
+    const started = cuesAfter((state) => {
+      state.room.combat.player.dashTicks = 12;
+    });
+    expect(started).toContain('dash');
+    const running = createMvpRun(9);
+    running.room.combat.player.dashTicks = 12;
+    expect(cuesBetween(running, (state) => {
+      state.room.combat.player.dashTicks = 11;
+    })).not.toContain('dash');
   });
 });

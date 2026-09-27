@@ -18,6 +18,7 @@ import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTe
 import type { PointLight } from '../presentation/lighting/LightingLayer';
 import { ACTOR_DIRECTION_ORDER, directionForVector } from './ActorSpriteView';
 import {
+  HEAVY_HIT_DAMAGE,
   HIT_REACTION_TICKS,
   REST_POSE,
   diffEnemyAttacks,
@@ -204,6 +205,12 @@ export class CombatFeedback {
     return this.landed;
   }
 
+  /** A scuff of dust kicked up where a dash starts. */
+  public puff(x: number, y: number, tick: number, dirX: number, dirY: number): void {
+    for (let i = 0; i < 9; i += 1) this.spark(x, y, tick, 0xd8d0e8, -dirX, -dirY);
+    this.bursts.push({ kind: 'ring', x, y, born: tick, life: 10, radius: 26, color: 0x9ad8ff, angle: 0 });
+  }
+
   /** Ticks since the janitor was last hurt in this room, or null. */
   public playerHurtAge(tick: number): number | null {
     return this.playerHurtTick === null ? null : tick - this.playerHurtTick;
@@ -238,7 +245,7 @@ export class CombatFeedback {
     player: { x: number; y: number },
     tick: number,
   ): HitStopBeat {
-    const heavy = hit.amount >= 3;
+    const heavy = hit.amount >= HEAVY_HIT_DAMAGE;
     const dirX = hit.x - player.x;
     const dirY = hit.y - player.y;
     const length = Math.hypot(dirX, dirY) || 1;

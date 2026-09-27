@@ -1,6 +1,7 @@
 import type { InputFrame, PrimaryAttackContext, RunState } from './model';
 import { updatePlayerFacing } from './combat/attack';
 import { resolveEnemyDamage, updateEnemies, updateProjectiles } from './combat/enemies';
+import { advanceDash, startDash, tickDashCooldown } from './combat/dash';
 import { movePlayer } from './combat/movement';
 import { rememberActiveRootEventAllowance } from './effects/conduction';
 import { drainChildEvents } from './effects/events';
@@ -35,6 +36,7 @@ export function tickRun(
   state.player.attackCooldownTicks = Math.max(0, state.player.attackCooldownTicks - 1);
   state.player.attackActiveTicks = Math.max(0, state.player.attackActiveTicks - 1);
   state.player.invulnerableTicks = Math.max(0, state.player.invulnerableTicks - 1);
+  tickDashCooldown(state);
   tickStatuses(state);
   updateSurfaces(state);
   updatePlayerFacing(state, input);
@@ -46,7 +48,8 @@ export function tickRun(
     );
   }
   resolvePrimaryAttack(state, input, attackContext);
-  movePlayer(state, input.moveX, input.moveY);
+  startDash(state, input);
+  if (!advanceDash(state)) movePlayer(state, input.moveX, input.moveY);
   updateEnemies(state);
   resolveEnemyDamage(state);
 

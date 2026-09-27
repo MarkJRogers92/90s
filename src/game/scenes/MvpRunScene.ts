@@ -97,6 +97,7 @@ class MvpRunInputAdapter {
   private pendingRecall = false;
   private pendingSlot = 0;
   private pendingCycle = 0;
+  private pendingDash = false;
   /** Returns a weapon slot when a click lands on the HUD hotbar, else null. */
   public hudSlotAt: ((x: number, y: number) => number | null) | null = null;
   /** The end-of-shift card, when it is open: its buttons and key actions. */
@@ -148,6 +149,10 @@ class MvpRunInputAdapter {
       this.pendingSlot = Number(event.code.slice(5));
     } else if (event.code === 'KeyQ') {
       this.pendingCycle = event.shiftKey ? -1 : 1;
+    } else if (event.code === 'Space') {
+      // Space must never also scroll the page or press a focused DOM button.
+      event.preventDefault();
+      this.pendingDash = true;
     } else if (event.code === 'KeyM') {
       this.onToggleMute();
     } else if (event.code === 'Escape') {
@@ -155,6 +160,10 @@ class MvpRunInputAdapter {
       this.clearHeld();
       this.onEscape();
     }
+  };
+
+  private readonly handleKeyUp = (event: KeyboardEvent): void => {
+    if (event.code === 'Space') event.preventDefault();
   };
 
   private readonly handleBlur = (): void => {
@@ -193,6 +202,7 @@ class MvpRunInputAdapter {
     scene.input.on('pointerupoutside', this.handlePointerUp);
     scene.input.on('gameout', this.handlePointerUp);
     window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);
   }
 
@@ -210,7 +220,9 @@ class MvpRunInputAdapter {
       recall: this.keys.recall.isDown || this.pendingRecall,
       selectSlot: this.pendingSlot,
       cycleWeapon: this.pendingCycle,
+      dash: this.pendingDash,
     };
+    this.pendingDash = false;
     this.pendingSlot = 0;
     this.pendingCycle = 0;
     this.pendingInteract = false;
@@ -221,6 +233,7 @@ class MvpRunInputAdapter {
 
   public clearHeld(): void {
     this.pointerHeld = false;
+    this.pendingDash = false;
     this.keys.up.reset();
     this.keys.left.reset();
     this.keys.down.reset();
@@ -242,6 +255,7 @@ class MvpRunInputAdapter {
     this.scene.input.off('pointerupoutside', this.handlePointerUp);
     this.scene.input.off('gameout', this.handlePointerUp);
     window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keyup', this.handleKeyUp);
     window.removeEventListener('blur', this.handleBlur);
     this.clearHeld();
   }

@@ -50,6 +50,15 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 130, gain: 0.12, cutoff: 1800 }],
     minGapMs: 120,
   },
+  dash: {
+    // A quick rising whoosh with a scuff of sneaker.
+    tones: [{ wave: 'triangle', from: 180, to: 520, ms: 150, gain: 0.08 }],
+    noise: [
+      { ms: 170, gain: 0.16, cutoff: 900, cutoffTo: 4200 },
+      { ms: 40, gain: 0.1, cutoff: 2400 },
+    ],
+    minGapMs: 120,
+  },
   shot: {
     tones: [{ wave: 'square', from: 240, to: 170, ms: 70, gain: 0.14 }],
     minGapMs: 45,

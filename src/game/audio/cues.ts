@@ -13,9 +13,11 @@
  * the only reason a sound layer in this project can have honest tests at all.
  */
 import type { MvpRunState } from '../../sim/run/types';
+import { HEAVY_HIT_DAMAGE } from '../view/combatBeats';
 
 export type AudioCue =
   | 'swing'
+  | 'dash'
   | 'shot'
   | 'splash'
   | 'hit'
@@ -50,6 +52,7 @@ export type AudioSnapshot = {
   readonly status: MvpRunState['status'];
   readonly health: number;
   readonly attackActiveTicks: number;
+  readonly dashTicks: number;
   readonly livingEnemyIds: readonly number[];
   /** Health per living enemy id, so a blow that does not kill is audible. */
   readonly enemyHealth: Readonly<Record<number, number>>;
@@ -77,6 +80,7 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     status: state.status,
     health: combat.player.health,
     attackActiveTicks: combat.player.attackActiveTicks,
+    dashTicks: combat.player.dashTicks ?? 0,
     livingEnemyIds: combat.enemies
       .filter((enemy) => enemy.health > 0)
       .map((enemy) => enemy.id)
@@ -195,7 +199,7 @@ export function deriveAudioCues(
       biggestBlow = Math.max(biggestBlow, before - now);
     }
   }
-  if (biggestBlow >= 3) {
+  if (biggestBlow >= HEAVY_HIT_DAMAGE) {
     cues.push('hit_heavy');
   } else if (biggestBlow > 0) {
     cues.push('hit');
@@ -214,6 +218,9 @@ export function deriveAudioCues(
   }
   if (current.attackActiveTicks > 0 && previous.attackActiveTicks === 0) {
     cues.push('swing');
+  }
+  if (current.dashTicks > previous.dashTicks && previous.dashTicks === 0) {
+    cues.push('dash');
   }
   if (current.surfaces > previous.surfaces) {
     cues.push('splash');

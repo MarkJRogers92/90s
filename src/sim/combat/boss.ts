@@ -6,6 +6,7 @@ import {
   PLAYFIELD_WIDTH,
 } from '../core/geometry';
 import { moveCircle } from './movement';
+import { playerDashing } from './dash';
 
 export const BOSS_MAX_HEALTH = 60;
 export const BOSS_RADIUS = 22;
@@ -267,7 +268,7 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
   } else if (boss.phase === 'telegraph') {
     boss.phaseTicks -= 1;
     if (boss.phaseTicks <= 0) {
-      if (state.player.invulnerableTicks <= 0) {
+      if (state.player.invulnerableTicks <= 0 && !playerDashing(state)) {
         const distance = Math.hypot(state.player.x - boss.x, state.player.y - boss.y);
         if (distance <= BOSS_SLAM_REACH) {
           state.player.health -= BOSS_SLAM_DAMAGE;

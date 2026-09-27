@@ -267,6 +267,7 @@ export class ActorSpriteView {
   private readonly scene: Phaser.Scene;
   private readonly sprite: Phaser.GameObjects.Image;
   private textureKey: string;
+  private crop = { x: 0, y: 0, w: 0, h: 0 };
 
   public constructor(scene: Phaser.Scene, spec: SpriteSpec) {
     this.scene = scene;
@@ -298,7 +299,8 @@ export class ActorSpriteView {
     if (pose.flash) this.sprite.setTint(0xffffff).setTintMode(TINT_FILL);
     else if (pose.tint !== undefined) this.sprite.setTint(pose.tint).setTintMode(TINT_ADD);
     else this.sprite.clearTint();
-    this.sprite.setCrop(frame.column * spec.frameWidth, frame.row * spec.frameHeight, spec.frameWidth, spec.frameHeight);
+    this.crop = { x: frame.column * spec.frameWidth, y: frame.row * spec.frameHeight, w: spec.frameWidth, h: spec.frameHeight };
+    this.sprite.setCrop(this.crop.x, this.crop.y, this.crop.w, this.crop.h);
     const origin = croppedFrameOrigin(
       frame,
       { width: this.sprite.width, height: this.sprite.height },
@@ -308,6 +310,17 @@ export class ActorSpriteView {
     this.sprite.setOrigin(origin.x, origin.y);
     this.sprite.setRotation(visual.attackLean ? 0.08 : 0);
     return true;
+  }
+
+  /** A frozen copy of the current frame, for afterimages. Caller owns it. */
+  public ghost(): Phaser.GameObjects.Image | null {
+    if (!this.sprite.visible) return null;
+    return this.scene.add
+      .image(this.sprite.x, this.sprite.y, this.textureKey)
+      .setCrop(this.crop.x, this.crop.y, this.crop.w, this.crop.h)
+      .setOrigin(this.sprite.originX, this.sprite.originY)
+      .setScale(this.sprite.scaleX, this.sprite.scaleY)
+      .setDepth(this.sprite.depth - 1);
   }
 
   public destroy(): void { this.sprite.destroy(); }

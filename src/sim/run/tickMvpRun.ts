@@ -524,6 +524,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
       aimX: input.aimX,
       aimY: input.aimY,
       fire: input.fire,
+      dash: input.dash === true,
     },
     carrierAttackContext(state),
   );

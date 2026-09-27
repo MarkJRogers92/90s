@@ -20,6 +20,14 @@ import {
 } from '../../sim/combat/boss';
 import { SPITTER_RECOVER_TICKS, SPITTER_TELEGRAPH_TICKS } from '../../sim/combat/enemies';
 
+/**
+ * A blow this big gets the heavy treatment (bigger star, number, shake, hit
+ * stop and sound). The starting mop deals 4, so its hits read as the normal,
+ * already-exaggerated hit, and anything harder — the broom handle, fusions,
+ * lightning chains — stands out.
+ */
+export const HEAVY_HIT_DAMAGE = 5;
+
 /** Hangers hurt by touch; this is how close they get before they rear up. */
 export const HANGER_WARN_DISTANCE = 72;
 
@@ -269,4 +277,9 @@ export function playerBodyAction(
     return { sheet: 'swing', column: Math.min(frames.swing - 1, Math.floor(clamp01(input.swing) * frames.swing)) };
   }
   return null;
+}
+
+/** A dashing janitor stretches along the motion and squashes vertically. */
+export function dashPose(player: { readonly dashTicks?: number }): SpritePose {
+  return (player.dashTicks ?? 0) > 0 ? { offsetX: 0, offsetY: -2, scaleX: 1.14, scaleY: 0.9, flash: false } : REST_POSE;
 }

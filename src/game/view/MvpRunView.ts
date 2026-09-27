@@ -30,7 +30,8 @@ import {
   type ActorSnapshot,
   type SpriteSpec,
 } from './ActorSpriteView';
-import { attackFrameFor, combinePoses, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
+import { DASH_TICKS } from '../../sim/combat/dash';
+import { attackFrameFor, combinePoses, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { WeaponView } from './WeaponView';
@@ -88,6 +89,8 @@ export class MvpRunView {
   private deadSince: number | null = null;
   /** Real time the shift ended (won or dead), for the effects clock. */
   private endedAt: number | null = null;
+  /** Dash afterimages: frozen copies of the janitor fading out. */
+  private readonly dashGhosts: Array<{ image: Phaser.GameObjects.Image; born: number }> = [];
   private actorDebug: ActorPresentationDebugSnapshot = this.emptyActorDebug();
 
   public constructor(scene: Phaser.Scene) {
@@ -246,7 +249,8 @@ export class MvpRunView {
       attackTicks: player.attackActiveTicks, damaged: playerHurtCue, phase: 'idle',
       // Isaac-style: the janitor looks where the pointer aims, even while backpedalling.
       faceX: player.facing.x, faceY: player.facing.y,
-    }, state.tick, playerDepth, this.feedback.poseFor('player', fxTick), null, bodyAction);
+    }, state.tick, playerDepth, combinePoses(this.feedback.poseFor('player', fxTick), dashPose(player)), null, bodyAction);
+    this.syncDashTrail(state, fxTick);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.contactShadow('player', player.x, player.y, 1);
     // The janitor carries a little warm light, so the player never loses themself in the dark.
@@ -719,6 +723,37 @@ export class MvpRunView {
   }
 
   /**
+   * Afterimages while the janitor dashes: every other tick a frozen copy of
+   * the current frame, tinted cyan and fading over ten ticks, plus a dust puff
+   * on the first tick of the dash.
+   */
+  private syncDashTrail(state: MvpRunState, fxTick: number): void {
+    const player = state.room.combat.player;
+    const dashTicks = player.dashTicks ?? 0;
+    const sprite = this.actorSprites.get('player');
+    if (dashTicks === DASH_TICKS) {
+      this.feedback.puff(player.x, player.y, fxTick, player.dashX ?? 0, player.dashY ?? 0);
+    }
+    if (dashTicks > 0 && fxTick % 2 === 0 && sprite && !this.dashGhosts.some((ghost) => ghost.born === fxTick)) {
+      const image = sprite.ghost();
+      if (image) {
+        image.setTint(0x40d8ff).setTintMode(Phaser.TintModes.FILL).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.6);
+        this.dashGhosts.push({ image, born: fxTick });
+      }
+    }
+    for (let i = this.dashGhosts.length - 1; i >= 0; i -= 1) {
+      const ghost = this.dashGhosts[i]!;
+      const age = fxTick - ghost.born;
+      if (age > 10 || age < 0) {
+        ghost.image.destroy();
+        this.dashGhosts.splice(i, 1);
+        continue;
+      }
+      ghost.image.setAlpha(0.6 * (1 - age / 10));
+    }
+  }
+
+  /**
    * The clock combat feedback runs on. It is the simulation tick while the
    * shift is live, and keeps counting in real 60 Hz ticks after the shift
    * ends, so the last hit's stars, words and sparks finish and fade instead
@@ -996,7 +1031,13 @@ export class MvpRunView {
     }
   }
 
+  private clearDashGhosts(): void {
+    for (const ghost of this.dashGhosts) ghost.image.destroy();
+    this.dashGhosts.length = 0;
+  }
+
   public destroy(): void {
+    this.clearDashGhosts();
     for (const shadow of this.shadows.values()) shadow.destroy();
     this.shadows.clear();
     for (const sprite of this.tokenSprites.values()) sprite.destroy();
@@ -1025,6 +1066,7 @@ export class MvpRunView {
   public resetForRun(): void {
     this.feedback.resetRoom('');
     this.weapon.reset();
+    this.clearDashGhosts();
     this.mallRoomKey = '';
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
