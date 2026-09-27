@@ -31,7 +31,7 @@ const PREVIEW_PROMPT = 'FUSION PREVIEW OPEN — CONFIRM OR CANCEL';
  * car is doing instead of promising a key that would do nothing.
  */
 function movementControls(state: MvpRunState): string {
-  const parts = ['WASD MOVE', 'POINTER AIM', 'CLICK ATTACK', 'E INTERACT', 'F STEAL'];
+  const parts = ['WASD MOVE', 'POINTER AIM', 'CLICK ATTACK', 'E INTERACT', 'F STEAL', '1-9/Q WEAPON'];
   if (state.carrier !== null) {
     parts.push(state.carrier.mode === 'emitter' ? 'R RECALL' : 'CAR FOLLOWS');
   }

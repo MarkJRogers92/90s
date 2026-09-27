@@ -92,9 +92,23 @@ class MvpRunInputAdapter {
   private pendingInteract = false;
   private pendingSteal = false;
   private pendingRecall = false;
+  private pendingSlot = 0;
+  private pendingCycle = 0;
+  /** Returns a weapon slot when a click lands on the HUD hotbar, else null. */
+  public hudSlotAt: ((x: number, y: number) => number | null) | null = null;
 
-  private readonly handlePointerDown = (): void => {
+  private readonly handlePointerDown = (pointer: Phaser.Input.Pointer): void => {
+    // A click on the hotbar equips that weapon instead of swinging it.
+    const slot = this.hudSlotAt?.(pointer.x, pointer.y) ?? null;
+    if (slot !== null) {
+      this.pendingSlot = slot;
+      return;
+    }
     this.pointerHeld = true;
+  };
+
+  private readonly handleWheel = (_pointer: unknown, _objects: unknown, _dx: number, dy: number): void => {
+    if (dy !== 0) this.pendingCycle = dy > 0 ? 1 : -1;
   };
 
   private readonly handlePointerUp = (): void => {
@@ -111,6 +125,10 @@ class MvpRunInputAdapter {
       this.pendingSteal = true;
     } else if (event.code === 'KeyR') {
       this.pendingRecall = true;
+    } else if (/^Digit[1-9]$/.test(event.code)) {
+      this.pendingSlot = Number(event.code.slice(5));
+    } else if (event.code === 'KeyQ') {
+      this.pendingCycle = event.shiftKey ? -1 : 1;
     } else if (event.code === 'KeyM') {
       this.onToggleMute();
     } else if (event.code === 'Escape') {
@@ -151,6 +169,7 @@ class MvpRunInputAdapter {
     };
 
     scene.input.on('pointerdown', this.handlePointerDown);
+    scene.input.on('wheel', this.handleWheel);
     scene.input.on('pointerup', this.handlePointerUp);
     scene.input.on('pointerupoutside', this.handlePointerUp);
     scene.input.on('gameout', this.handlePointerUp);
@@ -170,7 +189,11 @@ class MvpRunInputAdapter {
       interact: this.keys.interact.isDown || this.pendingInteract,
       steal: this.keys.steal.isDown || this.pendingSteal,
       recall: this.keys.recall.isDown || this.pendingRecall,
+      selectSlot: this.pendingSlot,
+      cycleWeapon: this.pendingCycle,
     };
+    this.pendingSlot = 0;
+    this.pendingCycle = 0;
     this.pendingInteract = false;
     this.pendingSteal = false;
     this.pendingRecall = false;
@@ -189,10 +212,13 @@ class MvpRunInputAdapter {
     this.pendingInteract = false;
     this.pendingSteal = false;
     this.pendingRecall = false;
+    this.pendingSlot = 0;
+    this.pendingCycle = 0;
   }
 
   public destroy(): void {
     this.scene.input.off('pointerdown', this.handlePointerDown);
+    this.scene.input.off('wheel', this.handleWheel);
     this.scene.input.off('pointerup', this.handlePointerUp);
     this.scene.input.off('pointerupoutside', this.handlePointerUp);
     this.scene.input.off('gameout', this.handlePointerUp);
@@ -272,6 +298,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#07050c');
     this.removeBloom = installAdaptiveBloom(this);
     this.gameHud = new GameHud(this);
+    const hud = this.gameHud;
+    this.inputAdapter.hudSlotAt = (x, y) => hud.weaponSlotAt(x, y);
     this.hud = new MvpRunHud(
       () => this.restartRun(),
       () => this.returnToTitle(),

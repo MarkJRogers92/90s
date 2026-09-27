@@ -372,8 +372,7 @@ const HEART_ROWS = [
 ];
 
 /** Isaac-style hearts: each heart is two health, drawn full, half or empty. */
-export function ensureHeartTextures(scene: Phaser.Scene): void {
-  const scale = 2;
+export function ensureHeartTextures(scene: Phaser.Scene, scale = 3): void {
   const size = { w: 7 * scale + 2, h: 7 * scale + 2 };
   const draw = (key: string, fillColumns: number): void => {
     if (scene.textures.exists(key)) return;

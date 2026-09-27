@@ -1328,3 +1328,72 @@ body[data-mode='run'] .marquee {
   background: linear-gradient(90deg, #0b0714, #1a0b2e 50%, #0b0714);
   text-shadow: 0 0 6px rgb(63 240 255 / 60%);
 }
+
+/* UI overhaul: the DOM status bar becomes one readable row, the marquee goes,
+   and the canvas takes the height back. The in-canvas HUD is the main UI; this
+   row keeps the room, objective, nearby prompt and controls in real text. */
+body[data-mode='run'] .marquee {
+  display: none;
+}
+
+.run-shell[data-mode='run'] .mvp-run-hud {
+  top: 0;
+  height: 64px;
+  max-height: 64px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) max-content;
+  grid-template-rows: 1fr 1fr;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 2px 14px;
+  font-size: 0.8rem;
+}
+
+.run-shell[data-mode='run'] #game-host {
+  height: calc(100vh - 66px);
+  margin-top: 66px;
+}
+
+.run-shell[data-mode='run'] .mvp-run-status-bar {
+  grid-row: 1 / 3;
+  padding: 2px 8px;
+  gap: 2px 12px;
+}
+
+.run-shell[data-mode='run'] .mvp-run-identity strong,
+.run-shell[data-mode='run'] .mvp-run-vitals,
+.run-shell[data-mode='run'] .mvp-run-objective,
+.run-shell[data-mode='run'] .mvp-run-nearby,
+.run-shell[data-mode='run'] .mvp-run-controls {
+  font-size: 0.78rem;
+}
+
+.run-shell[data-mode='run'] .mvp-run-controls {
+  grid-row: 1;
+  color: #ffd84a;
+}
+
+.run-shell[data-mode='run'] .mvp-run-inspection {
+  grid-row: 2;
+  align-self: center;
+}
+
+.run-shell[data-mode='run'] .mvp-run-actions {
+  grid-row: 1 / 3;
+  gap: 4px;
+}
+
+.run-shell[data-mode='run'] .mvp-run-actions button {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.7rem;
+}
+
+.run-shell[data-mode='run'] .mvp-run-boss,
+.run-shell[data-mode='run'] .mvp-run-offers-wrap {
+  top: 66px;
+}
+
+/* With the marquee hidden, #game-host is the shell's first in-flow child and
+   its top margin would collapse through the shell, pushing the bar down. */
+.run-shell[data-mode='run'] {
+  display: flow-root;
+}

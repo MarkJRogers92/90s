@@ -20,6 +20,7 @@
  * from the seed whenever the room changes and never carry across a doorway.
  */
 import { circleIntersectsRect } from '../core/geometry';
+import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
 import { freezeDeep } from '../items/types';
 import type { Rect, Vec2 } from '../model';
@@ -490,6 +491,13 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     }
   } else if (recallPressed) {
     recallRunCarrier(state);
+  }
+  // Weapon switching is a discrete event from the adapter (a number key, Q or
+  // the wheel), so it needs no held-state edge detection.
+  if (input.selectSlot !== undefined && input.selectSlot > 0) {
+    selectRunWeaponSlot(state, input.selectSlot);
+  } else if (input.cycleWeapon !== undefined && input.cycleWeapon !== 0) {
+    cycleRunWeapon(state, input.cycleWeapon);
   }
 
   // 3. Carrier presence follows the inventory, so a purchase in stage 2 brings

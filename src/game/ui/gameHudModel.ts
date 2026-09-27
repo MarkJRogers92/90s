@@ -9,6 +9,10 @@ import { BOSS_MAX_HEALTH, bossPhaseForHealth } from '../../sim/combat/boss';
 import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import type { MvpRunState } from '../../sim/run/types';
 import type { WingRoomId } from '../../sim/wing/types';
+import { itemDefinitionName } from '../../sim/run/economy';
+import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
+import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
+import { itemBlurb } from './itemBlurbs';
 
 export type HeartState = 'full' | 'half' | 'empty';
 
@@ -30,6 +34,20 @@ export type HudSlot = {
   readonly stolen: boolean;
 };
 
+export type HudWeapon = {
+  readonly slot: number;
+  readonly instanceId: string;
+  readonly itemDefinitionId: string;
+  readonly name: string;
+  readonly selected: boolean;
+  readonly fused: boolean;
+};
+
+export type HudPassive = { readonly instanceId: string; readonly itemDefinitionId: string; readonly name: string };
+
+/** What pressing a key would do right now, spelled out with the key. */
+export type HudPrompt = { readonly keys: ReadonlyArray<{ key: string; action: string }>; readonly subject: string } | null;
+
 export type GameHudModel = {
   readonly hearts: readonly HeartState[];
   readonly cash: number;
@@ -40,6 +58,10 @@ export type GameHudModel = {
   readonly carriedCount: number;
   readonly boss: { readonly health: number; readonly max: number; readonly phase: number } | null;
   readonly enemiesLeft: number;
+  readonly weapons: readonly HudWeapon[];
+  readonly passives: readonly HudPassive[];
+  readonly equipped: { readonly name: string; readonly blurb: string } | null;
+  readonly prompt: HudPrompt;
 };
 
 const SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
@@ -111,7 +133,18 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     };
   });
 
+  const weapons = runWeaponSlots(state).map((weapon): HudWeapon => ({
+    ...weapon,
+    name: itemDefinitionName(weapon.itemDefinitionId).toUpperCase(),
+    selected: weapon.instanceId === state.inventory.selectedPrimaryInstanceId,
+  }));
+  const equippedWeapon = weapons.find((weapon) => weapon.selected);
+
   return {
+    weapons,
+    passives: runPassiveItems(state).map((item) => ({ ...item, name: itemDefinitionName(item.itemDefinitionId).toUpperCase() })),
+    equipped: equippedWeapon ? { name: equippedWeapon.name, blurb: itemBlurb(equippedWeapon.itemDefinitionId) } : null,
+    prompt: promptFor(state),
     hearts: heartsFor(state.room.combat.player.health),
     cash: state.cash,
     heat: state.heat,
@@ -122,4 +155,19 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     boss: boss ? { health: boss.health, max: BOSS_MAX_HEALTH, phase: boss.bossPhase ?? bossPhaseForHealth(boss.health) } : null,
     enemiesLeft: living.length,
   };
+}
+
+function promptFor(state: MvpRunState): HudPrompt {
+  if (state.status !== 'playing' || state.paused || state.preview !== null) return null;
+  const interaction = nearestMvpInteraction(state);
+  switch (interaction.kind) {
+    case 'offer':
+      return { subject: interaction.label.toUpperCase().replace(' — ', '  '), keys: [{ key: 'E', action: 'BUY' }, { key: 'F', action: 'STEAL' }] };
+    case 'bench':
+      return { subject: 'BENCH WARRANT KIOSK', keys: [{ key: 'E', action: 'FUSE' }] };
+    case 'door':
+      return interaction.locked ? { subject: 'DOOR LOCKED - CLEAR THE ROOM', keys: [] } : null;
+    default:
+      return null;
+  }
 }

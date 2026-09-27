@@ -1,10 +1,16 @@
 /**
- * The in-canvas game HUD: portrait and hearts, hotbar, minimap, objectives,
- * pickup log, boss bar and the area title card.
+ * The in-canvas game HUD.
  *
- * It is screen-fixed (scroll factor 0) above every world layer, draws only the
- * `GameHudModel` derived from authoritative state, and remembers nothing but
- * presentation: which messages have been shown and when a title card started.
+ * Layout on the 960x600 stage, all key text in the shared pixel font at x2:
+ *
+ *   [objectives]                                   [wing map + area]
+ *                  (boss bar / area title / new-item toast)
+ *                     [E] BUY  [F] STEAL   (context prompt)
+ *   [portrait][hearts $ heat]  [EQUIPPED + blurb | 1 2 3 | ALWAYS ON]  [log]
+ *
+ * Screen-fixed (scroll factor 0) above every world layer. It draws only the
+ * `GameHudModel` derived from authoritative state and remembers nothing but
+ * presentation: shown messages, toast timers, and the hotbar's hit boxes.
  */
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
@@ -12,72 +18,99 @@ import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildGameHudModel, type GameHudModel } from './gameHudModel';
+import { itemBlurb } from './itemBlurbs';
 
 const HUD_DEPTH = 20_000;
 const SCREEN_W = 960;
 const SCREEN_H = 600;
 const PANEL = 0x0b0714;
-const EDGE = 0xff3fc8;
+const MAGENTA = 0xff3fc8;
 const CYAN = 0x3ff0ff;
+const YELLOW = 0xffd84a;
+const SLOT = 46;
+const SLOT_GAP = 6;
+const TEXT = '#f4ecff';
+const MUTED = '#9a8fb4';
 
 type Label = Phaser.GameObjects.Image;
+type Rect = { x: number; y: number; w: number; h: number };
+type Toast = { title: string; titleColor: string; body: string; hint: string; startedTick: number };
 
 export class GameHud {
   private readonly scene: Phaser.Scene;
   private readonly root: Phaser.GameObjects.Container;
   private readonly frame: Phaser.GameObjects.Graphics;
-  private readonly dynamic: Phaser.GameObjects.Graphics;
-  private readonly bottomGroup: Phaser.GameObjects.Container;
+  private readonly bottom: Phaser.GameObjects.Container;
+  private readonly bottomFrame: Phaser.GameObjects.Graphics;
   private readonly labels = new Map<string, Label>();
   private readonly usedLabels = new Set<string>();
   private readonly hearts: Phaser.GameObjects.Image[] = [];
-  private readonly slotIcons: Phaser.GameObjects.Image[] = [];
+  private readonly weaponIcons: Phaser.GameObjects.Image[] = [];
+  private readonly passiveIcons: Phaser.GameObjects.Image[] = [];
   private readonly portrait: Phaser.GameObjects.Image | null;
   private readonly log: Array<{ text: string; tick: number }> = [];
+  private slotRects: Array<Rect & { slot: number }> = [];
   private lastRecent = '';
+  private knownItems: Set<string> | null = null;
+  private toast: Toast | null = null;
   private titleCard: { images: Phaser.GameObjects.Image[]; startedTick: number } | null = null;
   private titleRoomKey = '';
+  private shiftStartTick: number | null = null;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
     ensureHeartTextures(scene);
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(HUD_DEPTH);
-    this.bottomGroup = scene.add.container(0, 0);
     this.frame = scene.add.graphics();
-    this.dynamic = scene.add.graphics();
-    this.root.add([this.frame, this.bottomGroup, this.dynamic]);
+    this.bottom = scene.add.container(0, 0);
+    this.bottomFrame = scene.add.graphics();
+    this.bottom.add(this.bottomFrame);
+    this.root.add([this.frame, this.bottom]);
     const portraitKey = usableTextureKey(scene.textures, PORTRAIT_TEXTURE_KEYS.alex);
-    this.portrait = portraitKey
-      ? scene.add.image(18 + 34, SCREEN_H - 14 - 34, portraitKey).setDisplaySize(64, 64)
-      : null;
-    if (this.portrait) this.bottomGroup.add(this.portrait);
+    this.portrait = portraitKey ? scene.add.image(12 + 40, SCREEN_H - 12 - 40, portraitKey).setDisplaySize(76, 76) : null;
+    if (this.portrait) this.bottom.add(this.portrait);
     for (let i = 0; i < 3; i += 1) {
       const heart = scene.add.image(0, 0, HEART_TEXTURES.full).setOrigin(0, 0);
       this.hearts.push(heart);
-      this.bottomGroup.add(heart);
+      this.bottom.add(heart);
     }
-    for (let i = 0; i < 8; i += 1) {
+    for (let i = 0; i < 9; i += 1) {
       const icon = scene.add.image(0, 0, '__DEFAULT').setVisible(false);
-      this.slotIcons.push(icon);
-      this.bottomGroup.add(icon);
+      this.weaponIcons.push(icon);
+      this.bottom.add(icon);
     }
+    for (let i = 0; i < 12; i += 1) {
+      const icon = scene.add.image(0, 0, '__DEFAULT').setVisible(false);
+      this.passiveIcons.push(icon);
+      this.bottom.add(icon);
+    }
+  }
+
+  /** Hotbar hit test in game coordinates: which weapon slot is under a click. */
+  public weaponSlotAt(x: number, y: number): number | null {
+    const hit = this.slotRects.find((rect) => x >= rect.x && x <= rect.x + rect.w && y >= rect.y && y <= rect.y + rect.h);
+    return hit ? hit.slot : null;
   }
 
   public sync(state: MvpRunState): void {
     const model = buildGameHudModel(state);
+    if (this.shiftStartTick === null || state.tick < this.shiftStartTick) this.shiftStartTick = state.tick;
     this.usedLabels.clear();
     this.frame.clear();
-    this.dynamic.clear();
+    this.bottomFrame.clear();
+    this.trackNewItems(state, model);
     this.drawObjectives(model);
     this.drawMinimap(model, state);
+    this.drawBoss(model);
     this.drawVitals(model, state);
     this.drawHotbar(model);
     this.drawLog(state);
-    this.drawBoss(model);
+    this.drawPrompt(model);
+    this.drawToast(state);
+    this.drawControlsCard(state);
     this.drawTitleCard(state);
     // Fade the bottom row when the janitor walks underneath it.
-    const player = state.room.combat.player;
-    this.bottomGroup.setAlpha(player.y > 410 ? 0.35 : 1);
+    this.bottom.setAlpha(state.room.combat.player.y > 380 ? 0.4 : 1);
     for (const [key, label] of this.labels) {
       if (!this.usedLabels.has(key)) label.setVisible(false);
     }
@@ -85,148 +118,278 @@ export class GameHud {
 
   /* ---------------------------------------------------------------------- */
 
-  private text(id: string, text: string, x: number, y: number, color = '#f4ecff', scale = 1, bottom = false, alpha = 1): Label {
+  private text(id: string, text: string, x: number, y: number, color = TEXT, scale = 2, inBottom = false, alpha = 1, anchor: 'left' | 'center' | 'right' = 'left'): Label {
     const spec = ensurePixelLabel(this.scene, text, color, scale);
     let label = this.labels.get(id);
     if (!label) {
-      label = this.scene.add.image(x, y, spec.key).setOrigin(0, 0);
+      label = this.scene.add.image(x, y, spec.key);
       this.labels.set(id, label);
-      (bottom ? this.bottomGroup : this.root).add(label);
+      (inBottom ? this.bottom : this.root).add(label);
     }
     if (label.texture.key !== spec.key) label.setTexture(spec.key);
+    label.setOrigin(anchor === 'left' ? 0 : anchor === 'center' ? 0.5 : 1, 0);
     label.setPosition(Math.round(x), Math.round(y)).setVisible(true).setAlpha(alpha);
     this.usedLabels.add(id);
     return label;
   }
 
-  private panel(x: number, y: number, w: number, h: number, edge = EDGE): void {
-    this.frame.fillStyle(PANEL, 0.78).fillRect(x, y, w, h);
-    this.frame.lineStyle(1, edge, 0.9).strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
-    this.frame.fillStyle(edge, 1).fillRect(x, y, 6, 1).fillRect(x, y, 1, 6);
-    this.frame.fillRect(x + w - 6, y + h - 1, 6, 1).fillRect(x + w - 1, y + h - 6, 1, 6);
+  private panel(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number, edge = MAGENTA, alpha = 0.84): void {
+    g.fillStyle(PANEL, alpha).fillRect(x, y, w, h);
+    g.lineStyle(2, edge, 0.95).strokeRect(x + 1, y + 1, w - 2, h - 2);
+    g.fillStyle(edge, 1).fillRect(x, y, 10, 2).fillRect(x, y, 2, 10);
+    g.fillRect(x + w - 10, y + h - 2, 10, 2).fillRect(x + w - 2, y + h - 10, 2, 10);
   }
+
+  private keycap(g: Phaser.GameObjects.Graphics, id: string, key: string, x: number, y: number): number {
+    const width = key.length * 12 + 10;
+    g.fillStyle(0xf4ecff, 1).fillRect(x, y, width, 22);
+    g.fillStyle(0x8a7fa8, 1).fillRect(x, y + 20, width, 2);
+    this.text(id, key, x + 5, y + 4, '#0b0714', 2);
+    return width;
+  }
+
+  /* ---------------------------------------------------------------------- */
 
   private drawObjectives(model: GameHudModel): void {
     const x = 10;
-    const y = 64;
-    const width = 196;
-    this.panel(x, y, width, 16 + model.objectives.length * 13);
-    this.text('obj-title', 'NIGHT SHIFT', x + 7, y + 5, '#3ff0ff');
+    const y = 58;
+    const lineH = 20;
+    const width = 300;
+    this.panel(this.frame, x, y, width, 26 + model.objectives.length * lineH);
+    this.text('obj-title', 'TONIGHT', x + 10, y + 8, '#3ff0ff', 1);
     model.objectives.forEach((objective, index) => {
-      const oy = y + 18 + index * 13;
-      this.frame.lineStyle(1, objective.done ? 0x6aff8a : 0xc8b8e0, 1).strokeRect(x + 7.5, oy + 0.5, 8, 8);
+      const oy = y + 22 + index * lineH;
+      this.frame.lineStyle(2, objective.done ? 0x6aff8a : 0xc8b8e0, 1).strokeRect(x + 10, oy + 1, 12, 12);
       if (objective.done) {
-        this.frame.fillStyle(0x6aff8a, 1).fillRect(x + 9, oy + 4, 2, 2).fillRect(x + 11, oy + 5, 2, 2).fillRect(x + 13, oy + 2, 2, 3);
+        this.frame.fillStyle(0x6aff8a, 1).fillRect(x + 13, oy + 7, 2, 2).fillRect(x + 15, oy + 9, 2, 2).fillRect(x + 17, oy + 4, 2, 5);
       }
-      this.text(`obj-${index}`, objective.text, x + 21, oy + 1, objective.done ? '#8a7f9c' : '#f4ecff');
+      this.text(`obj-${index}`, objective.text, x + 30, oy, objective.done ? MUTED : TEXT);
     });
   }
 
   private drawMinimap(model: GameHudModel, state: MvpRunState): void {
-    const cellW = 24;
-    const cellH = 16;
-    const gap = 6;
-    const width = model.rooms.length * (cellW + gap) - gap + 16;
+    const cellW = 32;
+    const cellH = 20;
+    const gap = 8;
+    const width = model.rooms.length * (cellW + gap) - gap + 20;
     const x = SCREEN_W - width - 10;
-    const y = 64;
-    this.panel(x, y, width, 48, CYAN);
+    const y = 58;
+    this.panel(this.frame, x, y, width, 60, CYAN);
     model.rooms.forEach((room, index) => {
-      const cx = x + 8 + index * (cellW + gap);
-      const cy = y + 8;
-      if (index > 0) this.frame.fillStyle(0x4a3d62, 1).fillRect(cx - gap, cy + cellH / 2 - 1, gap, 2);
+      const cx = x + 10 + index * (cellW + gap);
+      const cy = y + 10;
+      if (index > 0) this.frame.fillStyle(0x4a3d62, 1).fillRect(cx - gap, cy + cellH / 2 - 1, gap, 3);
       const pulse = 0.65 + 0.35 * Math.sin(state.tick / 9);
       const fill = room.state === 'current' ? CYAN : room.state === 'cleared' ? 0x3a3052 : 0x1c1628;
       this.frame.fillStyle(fill, room.state === 'current' ? pulse : 1).fillRect(cx, cy, cellW, cellH);
-      this.frame.lineStyle(1, room.boss ? 0xff3a4a : 0x8a7fa8, 1).strokeRect(cx + 0.5, cy + 0.5, cellW - 1, cellH - 1);
-      if (room.boss) this.text(`map-boss-${index}`, '!', cx + cellW / 2 - 3, cy + 4, '#ff3a4a');
-      else if (room.store) this.text(`map-store-${index}`, '$', cx + cellW / 2 - 3, cy + 4, room.state === 'current' ? '#0b0714' : '#ffd84a');
+      this.frame.lineStyle(2, room.boss ? 0xff3a4a : 0x8a7fa8, 1).strokeRect(cx + 1, cy + 1, cellW - 2, cellH - 2);
+      if (room.boss) this.text(`map-boss-${index}`, '!', cx + cellW / 2, cy + 3, '#ff3a4a', 2, false, 1, 'center');
+      else if (room.store) this.text(`map-store-${index}`, '$', cx + cellW / 2, cy + 3, room.state === 'current' ? '#0b0714' : '#ffd84a', 2, false, 1, 'center');
     });
-    const current = model.rooms.find((room) => room.state === 'current');
-    this.text('map-name', current?.short ?? '', x + 8, y + 31, '#ff6fc8');
-    this.text('map-count', `${model.rooms.findIndex((room) => room.state === 'current') + 1}/${model.rooms.length}`, x + width - 32, y + 31, '#8a7fa8');
+    const currentIndex = model.rooms.findIndex((room) => room.state === 'current');
+    this.text('map-name', model.rooms[currentIndex]?.short ?? '', x + 10, y + 38, '#ff6fc8');
+    this.text('map-count', `${currentIndex + 1}/${model.rooms.length}`, x + width - 10, y + 38, MUTED, 2, false, 1, 'right');
+  }
+
+  private drawBoss(model: GameHudModel): void {
+    if (!model.boss) return;
+    const width = 340;
+    const x = (SCREEN_W - width) / 2;
+    const y = 60;
+    this.panel(this.frame, x - 10, y - 6, width + 20, 44, 0xff3a4a);
+    this.text('boss-name', `LOSS PREVENTION  PHASE ${model.boss.phase}`, SCREEN_W / 2, y, '#ff6f7a', 2, false, 1, 'center');
+    const fill = Math.round(width * Math.max(0, model.boss.health / model.boss.max));
+    this.frame.fillStyle(0x2a0a12, 1).fillRect(x, y + 20, width, 10);
+    this.frame.fillStyle(0xff3a4a, 1).fillRect(x, y + 20, fill, 10);
+    this.frame.fillStyle(0xffffff, 0.35).fillRect(x, y + 20, fill, 3);
   }
 
   private drawVitals(model: GameHudModel, state: MvpRunState): void {
-    const px = 14;
-    const py = SCREEN_H - 14 - 68;
-    this.frame.fillStyle(PANEL, 0.85).fillRect(px, py, 68, 68);
-    this.frame.lineStyle(2, EDGE, 1).strokeRect(px, py, 68, 68);
-    if (!this.portrait) this.frame.fillStyle(0x3a2a50, 1).fillRect(px + 2, py + 2, 64, 64);
-    const damaged = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
-    this.portrait?.setTint(damaged ? 0xff6070 : 0xffffff);
-    this.panel(px + 72, py + 20, 120, 48);
-    this.text('name', 'ALEX  JANITOR', px + 80, py + 24, '#ffd84a', 1, true);
-    model.hearts.forEach((state, index) => {
-      const heart = this.hearts[index];
-      if (!heart) return;
-      heart.setTexture(HEART_TEXTURES[state]).setPosition(px + 80 + index * 19, py + 34);
+    const g = this.bottomFrame;
+    const px = 12;
+    const py = SCREEN_H - 12 - 80;
+    g.fillStyle(PANEL, 0.9).fillRect(px, py, 80, 80);
+    g.lineStyle(3, MAGENTA, 1).strokeRect(px + 1, py + 1, 78, 78);
+    if (!this.portrait) g.fillStyle(0x3a2a50, 1).fillRect(px + 4, py + 4, 72, 72);
+    const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
+    this.portrait?.setTint(hurt ? 0xff6070 : 0xffffff);
+    this.panel(g, px + 86, py + 6, 132, 74);
+    this.text('name', 'ALEX', px + 96, py + 12, '#ffd84a', 1, true);
+    model.hearts.forEach((heart, index) => {
+      this.hearts[index]?.setTexture(HEART_TEXTURES[heart]).setPosition(px + 96 + index * 26, py + 24);
     });
-    this.text('cash', `$${model.cash}`, px + 146, py + 36, '#6aff8a', 1, true);
-    const heatColor = model.heat > 0 ? '#ff3a4a' : '#8a7fa8';
-    this.text('heat', `HEAT ${model.heat}`, px + 80, py + 56, heatColor, 1, true);
-    if (model.carriedCount > 0) this.text('carried', `BAG ${model.carriedCount}`, px + 146, py + 56, '#ffd84a', 1, true);
+    this.text('cash', `$${model.cash}`, px + 96, py + 54, '#6aff8a', 2, true);
+    this.text('heat', `HEAT ${model.heat}`, px + 210, py + 54, model.heat > 0 ? '#ff3a4a' : MUTED, 2, true, 1, 'right');
   }
 
   private drawHotbar(model: GameHudModel): void {
-    const slot = 30;
-    const gap = 4;
-    const count = 8;
-    const width = count * (slot + gap) - gap;
-    const x = Math.round((SCREEN_W - width) / 2);
-    const y = SCREEN_H - slot - 12;
-    this.frame.fillStyle(PANEL, 0.8).fillRect(x - 6, y - 6, width + 12, slot + 12);
-    this.frame.lineStyle(1, 0x4a3d62, 1).strokeRect(x - 5.5, y - 5.5, width + 11, slot + 11);
-    for (let i = 0; i < count; i += 1) {
-      const sx = x + i * (slot + gap);
-      const entry = model.hotbar[i];
-      const selected = entry?.selected ?? false;
-      this.frame.fillStyle(selected ? 0x2a1840 : 0x140e20, 1).fillRect(sx, y, slot, slot);
-      this.frame.lineStyle(selected ? 2 : 1, selected ? CYAN : 0x3a3052, 1).strokeRect(sx + 0.5, y + 0.5, slot - 1, slot - 1);
-      const icon = this.slotIcons[i]!;
-      const key = entry ? itemIconKey(entry.itemDefinitionId) : null;
+    const g = this.bottomFrame;
+    const weaponCount = Math.max(3, model.weapons.length);
+    const passiveW = model.passives.length > 0 ? 18 + model.passives.length * 32 : 0;
+    const weaponsW = weaponCount * (SLOT + SLOT_GAP) - SLOT_GAP;
+    const nameW = (model.equipped?.name.length ?? 9) * 12;
+    const totalW = Math.max(weaponsW + (passiveW > 0 ? passiveW + 12 : 0), nameW, 300);
+    const x = Math.round((SCREEN_W - totalW) / 2) + 16;
+    const y = SCREEN_H - SLOT - 14;
+
+    // Equipped weapon name and what it does, directly above the bar.
+    const nameY = y - 38;
+    this.panel(g, x - 10, nameY - 6, totalW + 20, SLOT + 54, CYAN, 0.86);
+    this.text('equipped', model.equipped?.name ?? 'NO WEAPON', x, nameY, '#3ff0ff', 2, true);
+    this.text('equipped-blurb', model.equipped?.blurb ?? '', x, nameY + 18, MUTED, 1, true);
+    this.text('switch-hint', model.weapons.length > 1 ? '1-9 / Q / WHEEL: SWITCH' : 'BUY A WEAPON TO SWITCH', x + totalW, nameY + 19, '#ffd84a', 1, true, 1, 'right');
+
+    this.slotRects = [];
+    for (let i = 0; i < 9; i += 1) {
+      const icon = this.weaponIcons[i]!;
+      if (i >= weaponCount) {
+        icon.setVisible(false);
+        continue;
+      }
+      const sx = x + i * (SLOT + SLOT_GAP);
+      const weapon = model.weapons[i];
+      const selected = weapon?.selected ?? false;
+      g.fillStyle(selected ? 0x2a1840 : 0x140e20, 1).fillRect(sx, y, SLOT, SLOT);
+      g.lineStyle(selected ? 3 : 1, selected ? CYAN : 0x3a3052, 1).strokeRect(sx + 1, y + 1, SLOT - 2, SLOT - 2);
+      if (selected) g.fillStyle(CYAN, 0.18).fillRect(sx + 3, y + 3, SLOT - 6, SLOT - 6);
+      const key = weapon ? itemIconKey(weapon.itemDefinitionId) : null;
       const usable = key ? usableTextureKey(this.scene.textures, key) : null;
       if (usable) {
         if (icon.texture.key !== usable) icon.setTexture(usable);
-        const scale = Math.min((slot - 6) / icon.width, (slot - 6) / icon.height);
-        icon.setVisible(true).setPosition(sx + slot / 2, y + slot / 2).setScale(scale);
+        icon.setScale(Math.min((SLOT - 10) / icon.width, (SLOT - 10) / icon.height)).setVisible(true).setPosition(sx + SLOT / 2, y + SLOT / 2);
       } else {
         icon.setVisible(false);
       }
-      if (entry?.fused) this.frame.fillStyle(0x6aff8a, 1).fillRect(sx + slot - 7, y + 2, 5, 5);
-      if (entry?.stolen) this.frame.fillStyle(0xff3a4a, 1).fillRect(sx + 2, y + 2, 4, 4);
-      this.text(`slot-key-${i}`, `${i + 1}`, sx + 2, y + slot - 9, selected ? '#3ff0ff' : '#5a4f70', 1, true);
+      if (weapon?.fused) g.fillStyle(0x6aff8a, 1).fillRect(sx + SLOT - 9, y + 3, 6, 6);
+      // Number badge in the corner: the key that equips this slot.
+      g.fillStyle(selected ? CYAN : 0x3a3052, 1).fillRect(sx, y, 14, 14);
+      this.text(`slot-key-${i}`, `${i + 1}`, sx + 3, y + 3, selected ? '#0b0714' : TEXT, 1, true);
+      if (weapon) this.slotRects.push({ slot: weapon.slot, x: sx, y, w: SLOT, h: SLOT });
+    }
+
+    // Passives are never numbered, because they are never "equipped": always on.
+    for (let i = 0; i < this.passiveIcons.length; i += 1) {
+      const icon = this.passiveIcons[i]!;
+      const passive = model.passives[i];
+      if (!passive) {
+        icon.setVisible(false);
+        continue;
+      }
+      const px = x + weaponsW + 22 + i * 32;
+      g.fillStyle(0x14201a, 1).fillRect(px, y + 16, 28, 28);
+      g.lineStyle(1, 0x6aff8a, 0.8).strokeRect(px + 0.5, y + 16.5, 27, 27);
+      const key = itemIconKey(passive.itemDefinitionId);
+      const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+      if (usable) {
+        if (icon.texture.key !== usable) icon.setTexture(usable);
+        icon.setScale(Math.min(22 / icon.width, 22 / icon.height)).setVisible(true).setPosition(px + 14, y + 30);
+      } else icon.setVisible(false);
+    }
+    if (model.passives.length > 0) {
+      g.fillStyle(0x6aff8a, 0.5).fillRect(x + weaponsW + 10, y + 4, 2, SLOT - 8);
+      this.text('passive-label', 'ALWAYS ON', x + weaponsW + 22, y + 4, '#6aff8a', 1, true);
     }
   }
 
   private drawLog(state: MvpRunState): void {
     if (state.recentChange && state.recentChange !== this.lastRecent) {
       this.lastRecent = state.recentChange;
-      const text = state.recentChange.toUpperCase();
-      this.log.unshift({ text: text.length > 40 ? `${text.slice(0, 39)}.` : text, tick: state.tick });
+      const text = state.recentChange.toUpperCase().replace(/—/g, '-');
+      this.log.unshift({ text: text.length > 34 ? `${text.slice(0, 33)}.` : text, tick: state.tick });
       this.log.length = Math.min(this.log.length, 4);
     }
-    const x = SCREEN_W - 272;
-    const y = SCREEN_H - 14 - 58;
     const visible = this.log.filter((entry) => state.tick - entry.tick < 60 * 8);
     if (visible.length === 0) return;
-    this.panel(x, y, 262, 58, 0x4a3d62);
+    const width = 220;
+    const x = SCREEN_W - width - 12;
+    const y = SCREEN_H - 12 - 80;
+    this.panel(this.bottomFrame, x, y, width, 80, 0x4a3d62);
     visible.forEach((entry, index) => {
       const age = state.tick - entry.tick;
       const alpha = index === 0 ? 1 : Math.max(0.35, 1 - age / 480);
-      this.text(`log-${index}`, `${index === 0 ? '>' : ' '} ${entry.text}`, x + 6, y + 6 + index * 12, index === 0 ? '#ffd84a' : '#c8b8e0', 1, true, alpha);
+      this.text(`log-${index}`, entry.text, x + 10, y + 10 + index * 16, index === 0 ? '#ffd84a' : '#c8b8e0', 1, true, alpha);
     });
   }
 
-  private drawBoss(model: GameHudModel): void {
-    if (!model.boss) return;
-    const width = 300;
-    const x = (SCREEN_W - width) / 2;
-    const y = 14;
-    this.panel(x - 8, y - 6, width + 16, 30, 0xff3a4a);
-    this.text('boss-name', `LOSS PREVENTION MGR  PHASE ${model.boss.phase}`, x, y - 1, '#ff6f7a');
-    this.dynamic.fillStyle(0x2a0a12, 1).fillRect(x, y + 10, width, 8);
-    this.dynamic.fillStyle(0xff3a4a, 1).fillRect(x, y + 10, Math.round(width * Math.max(0, model.boss.health / model.boss.max)), 8);
-    this.dynamic.fillStyle(0xffffff, 0.35).fillRect(x, y + 10, Math.round(width * Math.max(0, model.boss.health / model.boss.max)), 2);
+  private drawPrompt(model: GameHudModel): void {
+    const prompt = model.prompt;
+    if (!prompt) return;
+    const keysW = prompt.keys.reduce((sum, key) => sum + key.key.length * 12 + 10 + 8 + key.action.length * 12 + 16, 0);
+    const subjectW = prompt.subject.length * 12;
+    const width = Math.max(keysW, subjectW) + 28;
+    const x = Math.round((SCREEN_W - width) / 2);
+    const y = 404;
+    this.panel(this.frame, x, y, width, prompt.keys.length > 0 ? 62 : 36, YELLOW);
+    this.text('prompt-subject', prompt.subject, SCREEN_W / 2, y + 10, '#ffd84a', 2, false, 1, 'center');
+    let cx = Math.round((SCREEN_W - keysW) / 2);
+    prompt.keys.forEach((entry, index) => {
+      cx += this.keycap(this.frame, `prompt-key-${index}`, entry.key, cx, y + 32) + 8;
+      this.text(`prompt-action-${index}`, entry.action, cx, y + 36, TEXT);
+      cx += entry.action.length * 12 + 16;
+    });
+  }
+
+  /** Announces every newly owned item: weapons with their key, passives as always on. */
+  private trackNewItems(state: MvpRunState, model: GameHudModel): void {
+    const ids = new Set(state.inventory.inventory.map((node) => node.instanceId));
+    if (this.knownItems === null || ids.size < this.knownItems.size) {
+      this.knownItems = ids;
+      return;
+    }
+    for (const weapon of model.weapons) {
+      if (!this.knownItems.has(weapon.instanceId)) {
+        this.toast = { title: `NEW WEAPON: ${weapon.name}`, titleColor: '#3ff0ff', body: itemBlurb(weapon.itemDefinitionId), hint: `PRESS ${weapon.slot} TO EQUIP`, startedTick: state.tick };
+      }
+    }
+    for (const passive of model.passives) {
+      if (!this.knownItems.has(passive.instanceId)) {
+        this.toast = { title: `PASSIVE: ${passive.name}`, titleColor: '#6aff8a', body: itemBlurb(passive.itemDefinitionId), hint: 'ALWAYS ON - NOTHING TO EQUIP', startedTick: state.tick };
+      }
+    }
+    this.knownItems = ids;
+  }
+
+  private drawToast(state: MvpRunState): void {
+    if (!this.toast) return;
+    const age = state.tick - this.toast.startedTick;
+    if (age > 60 * 4.5 || age < 0) {
+      this.toast = null;
+      return;
+    }
+    const alpha = age < 10 ? age / 10 : age > 240 ? Math.max(0, 1 - (age - 240) / 30) : 1;
+    const width = Math.max(this.toast.title.length, this.toast.body.length, this.toast.hint.length) * 12 + 40;
+    const x = Math.round((SCREEN_W - width) / 2);
+    const y = 150;
+    this.frame.fillStyle(PANEL, 0.92 * alpha).fillRect(x, y, width, 74);
+    this.frame.lineStyle(2, parseInt(this.toast.titleColor.slice(1), 16), alpha).strokeRect(x + 1, y + 1, width - 2, 72);
+    this.text('toast-title', this.toast.title, SCREEN_W / 2, y + 10, this.toast.titleColor, 2, false, alpha, 'center');
+    this.text('toast-body', this.toast.body, SCREEN_W / 2, y + 32, TEXT, 2, false, alpha, 'center');
+    this.text('toast-hint', this.toast.hint, SCREEN_W / 2, y + 56, '#ffd84a', 1, false, alpha, 'center');
+  }
+
+  /** A short controls card for the first seconds of a shift. */
+  private drawControlsCard(state: MvpRunState): void {
+    const age = state.tick - (this.shiftStartTick ?? state.tick);
+    if (state.roomIndex !== 0 || age > 60 * 9) return;
+    const alpha = age > 60 * 8 ? Math.max(0, 1 - (age - 480) / 60) : 1;
+    const rows: Array<[string, string]> = [
+      ['WASD', 'MOVE'],
+      ['MOUSE', 'AIM'],
+      ['CLICK', 'ATTACK'],
+      ['E', 'BUY / USE'],
+      ['F', 'STEAL'],
+      ['1-9 Q', 'SWITCH WEAPON'],
+    ];
+    // Right side: the janitor spawns on the west, so the card never covers them.
+    const x = SCREEN_W - 320;
+    const y = 190;
+    this.frame.fillStyle(PANEL, 0.85 * alpha).fillRect(x, y, 300, 30 + rows.length * 22);
+    this.frame.lineStyle(2, CYAN, alpha).strokeRect(x + 1, y + 1, 298, 28 + rows.length * 22);
+    this.text('controls-title', 'CONTROLS', x + 150, y + 8, '#3ff0ff', 1, false, alpha, 'center');
+    rows.forEach(([key, action], index) => {
+      this.text(`controls-key-${index}`, key, x + 110, y + 24 + index * 22, '#ffd84a', 2, false, alpha, 'right');
+      this.text(`controls-act-${index}`, action, x + 128, y + 24 + index * 22, TEXT, 2, false, alpha);
+    });
   }
 
   /** A neon area name that fades up on arrival, like the reference title plates. */
@@ -237,9 +400,9 @@ export class GameHud {
       this.titleCard?.images.forEach((image) => image.destroy());
       const room = state.wing.rooms[state.roomIndex];
       const name = (room?.store?.name ?? room?.name ?? '').toUpperCase();
-      const sign = ensureNeonSign(this.scene, { text: name, color: '#ff3fc8', scale: 3, subtitle: `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`, subtitleColor: '#3ff0ff' });
-      const halo = this.scene.add.image(SCREEN_W / 2, 250, sign.halo).setBlendMode(Phaser.BlendModes.ADD);
-      const core = this.scene.add.image(SCREEN_W / 2, 250, sign.core);
+      const sign = ensureNeonSign(this.scene, { text: name, color: '#ff3fc8', scale: 4, subtitle: `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`, subtitleColor: '#3ff0ff' });
+      const halo = this.scene.add.image(SCREEN_W / 2, 200, sign.halo).setBlendMode(Phaser.BlendModes.ADD);
+      const core = this.scene.add.image(SCREEN_W / 2, 200, sign.core);
       this.root.add([halo, core]);
       this.titleCard = { images: [halo, core], startedTick: state.tick };
     }

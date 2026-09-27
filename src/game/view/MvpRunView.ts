@@ -30,6 +30,7 @@ import {
 } from './ActorSpriteView';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
+import { WeaponView } from './WeaponView';
 import { enemySpriteSheet } from './ActorSpriteView';
 import { itemIconKey } from '../presentation/assets';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
@@ -72,6 +73,7 @@ export class MvpRunView {
   private openingConcourse: MallRoomView | undefined;
   private mallRoomKey = '';
   private readonly feedback: CombatFeedback;
+  private readonly weapon: WeaponView;
   private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedOfferIcons = new Set<string>();
   private readonly storeGraphics: Phaser.GameObjects.Graphics;
@@ -86,6 +88,7 @@ export class MvpRunView {
     this.graphics = scene.add.graphics();
     this.effectGraphics = scene.add.graphics().setDepth(presentationDepth('effect', 1));
     this.feedback = new CombatFeedback(scene);
+    this.weapon = new WeaponView(scene);
     this.storeGraphics = scene.add.graphics().setDepth(presentationDepth('decal', 800));
   }
 
@@ -555,23 +558,19 @@ export class MvpRunView {
       graphics.lineStyle(2, 0xf4edd8, 0.9);
       graphics.strokeCircle(player.x, player.y, player.radius);
     }
-    effects.lineStyle(3, 0xf6d365, 1);
-    effects.lineBetween(
-      player.x,
-      player.y,
-      player.x + player.facing.x * (player.radius + 6),
-      player.y + player.facing.y * (player.radius + 6),
-    );
-    if (shouldDrawDirectAttackArc(
-      player.attackActiveTicks,
-      state.room.combat.compiledLoadout.primary.delivery,
-    )) {
-      const angle = Math.atan2(player.facing.y, player.facing.x);
-      effects.lineStyle(3, 0xe8dcc4, 0.95);
-      effects.beginPath();
-      effects.arc(player.x, player.y, player.radius + 12, angle - 0.7, angle + 0.7);
-      effects.strokePath();
-    }
+    const primary = state.room.combat.compiledLoadout.primary;
+    const lights = this.weapon.sync({
+      x: player.x,
+      y: player.y,
+      facingX: player.facing.x,
+      facingY: player.facing.y,
+      attackActiveTicks: player.attackActiveTicks,
+      definitionId: primary.definitionId,
+      delivery: primary.delivery,
+      range: primary.range,
+      halfAngleRadians: primary.halfAngleRadians,
+    }, state.tick, effects, presentationDepth('actor', player.y));
+    for (const light of lights) this.openingConcourse?.addLight(light);
   }
 
   private syncActorSprite(snapshot: ActorSnapshot, tick: number, depth: number): ActorFrameEvidence {
@@ -795,6 +794,7 @@ export class MvpRunView {
     for (const icon of this.offerIcons.values()) icon.destroy();
     this.offerIcons.clear();
     this.feedback.destroy();
+    this.weapon.destroy();
     this.storeGraphics.destroy();
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
@@ -814,6 +814,7 @@ export class MvpRunView {
 
   public resetForRun(): void {
     this.feedback.resetRoom('');
+    this.weapon.reset();
     this.mallRoomKey = '';
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;

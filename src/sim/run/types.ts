@@ -43,6 +43,10 @@ export type MvpInputFrame = {
   interact: boolean;
   steal: boolean;
   recall: boolean;
+  /** One-shot: equip weapon number N (1-based). Absent or 0 means no change. */
+  selectSlot?: number;
+  /** One-shot: +1 next weapon, -1 previous weapon, 0 or absent none. */
+  cycleWeapon?: number;
 };
 
 /**
