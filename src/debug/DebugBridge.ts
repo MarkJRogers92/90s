@@ -333,6 +333,8 @@ export type MvpRunDebugSnapshot = {
     /** Cues actually scheduled as voices, not merely decided. */
     played: number;
   } | null;
+  /** Failed optional presentation assets; gameplay remains on vector fallback. */
+  presentationLoadFailures: number;
 };
 
 export function installMvpRunDebugBridge(
@@ -341,6 +343,7 @@ export function installMvpRunDebugBridge(
   getAudio?: () =>
     | { created: boolean; running: boolean; isMuted: boolean; played: number }
     | undefined,
+  getPresentationLoadFailures: () => number = () => 0,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -407,6 +410,7 @@ export function installMvpRunDebugBridge(
                 }
               : null;
           })(),
+          presentationLoadFailures: getPresentationLoadFailures(),
         };
       },
     },

@@ -33,6 +33,7 @@ import {
 } from '../../sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
 import { GameAudioEngine } from '../audio/engine';
+import { PRESENTATION_ASSETS } from '../presentation/assets';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
 import {
@@ -45,6 +46,7 @@ import {
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
 const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
+const PRESENTATION_ASSET_KEYS = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
 
 export type MvpRunLaunch = {
   readonly seed: number;
@@ -208,9 +210,21 @@ export class MvpRunScene extends Phaser.Scene {
   private hud: MvpRunHud | undefined;
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
+  private presentationLoadFailures = 0;
 
   public constructor() {
     super(MvpRunScene.KEY);
+  }
+
+  public preload(): void {
+    this.presentationLoadFailures = 0;
+    this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, this.countPresentationLoadFailure, this);
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      this.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, this.countPresentationLoadFailure, this);
+    });
+    for (const asset of PRESENTATION_ASSETS) {
+      this.load.image(asset.key, asset.url);
+    }
   }
 
   public create(): void {
@@ -255,6 +269,7 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.run,
         () => this.generation,
         () => this.audio,
+        () => this.presentationLoadFailures,
       );
       const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
       this.removeDebugBridge = () => {
@@ -391,6 +406,12 @@ export class MvpRunScene extends Phaser.Scene {
 
   private readonly unlockAudio = (): void => {
     this.audio?.resume();
+  };
+
+  private readonly countPresentationLoadFailure = (file: Phaser.Loader.File): void => {
+    if (file.type === 'image' && PRESENTATION_ASSET_KEYS.has(file.key)) {
+      this.presentationLoadFailures += 1;
+    }
   };
 
   /** Toggles mute and returns the new state, so the HUD can label its button. */
