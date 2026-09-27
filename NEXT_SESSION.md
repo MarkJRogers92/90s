@@ -6,9 +6,12 @@ actual branch and working tree before trusting this note.
 
 The user has paused local iteration and requested a GitHub handoff for Claude
 Opus 5.5. Read [`CLAUDE_HANDOFF.md`](CLAUDE_HANDOFF.md) first. Resume only when
-the user asks; the next user-facing gate remains visual review, not another
-room conversion. The handoff branch is `origin/codex/presentation-3quarter` and
-must remain unmerged, unpublished, undeployed, and unreleased.
+the user asks. Claude is invited to review the whole project and change any
+parts needed to achieve the original 80s/90s mall roguelike vision; this
+worktree remains the untouched comparison baseline. Claude's work belongs on a
+separate branch/worktree and must remain unmerged, unpublished, undeployed, and
+unreleased unless separately approved. The handoff branch is
+`origin/codex/presentation-3quarter`.
 
 For a later visual review, open the local game, choose **Night Shift**, and
 compare the playable calm, evacuation, and first-combat transition with:
@@ -39,16 +42,18 @@ Review these remaining concrete concerns before approval:
   neon-heavy even with stronger cyan/magenta accents;
 - evacuation warning/flicker remains subtle in a single still;
 - the existing Food Court remains gray/olive vector graybox. Converting it was
-  explicitly outside this opening-only correction scope.
+  outside the original Codex slice, but Claude may change it on the separate
+  experiment branch if that helps realize the whole-game vision.
 
 The first-combat capture concern is resolved in the evidence packet: the harness
 now waits for an authoritative on-screen Spitter telegraph matched to the
 renderer, and the native 1440x900 still shows two large yellow windup rings with
 long aim lines. Hanger movement streaks no longer satisfy that capture test.
 
-If the user requests corrections, keep them inside this same slice and get a new
-visual decision afterward. Do not treat correction authorization as permission
-to convert other rooms.
+This baseline records an opening-only Codex slice. The user has since authorized
+Claude to review and change other rooms or systems as needed within the original
+vision; see `CLAUDE_HANDOFF.md`. Keep Claude's experiment separate until the
+user reviews and chooses what to adopt.
 
 The automated gate is clean for this scope: asset validation, typecheck, 513
 unit/integration tests, the 4-case evidence harness, 10 lifecycle cycles, local-

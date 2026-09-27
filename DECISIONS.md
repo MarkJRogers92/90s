@@ -11,9 +11,14 @@
   is self-contained. They are documentation/source files only; runtime assets
   remain the approved PNG exports under `public/assets/presentation/`. Omit
   unrelated scratch iterations and do not start any paid generation.
-- Keep Claude's visual experiment separate from this accepted baseline. No
-  broader room rollout starts without new user approval; the Food Court remains
-  out of scope, and the M5 simulation/rules/save behavior remain authoritative.
+- Keep Claude's experiment separate from this pushed baseline. Claude may
+  review and change any rooms, art, UI, gameplay/simulation systems, architecture,
+  or engine choices when genuinely needed to achieve the original vision; do
+  not constrain the work to the opening-room vertical slice. Keep the core
+  vision—top-down roguelike action in a distinctive 80s/90s mall, bright and
+  neon-heavy at the start, with a few people present—as the guardrail. Preserve
+  this branch for comparison, and require separate approval before push, merge,
+  PR, publication, deployment, release, or paid asset generation.
 
 ## 2026-09-27 — presentation vertical slice boundary
 
@@ -37,9 +42,9 @@
   require evidence to name four unique rendered civilian sprites fully contained
   by the initial camera, not merely report a model count. The corrected opening
   uses stronger cyan/magenta accents, but beige terrazzo remains dominant and the
-  Food Court remains out-of-scope graybox; those limits keep the broader room
-  rollout approval gate closed. No other room conversion begins without a new
-  explicit user decision.
+  Food Court remains graybox on this baseline. The later Claude-handoff decision
+  above supersedes this original room-conversion limit for a separate experiment;
+  it does not approve integrating those changes into this baseline.
 - Do not treat a Hanger's ordinary pursuit/lunge streak as an attack telegraph.
   First-combat screenshot evidence must match the same Spitter by authoritative
   `phase === 'telegraph'` and renderer telegraph ID, then prove its world point
