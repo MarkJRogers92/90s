@@ -249,6 +249,54 @@
       "approvalDate": "2026-09-26",
       "cleanupReview": "Native Aseprite import reviewed at 48x48: binary alpha, one-pixel outline, palette, and frame alignment retained; pixels unchanged from approved source.",
       "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-a-idle.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/shopper-a-idle.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/shopper-a-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "da0d970bf7c0ea2fcc48202a474c95d48c93a6067208dded473b7fc6942be4c9", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-a-walk.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/shopper-a-walk.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/shopper-a-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "a8ee3b83f6b69a7be5f506413cfd6c3a2a8e826b39522184bf6f59d1d0eaffc3", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-b-idle.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/shopper-b-idle.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/shopper-b-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "d134858ba522be31740e8edd9c854046b7e87d86927131dc1b968229f83a79bb", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-b-walk.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/shopper-b-walk.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/shopper-b-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "8829a9edfe36ba04bb7ea48662933d59e065bc76c38406814b5a50f423e5dd66", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/clerk-idle.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/clerk-idle.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/clerk-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "ef75223e06acb0ceed7adbf791c60e847e5f2757e1c921d075456e5780bcb746", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/clerk-walk.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/clerk-walk.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/clerk-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "df79038ce8285c4418418b4069bb3014e3b06e43ce2331713d737e5e215d7eb4", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/security-idle.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/security-idle.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/security-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "b42706af93ab40709542b4dc92e7f32db759c612dfb1fd83152860d070b95bfc", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/security-walk.png",
+      "editableSourcePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/security-walk.aseprite",
+      "originalCandidatePath": "/Users/markrogers/deadmall-art/work/presentation-vertical-slice/v1/source/civilians/candidates/security-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "77c7800a58631467597d7fa037c85c001145cedfc65eefad0506d434ed9d6f87", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
     }
   ]
 }

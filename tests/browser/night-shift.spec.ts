@@ -68,6 +68,7 @@ type RunSnapshot = {
     actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
     effectDepths: Array<{ id: string; renderDepth: number }>;
     promptDepths: Array<{ id: string; renderDepth: number }>;
+    ambience: { phase: 'busy' | 'warning' | 'evacuating' | 'empty'; visibleCount: number };
     depthBands: { tallForeground: number; effect: number; prompt: number };
   };
   actorPresentation?: {
@@ -227,6 +228,35 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   expect(restarted.presentation?.staticDisplayObjectCount).toBe(counts.objects);
   expect(restarted.presentation?.dynamicDisplayObjectCount).toBe(counts.dynamic);
   expect(restarted.presentation?.sceneDisplayObjectCount).toBe(counts.scene);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('Opening Concourse civilians evacuate monotonically from real input and restart fresh', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?seed=7');
+  const first = await runSnapshot(page);
+  expect(first.presentation?.ambience).toEqual({ phase: 'busy', visibleCount: expect.any(Number) });
+  expect(first.presentation!.ambience.visibleCount).toBeGreaterThanOrEqual(4);
+  expect(first.presentation!.ambience.visibleCount).toBeLessThanOrEqual(6);
+
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.x), { timeout: 20_000, intervals: [20] })
+    .toBeGreaterThanOrEqual(530);
+  await page.keyboard.up('d');
+  expect((await runSnapshot(page)).presentation?.ambience.phase).toBe('warning');
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.x), { timeout: 20_000, intervals: [20] })
+    .toBeGreaterThanOrEqual(700);
+  await page.keyboard.up('d');
+  expect((await runSnapshot(page)).presentation?.ambience.phase).toBe('evacuating');
+
+  await page.getByRole('button', { name: 'Restart run', exact: true }).click();
+  await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(first.generation);
+  expect((await runSnapshot(page)).presentation?.ambience).toEqual({
+    phase: 'busy', visibleCount: first.presentation!.ambience.visibleCount,
+  });
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });

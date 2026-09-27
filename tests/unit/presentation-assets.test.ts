@@ -7,6 +7,7 @@ import { usableTextureKey } from '../../src/game/presentation/assetFallback';
 import {
   ENVIRONMENT_TEXTURE_KEYS,
   ACTOR_TEXTURE_KEYS,
+  CIVILIAN_TEXTURE_KEYS,
   PRESENTATION_ASSETS,
   type EnvironmentTextureKey,
 } from '../../src/game/presentation/assets';
@@ -31,6 +32,14 @@ const expectedDimensions = new Map<string, readonly [number, number]>([
   ['presentation:actor:alex-idle', [256, 48]],
   ['presentation:actor:alex-walk', [192, 384]],
   ['presentation:actor:hanger-idle', [384, 48]],
+  ['presentation:civilian:shopper-a-idle', [256, 48]],
+  ['presentation:civilian:shopper-a-walk', [192, 384]],
+  ['presentation:civilian:shopper-b-idle', [256, 48]],
+  ['presentation:civilian:shopper-b-walk', [192, 384]],
+  ['presentation:civilian:clerk-idle', [256, 48]],
+  ['presentation:civilian:clerk-walk', [192, 384]],
+  ['presentation:civilian:security-idle', [256, 48]],
+  ['presentation:civilian:security-walk', [192, 384]],
 ]);
 
 function pngDimensions(url: string): readonly [number, number] {
@@ -41,12 +50,12 @@ function pngDimensions(url: string): readonly [number, number] {
 
 describe('presentation asset manifest', () => {
   it('registers each approved local asset once at its expected dimensions', () => {
-    expect(PRESENTATION_ASSETS).toHaveLength(19);
+    expect(PRESENTATION_ASSETS).toHaveLength(27);
     expect(new Set(PRESENTATION_ASSETS.map((asset) => asset.key)).size).toBe(PRESENTATION_ASSETS.length);
     expect(new Set(PRESENTATION_ASSETS.map((asset) => asset.url)).size).toBe(PRESENTATION_ASSETS.length);
 
     for (const asset of PRESENTATION_ASSETS) {
-      expect(['environment', 'actor']).toContain(asset.requiredFor);
+      expect(['environment', 'actor', 'ambience']).toContain(asset.requiredFor);
       expect(asset.url).toMatch(/^\/assets\/presentation\//);
       expect(asset.url).not.toMatch(/^(?:https?:|data:|\/Users\/|~\/)/i);
       expect(pngDimensions(asset.url)).toEqual(expectedDimensions.get(asset.key));
@@ -94,5 +103,12 @@ describe('typed actor keys', () => {
   it('maps every actor key to a preloaded actor manifest entry', () => {
     const manifestKeys = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
     for (const key of Object.values(ACTOR_TEXTURE_KEYS)) expect(manifestKeys.has(key)).toBe(true);
+  });
+});
+
+describe('typed civilian keys', () => {
+  it('maps every civilian key to a preloaded ambience manifest entry', () => {
+    const manifestKeys = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
+    for (const key of Object.values(CIVILIAN_TEXTURE_KEYS)) expect(manifestKeys.has(key)).toBe(true);
   });
 });

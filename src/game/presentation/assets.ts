@@ -35,6 +35,18 @@ export const ACTOR_TEXTURE_KEYS = {
 } as const;
 export type ActorTextureKey = (typeof ACTOR_TEXTURE_KEYS)[keyof typeof ACTOR_TEXTURE_KEYS];
 
+export const CIVILIAN_TEXTURE_KEYS = {
+  shopperAIdle: 'presentation:civilian:shopper-a-idle',
+  shopperAWalk: 'presentation:civilian:shopper-a-walk',
+  shopperBIdle: 'presentation:civilian:shopper-b-idle',
+  shopperBWalk: 'presentation:civilian:shopper-b-walk',
+  clerkIdle: 'presentation:civilian:clerk-idle',
+  clerkWalk: 'presentation:civilian:clerk-walk',
+  securityIdle: 'presentation:civilian:security-idle',
+  securityWalk: 'presentation:civilian:security-walk',
+} as const;
+export type CivilianTextureKey = (typeof CIVILIAN_TEXTURE_KEYS)[keyof typeof CIVILIAN_TEXTURE_KEYS];
+
 const environment = (
   key: EnvironmentTextureKey,
   frameWidth: number,
@@ -54,6 +66,14 @@ const actor = (key: ActorTextureKey, frameWidth: number, frameHeight: number): P
   frameWidth,
   frameHeight,
   requiredFor: 'actor',
+});
+
+const civilian = (key: CivilianTextureKey, frameWidth: number, frameHeight: number): PresentationAsset => ({
+  key,
+  url: `/assets/presentation/civilians/${key.slice('presentation:civilian:'.length)}.png`,
+  frameWidth,
+  frameHeight,
+  requiredFor: 'ambience',
 });
 
 /** Approved presentation assets that may decorate the vector MVP scene. */
@@ -77,4 +97,12 @@ export const PRESENTATION_ASSETS: readonly PresentationAsset[] = [
   actor(ACTOR_TEXTURE_KEYS.alexIdle, 32, 48),
   actor(ACTOR_TEXTURE_KEYS.alexWalk, 32, 48),
   actor(ACTOR_TEXTURE_KEYS.hangerIdle, 48, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.shopperAIdle, 32, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.shopperAWalk, 32, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.shopperBIdle, 32, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.shopperBWalk, 32, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.clerkIdle, 32, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.clerkWalk, 32, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.securityIdle, 32, 48),
+  civilian(CIVILIAN_TEXTURE_KEYS.securityWalk, 32, 48),
 ];

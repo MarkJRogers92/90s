@@ -1,9 +1,10 @@
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { usableTextureKey } from '../presentation/assetFallback';
-import { ENVIRONMENT_TEXTURE_KEYS, type EnvironmentTextureKey } from '../presentation/assets';
+import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, type CivilianTextureKey, type EnvironmentTextureKey } from '../presentation/assets';
 import { presentationDepth } from '../presentation/depth';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
+import { ConcourseAmbience, type ConcourseCivilianLane } from './ConcourseAmbience';
 
 type Layer = Phaser.GameObjects.Container;
 type Rect = { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
@@ -31,6 +32,9 @@ export class OpeningConcourseView {
   private readonly usedEffectIds = new Set<string>();
   private readonly occluders: Occluder[] = [];
   private readonly textureKeys = new Set<string>();
+  private readonly ambience: ConcourseAmbience;
+  private readonly civilianSprites = new Map<string, Phaser.GameObjects.Image>();
+  private readonly warningEffects: Phaser.GameObjects.Graphics;
   private fallbackCount = 0;
 
   public constructor(scene: Phaser.Scene, actors: Phaser.GameObjects.Graphics, state: MvpRunState) {
@@ -44,6 +48,8 @@ export class OpeningConcourseView {
     this.tallForeground = this.layer('tallForeground');
     this.lightsEffects = this.layer('effect');
     this.effectLayer = scene.add.layer().setDepth(presentationDepth('effect', 1));
+    this.ambience = new ConcourseAmbience(state.seed);
+    this.warningEffects = scene.add.graphics().setDepth(presentationDepth('effect', 0));
     this.actorLayer.add(actors);
     this.buildStatic(state);
   }
@@ -217,10 +223,65 @@ export class OpeningConcourseView {
     for (const occluder of this.occluders) {
       occluder.object.setAlpha(presentationOcclusionAlpha('tallForeground', foot, occluder.rect));
     }
+    this.renderAmbience(snapshot);
+  }
+
+  private renderAmbience(snapshot: MvpRunState): void {
+    const room = snapshot.wing.rooms[snapshot.roomIndex];
+    if (!room) return;
+    const ambience = this.ambience.sync({
+      playerX: snapshot.room.combat.player.x,
+      roomX: room.bounds.x,
+      roomWidth: room.bounds.width,
+      inOpeningRoom: room.id === 'service_corridor',
+      tick: snapshot.tick,
+    });
+    const active = new Set<string>();
+    for (const [index, lane] of this.ambience.debugLanes().entries()) {
+      const sprite = this.civilianSprite(lane, ambience.phase);
+      if (!sprite) continue;
+      active.add(lane.id);
+      const walking = ambience.phase === 'busy' || ambience.phase === 'evacuating';
+      const movingX = ambience.phase === 'evacuating'
+        ? lane.x + Math.sign(lane.exitX - lane.x) * Math.min(Math.abs(lane.exitX - lane.x), this.ambience.debugPhaseAnimationTick() * 1.2)
+        : lane.x + (walking ? Math.sin((this.ambience.debugAnimationTick() + index * 17) / 19) * 12 : 0);
+      const exitReached = ambience.phase === 'evacuating' && Math.abs(movingX - lane.exitX) < 1;
+      const texture = civilianTexture(lane.appearance, walking);
+      if (sprite.texture.key !== texture) sprite.setTexture(texture);
+      sprite.setVisible(ambience.phase !== 'empty' && !exitReached)
+        .setPosition(movingX, lane.y)
+        .setDepth(presentationDepth('actor', lane.y));
+      const column = walking ? Math.floor(this.ambience.debugAnimationTick() / 5 + index) % 6 : (index + (ambience.phase === 'warning' ? 2 : 0)) % 8;
+      const row = walking ? (lane.exitX < lane.x ? 2 : 6) : 0;
+      sprite.setCrop(column * 32, row * 48, 32, 48);
+    }
+    for (const [id, sprite] of this.civilianSprites) {
+      if (!active.has(id)) sprite.setVisible(false);
+    }
+    this.warningEffects.clear();
+    if (ambience.phase === 'warning' || ambience.phase === 'evacuating') {
+      const flicker = snapshot.tick % 12 < 4 ? 0.45 : 0.12;
+      this.warningEffects.fillStyle(0xffd45d, flicker).fillRect(169, 28, 96, 4);
+      this.warningEffects.lineStyle(1, 0xffd45d, 0.65).strokeRect(911, 188 + (snapshot.tick % 8 < 2 ? 1 : 0), 34, 34);
+    }
+  }
+
+  private civilianSprite(lane: ConcourseCivilianLane, phase: ReturnType<ConcourseAmbience['snapshot']>['phase']): Phaser.GameObjects.Image | null {
+    const walking = phase === 'busy' || phase === 'evacuating';
+    const key = civilianTexture(lane.appearance, walking);
+    if (!usableTextureKey(this.scene.textures, key)) return null;
+    let sprite = this.civilianSprites.get(lane.id);
+    if (!sprite) {
+      sprite = this.scene.add.image(lane.x, lane.y, key).setOrigin(0.5, 0.84);
+      this.civilianSprites.set(lane.id, sprite);
+    }
+    return sprite;
   }
 
   /** Rebuild on the next room entry; never retain run-specific display state. */
   public resetForRun(): void {
+    this.ambience.resetForRun();
+    for (const sprite of this.civilianSprites.values()) sprite.setVisible(false);
     for (const occluder of this.occluders) occluder.object.setAlpha(1);
   }
 
@@ -234,6 +295,7 @@ export class OpeningConcourseView {
     sceneDisplayObjectCount: number;
     actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
     effectDepths: Array<{ id: string; renderDepth: number }>;
+    ambience: ReturnType<ConcourseAmbience['snapshot']>;
     depthBands: { tallForeground: number; effect: number; prompt: number };
   } {
     return {
@@ -254,6 +316,7 @@ export class OpeningConcourseView {
         id,
         renderDepth: this.effectLayer.depth + graphics.depth,
       })),
+      ambience: this.ambience.snapshot(),
       depthBands: {
         tallForeground: this.tallForeground.depth,
         effect: this.effectLayer.depth,
@@ -270,5 +333,18 @@ export class OpeningConcourseView {
     }
     this.actorGraphicsById.clear();
     this.effectGraphicsById.clear();
+    for (const sprite of this.civilianSprites.values()) sprite.destroy();
+    this.civilianSprites.clear();
+    this.warningEffects.destroy();
   }
+}
+
+function civilianTexture(appearance: ConcourseCivilianLane['appearance'], walking: boolean): CivilianTextureKey {
+  const keys = {
+    'shopper-a': walking ? CIVILIAN_TEXTURE_KEYS.shopperAWalk : CIVILIAN_TEXTURE_KEYS.shopperAIdle,
+    'shopper-b': walking ? CIVILIAN_TEXTURE_KEYS.shopperBWalk : CIVILIAN_TEXTURE_KEYS.shopperBIdle,
+    clerk: walking ? CIVILIAN_TEXTURE_KEYS.clerkWalk : CIVILIAN_TEXTURE_KEYS.clerkIdle,
+    security: walking ? CIVILIAN_TEXTURE_KEYS.securityWalk : CIVILIAN_TEXTURE_KEYS.securityIdle,
+  } as const;
+  return keys[appearance];
 }
