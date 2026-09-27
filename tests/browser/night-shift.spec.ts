@@ -63,6 +63,12 @@ type RunSnapshot = {
     occluderCount: number;
     staticDisplayObjectCount: number;
     staticTextureCount: number;
+    dynamicDisplayObjectCount: number;
+    sceneDisplayObjectCount: number;
+    actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
+    effectDepths: Array<{ id: string; renderDepth: number }>;
+    promptDepths: Array<{ id: string; renderDepth: number }>;
+    depthBands: { tallForeground: number; effect: number; prompt: number };
   };
 };
 
@@ -143,16 +149,27 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   expect(first.presentation?.themeId).toBe('opening_concourse');
   expect(first.presentation?.occluderCount).toBeGreaterThan(0);
   expect(first.presentation?.staticDisplayObjectCount).toBeGreaterThan(0);
+  expect(first.presentation?.actorDepths).toEqual([
+    { id: 'player', baseY: first.player.y, renderDepth: 4000 + first.player.y },
+  ]);
+  expect(first.presentation!.depthBands.effect).toBeGreaterThan(first.presentation!.depthBands.tallForeground);
+  expect(first.presentation!.depthBands.prompt).toBeGreaterThan(first.presentation!.depthBands.effect);
+  expect(first.presentation?.effectDepths).toContainEqual({ id: 'player', renderDepth: 6001 });
+  expect(first.presentation?.promptDepths).toContainEqual({ id: 'bench', renderDepth: 7000 });
   await page.screenshot({ path: testInfo.outputPath('opening-concourse.png') });
   const counts = {
     objects: first.presentation?.staticDisplayObjectCount,
     textures: first.presentation?.staticTextureCount,
+    dynamic: first.presentation?.dynamicDisplayObjectCount,
+    scene: first.presentation?.sceneDisplayObjectCount,
   };
   await expect.poll(() => runSnapshot(page).then((state) => state.tick), { timeout: 15_000 })
     .toBeGreaterThanOrEqual(first.tick + 300);
   const afterSyncs = await runSnapshot(page);
   expect(afterSyncs.presentation?.staticDisplayObjectCount).toBe(counts.objects);
   expect(afterSyncs.presentation?.staticTextureCount).toBe(counts.textures);
+  expect(afterSyncs.presentation?.dynamicDisplayObjectCount).toBe(counts.dynamic);
+  expect(afterSyncs.presentation?.sceneDisplayObjectCount).toBe(counts.scene);
   expect(afterSyncs.enemies).toHaveLength(0);
 
   const northAisle = await worldToCanvas(page, 480, 60);
@@ -174,8 +191,33 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
     .toBe('storefront_a');
   await page.keyboard.up('d');
   expect((await runSnapshot(page)).presentation).toBeNull();
+  await page.getByRole('button', { name: 'Restart run', exact: true }).click();
+  await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(first.generation);
+  const restarted = await runSnapshot(page);
+  expect(restarted.presentation?.staticDisplayObjectCount).toBe(counts.objects);
+  expect(restarted.presentation?.dynamicDisplayObjectCount).toBe(counts.dynamic);
+  expect(restarted.presentation?.sceneDisplayObjectCount).toBe(counts.scene);
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
+});
+
+test('Opening Concourse sorts the player and carrier by their own feet', async ({ page }) => {
+  test.setTimeout(45_000);
+  await launchRun(page, '/?fixture=mvp-bench&seed=7');
+  await page.keyboard.down('s');
+  await expect.poll(async () => {
+    const state = await runSnapshot(page);
+    return state.carrier ? Math.abs(state.player.y - state.carrier.y) : 0;
+  }, { timeout: 10_000 }).toBeGreaterThan(1);
+  await page.keyboard.up('s');
+  const state = await runSnapshot(page);
+  const player = state.presentation?.actorDepths.find((actor) => actor.id === 'player');
+  const carrier = state.presentation?.actorDepths.find((actor) => actor.id === 'carrier');
+  expect(player?.baseY).toBe(state.player.y);
+  expect(carrier?.baseY).toBe(state.carrier?.y);
+  expect(player?.renderDepth).toBe(4000 + state.player.y);
+  expect(carrier?.renderDepth).toBe(4000 + state.carrier!.y);
+  expect(player?.renderDepth).not.toBe(carrier?.renderDepth);
 });
 
 test('offers are identical for one seed and vary across seeds', async ({ page }) => {

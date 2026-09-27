@@ -6,13 +6,35 @@ export interface PresentationAsset {
   requiredFor: 'environment' | 'actor' | 'ambience' | 'effect';
 }
 
+/** Single source of truth for environment texture requests and preload keys. */
+export const ENVIRONMENT_TEXTURE_KEYS = {
+  atriumFountain: 'presentation:environment:atrium-fountain',
+  benchWarrantKiosk: 'presentation:environment:bench-warrant-kiosk',
+  floorTerrazzo: 'presentation:environment:floor-terrazzo',
+  mallBench: 'presentation:environment:mall-bench',
+  mallDirectory: 'presentation:environment:mall-directory',
+  planter: 'presentation:environment:planter',
+  posterStand: 'presentation:environment:poster-stand',
+  pottedPalm: 'presentation:environment:potted-palm',
+  railingGlass: 'presentation:environment:railing-glass',
+  rubbishBin: 'presentation:environment:rubbish-bin',
+  securityGate: 'presentation:environment:security-gate',
+  signCool: 'presentation:environment:sign-cool',
+  storefrontFascia: 'presentation:environment:storefront-fascia',
+  wallCorner: 'presentation:environment:wall-corner',
+  wallFace: 'presentation:environment:wall-face',
+  wallTop: 'presentation:environment:wall-top',
+} as const;
+
+export type EnvironmentTextureKey = (typeof ENVIRONMENT_TEXTURE_KEYS)[keyof typeof ENVIRONMENT_TEXTURE_KEYS];
+
 const environment = (
-  key: string,
+  key: EnvironmentTextureKey,
   frameWidth: number,
   frameHeight: number,
-  filename = key,
+  filename = key.slice('presentation:environment:'.length),
 ): PresentationAsset => ({
-  key: `presentation:environment:${key}`,
+  key,
   url: `/assets/presentation/environment/${filename}.png`,
   frameWidth,
   frameHeight,
@@ -21,20 +43,20 @@ const environment = (
 
 /** Approved presentation assets that may decorate the vector MVP scene. */
 export const PRESENTATION_ASSETS: readonly PresentationAsset[] = [
-  environment('atrium-fountain', 96, 64, 'atrium-fountain-96x64'),
-  environment('bench-warrant-kiosk', 64, 64),
-  environment('floor-terrazzo', 32, 32, 'floor-terrazzo-32'),
-  environment('mall-bench', 56, 30),
-  environment('mall-directory', 17, 54),
-  environment('planter', 25, 25),
-  environment('poster-stand', 38, 53),
-  environment('potted-palm', 38, 58),
-  environment('railing-glass', 32, 32, 'railing-glass-32'),
-  environment('rubbish-bin', 20, 25),
-  environment('security-gate', 32, 32, 'security-gate-32'),
-  environment('sign-cool', 96, 24, 'sign-cool-96x24'),
-  environment('storefront-fascia', 64, 32, 'storefront-fascia-64x32'),
-  environment('wall-corner', 32, 64, 'wall-corner-32x64'),
-  environment('wall-face', 32, 64, 'wall-face-32x64'),
-  environment('wall-top', 32, 32, 'wall-top-32'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.atriumFountain, 96, 64, 'atrium-fountain-96x64'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.benchWarrantKiosk, 64, 64),
+  environment(ENVIRONMENT_TEXTURE_KEYS.floorTerrazzo, 32, 32, 'floor-terrazzo-32'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.mallBench, 56, 30),
+  environment(ENVIRONMENT_TEXTURE_KEYS.mallDirectory, 17, 54),
+  environment(ENVIRONMENT_TEXTURE_KEYS.planter, 25, 25),
+  environment(ENVIRONMENT_TEXTURE_KEYS.posterStand, 38, 53),
+  environment(ENVIRONMENT_TEXTURE_KEYS.pottedPalm, 38, 58),
+  environment(ENVIRONMENT_TEXTURE_KEYS.railingGlass, 32, 32, 'railing-glass-32'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.rubbishBin, 20, 25),
+  environment(ENVIRONMENT_TEXTURE_KEYS.securityGate, 32, 32, 'security-gate-32'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.signCool, 96, 24, 'sign-cool-96x24'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.storefrontFascia, 64, 32, 'storefront-fascia-64x32'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.wallCorner, 32, 64, 'wall-corner-32x64'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.wallFace, 32, 64, 'wall-face-32x64'),
+  environment(ENVIRONMENT_TEXTURE_KEYS.wallTop, 32, 32, 'wall-top-32'),
 ];

@@ -342,6 +342,12 @@ export type MvpRunDebugSnapshot = {
     occluderCount: number;
     staticDisplayObjectCount: number;
     staticTextureCount: number;
+    dynamicDisplayObjectCount: number;
+    sceneDisplayObjectCount: number;
+    actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
+    effectDepths: Array<{ id: string; renderDepth: number }>;
+    promptDepths: Array<{ id: string; renderDepth: number }>;
+    depthBands: { tallForeground: number; effect: number; prompt: number };
   };
 };
 

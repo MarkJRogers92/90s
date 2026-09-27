@@ -86,24 +86,37 @@ export class MvpRunView {
       this.clearLabel('bench');
     }
 
+    const opening = this.openingConcourse;
+    opening?.beginFrame();
     for (const patch of state.room.combat.surfaces) {
-      this.drawSurfacePatch(patch);
+      this.drawSurfacePatch(patch, opening?.effectGraphics(`patch:${patch.id}`) ?? graphics);
     }
 
     for (const enemy of state.room.combat.enemies) {
+      const body = opening?.actorGraphics(`enemy:${enemy.id}`, enemy.y) ?? graphics;
+      const effects = opening?.effectGraphics(`enemy:${enemy.id}`) ?? body;
       if (enemy.kind === 'lp_manager') {
-        this.drawBoss(enemy);
+        this.drawBoss(enemy, body, effects);
       } else {
-        this.drawEnemy(enemy);
+        this.drawEnemy(enemy, body, effects);
       }
     }
 
     for (const projectile of state.room.combat.projectiles) {
-      this.drawProjectile(projectile);
+      this.drawProjectile(projectile, opening?.effectGraphics(`projectile:${projectile.id}`) ?? graphics);
     }
 
-    this.drawCarrier(state);
-    this.drawPlayer(state);
+    this.drawCarrier(
+      state,
+      state.carrier ? opening?.actorGraphics('carrier', state.carrier.y) ?? graphics : graphics,
+      state.carrier ? opening?.effectGraphics('carrier') ?? graphics : graphics,
+    );
+    this.drawPlayer(
+      state,
+      opening?.actorGraphics('player', state.room.combat.player.y) ?? graphics,
+      opening?.effectGraphics('player') ?? graphics,
+    );
+    opening?.endFrame();
     this.pruneLabels(state);
   }
 
@@ -114,19 +127,22 @@ export class MvpRunView {
    * the player needs to judge leash range, plus a distinct fill for the two
    * modes: an independent companion versus the steered emitter mount.
    */
-  private drawCarrier(state: MvpRunState): void {
+  private drawCarrier(
+    state: MvpRunState,
+    graphics = this.graphics,
+    effects = graphics,
+  ): void {
     const carrier = state.carrier;
     if (carrier === null) {
       this.clearLabel('carrier');
       return;
     }
-    const graphics = this.graphics;
     const player = state.room.combat.player;
     const fused = carrier.mode === 'emitter';
 
     // The leash, so the player can read why the car stops following.
-    graphics.lineStyle(1, fused ? 0x8bc9b8 : 0xc4b878, 0.28);
-    graphics.lineBetween(player.x, player.y, carrier.x, carrier.y);
+    effects.lineStyle(1, fused ? 0x8bc9b8 : 0xc4b878, 0.28);
+    effects.lineBetween(player.x, player.y, carrier.x, carrier.y);
 
     graphics.fillStyle(fused ? 0x8bc9b8 : 0xd7a45c, 1);
     graphics.fillRect(
@@ -213,8 +229,11 @@ export class MvpRunView {
     }
   }
 
-  private drawEnemy(enemy: EnemyState): void {
-    const graphics = this.graphics;
+  private drawEnemy(
+    enemy: EnemyState,
+    graphics = this.graphics,
+    effects = graphics,
+  ): void {
     if (enemy.kind === 'hanger') {
       graphics.lineStyle(4, 0x8a3038, 1);
       graphics.lineBetween(enemy.x - 12, enemy.y + 9, enemy.x, enemy.y - 10);
@@ -224,10 +243,10 @@ export class MvpRunView {
       graphics.fillCircle(enemy.x, enemy.y - 10, 5);
     } else {
       if (enemy.phase === 'telegraph') {
-        graphics.lineStyle(3, 0xffd45d, 0.95);
-        graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 8);
-        graphics.lineStyle(2, 0xffd45d, 0.7);
-        graphics.lineBetween(
+        effects.lineStyle(3, 0xffd45d, 0.95);
+        effects.strokeCircle(enemy.x, enemy.y, enemy.radius + 8);
+        effects.lineStyle(2, 0xffd45d, 0.7);
+        effects.lineBetween(
           enemy.x,
           enemy.y,
           enemy.x + enemy.telegraphAimX * 52,
@@ -239,11 +258,11 @@ export class MvpRunView {
       graphics.fillStyle(0xc984d8, 1);
       graphics.fillRect(enemy.x - 6, enemy.y - 5, 12, 8);
     }
-    this.drawEnemyStatuses(enemy);
-    graphics.fillStyle(0x2a2424, 0.9);
-    graphics.fillRect(enemy.x - 15, enemy.y - enemy.radius - 12, 30, 4);
-    graphics.fillStyle(0xd85c54, 1);
-    graphics.fillRect(
+    this.drawEnemyStatuses(enemy, effects);
+    effects.fillStyle(0x2a2424, 0.9);
+    effects.fillRect(enemy.x - 15, enemy.y - enemy.radius - 12, 30, 4);
+    effects.fillStyle(0xd85c54, 1);
+    effects.fillRect(
       enemy.x - 15,
       enemy.y - enemy.radius - 12,
       30 * Math.max(0, Math.min(1, enemy.health / 8)),
@@ -251,17 +270,20 @@ export class MvpRunView {
     );
   }
 
-  private drawBoss(enemy: EnemyState): void {
-    const graphics = this.graphics;
+  private drawBoss(
+    enemy: EnemyState,
+    graphics = this.graphics,
+    effects = graphics,
+  ): void {
     if (enemy.phase === 'telegraph') {
       // The ring is the authored slam reach itself, not a decorative radius: a
       // smaller ring told players they were safe where the slam still connects.
-      graphics.fillStyle(0xffd45d, 0.12);
-      graphics.fillCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
-      graphics.lineStyle(3, 0xffd45d, 0.95);
-      graphics.strokeCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
-      graphics.lineStyle(2, 0xffd45d, 0.7);
-      graphics.lineBetween(
+      effects.fillStyle(0xffd45d, 0.12);
+      effects.fillCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
+      effects.lineStyle(3, 0xffd45d, 0.95);
+      effects.strokeCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
+      effects.lineStyle(2, 0xffd45d, 0.7);
+      effects.lineBetween(
         enemy.x,
         enemy.y,
         enemy.x + enemy.telegraphAimX * 64,
@@ -269,20 +291,20 @@ export class MvpRunView {
       );
     }
     if ((enemy.bossVolleyTelegraphTicks ?? 0) > 0) {
-      graphics.lineStyle(2, 0x8bd8ff, 0.9);
-      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 16);
+      effects.lineStyle(2, 0x8bd8ff, 0.9);
+      effects.strokeCircle(enemy.x, enemy.y, enemy.radius + 16);
     }
-    this.drawEnemyStatuses(enemy);
+    this.drawEnemyStatuses(enemy, effects);
     graphics.fillStyle(0x5c2936, 1);
     graphics.fillCircle(enemy.x, enemy.y, enemy.radius);
     graphics.lineStyle(3, 0xf6d365, 1);
     graphics.strokeCircle(enemy.x, enemy.y, enemy.radius);
     graphics.fillStyle(0xf6d365, 1);
     graphics.fillCircle(enemy.x, enemy.y, 5);
-    graphics.fillStyle(0x2a2424, 0.9);
-    graphics.fillRect(enemy.x - 24, enemy.y - enemy.radius - 14, 48, 5);
-    graphics.fillStyle(0xd85c54, 1);
-    graphics.fillRect(
+    effects.fillStyle(0x2a2424, 0.9);
+    effects.fillRect(enemy.x - 24, enemy.y - enemy.radius - 14, 48, 5);
+    effects.fillStyle(0xd85c54, 1);
+    effects.fillRect(
       enemy.x - 24,
       enemy.y - enemy.radius - 14,
       48 * Math.max(0, Math.min(1, enemy.health / BOSS_MAX_HEALTH)),
@@ -299,8 +321,7 @@ export class MvpRunView {
    * player's shots, water reads blue and physical reads bone, and a burst reads
    * as a wide translucent bubble so a spread is distinguishable from a bolt.
    */
-  private drawProjectile(projectile: ProjectileState): void {
-    const graphics = this.graphics;
+  private drawProjectile(projectile: ProjectileState, graphics = this.graphics): void {
     if (projectile.faction === 'enemy') {
       graphics.fillStyle(0xff5d7a, 1);
       graphics.fillRect(
@@ -336,12 +357,11 @@ export class MvpRunView {
    * a player cannot learn to compose Wet with a conductive reaction if the
    * applied state cannot be seen on the target it is applied to.
    */
-  private drawEnemyStatuses(enemy: EnemyState): void {
+  private drawEnemyStatuses(enemy: EnemyState, graphics = this.graphics): void {
     const statuses = enemy.statuses;
     if (!statuses) {
       return;
     }
-    const graphics = this.graphics;
     if (statuses.wetTicks > 0) {
       graphics.lineStyle(2, 0x6fb7e8, 0.95);
       graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 4);
@@ -354,24 +374,26 @@ export class MvpRunView {
     }
   }
 
-  private drawSurfacePatch(patch: SurfacePatchState): void {
-    const graphics = this.graphics;
+  private drawSurfacePatch(patch: SurfacePatchState, graphics = this.graphics): void {
     graphics.fillStyle(0x3f6f8f, 0.5);
     graphics.fillCircle(patch.x, patch.y, patch.radius);
     graphics.lineStyle(1, 0x8bd8ff, 0.6);
     graphics.strokeCircle(patch.x, patch.y, patch.radius);
   }
 
-  private drawPlayer(state: MvpRunState): void {
-    const graphics = this.graphics;
+  private drawPlayer(
+    state: MvpRunState,
+    graphics = this.graphics,
+    effects = graphics,
+  ): void {
     const player = state.room.combat.player;
     const flicker = player.invulnerableTicks > 0 && Math.floor(state.tick / 12) % 2 === 0;
     graphics.fillStyle(flicker ? 0xdce8c8 : 0x2f5f62, 1);
     graphics.fillCircle(player.x, player.y, player.radius);
     graphics.lineStyle(2, 0xf4edd8, 0.9);
     graphics.strokeCircle(player.x, player.y, player.radius);
-    graphics.lineStyle(3, 0xf6d365, 1);
-    graphics.lineBetween(
+    effects.lineStyle(3, 0xf6d365, 1);
+    effects.lineBetween(
       player.x,
       player.y,
       player.x + player.facing.x * (player.radius + 6),
@@ -440,7 +462,13 @@ export class MvpRunView {
     this.openingConcourse = undefined;
   }
 
-  public presentationSnapshot(): ReturnType<OpeningConcourseView['debugSnapshot']> | null {
-    return this.openingConcourse?.debugSnapshot() ?? null;
+  public presentationSnapshot(): (ReturnType<OpeningConcourseView['debugSnapshot']> & {
+    promptDepths: Array<{ id: string; renderDepth: number }>;
+  }) | null {
+    if (!this.openingConcourse) return null;
+    return {
+      ...this.openingConcourse.debugSnapshot(),
+      promptDepths: [...this.labels].map(([id, label]) => ({ id, renderDepth: label.depth })),
+    };
   }
 }

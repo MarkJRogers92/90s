@@ -4,7 +4,11 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { usableTextureKey } from '../../src/game/presentation/assetFallback';
-import { PRESENTATION_ASSETS } from '../../src/game/presentation/assets';
+import {
+  ENVIRONMENT_TEXTURE_KEYS,
+  PRESENTATION_ASSETS,
+  type EnvironmentTextureKey,
+} from '../../src/game/presentation/assets';
 
 const expectedDimensions = new Map<string, readonly [number, number]>([
   ['presentation:environment:atrium-fountain', [96, 64]],
@@ -62,5 +66,22 @@ describe('usableTextureKey', () => {
     expect(usableTextureKey(textureManager(new Map([['floor', { key: 'floor' }]])), 'floor')).toBe('floor');
     expect(usableTextureKey(textureManager(new Map()), 'absent')).toBeNull();
     expect(usableTextureKey(textureManager(new Map([['broken', { key: '__MISSING' }]])), 'broken')).toBeNull();
+  });
+});
+
+describe('typed environment keys', () => {
+  it('maps every named environment key to a preloaded manifest entry', () => {
+    const manifestKeys = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
+    for (const key of Object.values(ENVIRONMENT_TEXTURE_KEYS)) {
+      expect(manifestKeys.has(key)).toBe(true);
+    }
+  });
+
+  it('keeps request keys a closed compile-time union', () => {
+    const approved: EnvironmentTextureKey = ENVIRONMENT_TEXTURE_KEYS.atriumFountain;
+    expect(approved).toBe('presentation:environment:atrium-fountain');
+    // @ts-expect-error Unapproved texture names must not compile at view call sites.
+    const typo: EnvironmentTextureKey = 'presentation:environment:atrium-fountian';
+    expect(typo).not.toBe(approved);
   });
 });

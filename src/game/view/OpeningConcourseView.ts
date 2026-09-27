@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { usableTextureKey } from '../presentation/assetFallback';
+import { ENVIRONMENT_TEXTURE_KEYS, type EnvironmentTextureKey } from '../presentation/assets';
 import { presentationDepth } from '../presentation/depth';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
 
@@ -20,9 +21,14 @@ export class OpeningConcourseView {
   private readonly decal: Layer;
   private readonly structure: Layer;
   private readonly lowProp: Layer;
-  private readonly actorLayer: Layer;
+  private readonly actorLayer: Phaser.GameObjects.Layer;
   private readonly tallForeground: Layer;
   private readonly lightsEffects: Layer;
+  private readonly effectLayer: Phaser.GameObjects.Layer;
+  private readonly actorGraphicsById = new Map<string, { graphics: Phaser.GameObjects.Graphics; baseY: number }>();
+  private readonly effectGraphicsById = new Map<string, Phaser.GameObjects.Graphics>();
+  private readonly usedActorIds = new Set<string>();
+  private readonly usedEffectIds = new Set<string>();
   private readonly occluders: Occluder[] = [];
   private readonly textureKeys = new Set<string>();
   private fallbackCount = 0;
@@ -34,9 +40,10 @@ export class OpeningConcourseView {
     this.decal = this.layer('decal');
     this.structure = this.layer('structure');
     this.lowProp = this.layer('lowProp');
-    this.actorLayer = this.layer('actor');
+    this.actorLayer = scene.add.layer().setDepth(presentationDepth('actor', 0));
     this.tallForeground = this.layer('tallForeground');
     this.lightsEffects = this.layer('effect');
+    this.effectLayer = scene.add.layer().setDepth(presentationDepth('effect', 1));
     this.actorLayer.add(actors);
     this.buildStatic(state);
   }
@@ -51,9 +58,57 @@ export class OpeningConcourseView {
     return graphics;
   }
 
+  /** Reuse one vector object per entity; Layer sorts children by their own base Y. */
+  public actorGraphics(id: string, baseY: number): Phaser.GameObjects.Graphics {
+    this.usedActorIds.add(id);
+    let entry = this.actorGraphicsById.get(id);
+    if (!entry) {
+      const graphics = this.scene.add.graphics();
+      this.actorLayer.add(graphics);
+      entry = { graphics, baseY };
+      this.actorGraphicsById.set(id, entry);
+    }
+    entry.baseY = baseY;
+    entry.graphics.setDepth(baseY).clear();
+    return entry.graphics;
+  }
+
+  /** Attack cues and projectiles stay above every tall foreground object. */
+  public effectGraphics(id: string): Phaser.GameObjects.Graphics {
+    this.usedEffectIds.add(id);
+    let graphics = this.effectGraphicsById.get(id);
+    if (!graphics) {
+      graphics = this.scene.add.graphics();
+      this.effectLayer.add(graphics);
+      this.effectGraphicsById.set(id, graphics);
+    }
+    graphics.clear();
+    return graphics;
+  }
+
+  public beginFrame(): void {
+    this.usedActorIds.clear();
+    this.usedEffectIds.clear();
+  }
+
+  public endFrame(): void {
+    for (const [id, entry] of this.actorGraphicsById) {
+      if (!this.usedActorIds.has(id)) {
+        entry.graphics.destroy();
+        this.actorGraphicsById.delete(id);
+      }
+    }
+    for (const [id, graphics] of this.effectGraphicsById) {
+      if (!this.usedEffectIds.has(id)) {
+        graphics.destroy();
+        this.effectGraphicsById.delete(id);
+      }
+    }
+  }
+
   private stamp(
     layer: Layer,
-    name: string,
+    key: EnvironmentTextureKey,
     x: number,
     y: number,
     width: number,
@@ -61,7 +116,6 @@ export class OpeningConcourseView {
     fallbackColor: number,
     foreground = false,
   ): void {
-    const key = `presentation:environment:${name}`;
     const usable = usableTextureKey(this.scene.textures, key);
     let object: Phaser.GameObjects.Image | Phaser.GameObjects.Graphics;
     if (usable) {
@@ -85,7 +139,7 @@ export class OpeningConcourseView {
     const bounds = room.bounds;
     const ground = this.graphics(this.floor);
     ground.fillStyle(0xc2c8bd, 1).fillRect(bounds.x, bounds.y, bounds.width, bounds.height);
-    const floorKey = usableTextureKey(this.scene.textures, 'presentation:environment:floor-terrazzo');
+    const floorKey = usableTextureKey(this.scene.textures, ENVIRONMENT_TEXTURE_KEYS.floorTerrazzo);
     if (floorKey) {
       this.floor.add(this.scene.add.tileSprite(bounds.x, bounds.y, bounds.width, bounds.height, floorKey).setOrigin(0, 0));
       this.textureKeys.add(floorKey);
@@ -118,9 +172,9 @@ export class OpeningConcourseView {
       masonry.fillStyle(0xf6e4aa, 1).fillRect(x, 114, 296, 6);
       masonry.lineStyle(2, 0x1d343e, 1).strokeRect(x, 22, 296, 103);
       for (let panel = 0; panel < 4; panel += 1) {
-        this.stamp(this.structure, 'storefront-fascia', x + panel * 64 + 19, 20, 64, 32, accent);
+        this.stamp(this.structure, ENVIRONMENT_TEXTURE_KEYS.storefrontFascia, x + panel * 64 + 19, 20, 64, 32, accent);
       }
-      this.stamp(this.structure, 'sign-cool', x + 100, 28, 96, 24, accent);
+      this.stamp(this.structure, ENVIRONMENT_TEXTURE_KEYS.signCool, x + 100, 28, 96, 24, accent);
       const sign = this.scene.add.text(x + 109, 34, name, {
         fontFamily: '"Courier New", monospace', fontSize: '10px', color: '#fff1b7',
       });
@@ -135,22 +189,22 @@ export class OpeningConcourseView {
 
     const props = this.graphics(this.lowProp);
     props.fillStyle(0x28434c, 0.28).fillEllipse(480, 276, 112, 17);
-    this.stamp(this.lowProp, 'atrium-fountain', 432, 194, 96, 64, 0x63aab5);
-    this.stamp(this.lowProp, 'mall-bench', 328, 302, 56, 30, 0x826753);
-    this.stamp(this.lowProp, 'mall-bench', 588, 302, 56, 30, 0x826753);
-    this.stamp(this.lowProp, 'planter', 393, 276, 25, 25, 0x477460);
-    this.stamp(this.lowProp, 'planter', 543, 276, 25, 25, 0x477460);
-    this.stamp(this.lowProp, 'rubbish-bin', 875, 333, 20, 25, 0x628d8e);
-    this.stamp(this.lowProp, 'railing-glass', 676, 318, 32, 32, 0x9bc6c8);
-    this.stamp(this.lowProp, 'security-gate', 912, 189, 32, 32, 0x769c9c);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.atriumFountain, 432, 194, 96, 64, 0x63aab5);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.mallBench, 328, 302, 56, 30, 0x826753);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.mallBench, 588, 302, 56, 30, 0x826753);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.planter, 393, 276, 25, 25, 0x477460);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.planter, 543, 276, 25, 25, 0x477460);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.rubbishBin, 875, 333, 20, 25, 0x628d8e);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.railingGlass, 676, 318, 32, 32, 0x9bc6c8);
+    this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.securityGate, 912, 189, 32, 32, 0x769c9c);
     if (room.benchKiosk) {
-      this.stamp(this.lowProp, 'bench-warrant-kiosk', room.benchKiosk.x - 32, room.benchKiosk.y - 38, 64, 64, 0x72566c);
+      this.stamp(this.lowProp, ENVIRONMENT_TEXTURE_KEYS.benchWarrantKiosk, room.benchKiosk.x - 32, room.benchKiosk.y - 38, 64, 64, 0x72566c);
     }
 
-    this.stamp(this.tallForeground, 'mall-directory', 264, 156, 17, 54, 0x4a717b, true);
-    this.stamp(this.tallForeground, 'poster-stand', 714, 156, 38, 53, 0x7f7295, true);
-    this.stamp(this.tallForeground, 'potted-palm', 166, 286, 38, 58, 0x427c67, true);
-    this.stamp(this.tallForeground, 'potted-palm', 790, 286, 38, 58, 0x427c67, true);
+    this.stamp(this.tallForeground, ENVIRONMENT_TEXTURE_KEYS.mallDirectory, 264, 156, 17, 54, 0x4a717b, true);
+    this.stamp(this.tallForeground, ENVIRONMENT_TEXTURE_KEYS.posterStand, 714, 156, 38, 53, 0x7f7295, true);
+    this.stamp(this.tallForeground, ENVIRONMENT_TEXTURE_KEYS.pottedPalm, 166, 286, 38, 58, 0x427c67, true);
+    this.stamp(this.tallForeground, ENVIRONMENT_TEXTURE_KEYS.pottedPalm, 790, 286, 38, 58, 0x427c67, true);
 
     const light = this.graphics(this.lightsEffects);
     light.fillStyle(0xffffdf, 0.12).fillRect(40, 0, 880, 38);
@@ -176,6 +230,11 @@ export class OpeningConcourseView {
     occluderCount: number;
     staticDisplayObjectCount: number;
     staticTextureCount: number;
+    dynamicDisplayObjectCount: number;
+    sceneDisplayObjectCount: number;
+    actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
+    effectDepths: Array<{ id: string; renderDepth: number }>;
+    depthBands: { tallForeground: number; effect: number; prompt: number };
   } {
     return {
       themeId: this.themeId,
@@ -184,14 +243,32 @@ export class OpeningConcourseView {
       staticDisplayObjectCount: [this.floor, this.decal, this.structure, this.lowProp, this.tallForeground, this.lightsEffects]
         .reduce((total, layer) => total + layer.list.length, 0),
       staticTextureCount: this.textureKeys.size,
+      dynamicDisplayObjectCount: this.actorLayer.list.length + this.effectLayer.list.length,
+      sceneDisplayObjectCount: this.scene.sys.displayList.list.length,
+      actorDepths: [...this.actorGraphicsById].map(([id, entry]) => ({
+        id,
+        baseY: entry.baseY,
+        renderDepth: this.actorLayer.depth + entry.graphics.depth,
+      })),
+      effectDepths: [...this.effectGraphicsById].map(([id, graphics]) => ({
+        id,
+        renderDepth: this.effectLayer.depth + graphics.depth,
+      })),
+      depthBands: {
+        tallForeground: this.tallForeground.depth,
+        effect: this.effectLayer.depth,
+        prompt: presentationDepth('prompt', 0),
+      },
     };
   }
 
   public destroy(): void {
     this.actorLayer.remove(this.actors, false);
     this.scene.sys.displayList.add(this.actors);
-    for (const layer of [this.floor, this.decal, this.structure, this.lowProp, this.actorLayer, this.tallForeground, this.lightsEffects]) {
+    for (const layer of [this.floor, this.decal, this.structure, this.lowProp, this.actorLayer, this.tallForeground, this.lightsEffects, this.effectLayer]) {
       layer.destroy(true);
     }
+    this.actorGraphicsById.clear();
+    this.effectGraphicsById.clear();
   }
 }
