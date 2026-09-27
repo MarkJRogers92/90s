@@ -102,6 +102,8 @@ class MvpRunInputAdapter {
   private pendingDash = false;
   /** Returns a weapon slot when a click lands on the HUD hotbar, else null. */
   public hudSlotAt: ((x: number, y: number) => number | null) | null = null;
+  /** N toggles the soundtrack on its own. */
+  public onToggleMusic: (() => void) | null = null;
   /** The end-of-shift card, when it is open: its buttons and key actions. */
   public endCard: {
     readonly isOpen: () => boolean;
@@ -157,6 +159,8 @@ class MvpRunInputAdapter {
       this.pendingDash = true;
     } else if (event.code === 'KeyM') {
       this.onToggleMute();
+    } else if (event.code === 'KeyN') {
+      this.onToggleMusic?.();
     } else if (event.code === 'Escape') {
       event.preventDefault();
       this.clearHeld();
@@ -339,6 +343,9 @@ export class MvpRunScene extends Phaser.Scene {
     this.gameHud = new GameHud(this);
     const hud = this.gameHud;
     this.inputAdapter.hudSlotAt = (x, y) => hud.weaponSlotAt(x, y);
+    this.inputAdapter.onToggleMusic = () => {
+      this.audio?.toggleMusic();
+    };
     this.pauseCard = new PauseCard(this);
     const card = new ShiftCard(this);
     this.shiftCard = card;

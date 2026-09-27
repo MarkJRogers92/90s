@@ -21,7 +21,7 @@ export const PAUSE_CONTROLS: ReadonlyArray<readonly [string, string]> = [
   ['SPACE', 'DASH'],
   ['E / F', 'BUY / STEAL'],
   ['1-9 Q', 'SWITCH WEAPON'],
-  ['M', 'SOUND'],
+  ['M / N', 'SOUND / MUSIC'],
 ];
 
 export class PauseCard {

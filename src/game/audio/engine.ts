@@ -15,6 +15,8 @@
 import { deriveAudioCues, createAudioSnapshot } from './cues';
 import type { AudioCue, AudioSnapshot } from './cues';
 import type { MvpRunState } from '../../sim/run/types';
+import { MusicPlayer } from './music';
+import { musicCue } from './musicState';
 
 type Tone = {
   readonly wave: OscillatorType;
@@ -271,6 +273,8 @@ export class GameAudioEngine {
   /** Always in the chain, wide open; `muffle` closes it for a moment. */
   private tone: BiquadFilterNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
+  private music: MusicPlayer | null = null;
+  private musicOn = true;
   private muted = false;
   private playedCount = 0;
   private readonly lastPlayedAt = new Map<AudioCue, number>();
@@ -324,6 +328,7 @@ export class GameAudioEngine {
         this.master = master;
         this.tone = tone;
         this.noiseBuffer = createNoiseBuffer(context);
+        this.music = new MusicPlayer(context, master, this.noiseBuffer);
       } catch {
         this.context = null;
         this.master = null;
@@ -366,6 +371,16 @@ export class GameAudioEngine {
     }
   }
 
+  public get musicEnabled(): boolean {
+    return this.musicOn;
+  }
+
+  /** Music on/off on its own, leaving the sound effects alone. */
+  public toggleMusic(): boolean {
+    this.musicOn = !this.musicOn;
+    return this.musicOn;
+  }
+
   public toggleMuted(): boolean {
     this.setMuted(!this.muted);
     return this.muted;
@@ -379,6 +394,13 @@ export class GameAudioEngine {
    * would open with a burst of noise.
    */
   public syncTo(state: MvpRunState): void {
+    if (this.music !== null && this.context?.state === 'running') {
+      try {
+        this.music.update(musicCue(state), this.musicOn);
+      } catch {
+        // Music is decoration; a failed booking is silence, never a broken frame.
+      }
+    }
     if (this.snapshot === null) {
       this.snapshot = createAudioSnapshot(state);
       return;
@@ -477,6 +499,8 @@ export class GameAudioEngine {
     this.snapshot = null;
     const context = this.context;
     this.context = null;
+    this.music?.stop();
+    this.music = null;
     this.master = null;
     this.tone = null;
     this.noiseBuffer = null;
