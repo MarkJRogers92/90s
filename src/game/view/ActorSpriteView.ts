@@ -61,16 +61,16 @@ export function actorTextureKey(kind: ActorKind, walking: boolean): ActorTexture
 export function enemySpriteSheet(
   kind: ActorKind,
   walking: boolean,
-): { idle: string; walk: string | null; walkFrames: number; ticksPerFrame: number; displaySize: number } | null {
+): { idle: string; walk: string | null; attack: string; walkFrames: number; ticksPerFrame: number; displaySize: number } | null {
   // displaySize is the on-screen frame size; the sheet's own resolution is
   // read from the texture, so a 48px or 64px re-render needs no code change.
   switch (kind) {
     case 'hanger':
-      return { idle: ENEMY_TEXTURE_KEYS.hangerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.hangerWalk : null, walkFrames: 6, ticksPerFrame: 4, displaySize: 64 };
+      return { idle: ENEMY_TEXTURE_KEYS.hangerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.hangerWalk : null, attack: ENEMY_TEXTURE_KEYS.hangerAttack, walkFrames: 6, ticksPerFrame: 4, displaySize: 64 };
     case 'spitter':
-      return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, walkFrames: 1, ticksPerFrame: 5, displaySize: 64 };
+      return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, attack: ENEMY_TEXTURE_KEYS.spitterAttack, walkFrames: 1, ticksPerFrame: 5, displaySize: 64 };
     case 'lp_manager':
-      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, walkFrames: 8, ticksPerFrame: 6, displaySize: 128 };
+      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, attack: ENEMY_TEXTURE_KEYS.lpManagerAttack, walkFrames: 8, ticksPerFrame: 6, displaySize: 128 };
     default:
       return null;
   }
@@ -244,6 +244,24 @@ export function croppedFrameOrigin(
   };
 }
 
+// Phaser.TintModes values, inlined so this module stays importable without a
+// browser (the pure helpers above are unit tested under Node).
+const TINT_FILL = 1;
+const TINT_ADD = 2;
+
+/** Presentation-only adjustments layered on a frame: hit reactions and wind-ups. */
+export type ActorPose = {
+  readonly offsetX: number;
+  readonly offsetY: number;
+  readonly scaleX: number;
+  readonly scaleY: number;
+  readonly flash: boolean;
+  /** Additive glow colour while an attack charges. */
+  readonly tint?: number;
+};
+
+export const NEUTRAL_POSE: ActorPose = { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1, flash: false };
+
 /** Disposable Phaser adapter over snapshots; texture failure returns vector fallback control to the caller. */
 export class ActorSpriteView {
   private readonly scene: Phaser.Scene;
@@ -256,15 +274,30 @@ export class ActorSpriteView {
     this.sprite = scene.add.image(0, 0, spec.textureKey).setOrigin(0.5, 0.84).setVisible(false);
   }
 
-  public sync(actor: ActorSnapshot, frame: { row: number; column: number }, visual: ActorPresentation, usable: boolean, depth: number, spec: SpriteSpec): boolean {
+  public sync(
+    actor: ActorSnapshot,
+    frame: { row: number; column: number },
+    visual: ActorPresentation,
+    usable: boolean,
+    depth: number,
+    spec: SpriteSpec,
+    pose: ActorPose = NEUTRAL_POSE,
+  ): boolean {
     if (!usable) { this.sprite.setVisible(false); return false; }
     if (this.textureKey !== spec.textureKey) {
       this.sprite.setTexture(spec.textureKey);
       this.textureKey = spec.textureKey;
     }
     const lunge = directionUnit(visual.direction);
-    this.sprite.setVisible(true).setPosition(actor.x + lunge.x * visual.lunge, actor.y + visual.bobY + lunge.y * visual.lunge).setDepth(depth);
-    this.sprite.setAlpha(visual.damageFlicker ? 0.45 : 1).setScale(spec.scale, spec.scale);
+    this.sprite
+      .setVisible(true)
+      .setPosition(actor.x + lunge.x * visual.lunge + pose.offsetX, actor.y + visual.bobY + lunge.y * visual.lunge + pose.offsetY)
+      .setDepth(depth);
+    this.sprite.setAlpha(visual.damageFlicker && !pose.flash ? 0.45 : 1).setScale(spec.scale * pose.scaleX, spec.scale * pose.scaleY);
+    // A struck sprite goes solid white for a few frames; a charging one glows.
+    if (pose.flash) this.sprite.setTint(0xffffff).setTintMode(TINT_FILL);
+    else if (pose.tint !== undefined) this.sprite.setTint(pose.tint).setTintMode(TINT_ADD);
+    else this.sprite.clearTint();
     this.sprite.setCrop(frame.column * spec.frameWidth, frame.row * spec.frameHeight, spec.frameWidth, spec.frameHeight);
     const origin = croppedFrameOrigin(
       frame,

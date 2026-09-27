@@ -34,7 +34,7 @@ export const BOSS_SUMMONED_HEALTH = 8;
 export const BOSS_SUMMONED_RADIUS = 14;
 
 /** Offsets in degrees, ascending, for the five-projectile volley fan. */
-const VOLLEY_ANGLE_OFFSETS_DEGREES = [-30, -15, 0, 15, 30] as const;
+export const VOLLEY_ANGLE_OFFSETS_DEGREES = [-30, -15, 0, 15, 30] as const;
 
 /**
  * The same player invulnerability window the existing enemy stage applies

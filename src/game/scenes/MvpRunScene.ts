@@ -237,6 +237,7 @@ export class MvpRunScene extends Phaser.Scene {
   private store: CheckpointStore = new InMemoryCheckpointStore();
   private generation = 1;
   private accumulator = 0;
+  private hitStopMs = 0;
   private lastRoomIndex = 0;
   private lastCheckpointKey: string | null = null;
   private checkpointStatus = 'none yet';
@@ -339,6 +340,16 @@ export class MvpRunScene extends Phaser.Scene {
       return;
     }
 
+    // Hit stop: after a big hit lands the fixed-step clock holds for a few
+    // frames, exactly like a very short pause. Held input stays held, queued
+    // presses wait, and no simulation rule changes.
+    if (this.hitStopMs > 0) {
+      this.hitStopMs -= Math.max(elapsedMs, 0);
+      this.accumulator = 0;
+      this.syncView();
+      return;
+    }
+
     const roomBefore = this.run.roomIndex;
     this.accumulator += Math.min(Math.max(elapsedMs, 0), STEP_MS * MAX_STEPS);
     let steps = 0;
@@ -414,6 +425,7 @@ export class MvpRunScene extends Phaser.Scene {
     // would read every field as a change and fire a burst of cues.
     this.audio?.resetBaseline();
     this.accumulator = 0;
+    this.hitStopMs = 0;
     this.lastRoomIndex = this.run.roomIndex;
     this.lastCheckpointKey = null;
     this.checkpointStatus = cleared.ok
@@ -470,6 +482,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   private syncView(): void {
     this.runView?.sync(this.run);
+    this.hitStopMs = Math.max(this.hitStopMs, this.runView?.takeHitStop() ?? 0);
     centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);

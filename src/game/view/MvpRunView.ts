@@ -24,10 +24,13 @@ import {
   actorFrameFor,
   actorPresentation,
   actorTextureKey,
+  NEUTRAL_POSE,
   type ActorDirection,
+  type ActorPose,
   type ActorSnapshot,
   type SpriteSpec,
 } from './ActorSpriteView';
+import { attackFrameFor, combinePoses, enemyWindups, windupPose, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { WeaponView } from './WeaponView';
@@ -142,6 +145,16 @@ export class MvpRunView {
       state.tick,
       state.room.combat.enemies.map((enemy) => ({ id: `enemy:${enemy.id}`, x: enemy.x, y: enemy.y })),
     );
+    // Feedback reads this tick's hits first, so a struck sprite reacts on the
+    // same frame the damage number appears.
+    this.feedback.sync(
+      actorScope,
+      state.tick,
+      state.room.combat.enemies,
+      state.room.combat.player,
+      state.paused || state.status !== 'playing',
+      state.room.combat.projectiles,
+    );
     for (const patch of state.room.combat.surfaces) {
       this.drawSurfacePatch(patch, opening?.effectGraphics(`patch:${patch.id}`) ?? this.effectGraphics);
     }
@@ -158,20 +171,30 @@ export class MvpRunView {
       const facing = enemy.kind === 'spitter'
         ? { x: (player0.x - enemy.x) * 1e-3, y: (player0.y - enemy.y) * 1e-3 }
         : enemyDelta;
+      const windups = enemyWindups(enemy, player0);
+      // A charging enemy turns to face its locked aim, so the strike reads.
+      const charge = windups.find((windup) => windup.kind !== 'reach');
+      const faced = charge ? { x: charge.aimX * 1e-3, y: charge.aimY * 1e-3 } : facing;
       const enemySnapshot: ActorSnapshot = {
         id: `enemy:${enemy.id}`, kind: enemy.kind === 'lp_manager' ? 'lp_manager' : enemy.kind,
-        x: enemy.x, y: enemy.y, moveX: facing.x, moveY: facing.y,
+        x: enemy.x, y: enemy.y, moveX: faced.x, moveY: faced.y,
         attackTicks: 0, damaged: false, phase: enemy.phase,
       };
-      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth);
+      const pose = combinePoses(windupPose(windups, state.tick), this.feedback.poseFor(`enemy:${enemy.id}`, state.tick));
+      const sheet = enemySpriteSheet(enemySnapshot.kind, false);
+      const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
+      const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
+      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, pose, attackColumn);
       const spriteActive = sprite.spriteActive;
       this.drawActorEffectCues(enemySnapshot, sprite, effects);
       if (enemy.kind === 'hanger') {
         hangerEvidence.push({ id: `enemy:${enemy.id}`, ...sprite });
       }
       this.contactShadow(`enemy:${enemy.id}`, enemy.x, enemy.y, enemy.kind === 'lp_manager' ? 2.2 : 1.2);
-      if (enemy.phase === 'telegraph') {
-        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y, radius: enemy.kind === 'lp_manager' ? 190 : 80, color: 0xffd84a, intensity: 0.75 });
+      if (charge) {
+        const color = charge.kind === 'spit' ? 0x9aff6a : charge.kind === 'volley' ? 0xff3fc8 : 0xffb040;
+        const size = enemy.kind === 'lp_manager' ? 200 : 90;
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 16, radius: size * (0.6 + 0.6 * charge.progress), color, intensity: 0.5 + 0.5 * charge.progress });
       } else if (enemy.kind === 'lp_manager') {
         this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 110, color: 0xff3a4a, intensity: 0.45 });
       } else {
@@ -183,6 +206,7 @@ export class MvpRunView {
         visible: enemy.phase === 'telegraph',
         effectDepth: presentationDepth('effect', 1),
       });
+      this.drawWindups(enemy, windups, effects, state.tick);
       if (enemy.kind === 'lp_manager') {
         this.drawBoss(enemy, body, effects, !spriteActive);
       } else {
@@ -209,7 +233,7 @@ export class MvpRunView {
       attackTicks: player.attackActiveTicks, damaged: player.invulnerableTicks > 0, phase: 'idle',
       // Isaac-style: the janitor looks where the pointer aims, even while backpedalling.
       faceX: player.facing.x, faceY: player.facing.y,
-    }, state.tick, playerDepth);
+    }, state.tick, playerDepth, this.feedback.poseFor('player', state.tick));
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.contactShadow('player', player.x, player.y, 1);
     // The janitor carries a little warm light, so the player never loses themself in the dark.
@@ -249,7 +273,6 @@ export class MvpRunView {
       },
     };
     this.drawTokens(state);
-    this.feedback.sync(actorScope, state.tick, state.room.combat.enemies, player, state.paused || state.status !== 'playing');
     for (const light of this.feedback.drainLights()) opening?.addLight(light);
     for (const projectile of state.room.combat.projectiles) {
       const enemyShot = projectile.faction === 'enemy';
@@ -401,22 +424,7 @@ export class MvpRunView {
         graphics.fillStyle(0xd35f55, 1);
         graphics.fillCircle(enemy.x, enemy.y - 10, 5);
       }
-      if (enemy.phase === 'telegraph') {
-        effects.lineStyle(2, 0xffd45d, 0.9);
-        effects.strokeCircle(enemy.x, enemy.y, enemy.radius + 8);
-      }
     } else {
-      if (enemy.phase === 'telegraph') {
-        effects.lineStyle(3, 0xffd45d, 0.95);
-        effects.strokeCircle(enemy.x, enemy.y, enemy.radius + 8);
-        effects.lineStyle(2, 0xffd45d, 0.7);
-        effects.lineBetween(
-          enemy.x,
-          enemy.y,
-          enemy.x + enemy.telegraphAimX * 52,
-          enemy.y + enemy.telegraphAimY * 52,
-        );
-      }
       if (drawBody) {
         graphics.fillStyle(0x4d2c59, 1);
         graphics.fillRect(enemy.x - 13, enemy.y - 13, 26, 26);
@@ -432,31 +440,80 @@ export class MvpRunView {
     effects.fillRect(enemy.x - 13, barY + 1, 26 * Math.max(0, Math.min(1, enemy.health / 8)), 2);
   }
 
+  /**
+   * Exaggerated wind-ups, all drawn from the simulation's own telegraph state
+   * so every warning is the real attack: the spit lane along the locked aim,
+   * the slam ring at the authored reach, the volley's five real angles, and a
+   * hanger rearing as it closes to touching range.
+   */
+  private drawWindups(enemy: EnemyState, windups: readonly Windup[], effects: Phaser.GameObjects.Graphics, tick: number): void {
+    for (const windup of windups) {
+      const p = windup.progress;
+      const blink = p > 0.75 && Math.floor(tick / 3) % 2 === 0;
+      if (windup.kind === 'spit') {
+        // A dashed lane that grows along the locked aim toward where the glob goes.
+        const ox = enemy.x + windup.aimX * 18;
+        const oy = enemy.y - 20 + windup.aimY * 12;
+        const length = 70 + 150 * p;
+        const color = blink ? 0xffffff : p > 0.6 ? 0xff3fc8 : 0xffd84a;
+        const width = 4 + 5 * p;
+        for (let d = 0; d < length; d += 16) {
+          const end = Math.min(length, d + 9);
+          effects.lineStyle(width + 4, 0x12020a, 0.55).lineBetween(ox + windup.aimX * d, oy + windup.aimY * d, ox + windup.aimX * end, oy + windup.aimY * end);
+          effects.lineStyle(width, color, 0.55 + 0.45 * p).lineBetween(ox + windup.aimX * d, oy + windup.aimY * d, ox + windup.aimX * end, oy + windup.aimY * end);
+        }
+        const tx = ox + windup.aimX * length;
+        const ty = oy + windup.aimY * length;
+        effects.lineStyle(4, color, 0.95).strokeCircle(tx, ty, 14 - 6 * p);
+        effects.lineStyle(3, color, 0.4 + 0.5 * p).strokeCircle(enemy.x, enemy.y - 20, 30 + 12 * (1 - p));
+        this.drawAlert(effects, enemy.x, enemy.y - 64 - 4 * Math.sin(tick / 3), p, 0xffd84a);
+      } else if (windup.kind === 'slam') {
+        // The ring is the authored slam reach itself, not a decorative radius: a
+        // smaller ring told players they were safe where the slam still connects.
+        const reach = windup.reach ?? BOSS_SLAM_REACH;
+        const color = p > 0.7 ? 0xff3a2a : 0xffd45d;
+        // It fills from the centre out, reaching the edge the tick the slam lands.
+        effects.fillStyle(color, 0.16 + 0.2 * p).fillCircle(enemy.x, enemy.y, reach * p);
+        effects.fillStyle(color, 0.1).fillCircle(enemy.x, enemy.y, reach);
+        effects.lineStyle(blink ? 6 : 4, blink ? 0xffffff : color, 0.95).strokeCircle(enemy.x, enemy.y, reach);
+        effects.lineStyle(2, color, 0.5).strokeCircle(enemy.x, enemy.y, reach + 6 + 4 * Math.sin(tick / 2));
+        this.drawAlert(effects, enemy.x, enemy.y - 150 - 6 * p, p, color);
+      } else if (windup.kind === 'volley') {
+        const base = Math.atan2(windup.aimY, windup.aimX);
+        const color = blink ? 0xffffff : 0xff3fc8;
+        for (const offset of windup.angles ?? []) {
+          const a = base + offset;
+          const length = 50 + 170 * p;
+          const ox = enemy.x + Math.cos(a) * 30;
+          const oy = enemy.y - 30 + Math.sin(a) * 30;
+          effects.lineStyle(4 + 3 * p, 0x12020a, 0.5).lineBetween(ox, oy, ox + Math.cos(a) * length, oy + Math.sin(a) * length);
+          effects.lineStyle(2 + 2 * p, color, 0.5 + 0.5 * p).lineBetween(ox, oy, ox + Math.cos(a) * length, oy + Math.sin(a) * length);
+        }
+        effects.lineStyle(3, color, 0.9).strokeCircle(enemy.x, enemy.y - 30, 34 + 10 * (1 - p));
+      } else if (p > 0.3) {
+        // Hangers hurt by touch: claws flare red as they close in.
+        const color = p > 0.75 ? 0xff2a2a : 0xff8a4a;
+        effects.lineStyle(2 + 2 * p, color, p).strokeEllipse(enemy.x, enemy.y + 4, 56 + 10 * p, 22 + 4 * p);
+        if (p > 0.75) this.drawAlert(effects, enemy.x, enemy.y - 58, 1, 0xff2a2a);
+      }
+    }
+  }
+
+  /** A chunky pixel "!" that pops in as a wind-up starts. */
+  private drawAlert(effects: Phaser.GameObjects.Graphics, x: number, y: number, progress: number, color: number): void {
+    const s = progress < 0.12 ? 2.4 - progress * 5 : 1.8;
+    const w = 5 * s;
+    const h = 13 * s;
+    effects.fillStyle(0x12020a, 1).fillRect(x - w / 2 - 2, y - h - 2, w + 4, h + 4).fillRect(x - w / 2 - 2, y + 3, w + 4, w + 4);
+    effects.fillStyle(color, 1).fillRect(x - w / 2, y - h, w, h).fillRect(x - w / 2, y + 5, w, w);
+  }
+
   private drawBoss(
     enemy: EnemyState,
     graphics = this.graphics,
     effects = graphics,
     drawBody = true,
   ): void {
-    if (enemy.phase === 'telegraph') {
-      // The ring is the authored slam reach itself, not a decorative radius: a
-      // smaller ring told players they were safe where the slam still connects.
-      effects.fillStyle(0xffd45d, 0.12);
-      effects.fillCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
-      effects.lineStyle(3, 0xffd45d, 0.95);
-      effects.strokeCircle(enemy.x, enemy.y, BOSS_SLAM_REACH);
-      effects.lineStyle(2, 0xffd45d, 0.7);
-      effects.lineBetween(
-        enemy.x,
-        enemy.y,
-        enemy.x + enemy.telegraphAimX * 64,
-        enemy.y + enemy.telegraphAimY * 64,
-      );
-    }
-    if ((enemy.bossVolleyTelegraphTicks ?? 0) > 0) {
-      effects.lineStyle(2, 0x8bd8ff, 0.9);
-      effects.strokeCircle(enemy.x, enemy.y, enemy.radius + 16);
-    }
     this.drawEnemyStatuses(enemy, effects);
     if (drawBody) {
       graphics.fillStyle(0x5c2936, 1);
@@ -482,20 +539,19 @@ export class MvpRunView {
    */
   private drawProjectile(projectile: ProjectileState, graphics = this.graphics): void {
     if (projectile.faction === 'enemy') {
-      graphics.fillStyle(0xff5d7a, 1);
-      graphics.fillRect(
-        projectile.x - projectile.radius,
-        projectile.y - projectile.radius,
-        projectile.radius * 2,
-        projectile.radius * 2,
-      );
-      graphics.lineStyle(2, 0x4a1220, 0.95);
-      graphics.strokeRect(
-        projectile.x - projectile.radius - 2,
-        projectile.y - projectile.radius - 2,
-        projectile.radius * 2 + 4,
-        projectile.radius * 2 + 4,
-      );
+      // A hot magenta glob with a dark outline and a fading trail, so it reads
+      // on bright terrazzo and dark carpet alike. The solid core is the hitbox.
+      const speed = Math.hypot(projectile.velocityX, projectile.velocityY) || 1;
+      const bx = -projectile.velocityX / speed;
+      const by = -projectile.velocityY / speed;
+      for (let i = 4; i >= 1; i -= 1) {
+        const r = projectile.radius * (1 - i * 0.16);
+        graphics.fillStyle(0xff3fc8, 0.5 - i * 0.1).fillCircle(projectile.x + bx * i * 7, projectile.y + by * i * 7, r);
+      }
+      const wobble = Math.sin((projectile.remainingTicks + projectile.id) / 2) * 0.8;
+      graphics.fillStyle(0x1a0010, 0.95).fillCircle(projectile.x, projectile.y, projectile.radius + 4);
+      graphics.fillStyle(0xff3fc8, 1).fillEllipse(projectile.x, projectile.y, (projectile.radius + 2 + wobble) * 2, (projectile.radius + 2 - wobble) * 2);
+      graphics.fillStyle(0xffd0f4, 1).fillCircle(projectile.x - 1.5, projectile.y - 1.5, projectile.radius * 0.5);
       return;
     }
     const water = projectile.payload?.payloadKind === 'water';
@@ -569,14 +625,31 @@ export class MvpRunView {
     for (const light of lights) this.openingConcourse?.addLight(light);
   }
 
-  private syncActorSprite(snapshot: ActorSnapshot, tick: number, depth: number): ActorFrameEvidence {
+  /** Columns in an 8-row sheet, or 0 when the texture is not loaded. */
+  private sheetColumns(key: string): number {
+    if (!this.scene.textures.exists(key) || usableTextureKey(this.scene.textures, key) !== key) return 0;
+    const source = this.scene.textures.get(key).getSourceImage() as { width: number; height: number };
+    return Math.max(1, Math.round(source.width / characterFrameSize(source.height, 8)));
+  }
+
+  private syncActorSprite(
+    snapshot: ActorSnapshot,
+    tick: number,
+    depth: number,
+    pose: ActorPose = NEUTRAL_POSE,
+    attackColumn: number | null = null,
+  ): ActorFrameEvidence {
     const visual = actorPresentation(this.actorMemory, snapshot, tick);
     if (snapshot.kind === 'alex') {
       const neon = this.neonPlayerSpec(visual.walking);
-      if (neon) return this.syncSheetSprite(snapshot, visual, tick, depth, neon);
+      if (neon) return this.syncSheetSprite(snapshot, visual, tick, depth, neon, pose);
     }
     const sheet = enemySpriteSheet(snapshot.kind, visual.walking);
-    const walkKey = sheet?.walk && usableTextureKey(this.scene.textures, sheet.walk) ? sheet.walk : null;
+    // An attack in progress draws from the attack sheet, which shares the walk
+    // sheet's layout (one row per facing, canvases grown around the idle one).
+    const attacking = sheet !== null && attackColumn !== null;
+    const walkKey = attacking ? sheet.attack
+      : sheet?.walk && usableTextureKey(this.scene.textures, sheet.walk) ? sheet.walk : null;
     const neonIdle = sheet && usableTextureKey(this.scene.textures, sheet.idle) ? sheet.idle : null;
     const textureKey = walkKey ?? neonIdle ?? actorTextureKey(snapshot.kind, visual.walking);
     let spec: SpriteSpec = { textureKey, frameWidth: 32, frameHeight: 48, scale: 1 };
@@ -605,8 +678,11 @@ export class MvpRunView {
     }
     this.usedActorSpriteIds.add(snapshot.id);
     const walkingFrames = (visual.walking && snapshot.kind === 'alex') || walkKey !== null;
-    const frame = actorFrameFor(walkingFrames ? 'walk' : 'idle', visual.direction, tick, walkFrames, sheet?.ticksPerFrame ?? 5);
-    const spriteActive = view.sync(snapshot, frame, visual, usable, depth, spec);
+    const walkFrame = actorFrameFor(walkingFrames ? 'walk' : 'idle', visual.direction, tick, walkFrames, sheet?.ticksPerFrame ?? 5);
+    const frame = attacking ? { row: walkFrame.row, column: Math.min(walkFrames - 1, attackColumn) } : walkFrame;
+    // The walk bob and lunge would fight the attack pose, so an attack stands still.
+    const shownVisual = attacking ? { ...visual, lunge: 0, bobY: 0 } : visual;
+    const spriteActive = view.sync(snapshot, frame, shownVisual, usable, depth, spec, pose);
     return {
       spriteActive,
       vectorFallbackActive: !spriteActive,
@@ -642,6 +718,7 @@ export class MvpRunView {
     tick: number,
     depth: number,
     sheet: { textureKey: string; rows: 1 | 8; walkFrames: number },
+    pose: ActorPose = NEUTRAL_POSE,
   ): ActorFrameEvidence {
     const source = this.scene.textures.get(sheet.textureKey).getSourceImage() as { height: number };
     const size = characterFrameSize(source.height, sheet.rows);
@@ -653,7 +730,7 @@ export class MvpRunView {
     }
     this.usedActorSpriteIds.add(snapshot.id);
     const frame = actorFrameFor(sheet.rows === 8 ? 'walk' : 'idle', visual.direction, tick, sheet.walkFrames, 5);
-    const spriteActive = view.sync(snapshot, frame, visual, true, depth, spec);
+    const spriteActive = view.sync(snapshot, frame, visual, true, depth, spec, pose);
     return {
       spriteActive,
       vectorFallbackActive: !spriteActive,
@@ -887,6 +964,11 @@ export class MvpRunView {
     this.deathEffects.reset();
     this.effectGraphics.clear();
     this.actorDebug = this.emptyActorDebug();
+  }
+
+  /** Milliseconds the scene should hold its clock for hits landed this frame. */
+  public takeHitStop(): number {
+    return this.feedback.takeHitStop();
   }
 
   public actorPresentationSnapshot(): ActorPresentationDebugSnapshot {

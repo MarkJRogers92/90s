@@ -117,6 +117,12 @@ export const ENEMY_TEXTURE_KEYS = {
   spitterIdle: 'neon:enemy:spitter-idle',
   lpManagerIdle: 'neon:enemy:lp-manager-idle',
   lpManagerWalk: 'neon:enemy:lp-manager-walk',
+  hangerAttack: 'neon:enemy:hanger-attack',
+  spitterAttack: 'neon:enemy:spitter-attack',
+  lpManagerAttack: 'neon:enemy:lp-manager-attack',
+  hangerDeath: 'neon:enemy:hanger-death',
+  spitterDeath: 'neon:enemy:spitter-death',
+  lpManagerDeath: 'neon:enemy:lp-manager-death',
 } as const;
 
 /** Item icons keyed by the simulation's item definition id. */
