@@ -1,5 +1,20 @@
 # Decisions
 
+## 2026-09-27 — GitHub handoff for Claude review
+
+- The user paused this slice and asked for the current work plus explanatory
+  handoff notes to be pushed to GitHub so they can give it to Claude Opus 5.5.
+  Push only `codex/presentation-3quarter`; keep it unmerged, unpublished,
+  undeployed, and unreleased.
+- Include the active editable Aseprite masters and cited civilian candidate
+  exports under `docs/art/presentation-vertical-slice/sources/` so the handoff
+  is self-contained. They are documentation/source files only; runtime assets
+  remain the approved PNG exports under `public/assets/presentation/`. Omit
+  unrelated scratch iterations and do not start any paid generation.
+- Keep Claude's visual experiment separate from this accepted baseline. No
+  broader room rollout starts without new user approval; the Food Court remains
+  out of scope, and the M5 simulation/rules/save behavior remain authoritative.
+
 ## 2026-09-27 — presentation vertical slice boundary
 
 - Keep opening-concourse civilians presentation-only: their lanes, animation,

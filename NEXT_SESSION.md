@@ -4,9 +4,14 @@ The Opening Concourse production-presentation vertical slice is implemented on
 `codex/presentation-3quarter` in `.worktrees/presentation-3quarter`. Verify the
 actual branch and working tree before trusting this note.
 
-The next bounded action is **user visual review**, not another room conversion.
-Open the local game, choose **Night Shift**, and compare the playable calm,
-evacuation, and first-combat transition with:
+The user has paused local iteration and requested a GitHub handoff for Claude
+Opus 5.5. Read [`CLAUDE_HANDOFF.md`](CLAUDE_HANDOFF.md) first. Resume only when
+the user asks; the next user-facing gate remains visual review, not another
+room conversion. The handoff branch is `origin/codex/presentation-3quarter` and
+must remain unmerged, unpublished, undeployed, and unreleased.
+
+For a later visual review, open the local game, choose **Night Shift**, and
+compare the playable calm, evacuation, and first-combat transition with:
 
 - `artifacts/presentation-vertical-slice/opening-busy.png`
 - `artifacts/presentation-vertical-slice/opening-evacuation.png`
@@ -19,8 +24,8 @@ Port 5173 was occupied by another worktree during Task 8. A safe local launch is
 
 Then open `http://127.0.0.1:4176`, choose **Night Shift**, move with WASD, aim
 with the pointer, attack with the primary mouse button, and press Escape to
-pause. The branch is not pushed, merged, published, deployed, released, or
-approved for broader art rollout.
+pause. The branch is pushed to GitHub for handoff, but is not merged, published,
+deployed, released, or approved for broader art rollout.
 
 The correction pass resolved the previous framing and HUD blockers: native-scale
 captures show four distinct civilians inside the initial camera; the HUD is
