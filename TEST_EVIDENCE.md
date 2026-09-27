@@ -1,5 +1,22 @@
 # Test evidence
 
+## 2026-09-27 — round 6: end card, fairness, dash, performance
+
+- `npx vitest run` — PASS: 42 files, 576 tests. New: `shift-card-model` (5),
+  `melee-knockback` (4), `dash` (6), dash cue (1); heavy-hit cue updated. Each
+  new block failed first (missing module / wrong behaviour).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.3 min) after moving the
+  DOM status bar and summary off-screen.
+- Fairness harness (sim-level scripted brawler, 150 seeds, not committed):
+  original rules won 39 / died 80 / stalled 31, Hanger contact damage 375;
+  Hanger knockback won 29 / died 93 / stalled 28, Hanger damage 214; all-enemy
+  knockback raised glob damage 503 -> 728 and was narrowed to Hangers; a
+  Spitter opener stagger raised room-entry 2+-damage rooms 12% -> 20% and was
+  reverted. The bot's outcome swings with its own logic, so difficulty is
+  left to a human playtest.
+- `node scripts/perf-fight.mjs` — GPU (Apple M2, ANGLE Metal) 60 median / 60
+  p10 fps in a Food Court fight; SwiftShader 30 / 29 fps (storefront).
+
 ## 2026-09-27 — round 5: Alex swing, flinch, death
 
 - `npx vitest run` — PASS: 39 files, 560 tests (new `player body action` block,

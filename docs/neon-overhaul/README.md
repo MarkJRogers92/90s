@@ -195,6 +195,30 @@ timing or AI rule changed. Pure rules live in `src/game/view/combatBeats.ts`
   hidden once the shift is over; the blow that ends the shift now gets its
   own impact (feedback is only suppressed by the pause menu).
 
+## Round 6 — end card, status bar, fairness, dash, performance
+
+- **End-of-shift card** (`src/game/ui/ShiftCard.ts`, model
+  `shiftCardModel.ts`): SHIFT OVER / CLOCKED OUT drawn in-canvas on real time
+  (the sim clock is stopped), after the death fall; rows reveal one by one;
+  RETRY / NEW SHIFT (R, Enter) and TITLE (T) are clickable.
+- **Status bar**: the DOM status bar and summary sit off-screen at natural
+  size in run mode (`styles.css`), still read by assistive tech and the
+  browser tests; only the action row stays above the canvas.
+- **Fairness** (measured, not guessed — sim-level scripted brawler over 150
+  seeded runs): ~80% of room-entry damage was Hanger contact, because a Hanger
+  closed the gap within one mop cooldown. Melee hits now knock Hangers back
+  48 px (`MELEE_KNOCKBACK`). Knocking back Spitters was tried and measurably
+  worse (you chase a shooter through its fire), and staggering Spitter
+  openers was tried and reverted (no improvement). The bot's win rate is too
+  sensitive to its own logic to tune by; use a human playtest for difficulty.
+- **Dash** (`src/sim/combat/dash.ts`): Space, 126 px over 12 ticks, enemy
+  hits cannot land and globs pass through, 45-tick cooldown; own timers so it
+  never reads as "just hurt". Whoosh, cyan afterimages, dust puff, stretch.
+- **Heavy hits** start at 5 damage (`HEAVY_HIT_DAMAGE`), above the mop's 4.
+- **Performance** (`node scripts/perf-fight.mjs`): M2 GPU 60 fps median /
+  60 p10 in a Food Court fight; SwiftShader software GL 30 / 29 (bloom
+  auto-disabled). Real low-end laptops, Safari and Windows remain untested.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's
