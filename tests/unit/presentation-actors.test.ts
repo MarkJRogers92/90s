@@ -7,6 +7,7 @@ import {
   directionForVector,
   shouldRenderActorSprite,
 } from '../../src/game/view/ActorSpriteView';
+import { actorVisualState } from '../../src/game/view/visualState';
 
 describe('actor direction and frame projection', () => {
   it('keeps the approved clockwise sprite direction order', () => {
@@ -39,6 +40,10 @@ describe('actor direction and frame projection', () => {
 });
 
 describe('snapshot-driven actor presentation', () => {
+  it('derives motion, attack arc, hit flash, and Hanger phase cues from authoritative fields', () => {
+    expect(actorVisualState({ moving: true, attackTicks: 3, invulnerableTicks: 1, phase: 'telegraph', isHanger: true, tick: 5 }))
+      .toMatchObject({ walking: true, attackLean: 3, damageFlicker: true, mopArc: true, lunge: 3 });
+  });
   it('projects movement, direct attack, damage flicker, Hanger lunge, and one-shot death', () => {
     const memory = new ActorPresentationMemory();
     const visible = new Set(['alex', 'hanger-1']);

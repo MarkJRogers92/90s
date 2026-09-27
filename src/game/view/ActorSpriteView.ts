@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { actorVisualState } from './visualState';
 
 export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
@@ -75,14 +76,8 @@ export function actorPresentation(
   memory.observe(visibleIds);
   const direction = memory.directionFor(actor);
   const walking = actor.moveX !== 0 || actor.moveY !== 0;
-  return {
-    direction,
-    walking,
-    attackLean: actor.kind === 'alex' && actor.attackTicks > 0 ? 3 : 0,
-    damageFlicker: actor.damaged && Math.floor(tick / 4) % 2 === 1,
-    bobY: actor.kind === 'hanger' ? Math.sin(tick / 5) * 2 : 0,
-    lunge: actor.kind === 'hanger' && actor.phase === 'telegraph' ? 3 : 0,
-  };
+  const state = actorVisualState({ moving: walking, attackTicks: actor.attackTicks, invulnerableTicks: actor.damaged ? 1 : 0, phase: actor.phase, isHanger: actor.kind === 'hanger', tick });
+  return { direction, walking: state.walking, attackLean: state.attackLean, damageFlicker: state.damageFlicker, bobY: state.bobY, lunge: state.lunge };
 }
 
 type SpriteSpec = { readonly textureKey: string; readonly frameWidth: number; readonly frameHeight: number; readonly scale: number };

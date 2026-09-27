@@ -428,6 +428,13 @@ export class MvpRunView {
       player.x + player.facing.x * (player.radius + 6),
       player.y + player.facing.y * (player.radius + 6),
     );
+    if (player.attackActiveTicks > 0) {
+      const angle = Math.atan2(player.facing.y, player.facing.x);
+      effects.lineStyle(3, 0xe8dcc4, 0.95);
+      effects.beginPath();
+      effects.arc(player.x, player.y, player.radius + 12, angle - 0.7, angle + 0.7);
+      effects.strokePath();
+    }
   }
 
   private movementFor(id: string, x: number, y: number): { x: number; y: number } {
