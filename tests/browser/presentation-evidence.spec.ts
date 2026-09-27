@@ -1,4 +1,5 @@
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
+import { worldToCanvas } from './projection';
 
 type PresentationSnapshot = {
   generation: number;
@@ -6,6 +7,13 @@ type PresentationSnapshot = {
   paused: boolean;
   roomId: string;
   player: { x: number; y: number };
+  enemies: Array<{
+    id: number;
+    kind: string;
+    x: number;
+    y: number;
+    phase: string;
+  }>;
   presentation: null | {
     staticDisplayObjectCount: number;
     staticTextureCount: number;
@@ -19,8 +27,7 @@ type PresentationSnapshot = {
     };
   };
   actorPresentation: null | {
-    hangers: Array<{ lungeCueVisible: boolean }>;
-    telegraphs: Array<{ visible: boolean }>;
+    telegraphs: Array<{ id: string; visible: boolean }>;
   };
 };
 
@@ -163,7 +170,7 @@ test('captures the required opening presentation states at integer canvas scale'
   assertLocalOnly();
 });
 
-test('captures first combat while a live telegraph is visible', async ({ page }) => {
+test('captures first combat while a live telegraph is visibly on screen', async ({ page }) => {
   test.setTimeout(150_000);
   const assertLocalOnly = rejectExternalRequests(page);
   await launchRun(page, { width: 1440, height: 900 });
@@ -173,12 +180,28 @@ test('captures first combat while a live telegraph is visible', async ({ page })
 
   let capturedLiveTelegraph = false;
   await expect.poll(async () => {
-    const actors = (await snapshot(page)).actorPresentation;
-    const telegraphVisible = Boolean(
-      actors?.hangers.some((hanger) => hanger.lungeCueVisible)
-      || actors?.telegraphs.some((telegraph) => telegraph.visible),
+    const state = await snapshot(page);
+    const actors = state.actorPresentation;
+    const telegraphingEnemy = state.enemies.find((enemy) => (
+      enemy.kind === 'spitter'
+      && enemy.phase === 'telegraph'
+      && actors?.telegraphs.some((telegraph) => (
+        telegraph.id === `enemy:${enemy.id}` && telegraph.visible
+      ))
+    ));
+    const canvasBox = await page.locator('canvas').boundingBox();
+    const projected = telegraphingEnemy
+      ? await worldToCanvas(page, telegraphingEnemy.x, telegraphingEnemy.y)
+      : null;
+    const cueOnScreen = Boolean(
+      canvasBox
+      && projected
+      && projected.x >= 48
+      && projected.x <= canvasBox.width - 48
+      && projected.y >= 48
+      && projected.y <= canvasBox.height - 48
     );
-    if (telegraphVisible && !capturedLiveTelegraph) {
+    if (cueOnScreen && !capturedLiveTelegraph) {
       await page.screenshot({ path: `${ARTIFACT_ROOT}/first-combat.png`, fullPage: true });
       capturedLiveTelegraph = true;
     }

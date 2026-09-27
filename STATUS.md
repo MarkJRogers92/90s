@@ -47,9 +47,11 @@ sizes. Cyan/magenta storefront signage, light bands, and floor borders now read
 clearly. These improvements still do **not** justify broad rollout: beige
 terrazzo remains the largest visual field, so the room is not uniformly
 neon-heavy; evacuation urgency remains subtle in a still; and the existing Food
-Court remains gray/olive vector graybox outside this opening-only art scope. The
-first-combat test captures a real telegraph state, but its cue is temporally
-subtle in the still and is not a polished continuation of the opening. Direct
+Court remains gray/olive vector graybox outside this opening-only art scope.
+The corrected first-combat evidence no longer accepts ordinary Hanger pursuit
+streaks as a telegraph: it requires an authoritative Spitter windup, the matching
+renderer cue, and a 48-pixel in-canvas margin. Native inspection now shows two
+large bright-yellow rings with long aim lines around visible Spitters. Direct
 user review is still mandatory before any other room is converted.
 
 **Current milestone:** M5 MVP run implemented, with in-run Bench Warrant fusion repaired and verified locally on 2026-09-19; ready for user playtest.

@@ -33,10 +33,13 @@ Review these remaining concrete concerns before approval:
 - beige terrazzo is still the dominant surface, so the opening is not uniformly
   neon-heavy even with stronger cyan/magenta accents;
 - evacuation warning/flicker remains subtle in a single still;
-- the first-combat evidence is captured during a real telegraph, but the warning
-  boxes/streak are less clear in the still than in motion;
 - the existing Food Court remains gray/olive vector graybox. Converting it was
   explicitly outside this opening-only correction scope.
+
+The first-combat capture concern is resolved in the evidence packet: the harness
+now waits for an authoritative on-screen Spitter telegraph matched to the
+renderer, and the native 1440x900 still shows two large yellow windup rings with
+long aim lines. Hanger movement streaks no longer satisfy that capture test.
 
 If the user requests corrections, keep them inside this same slice and get a new
 visual decision afterward. Do not treat correction authorization as permission

@@ -25,6 +25,10 @@
   Food Court remains out-of-scope graybox; those limits keep the broader room
   rollout approval gate closed. No other room conversion begins without a new
   explicit user decision.
+- Do not treat a Hanger's ordinary pursuit/lunge streak as an attack telegraph.
+  First-combat screenshot evidence must match the same Spitter by authoritative
+  `phase === 'telegraph'` and renderer telegraph ID, then prove its world point
+  projects at least 48 CSS pixels inside every canvas edge before capture.
 
 ## 2026-09-13
 
