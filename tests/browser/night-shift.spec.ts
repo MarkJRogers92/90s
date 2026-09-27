@@ -43,6 +43,8 @@ type RunSnapshot = {
     y: number;
     radius: number;
     faction: 'enemy' | 'player';
+    velocityX: number;
+    velocityY: number;
     originX: number;
     originY: number;
   }>;
@@ -355,6 +357,62 @@ test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) =>
   expect(layout.hudVisible).toBe(true);
   expect(layout.bodyWidth).toBeLessThanOrEqual(layout.viewportWidth);
   await expect(page.locator('canvas')).toHaveCount(1);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('real canvas input follows the camera after scrolling and resizing', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await page.setViewportSize({ width: 800, height: 600 });
+  await launchRun(page, '/?fixture=mvp-bench&seed=4242');
+
+  const fixedWorldPoint = { x: 0, y: 0 };
+  const beforeScroll = await worldToCanvas(page, fixedWorldPoint.x, fixedWorldPoint.y);
+  await page.keyboard.down('d');
+  await page.waitForTimeout(1_200);
+  await page.keyboard.up('d');
+  const afterMove = await runSnapshot(page);
+  const afterScroll = await worldToCanvas(page, fixedWorldPoint.x, fixedWorldPoint.y);
+  expect(Math.abs(afterScroll.x - beforeScroll.x)).toBeGreaterThan(50);
+
+  await page.setViewportSize({ width: 1120, height: 760 });
+  const target = { x: afterMove.player.x + 100, y: afterMove.player.y };
+  const point = await worldToCanvas(page, target.x, target.y);
+  const box = await page.locator('canvas').boundingBox();
+  expect(box).not.toBeNull();
+  if (!box) {
+    return;
+  }
+  expect(point.x).toBeGreaterThan(0);
+  expect(point.x).toBeLessThan(box.width);
+  expect(point.y).toBeGreaterThan(0);
+  expect(point.y).toBeLessThan(box.height);
+
+  await page.mouse.move(box.x + point.x, box.y + point.y);
+  await page.mouse.down();
+  await expect
+    .poll(async () => (await runSnapshot(page)).projectiles.some((candidate) => candidate.faction === 'player'))
+    .toBe(true);
+  const shot = (await runSnapshot(page)).projectiles.find(
+    (candidate) => candidate.faction === 'player',
+  );
+  await page.mouse.up();
+  expect(shot).toBeDefined();
+  if (!shot) {
+    return;
+  }
+
+  const playerAtAttack = (await runSnapshot(page)).player;
+  const directionToTarget = {
+    x: target.x - playerAtAttack.x,
+    y: target.y - playerAtAttack.y,
+  };
+  const attackDirection = { x: shot.velocityX, y: shot.velocityY };
+  expect(
+    attackDirection.x * directionToTarget.x + attackDirection.y * directionToTarget.y,
+  ).toBeGreaterThan(0);
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

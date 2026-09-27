@@ -1,6 +1,7 @@
 import type { RunState } from '../sim/model';
 import type { CompiledPrimary } from '../sim/items/types';
 import type { WingState } from '../sim/shop/types';
+import type { Point2D } from '../game/view/projection';
 
 export type DebugMode = 'shift' | 'lab' | 'shop' | 'bench';
 
@@ -60,7 +61,7 @@ declare global {
        * scroll, and ignored the scale manager's letterboxing. Every one of those
        * assumptions was true only while the viewport matched the room exactly.
        */
-      worldToCanvas?(x: number, y: number): { x: number; y: number };
+      worldToCanvas?(x: number, y: number): Point2D;
     };
   }
 }
@@ -75,7 +76,7 @@ declare global {
  * silently wrong.
  */
 export function installWorldToCanvas(
-  project: (x: number, y: number) => { x: number; y: number },
+  project: (x: number, y: number) => Point2D,
 ): () => void {
   const bridge = window.__DEAD_MALL_DEBUG__;
   if (!bridge) {
@@ -304,6 +305,9 @@ export type MvpRunDebugSnapshot = {
     radius: number;
     /** Who fired it, so acceptance can tell a volley from the player's fire. */
     faction: 'enemy' | 'player';
+    /** Authoritative trajectory, exposed read-only for real-input assertions. */
+    velocityX: number;
+    velocityY: number;
     /**
      * Where the shot began, sampled from its recorded path when the tick kept
      * one. Origin is the honest way to prove a firing source; a shot's current
@@ -382,6 +386,8 @@ export function installMvpRunDebugBridge(
               y: shot.y,
               radius: shot.radius,
               faction: shot.faction,
+              velocityX: shot.velocityX,
+              velocityY: shot.velocityY,
               originX: sampled?.x ?? shot.x,
               originY: sampled?.y ?? shot.y,
             };

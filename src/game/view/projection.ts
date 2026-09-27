@@ -1,6 +1,21 @@
 import Phaser from 'phaser';
 import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../../sim/core/geometry';
 
+export interface ProjectionMetrics {
+  scrollX: number;
+  scrollY: number;
+  zoom: number;
+  gameWidth: number;
+  gameHeight: number;
+  canvasWidth: number;
+  canvasHeight: number;
+}
+
+export interface Point2D {
+  x: number;
+  y: number;
+}
+
 /**
  * World -> screen conversion, in one place.
  *
@@ -42,17 +57,82 @@ export function centreCameraOn(scene: Phaser.Scene, worldX: number, worldY: numb
  *   3. the canvas element itself sits somewhere on the page, which the caller
  *      adds by offsetting from `boundingBox()`.
  */
-export function worldToCanvas(
-  scene: Phaser.Scene,
-  worldX: number,
-  worldY: number,
-): { x: number; y: number } {
+function assertValidMetrics(metrics: ProjectionMetrics): void {
+  const dimensions = [
+    metrics.gameWidth,
+    metrics.gameHeight,
+    metrics.canvasWidth,
+    metrics.canvasHeight,
+  ];
+  if (
+    !Number.isFinite(metrics.scrollX) ||
+    !Number.isFinite(metrics.scrollY) ||
+    !Number.isFinite(metrics.zoom) ||
+    metrics.zoom <= 0 ||
+    dimensions.some((dimension) => !Number.isFinite(dimension) || dimension <= 0)
+  ) {
+    throw new Error('Projection metrics require finite positive dimensions and zoom.');
+  }
+}
+
+/** Convert a world point into canvas-relative CSS pixels. */
+export function projectWorldToCanvas(
+  metrics: ProjectionMetrics,
+  world: Point2D,
+): Point2D {
+  assertValidMetrics(metrics);
+  return {
+    x:
+      (((world.x - metrics.scrollX) * metrics.zoom) / metrics.gameWidth) *
+      metrics.canvasWidth,
+    y:
+      (((world.y - metrics.scrollY) * metrics.zoom) / metrics.gameHeight) *
+      metrics.canvasHeight,
+  };
+}
+
+/** Convert a canvas-relative CSS pixel point into world coordinates. */
+export function projectCanvasToWorld(
+  metrics: ProjectionMetrics,
+  canvas: Point2D,
+): Point2D {
+  assertValidMetrics(metrics);
+  return {
+    x:
+      ((canvas.x / metrics.canvasWidth) * metrics.gameWidth) / metrics.zoom +
+      metrics.scrollX,
+    y:
+      ((canvas.y / metrics.canvasHeight) * metrics.gameHeight) / metrics.zoom +
+      metrics.scrollY,
+  };
+}
+
+function projectionMetrics(scene: Phaser.Scene): ProjectionMetrics {
   const camera = scene.cameras.main;
   const rect = scene.game.canvas.getBoundingClientRect();
-  const gameX = (worldX - camera.scrollX) * camera.zoom;
-  const gameY = (worldY - camera.scrollY) * camera.zoom;
   return {
-    x: (gameX / scene.scale.width) * rect.width,
-    y: (gameY / scene.scale.height) * rect.height,
+    scrollX: camera.scrollX,
+    scrollY: camera.scrollY,
+    zoom: camera.zoom,
+    gameWidth: scene.scale.width,
+    gameHeight: scene.scale.height,
+    canvasWidth: rect.width,
+    canvasHeight: rect.height,
   };
+}
+
+export function worldToCanvas(scene: Phaser.Scene, worldX: number, worldY: number): Point2D {
+  return projectWorldToCanvas(projectionMetrics(scene), { x: worldX, y: worldY });
+}
+
+/** Convert Phaser's game-space pointer back through the same CSS-aware contract. */
+export function pointerToWorld(
+  scene: Phaser.Scene,
+  pointer: Phaser.Input.Pointer,
+): Point2D {
+  const metrics = projectionMetrics(scene);
+  return projectCanvasToWorld(metrics, {
+    x: (pointer.x / metrics.gameWidth) * metrics.canvasWidth,
+    y: (pointer.y / metrics.gameHeight) * metrics.canvasHeight,
+  });
 }

@@ -35,7 +35,12 @@ import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
 import { GameAudioEngine } from '../audio/engine';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
-import { boundCameraToPlayfield, centreCameraOn, worldToCanvas } from '../view/projection';
+import {
+  boundCameraToPlayfield,
+  centreCameraOn,
+  pointerToWorld,
+  worldToCanvas,
+} from '../view/projection';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -145,7 +150,7 @@ class MvpRunInputAdapter {
 
   public readFrame(): MvpInputFrame {
     const pointer = this.scene.input.activePointer;
-    const worldPosition = pointer.positionToCamera(this.scene.cameras.main) as Phaser.Math.Vector2;
+    const worldPosition = pointerToWorld(this.scene, pointer);
     const frame: MvpInputFrame = {
       moveX: Number(this.keys.right.isDown) - Number(this.keys.left.isDown),
       moveY: Number(this.keys.down.isDown) - Number(this.keys.up.isDown),
