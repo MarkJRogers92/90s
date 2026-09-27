@@ -425,7 +425,7 @@ export class MvpRunView {
       }
     }
     this.drawEnemyStatuses(enemy, effects);
-    const barY = enemy.y - 46;
+    const barY = enemy.y - 60;
     effects.fillStyle(0x12060c, 0.9);
     effects.fillRect(enemy.x - 14, barY, 28, 4);
     effects.fillStyle(0xe8243c, 1);
@@ -585,10 +585,16 @@ export class MvpRunView {
     const walkKey = sheet?.walk && usableTextureKey(this.scene.textures, sheet.walk) ? sheet.walk : null;
     const neonIdle = sheet && usableTextureKey(this.scene.textures, sheet.idle) ? sheet.idle : null;
     const textureKey = walkKey ?? neonIdle ?? actorTextureKey(snapshot.kind, visual.walking);
-    const frameSize = walkKey && sheet ? sheet.walkFrameSize : 48;
-    const spec: SpriteSpec = sheet
-      ? { textureKey, frameWidth: frameSize, frameHeight: frameSize, scale: sheet.scale }
-      : { textureKey, frameWidth: 32, frameHeight: 48, scale: 1 };
+    let spec: SpriteSpec = { textureKey, frameWidth: 32, frameHeight: 48, scale: 1 };
+    let walkFrames = sheet?.walkFrames ?? 6;
+    if (sheet && (walkKey || neonIdle)) {
+      const source = this.scene.textures.get(textureKey).getSourceImage() as { width: number; height: number };
+      const frameSize = characterFrameSize(source.height, walkKey ? 8 : 1);
+      if (walkKey) walkFrames = Math.max(1, Math.round(source.width / frameSize));
+      spec = { textureKey, frameWidth: frameSize, frameHeight: frameSize, scale: sheet.displaySize / frameSize };
+    } else if (snapshot.kind === 'hanger') {
+      spec = { textureKey, frameWidth: 48, frameHeight: 48, scale: 1 };
+    }
     const usable = usableTextureKey(this.scene.textures, textureKey) !== null
       && (snapshot.kind === 'alex' || snapshot.kind === 'hanger' || neonIdle !== null);
     let view = this.actorSprites.get(snapshot.id);
@@ -598,7 +604,7 @@ export class MvpRunView {
     }
     this.usedActorSpriteIds.add(snapshot.id);
     const walkingFrames = (visual.walking && snapshot.kind === 'alex') || walkKey !== null;
-    const frame = actorFrameFor(walkingFrames ? 'walk' : 'idle', visual.direction, tick, sheet?.walkFrames ?? 6, sheet?.ticksPerFrame ?? 5);
+    const frame = actorFrameFor(walkingFrames ? 'walk' : 'idle', visual.direction, tick, walkFrames, sheet?.ticksPerFrame ?? 5);
     const spriteActive = view.sync(snapshot, frame, visual, usable, depth, spec);
     return {
       spriteActive,

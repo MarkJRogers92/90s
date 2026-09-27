@@ -141,9 +141,17 @@ def main() -> None:
         manifest.append({'path': str(icon.relative_to(ROOT)), 'source': 'codex/pixellab-aseprite-proof:public/assets/props/rc-car.png (frame 0)',
                          'generator': 'PixelLab (earlier art pass), cropped', 'size': [48, 44], 'sha256': sha256(icon)})
 
-    # The HUD portrait for Alex reuses the earlier pass's grunge 'teenager' bust.
+    # Alex's HUD portrait: generated from his 64px sprite (character_to_portrait),
+    # falling back to the earlier pass's 'teenager' bust if it is missing.
+    own = SOURCE / 'alex-portrait.png'
     teenager = OUT / 'portraits' / 'teenager.png'
-    if teenager.exists():
+    if own.exists():
+        alex = OUT / 'portraits' / 'alex.png'
+        shutil.copyfile(own, alex)
+        manifest.append({'path': str(alex.relative_to(ROOT)), 'source': str(own.relative_to(ROOT)),
+                         'generator': 'PixelLab create_portrait_character from the 64px Alex sprite',
+                         'size': list(Image.open(alex).size), 'sha256': sha256(alex)})
+    elif teenager.exists():
         alex = OUT / 'portraits' / 'alex.png'
         shutil.copyfile(teenager, alex)
         manifest.append({'path': str(alex.relative_to(ROOT)),

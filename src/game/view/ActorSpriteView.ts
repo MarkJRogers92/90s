@@ -61,14 +61,16 @@ export function actorTextureKey(kind: ActorKind, walking: boolean): ActorTexture
 export function enemySpriteSheet(
   kind: ActorKind,
   walking: boolean,
-): { idle: string; walk: string | null; walkFrames: number; walkFrameSize: number; ticksPerFrame: number; scale: number } | null {
+): { idle: string; walk: string | null; walkFrames: number; ticksPerFrame: number; displaySize: number } | null {
+  // displaySize is the on-screen frame size; the sheet's own resolution is
+  // read from the texture, so a 48px or 64px re-render needs no code change.
   switch (kind) {
     case 'hanger':
-      return { idle: ENEMY_TEXTURE_KEYS.hangerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.hangerWalk : null, walkFrames: 6, walkFrameSize: 68, ticksPerFrame: 4, scale: 1 };
+      return { idle: ENEMY_TEXTURE_KEYS.hangerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.hangerWalk : null, walkFrames: 6, ticksPerFrame: 4, displaySize: 64 };
     case 'spitter':
-      return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, walkFrames: 1, walkFrameSize: 48, ticksPerFrame: 5, scale: 1.05 };
+      return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, walkFrames: 1, ticksPerFrame: 5, displaySize: 66 };
     case 'lp_manager':
-      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, walkFrames: 8, walkFrameSize: 48, ticksPerFrame: 6, scale: 2 };
+      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, walkFrames: 8, ticksPerFrame: 6, displaySize: 100 };
     default:
       return null;
   }

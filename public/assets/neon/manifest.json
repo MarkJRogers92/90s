@@ -781,13 +781,13 @@
   },
   {
     "path": "public/assets/neon/portraits/alex.png",
-    "source": "codex/pixellab-aseprite-proof:public/assets/portraits/teenager.png",
-    "generator": "PixelLab (earlier art pass), chosen as Alex HUD portrait",
+    "source": "docs/art/neon-overhaul/pixellab/alex-portrait.png",
+    "generator": "PixelLab create_portrait_character from the 64px Alex sprite",
     "size": [
-      160,
-      160
+      128,
+      128
     ],
-    "sha256": "29843af0f52d8ef01623902e3d0c870c6ab4ba416bfd85fdc27eef278a996ece"
+    "sha256": "1c2dc3febeb404fc67469196e167f411e8d89075a028a62b9384195c0cd60215"
   },
   {
     "path": "public/assets/neon/portraits/employee.png",
