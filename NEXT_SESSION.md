@@ -1,61 +1,55 @@
 # Next session
 
-M5 is implemented on codex/m5-mvp in the linked worktree `.worktrees/m5-mvp`,
-started from the M4 tip `ff2dcf5`, with the in-run Bench Warrant fusion repaired
-on 2026-09-19. Verify the actual branch and working tree before trusting this
-note.
+The Opening Concourse production-presentation vertical slice is implemented on
+`codex/presentation-3quarter` in `.worktrees/presentation-3quarter`. Verify the
+actual branch and working tree before trusting this note.
 
-Run it locally:
+The next bounded action is **user visual review**, not another room conversion.
+Open the local game, choose **Night Shift**, and compare the playable calm,
+evacuation, and first-combat transition with:
 
-    npm install
-    npm run dev
+- `artifacts/presentation-vertical-slice/opening-busy.png`
+- `artifacts/presentation-vertical-slice/opening-evacuation.png`
+- `artifacts/presentation-vertical-slice/first-combat.png`
+- `artifacts/presentation-vertical-slice/compact-800x600.png`
 
-Open http://127.0.0.1:5173 and choose **Night Shift**. Move with WASD, aim with
-the pointer, attack with the primary mouse button, press E to buy, use a door,
-or open the Bench Warrant kiosk, press F to steal, press R to recall a fused
-carrier, and press Escape to pause. **Continue run** on the title screen resumes
-the last room boundary, and `?seed=12345` replays a specific wing.
+Port 5173 was occupied by another worktree during Task 8. A safe local launch is:
 
-To reach the repaired fusion loop quickly, buy the Remote-Control Car at the
-first storefront (Mall Mart sells it for $20), then walk back to the Bench
-Warrant kiosk in the service corridor and press E. Alternatively,
-`http://127.0.0.1:5173/?fixture=mvp-bench` starts a shift at the kiosk already
-owning the car and a projectile primary; that fixture exists only in Vite
-development mode.
+    npx vite --host 127.0.0.1 --port 4176 --strictPort
 
-The M5 fun gate is awaiting user playtest: wing pacing, store placement, boss
-difficulty, whether the checkpoint cadence feels right, and whether the car
-feels good to steer — its leash, its recall trip, and whether the fusion fee
-reads as a real trade rather than a free upgrade.
+Then open `http://127.0.0.1:4176`, choose **Night Shift**, move with WASD, aim
+with the pointer, attack with the primary mouse button, and press Escape to
+pause. The branch is not pushed, merged, published, deployed, released, or
+approved for broader art rollout.
 
-After M6 authorization, the next milestone per ROADMAP.md is M6 depth work.
-Preserve `src/sim` as the authority and keep branches out of the central tick.
+Review these concrete concerns before approval:
 
-Last full gate from this working tree on 2026-09-19:
+- only about two of the four rendered civilians read clearly in the initial
+  camera frame;
+- the compact HUD covers a substantial upper-left part of the playfield,
+  truncates the room identity, and overlaps a character, especially at 800x600;
+- the opening reads bright and specific but predominantly beige/teal rather than
+  strongly neon-heavy;
+- the first Food Court combat has readable yellow warning rings/lines and the
+  finished Hanger, but its environment and two enemies still read as graybox or
+  fallback presentation.
 
-    npm run typecheck
-    npm test
-    npm run test:browser
-    npm run build
+If the user requests corrections, keep them inside this same slice and get a new
+visual decision afterward. Do not treat correction authorization as permission
+to convert other rooms.
 
-Result: typecheck and build passed; 27 unit/integration files and 469 tests
-passed; 45 Chromium tests passed; the production scan was clean and the
-production preview at 1440x900 was smoke-inspected. No 800x600 production
-screenshot was retaken for this change.
+The automated gate is also not fully clean. Asset validation, typecheck, 510
+unit/integration tests, the 4-case evidence harness, 10 lifecycle cycles, local-
+request assertions, and production build passed. The complete Chromium suite
+passed 55/57; two existing Night Shift assertions reproduce red:
 
-Notes for the next session:
+- fixed seeds 7, 99, and 2024 currently show the same first-store text as seed
+  4242 in the browser variation test;
+- resized real-input aim measures cosine `0.8480714938237034` against a strict
+  `> 0.85` threshold.
 
-- Night Shift has sound, wired into the M5 run only. **Start shift** (M1),
-  **Interaction Lab** (M2), **Shoplifting Loop** (M3), and **Void the Warranty**
-  (M4) are still silent. `deriveAudioCues` reads run state and is mode-agnostic,
-  so wiring them is follow-up work. Mute with the HUD button or the M key.
+Diagnose those failures in a separately authorized owner pass before claiming a
+clean browser gate. Do not weaken either assertion merely to turn it green.
 
-- The Vite dev server can take longer than Playwright's default 60-second
-  `webServer` timeout to bind here; start Vite yourself and reuse it.
-- Chromium cannot launch inside the sandboxed shell; run browser tests with the
-  approved escalation.
-- Run vitest serially here (`--no-file-parallelism`); parallel workers can time
-  out while starting on this filesystem.
-- No code blocker. On 2026-09-19 the user authorized one push, so `main` and
-  `codex/m5-mvp` are now current on `origin`. Deploy, release, tagging, and
-  publishing remain separate authorization gates, as does beginning M6.
+WebKit, Safari, Windows, physical devices, physical-device performance, and
+human feel remain untested. Broader room rollout remains explicitly unstarted.

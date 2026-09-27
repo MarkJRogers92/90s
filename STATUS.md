@@ -1,5 +1,45 @@
 # Status
 
+## 2026-09-27 — Opening presentation vertical slice: evidence complete, visual approval pending
+
+The production-presentation work is integrated on `codex/presentation-3quarter`
+for one bounded slice: the stable `service_corridor` room is publicly presented
+as **Opening Concourse**, with the approved local environment kit, Janitor,
+Hanger, four-role civilian group, shallow three-quarter storefront treatment,
+effects/depth/occlusion handling, and compact Night Shift HUD. The simulation,
+six-room order, checkpoint schema, collision, economy, and combat rules remain
+the M5 authority.
+
+**Gate status: DONE_WITH_CONCERNS, not visually approved.** The 27 runtime PNGs
+pass the shared-palette/alpha validator; typecheck, 40 focused presentation/HUD
+tests, 151 affected simulation/integration tests, all 510 unit/integration tests,
+the four-case evidence browser harness, and the production build pass. Ten
+restart cycles held the opening at 31 static objects, 13 textures, 3 dynamic
+objects, 16 scene display-list objects, one four-civilian ambience group, and
+identical window/document/canvas listener signatures. Browser request capture
+reported zero external HTTP(S) requests.
+
+The complete 57-case Chromium run is not green: 55 passed and two existing
+Night Shift assertions failed reproducibly. The fixed seed sample in the offer
+variation case produced identical first-store text, and the resized real-input
+projection case measured a direction cosine of `0.8480714938237034` against a
+strict `> 0.85` threshold. Task 8 did not alter those out-of-ownership tests or
+their production paths. The executable production scan found no home-directory
+path, debug bridge/flag, exact fixture literal, editable source-art path, or
+unexpected source-art file; its four absolute URL strings are Phaser attribution
+and W3 XML namespaces, not application endpoints.
+
+The four required browser captures are in
+`artifacts/presentation-vertical-slice/`. They prove a bright, specific concourse
+and a clearer live first-combat frame, but do **not** justify broad rollout:
+roughly two of the four rendered civilians are in the opening camera frame; the
+HUD masks a substantial upper-left area, truncates the room label, and overlaps
+a character (most visibly at 800x600); the palette reads predominantly beige and
+teal rather than neon-heavy; and the Food Court combat environment remains
+graybox/vector even though its yellow warning rings/lines are visible. Direct
+user review of the playable slice is still mandatory before any other room is
+converted.
+
 **Current milestone:** M5 MVP run implemented, with in-run Bench Warrant fusion repaired and verified locally on 2026-09-19; ready for user playtest.
 
 **2026-09-19 repair:** M5's acceptance list claimed in-run bench fusion and

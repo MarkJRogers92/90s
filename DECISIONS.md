@@ -1,5 +1,28 @@
 # Decisions
 
+## 2026-09-27 — presentation vertical slice boundary
+
+- Keep opening-concourse civilians presentation-only: their lanes, animation,
+  warning, evacuation, and visibility are derived from authoritative run state,
+  but they have no collision, health, inventory, checkpoint, combat, or
+  persistence role. Room exit, restart, and shutdown dispose/reset the view.
+- Preserve `service_corridor` as the stable simulation/checkpoint/room-order ID
+  while presenting its player-facing name as **Opening Concourse**. No save
+  schema or transition key is renamed for presentation.
+- Keep every runtime presentation asset local and source-preserving. Only
+  reviewed PNG exports live under `public/assets/presentation`; editable source
+  remains outside the runtime bundle, and no PixelLab/Aseprite service or remote
+  URL becomes a production dependency.
+- Preserve vector rendering as the deterministic fallback when an optional
+  presentation texture is unavailable. Missing art must not hide the player,
+  enemy, pickup, door, prompt, or telegraph or change authoritative behavior;
+  required slice assets still fail validation/build review before release.
+- Treat the four screenshots and automated results as a user-review packet, not
+  visual approval. The observed HUD/camera/civilian framing, restrained rather
+  than neon-heavy palette, and graybox first-combat environment keep the broader
+  room rollout approval gate closed. No other room conversion begins without a
+  new explicit user decision.
+
 ## 2026-09-13
 
 - Use the empty MarkJRogers92/90s remote as the dedicated DEAD MALL repository, with local work on codex/m0-m1-combat-room.
