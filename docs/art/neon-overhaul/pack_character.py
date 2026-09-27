@@ -7,6 +7,7 @@ north-east, east, south-east). A direction the export lacks borrows its
 nearest available neighbour so the sheet is always complete.
 
   python3 pack_character.py EXPORT_DIR ANIMATION_NAME OUT.png
+  python3 pack_character.py EXPORT_DIR --rotations OUT.png   # 1-row idle strip
 """
 from __future__ import annotations
 
@@ -28,8 +29,25 @@ def nearest(direction: str, available: set[str]) -> str:
     raise SystemExit('export has no frames for this animation')
 
 
+def pack_rotations(export: Path, out: Path) -> None:
+    meta = json.loads((export / 'metadata.json').read_text())
+    rotations = meta['states'][0]['frames']['rotations']
+    first = Image.open(export / next(iter(rotations.values())))
+    width, height = first.size
+    sheet = Image.new('RGBA', (width * 8, height), (0, 0, 0, 0))
+    for column, direction in enumerate(ORDER):
+        frame = Image.open(export / rotations[nearest(direction, set(rotations))]).convert('RGBA')
+        sheet.alpha_composite(frame, (column * width, 0))
+    out.parent.mkdir(parents=True, exist_ok=True)
+    sheet.save(out)
+    print(f'{out}: 8 facings of {width}x{height}')
+
+
 def main() -> None:
     export, animation, out = Path(sys.argv[1]), sys.argv[2], Path(sys.argv[3])
+    if animation == '--rotations':
+        pack_rotations(export, out)
+        return
     meta = json.loads((export / 'metadata.json').read_text())
     frames = meta['states'][0]['frames']['animations'][animation]
     available = set(frames)

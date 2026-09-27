@@ -56,6 +56,8 @@ export class GameHud {
   private titleCard: { images: Phaser.GameObjects.Image[]; startedTick: number } | null = null;
   private titleRoomKey = '';
   private shiftStartTick: number | null = null;
+  /** Everything the HUD would draw this frame; unchanged means skip the redraw. */
+  private lastSignature = '';
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -95,10 +97,16 @@ export class GameHud {
   public sync(state: MvpRunState): void {
     const model = buildGameHudModel(state);
     if (this.shiftStartTick === null || state.tick < this.shiftStartTick) this.shiftStartTick = state.tick;
+    this.trackNewItems(state, model);
+    if (state.recentChange && state.recentChange !== this.lastRecent) this.pushLog(state);
+    // Rebuilding vector panels every frame is expensive on software renderers,
+    // and most frames change nothing, so redraw only when the picture changes.
+    const signature = this.signature(state, model);
+    if (signature === this.lastSignature) return;
+    this.lastSignature = signature;
     this.usedLabels.clear();
     this.frame.clear();
     this.bottomFrame.clear();
-    this.trackNewItems(state, model);
     this.drawObjectives(model);
     this.drawMinimap(model, state);
     this.drawBoss(model);
@@ -114,6 +122,24 @@ export class GameHud {
     for (const [key, label] of this.labels) {
       if (!this.usedLabels.has(key)) label.setVisible(false);
     }
+  }
+
+  /** Fades are quantised so a fade costs ten redraws, not sixty. */
+  private signature(state: MvpRunState, model: GameHudModel): string {
+    const bucket = (age: number | null) => (age === null ? -1 : Math.floor(age / 6));
+    const titleAge = this.titleCard ? state.tick - this.titleCard.startedTick : null;
+    const toastAge = this.toast ? state.tick - this.toast.startedTick : null;
+    const cardAge = state.roomIndex === 0 ? state.tick - (this.shiftStartTick ?? state.tick) : null;
+    const logAges = this.log.map((entry) => bucket(state.tick - entry.tick)).join(',');
+    const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
+    return JSON.stringify([
+      model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt,
+      state.room.combat.player.y > 380,
+      titleAge !== null && titleAge < 160 ? bucket(titleAge) : 'x',
+      toastAge !== null && toastAge < 280 ? bucket(toastAge) : 'x',
+      cardAge !== null && cardAge < 560 ? bucket(cardAge) : 'x',
+      this.log.map((entry) => entry.text).join('|'), logAges,
+    ]);
   }
 
   /* ---------------------------------------------------------------------- */
@@ -179,7 +205,7 @@ export class GameHud {
       const cx = x + 10 + index * (cellW + gap);
       const cy = y + 10;
       if (index > 0) this.frame.fillStyle(0x4a3d62, 1).fillRect(cx - gap, cy + cellH / 2 - 1, gap, 3);
-      const pulse = 0.65 + 0.35 * Math.sin(state.tick / 9);
+      const pulse = 1;
       const fill = room.state === 'current' ? CYAN : room.state === 'cleared' ? 0x3a3052 : 0x1c1628;
       this.frame.fillStyle(fill, room.state === 'current' ? pulse : 1).fillRect(cx, cy, cellW, cellH);
       this.frame.lineStyle(2, room.boss ? 0xff3a4a : 0x8a7fa8, 1).strokeRect(cx + 1, cy + 1, cellW - 2, cellH - 2);
@@ -291,13 +317,14 @@ export class GameHud {
     }
   }
 
+  private pushLog(state: MvpRunState): void {
+    this.lastRecent = state.recentChange;
+    const text = state.recentChange.toUpperCase().replace(/—/g, '-');
+    this.log.unshift({ text: text.length > 34 ? `${text.slice(0, 33)}.` : text, tick: state.tick });
+    this.log.length = Math.min(this.log.length, 4);
+  }
+
   private drawLog(state: MvpRunState): void {
-    if (state.recentChange && state.recentChange !== this.lastRecent) {
-      this.lastRecent = state.recentChange;
-      const text = state.recentChange.toUpperCase().replace(/—/g, '-');
-      this.log.unshift({ text: text.length > 34 ? `${text.slice(0, 33)}.` : text, tick: state.tick });
-      this.log.length = Math.min(this.log.length, 4);
-    }
     const visible = this.log.filter((entry) => state.tick - entry.tick < 60 * 8);
     if (visible.length === 0) return;
     const width = 220;

@@ -1308,7 +1308,6 @@ h1#game-title {
   inset: 0;
   pointer-events: none;
   background: repeating-linear-gradient(0deg, rgb(0 0 0 / 12%) 0 1px, transparent 1px 3px);
-  mix-blend-mode: multiply;
 }
 
 .run-shell[data-mode='run'] #game-host canvas {
@@ -1396,4 +1395,55 @@ body[data-mode='run'] .marquee {
    its top margin would collapse through the shell, pushing the bar down. */
 .run-shell[data-mode='run'] {
   display: flow-root;
+}
+
+/* Column layout: the status row takes the height its text needs (it can wrap
+   on narrow windows without clipping the room name), and the stage fills the
+   rest. Replaces the fixed pixel offsets above. */
+.run-shell[data-mode='run'] {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+}
+
+.run-shell[data-mode='run'] .mvp-run-hud {
+  position: relative;
+  flex: none;
+  height: auto;
+  min-height: 56px;
+  max-height: none;
+}
+
+.run-shell[data-mode='run'] #game-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  margin-top: 0;
+}
+
+.run-shell[data-mode='run'] .mvp-run-boss,
+.run-shell[data-mode='run'] .mvp-run-offers-wrap {
+  top: calc(100% + 4px);
+}
+
+@media (max-width: 1000px) {
+  .run-shell[data-mode='run'] .mvp-run-hud {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .run-shell[data-mode='run'] .mvp-run-controls,
+  .run-shell[data-mode='run'] .mvp-run-inspection {
+    grid-column: 1 / 3;
+  }
+}
+
+/* The room name is the one thing that must never clip: give it its natural
+   width and let the vitals wrap beside it instead. */
+.run-shell[data-mode='run'] .mvp-run-status-bar {
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+
+.run-shell[data-mode='run'] .mvp-run-identity strong {
+  white-space: nowrap;
 }

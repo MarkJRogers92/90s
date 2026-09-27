@@ -112,11 +112,31 @@ Both scripts launch Chromium on the Metal GPU so captures include bloom.
 Bloom is skipped automatically on software renderers (headless CI), and
 dropped at runtime if a real device cannot hold 45 fps.
 
+## Round 2 — UI, weapons, swing, characters
+
+- **Weapon switching** (`src/sim/run/weapons.ts`): weapons (items with an attack)
+  are numbered 1..n; passives are always on. Keys 1-9, Q / Shift+Q, mouse
+  wheel, or click a hotbar slot. Tests: `tests/unit/run-weapons.test.ts`.
+- **HUD at pixel x2** (`GameHud.ts`): equipped weapon name + plain-English blurb
+  (`itemBlurbs.ts`), numbered slots, an ALWAYS ON passive strip, key-cap
+  prompts, new-item toasts that say how to use the item, a start-of-shift
+  controls card. Redraws only when its content changes (software renderers).
+- **Mop swing** (`WeaponView.ts`): the sim's hit window is 6 ticks, so the
+  view plays a 16-tick swing drawn at the weapon's true range/half-angle, with
+  the equipped weapon sprite in hand. The janitor faces the aim.
+- **64px PixelLab characters**: Alex (empty hands, so the held weapon is the
+  equipped one) and four shoppers, packed by `fetch_character.sh` /
+  `pack_character.py` (`--rotations` for idle strips). Frame sizes are read
+  from the textures, so regenerating at another size needs no code change.
+- Replaced props: the Bench Warrant repair desk and a straight planter box.
+
 ## Known gaps / next steps
 
-- Alex's portrait is the earlier pass's grunge "teenager" bust; a portrait
-  generated from Alex's sprite came back wearing a modern face mask and was
-  rejected. A purpose-made portrait is a good next PixelLab job.
+- Alex's HUD portrait is still the earlier pass's "teenager" bust; it no
+  longer matches the new 64px Alex (jumpsuit and green vest). A matching
+  portrait is a good next PixelLab job.
+- Enemies are still 48px sheets; regenerating them at 64px would match the
+  new player scale.
 - The DOM status bar above the canvas is still required by the browser tests
   (HP/cash/room/objective must stay visible there); it now duplicates the
   in-canvas HUD. Folding it into an accessible off-canvas panel is the next

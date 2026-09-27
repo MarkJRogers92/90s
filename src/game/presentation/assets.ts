@@ -187,3 +187,34 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),
   ...Object.values(ITEM_ICON_FILES).map((file) => neon(`neon:item:${file}`, `items/${file}.png`)),
 ];
+
+/** 64px PixelLab characters: 8-facing idle strips and 8-row walk sheets. */
+export const PLAYER_TEXTURE_KEYS = {
+  idle: 'neon:player:alex-idle',
+  walk: 'neon:player:alex-walk',
+} as const;
+
+export const NEON_CIVILIAN_KEYS = {
+  'shopper-a': { idle: 'neon:civilian:neon-girl-idle', walk: 'neon:civilian:neon-girl-walk' },
+  'shopper-b': { idle: 'neon:civilian:skater-idle', walk: 'neon:civilian:skater-walk' },
+  clerk: { idle: 'neon:civilian:camcorder-dad-idle', walk: 'neon:civilian:camcorder-dad-walk' },
+  security: { idle: 'neon:civilian:mall-guard-idle', walk: 'neon:civilian:mall-guard-walk' },
+} as const;
+
+export const CHARACTER_ASSETS: readonly PresentationAsset[] = [
+  neon(PLAYER_TEXTURE_KEYS.idle, 'player/alex-idle.png'),
+  neon(PLAYER_TEXTURE_KEYS.walk, 'player/alex-walk.png'),
+  ...Object.values(NEON_CIVILIAN_KEYS).flatMap((keys) => [
+    neon(keys.idle, `civilians/${keys.idle.slice('neon:civilian:'.length)}.png`),
+    neon(keys.walk, `civilians/${keys.walk.slice('neon:civilian:'.length)}.png`),
+  ]),
+];
+
+/**
+ * Square frame size of a character sheet: an idle strip is one row of
+ * facings, a walk sheet is eight rows. Read from the loaded texture so a
+ * regenerated character at a new size needs no code change.
+ */
+export function characterFrameSize(textureHeight: number, rows: 1 | 8): number {
+  return Math.round(textureHeight / rows);
+}

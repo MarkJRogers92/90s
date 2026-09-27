@@ -1,5 +1,16 @@
 # Test evidence
 
+## 2026-09-27 — round 2: UI, weapon switching, swing, 64px characters
+
+- `npx tsc --noEmit` — exit 0. `npx vitest run` — 38 files, **539 passed**
+  (new `run-weapons.test.ts`, 6, written first and observed failing).
+- `PW_PORT=4193 npx playwright test` — **57/57 passed**. Player texture
+  assertions now name the 64px `neon:player:alex-*` sheets.
+- `npm run build` — exit 0.
+- Fixed during the round: a CSS margin collapse that pushed the status row
+  down over the canvas once the marquee was hidden; the room name clipping at
+  800x600 (status row now a flex column sized to its text).
+
 ## 2026-09-27 — Claude neon overhaul (`claude/neon-overhaul`)
 
 Environment: macOS (Apple M2), Node 24, Playwright 1.63 Chromium.

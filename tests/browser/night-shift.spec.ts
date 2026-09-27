@@ -340,14 +340,15 @@ test('actor presentation follows real movement, attack, and the first Food Court
   expect(idle?.spriteActive).toBe(true);
   expect(idle?.vectorFallbackActive).toBe(false);
   expect(idle?.walking).toBe(false);
-  expect(idle?.textureKey).toBe('presentation:actor:alex-idle');
+  // The 64px PixelLab janitor (neon pass) replaced the presentation-slice sheet.
+  expect(idle?.textureKey).toBe('neon:player:alex-idle');
   expect(idle?.damageCueVisible).toBe(false);
   expect(idle?.damageCueDepth).toBeNull();
 
   await page.keyboard.down('w');
   await expect.poll(async () => {
     const player = (await runSnapshot(page)).actorPresentation?.player;
-    return player?.walking && player.direction === 'north' && player.textureKey === 'presentation:actor:alex-walk';
+    return player?.walking && player.direction === 'north' && player.textureKey === 'neon:player:alex-walk';
   }).toBe(true);
   const firstWalkFrame = (await runSnapshot(page)).actorPresentation!.player!.frame.column;
   await expect.poll(() => runSnapshot(page).then((state) => state.actorPresentation?.player?.frame.column))

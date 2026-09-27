@@ -18,6 +18,9 @@ export type ActorSnapshot = {
   readonly attackTicks: number;
   readonly damaged: boolean;
   readonly phase: string;
+  /** Optional facing that overrides movement (the janitor faces the aim). */
+  readonly faceX?: number;
+  readonly faceY?: number;
 };
 
 export function directionForVector(x: number, y: number, previous: ActorDirection): ActorDirection {
@@ -87,7 +90,9 @@ export class ActorPresentationMemory {
 
   public directionFor(actor: ActorSnapshot): ActorDirection {
     const previous = this.directions.get(actor.id) ?? 'south';
-    const next = directionForVector(actor.moveX, actor.moveY, previous);
+    const next = actor.faceX !== undefined && actor.faceY !== undefined
+      ? directionForVector(actor.faceX, actor.faceY, previous)
+      : directionForVector(actor.moveX, actor.moveY, previous);
     this.directions.set(actor.id, next);
     return next;
   }

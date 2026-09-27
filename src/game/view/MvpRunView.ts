@@ -32,7 +32,7 @@ import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { WeaponView } from './WeaponView';
 import { enemySpriteSheet } from './ActorSpriteView';
-import { itemIconKey } from '../presentation/assets';
+import { PLAYER_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
 import { shouldDrawDirectAttackArc } from './visualState';
@@ -207,6 +207,8 @@ export class MvpRunView {
     const playerSprite = this.syncActorSprite({
       id: 'player', kind: 'alex', x: player.x, y: player.y, moveX: playerDelta.x, moveY: playerDelta.y,
       attackTicks: player.attackActiveTicks, damaged: player.invulnerableTicks > 0, phase: 'idle',
+      // Isaac-style: the janitor looks where the pointer aims, even while backpedalling.
+      faceX: player.facing.x, faceY: player.facing.y,
     }, state.tick, playerDepth);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.contactShadow('player', player.x, player.y, 1);
@@ -575,6 +577,10 @@ export class MvpRunView {
 
   private syncActorSprite(snapshot: ActorSnapshot, tick: number, depth: number): ActorFrameEvidence {
     const visual = actorPresentation(this.actorMemory, snapshot, tick);
+    if (snapshot.kind === 'alex') {
+      const neon = this.neonPlayerSpec(visual.walking);
+      if (neon) return this.syncSheetSprite(snapshot, visual, tick, depth, neon);
+    }
     const sheet = enemySpriteSheet(snapshot.kind, visual.walking);
     const walkKey = sheet?.walk && usableTextureKey(this.scene.textures, sheet.walk) ? sheet.walk : null;
     const neonIdle = sheet && usableTextureKey(this.scene.textures, sheet.idle) ? sheet.idle : null;
@@ -598,6 +604,53 @@ export class MvpRunView {
       spriteActive,
       vectorFallbackActive: !spriteActive,
       textureKey,
+      direction: visual.direction,
+      frame,
+      walking: visual.walking,
+      damageFlicker: visual.damageFlicker,
+      damageCueVisible: visual.damageFeedback,
+      damageCueDepth: visual.damageFeedback ? presentationDepth('effect', 1) : null,
+      lungeCueVisible: visual.lunge > 0,
+      lungeCueDepth: visual.lunge > 0 ? presentationDepth('effect', 1) : null,
+      actorDepth: depth,
+    };
+  }
+
+  /** The 64px PixelLab janitor, when its sheets loaded. */
+  private neonPlayerSpec(walking: boolean): { textureKey: string; rows: 1 | 8; walkFrames: number } | null {
+    const textures = this.scene.textures;
+    const walk = usableTextureKey(textures, PLAYER_TEXTURE_KEYS.walk);
+    const idle = usableTextureKey(textures, PLAYER_TEXTURE_KEYS.idle);
+    if (walking && walk) {
+      const source = textures.get(walk).getSourceImage() as { width: number; height: number };
+      const frame = characterFrameSize(source.height, 8);
+      return { textureKey: walk, rows: 8, walkFrames: Math.max(1, Math.round(source.width / frame)) };
+    }
+    return idle ? { textureKey: idle, rows: 1, walkFrames: 1 } : null;
+  }
+
+  private syncSheetSprite(
+    snapshot: ActorSnapshot,
+    visual: ReturnType<typeof actorPresentation>,
+    tick: number,
+    depth: number,
+    sheet: { textureKey: string; rows: 1 | 8; walkFrames: number },
+  ): ActorFrameEvidence {
+    const source = this.scene.textures.get(sheet.textureKey).getSourceImage() as { height: number };
+    const size = characterFrameSize(source.height, sheet.rows);
+    const spec: SpriteSpec = { textureKey: sheet.textureKey, frameWidth: size, frameHeight: size, scale: 1 };
+    let view = this.actorSprites.get(snapshot.id);
+    if (!view) {
+      view = new ActorSpriteView(this.scene, spec);
+      this.actorSprites.set(snapshot.id, view);
+    }
+    this.usedActorSpriteIds.add(snapshot.id);
+    const frame = actorFrameFor(sheet.rows === 8 ? 'walk' : 'idle', visual.direction, tick, sheet.walkFrames, 5);
+    const spriteActive = view.sync(snapshot, frame, visual, true, depth, spec);
+    return {
+      spriteActive,
+      vectorFallbackActive: !spriteActive,
+      textureKey: sheet.textureKey,
       direction: visual.direction,
       frame,
       walking: visual.walking,

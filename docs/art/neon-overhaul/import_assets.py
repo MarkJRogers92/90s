@@ -40,6 +40,7 @@ FACADES = [
 PROPS = [
     'globe-fountain', 'bunny-mascot', 'food-table-set', 'planter-long',
     'crate-stack', 'security-desk', 'booth-row', 'concrete-pillar',
+    'bench-kiosk', 'planter-straight',
 ]
 LEGACY = {
     'enemies': ['spitter-idle', 'lp-manager-idle', 'hanger-idle'],
@@ -92,6 +93,18 @@ def main() -> None:
         w, h = crop_to_content(src, dst)
         manifest.append({'path': str(dst.relative_to(ROOT)), 'source': str(src.relative_to(ROOT)),
                          'generator': 'PixelLab create_map_object', 'size': [w, h], 'sha256': sha256(dst)})
+
+    # Packed 64px characters: char-player-* -> player/, char-civ-* -> civilians/.
+    for src in sorted(SOURCE.glob('char-*.png')):
+        stem = src.stem
+        folder, name = ('player', stem[len('char-player-'):]) if stem.startswith('char-player-') else ('civilians', stem[len('char-civ-'):])
+        dst = OUT / folder / f'{name}.png'
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(src, dst)
+        w, h = Image.open(dst).size
+        manifest.append({'path': str(dst.relative_to(ROOT)), 'source': str(src.relative_to(ROOT)),
+                         'generator': 'PixelLab create_character v3 (64px) + template walk, packed by pack_character.py',
+                         'size': [w, h], 'sha256': sha256(dst)})
 
     for name in sorted(p.stem for p in SOURCE.glob('anim-*.png')):
         src = SOURCE / f'{name}.png'

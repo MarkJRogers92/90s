@@ -1,5 +1,85 @@
 [
   {
+    "path": "public/assets/neon/civilians/camcorder-dad-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-camcorder-dad-idle.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      512,
+      64
+    ],
+    "sha256": "5800e494e997d6a560b5df8f3f7dcacb0e9d5a0ff40079d2b936aae6b3ef27da"
+  },
+  {
+    "path": "public/assets/neon/civilians/camcorder-dad-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-camcorder-dad-walk.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      384,
+      512
+    ],
+    "sha256": "cd821185d845de8b4d8603daf8dded42bf10aee781218e9deec08a92268ebe9d"
+  },
+  {
+    "path": "public/assets/neon/civilians/mall-guard-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-mall-guard-idle.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      512,
+      64
+    ],
+    "sha256": "fba7d57d2260a7dcfe7c1edb9311d01d2413685eb54a259c4502620f800feb32"
+  },
+  {
+    "path": "public/assets/neon/civilians/mall-guard-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-mall-guard-walk.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      384,
+      512
+    ],
+    "sha256": "c68880f9144cda0815988079bf5f3ce428412a676be4fb991aa0c07fb434d8c5"
+  },
+  {
+    "path": "public/assets/neon/civilians/neon-girl-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-neon-girl-idle.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      512,
+      64
+    ],
+    "sha256": "00b42c09ffb07864ab72b909edf2093ffe8192733d4bd773bc4601b4eec913b1"
+  },
+  {
+    "path": "public/assets/neon/civilians/neon-girl-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-neon-girl-walk.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      384,
+      512
+    ],
+    "sha256": "3b0cad8df68ce678aa8973feeb34397dd556b1050b91fbe66ad5d78efcf20504"
+  },
+  {
+    "path": "public/assets/neon/civilians/skater-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-skater-idle.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      512,
+      64
+    ],
+    "sha256": "489a9604ab3963e96e37ef067e0b0e36683ef24c2d3b7ef73a2c4583abf22fc2"
+  },
+  {
+    "path": "public/assets/neon/civilians/skater-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-civ-skater-walk.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      384,
+      512
+    ],
+    "sha256": "3cb0eb18ce4db89cba3e262e59e9a86b4c74b9900b3eb9600ff086d7167bfcc7"
+  },
+  {
     "path": "public/assets/neon/decals/blood-drag.png",
     "source": "codex/pixellab-aseprite-proof:public/assets/decals/blood-drag.png",
     "generator": "PixelLab (earlier art pass)",
@@ -680,6 +760,26 @@
     "sha256": "524f470a110a2c9ce9185c6f4fe926c08999e387f74c9d8c173e0ba7d0ecb47a"
   },
   {
+    "path": "public/assets/neon/player/alex-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-player-alex-idle.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      512,
+      64
+    ],
+    "sha256": "020b828cca5c05d79d7b204e35e689240658c544fb0bb10f69d0806935dbdca3"
+  },
+  {
+    "path": "public/assets/neon/player/alex-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-player-alex-walk.png",
+    "generator": "PixelLab create_character v3 (64px) + template walk, packed by pack_character.py",
+    "size": [
+      384,
+      512
+    ],
+    "sha256": "52b0ee210c0c1a3509fe1d6dcdff041374d38793f5088f8bd14c368c0106e1ab"
+  },
+  {
     "path": "public/assets/neon/portraits/alex.png",
     "source": "codex/pixellab-aseprite-proof:public/assets/portraits/teenager.png",
     "generator": "PixelLab (earlier art pass), chosen as Alex HUD portrait",
@@ -728,6 +828,16 @@
       160
     ],
     "sha256": "29843af0f52d8ef01623902e3d0c870c6ab4ba416bfd85fdc27eef278a996ece"
+  },
+  {
+    "path": "public/assets/neon/props/bench-kiosk.png",
+    "source": "docs/art/neon-overhaul/pixellab/bench-kiosk.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      73,
+      83
+    ],
+    "sha256": "c92fe523ef8f9214e743d9876aa992b4bc60fcefe40bea9ebafec193a8fac5c4"
   },
   {
     "path": "public/assets/neon/props/booth-row.png",
@@ -798,6 +908,16 @@
       55
     ],
     "sha256": "3cc5270cd1e29f2985677093e467bb8d00528ae2dc782bfa8efc3b1105ab409b"
+  },
+  {
+    "path": "public/assets/neon/props/planter-straight.png",
+    "source": "docs/art/neon-overhaul/pixellab/planter-straight.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      120,
+      52
+    ],
+    "sha256": "4eb69c3f772ef146633278cc12b4d506d98467514afb3867719f460bc9b25494"
   },
   {
     "path": "public/assets/neon/props/security-desk.png",

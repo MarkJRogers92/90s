@@ -14,7 +14,7 @@
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { usableTextureKey } from '../presentation/assetFallback';
-import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, type CivilianTextureKey } from '../presentation/assets';
+import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, NEON_CIVILIAN_KEYS, characterFrameSize, type CivilianTextureKey } from '../presentation/assets';
 import { presentationDepth } from '../presentation/depth';
 import { GLOW_DEPTH, LightingLayer, type PointLight } from '../presentation/lighting/LightingLayer';
 import { FX_TEXTURES, ensureFxTextures, ensureNeonSign, floorTextureKey, type NeonSignSpec } from '../presentation/neon/proceduralTextures';
@@ -176,7 +176,12 @@ export class MallRoomView {
     this.buildRailing();
     for (const prop of this.plan.props) this.placeProp(prop);
     if (room.benchKiosk) {
-      this.placeImage(ENVIRONMENT_TEXTURE_KEYS.benchWarrantKiosk, room.benchKiosk.x, room.benchKiosk.y + 26, 64, 64, true);
+      // The Bench Warrant is a repair desk you can walk up to; the older
+      // presentation-slice kiosk sprite stays as the fallback.
+      const kiosk = usableTextureKey(this.scene.textures, PROP_TEXTURES.benchKiosk.key)
+        ? PROP_TEXTURES.benchKiosk.key
+        : ENVIRONMENT_TEXTURE_KEYS.benchWarrantKiosk;
+      this.placeImage(kiosk, room.benchKiosk.x, room.benchKiosk.y + 30, 80, 91, true);
     }
     for (const floorSign of this.plan.floorSigns) this.placeSign(floorSign, floorSign.x, floorSign.y, false);
   }
@@ -437,15 +442,23 @@ export class MallRoomView {
         ? lane.x + Math.sign(lane.exitX - lane.x) * Math.min(Math.abs(lane.exitX - lane.x), this.ambience.debugPhaseAnimationTick() * 1.2)
         : lane.x + (walking ? Math.sin((this.ambience.debugAnimationTick() + index * 17) / 19) * 12 : 0);
       const exitReached = ambience.phase === 'evacuating' && Math.abs(movingX - lane.exitX) < 1;
-      const texture = civilianTexture(lane.appearance, walking);
+      const texture = civilianTexture(this.scene, lane.appearance, walking);
       if (sprite.texture.key !== texture) sprite.setTexture(texture);
       sprite.setVisible(ambience.phase !== 'empty' && !exitReached)
         .setPosition(movingX, lane.y)
         .setDepth(presentationDepth('actor', lane.y));
       const column = walking ? Math.floor(this.ambience.debugAnimationTick() / 5 + index) % 6 : (index + (ambience.phase === 'warning' ? 2 : 0)) % 8;
       const row = walking ? (lane.exitX < lane.x ? 2 : 6) : 0;
-      sprite.setCrop(column * 32, row * 48, 32, 48);
-      const origin = croppedFrameOrigin({ row, column }, { width: sprite.width, height: sprite.height }, { width: 32, height: 48 });
+      // 64px neon shoppers are square frames sized from the sheet itself;
+      // the older 32x48 sheets remain the fallback.
+      const neonSheet = texture.startsWith('neon:civilian:');
+      const frame = neonSheet
+        ? { width: characterFrameSize(sprite.height, walking ? 8 : 1), height: characterFrameSize(sprite.height, walking ? 8 : 1) }
+        : { width: 32, height: 48 };
+      const neonColumn = walking ? Math.floor(this.ambience.debugAnimationTick() / 6 + index) % Math.max(1, Math.floor(sprite.width / frame.width)) : column;
+      const useColumn = neonSheet ? neonColumn : column;
+      sprite.setCrop(useColumn * frame.width, row * frame.height, frame.width, frame.height);
+      const origin = croppedFrameOrigin({ row, column: useColumn }, { width: sprite.width, height: sprite.height }, frame);
       sprite.setOrigin(origin.x, origin.y);
       if (sprite.visible) visibleCount += 1;
     }
@@ -463,7 +476,7 @@ export class MallRoomView {
 
   private civilianSprite(lane: ConcourseCivilianLane, phase: ReturnType<ConcourseAmbience['snapshot']>['phase']): Phaser.GameObjects.Image | null {
     const walking = phase === 'busy' || phase === 'evacuating';
-    const key = civilianTexture(lane.appearance, walking);
+    const key = civilianTexture(this.scene, lane.appearance, walking);
     if (!usableTextureKey(this.scene.textures, key)) return null;
     let sprite = this.civilianSprites.get(lane.id);
     if (!sprite) {
@@ -564,7 +577,14 @@ export class MallRoomView {
   }
 }
 
-function civilianTexture(appearance: ConcourseCivilianLane['appearance'], walking: boolean): CivilianTextureKey {
+function civilianTexture(scene: Phaser.Scene, appearance: ConcourseCivilianLane['appearance'], walking: boolean): string {
+  const neon = NEON_CIVILIAN_KEYS[appearance];
+  const neonKey = walking ? neon.walk : neon.idle;
+  if (usableTextureKey(scene.textures, neonKey)) return neonKey;
+  return legacyCivilianTexture(appearance, walking);
+}
+
+function legacyCivilianTexture(appearance: ConcourseCivilianLane['appearance'], walking: boolean): CivilianTextureKey {
   const keys = {
     'shopper-a': walking ? CIVILIAN_TEXTURE_KEYS.shopperAWalk : CIVILIAN_TEXTURE_KEYS.shopperAIdle,
     'shopper-b': walking ? CIVILIAN_TEXTURE_KEYS.shopperBWalk : CIVILIAN_TEXTURE_KEYS.shopperBIdle,

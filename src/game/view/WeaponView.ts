@@ -122,10 +122,11 @@ export class WeaponView {
     if (this.held.texture.key !== usable) this.held.setTexture(usable);
     const headAngle = ICON_HEAD_ANGLE[weapon.definitionId] ?? 0;
     const size = Math.max(this.held.width, this.held.height);
-    const base = 26 / size;
+    // Melee weapons are held at a readable length; guns stay compact.
+    const base = (weapon.delivery === 'direct' ? 40 : 28) / size;
     this.held
       .setVisible(true)
-      .setPosition(Math.round(weapon.x + Math.cos(angle) * reach), Math.round(weapon.y - 12 + Math.sin(angle) * reach * 0.8))
+      .setPosition(Math.round(weapon.x + Math.cos(angle) * reach), Math.round(weapon.y - 20 + Math.sin(angle) * reach * 0.8))
       .setRotation(angle - headAngle)
       .setScale(base * scale)
       .setFlipY(false)
@@ -142,7 +143,7 @@ export class WeaponView {
     const outer = weapon.range;
     const fade = 1 - progress;
     const cx = weapon.x;
-    const cy = weapon.y - 8;
+    const cy = weapon.y - 14;
     const steps = 14;
     const points: Phaser.Math.Vector2[] = [];
     for (let i = 0; i <= steps; i += 1) {
@@ -155,14 +156,14 @@ export class WeaponView {
       const r = inner + (outer - inner) * (0.35 + 0.4 * (i / steps));
       points.push(new Phaser.Math.Vector2(cx + Math.cos(a) * r, cy + Math.sin(a) * r));
     }
-    effects.fillStyle(color, 0.42 * fade).fillPoints(points, true);
-    effects.lineStyle(3, 0xffffff, 0.9 * fade);
+    effects.fillStyle(color, 0.6 * fade).fillPoints(points, true);
+    effects.lineStyle(5, 0xffffff, 0.95 * fade);
     effects.beginPath();
     effects.arc(cx, cy, outer, start, end);
     effects.strokePath();
-    effects.lineStyle(6, color, 0.25 * fade);
+    effects.lineStyle(10, color, 0.35 * fade);
     effects.beginPath();
-    effects.arc(cx, cy, outer - 3, start, end);
+    effects.arc(cx, cy, outer - 5, start, end);
     effects.strokePath();
 
     if (weapon.definitionId === 'janitor_mop') {

@@ -33,7 +33,7 @@ import {
 } from '../../sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
 import { GameAudioEngine } from '../audio/engine';
-import { NEON_ASSETS, PRESENTATION_ASSETS } from '../presentation/assets';
+import { CHARACTER_ASSETS, NEON_ASSETS, PRESENTATION_ASSETS } from '../presentation/assets';
 import { installAdaptiveBloom } from '../presentation/lighting/LightingLayer';
 import { ensureFxTextures } from '../presentation/neon/proceduralTextures';
 import { STAGE_HEIGHT, STAGE_TOP, STAGE_WIDTH, dressingTextureFiles } from '../presentation/rooms/roomDressing';
@@ -52,6 +52,7 @@ const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
 const RUN_ASSETS = [
   ...PRESENTATION_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
   ...NEON_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
+  ...CHARACTER_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
   ...dressingTextureFiles(),
 ];
 const PRESENTATION_ASSET_KEYS = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
