@@ -1,0 +1,762 @@
+[
+  {
+    "path": "public/assets/neon/decals/blood-drag.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/decals/blood-drag.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "c8ea3d86db4154e610f72fd5bbc9bb6150b32f54493b5d869f30737230d55f6f"
+  },
+  {
+    "path": "public/assets/neon/decals/blood-drops.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/decals/blood-drops.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "97ca82ff0f49e53f07f79d7a4628ef7f110b2c6eaa0b2fa1a0270bc74208cbb0"
+  },
+  {
+    "path": "public/assets/neon/decals/blood-pool.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/decals/blood-pool.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6323cdd5672df63a15f2290cde8c25407d1771d41a9c0cfbf8c7d55848a02a12"
+  },
+  {
+    "path": "public/assets/neon/decals/blood-splash.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/decals/blood-splash.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "9d49079033993b5ad1321c945789ef2a801a367d33778f288ecbf8ae3fde9999"
+  },
+  {
+    "path": "public/assets/neon/decals/broken-glass.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/decals/broken-glass.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "a8671dd5e5aaf6e13c5c829427447f527ef04f0c27a2a7360f86bfabcb8e1cd8"
+  },
+  {
+    "path": "public/assets/neon/decals/organic-residue.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/decals/organic-residue.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "b7902e07b3d3ba9962cc4065e4a8b987bdeca8643207957f58ac6944bea56e18"
+  },
+  {
+    "path": "public/assets/neon/decals/scorch-mark.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/decals/scorch-mark.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "9b22d3f25000f7ea8ecdac18d7443b28fb36a8c46ced43e2ec6e15b6d4ee1e2e"
+  },
+  {
+    "path": "public/assets/neon/enemies/hanger-idle.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/enemies/hanger-idle.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      384,
+      48
+    ],
+    "sha256": "48f3e861bcc397024ee60fb3ff012cfb4e7240bc8a36106c4ad8ec4d8613359f"
+  },
+  {
+    "path": "public/assets/neon/enemies/lp-manager-idle.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/enemies/lp-manager-idle.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      384,
+      48
+    ],
+    "sha256": "334deb5247c741bd92a2028d0b73673d693c47cba1bc0c687c092587e4e0c26f"
+  },
+  {
+    "path": "public/assets/neon/enemies/spitter-idle.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/enemies/spitter-idle.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      384,
+      48
+    ],
+    "sha256": "79b34331b9a6b166ee51351152da83ca6c8e86df43ea88c1de8c2b6df54711d8"
+  },
+  {
+    "path": "public/assets/neon/facades/arcade.png",
+    "source": "docs/art/neon-overhaul/pixellab/arcade.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "564db09025395bb2700049177f2b07702c9314533dbeeff66835f28e1c2b9ea9"
+  },
+  {
+    "path": "public/assets/neon/facades/back-hall-wall.png",
+    "source": "docs/art/neon-overhaul/pixellab/back-hall-wall.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "a3ab4850ed51c90337d396353183804c448b3d545876d9c75f38d204deaf4964"
+  },
+  {
+    "path": "public/assets/neon/facades/boutique.png",
+    "source": "docs/art/neon-overhaul/pixellab/boutique.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "a90d2e8e813049c7d39f51f9b4db7123e9c4c6b014dfecb5c0e2164e43163297"
+  },
+  {
+    "path": "public/assets/neon/facades/burger-counter.png",
+    "source": "docs/art/neon-overhaul/pixellab/burger-counter.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      256,
+      160
+    ],
+    "sha256": "9f75c67f02d73a731068ebaed6de4fbcb0733e962cf9e825a6dc5c6fde15d21c"
+  },
+  {
+    "path": "public/assets/neon/facades/cinema-concession.png",
+    "source": "docs/art/neon-overhaul/pixellab/cinema-concession.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "276d0d6c96d067d1e0b0e18ae4023e52aa2846f9ebceef6f4063781661ecfbc2"
+  },
+  {
+    "path": "public/assets/neon/facades/electronics-store.png",
+    "source": "docs/art/neon-overhaul/pixellab/electronics-store.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      320,
+      160
+    ],
+    "sha256": "cc77056e24207f959add6a558fa77182491c6dc690bcf41328a23dce0f634853"
+  },
+  {
+    "path": "public/assets/neon/facades/music-store.png",
+    "source": "docs/art/neon-overhaul/pixellab/music-store.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "76c4077a78919ca8c9c67c2223f6d52a54157b4995e15b7e28bd65b51fe14f9f"
+  },
+  {
+    "path": "public/assets/neon/facades/pizza-counter.png",
+    "source": "docs/art/neon-overhaul/pixellab/pizza-counter.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      256,
+      160
+    ],
+    "sha256": "ffadc2db860b1bbba03a75f58a5ec016862cffa96228a720dd43bd7ae7e1c1bd"
+  },
+  {
+    "path": "public/assets/neon/facades/security-office.png",
+    "source": "docs/art/neon-overhaul/pixellab/security-office.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "c08fc8ac751de822871d0558e977b782a0726bbf30f27e657975f6942f9afef7"
+  },
+  {
+    "path": "public/assets/neon/facades/video-store.png",
+    "source": "docs/art/neon-overhaul/pixellab/video-store.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "60530eb698a04959405971c7a9715b7c1b6b406ad29b8ad04c3584ac36898656"
+  },
+  {
+    "path": "public/assets/neon/items/anti-static-strap.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/anti-static-strap.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f4959a0feab77f9ff95186afd961b09ee9a53b999524dbd26a5a935bc62f76fb"
+  },
+  {
+    "path": "public/assets/neon/items/bottle-rocket-pack.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/bottle-rocket-pack.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "875dabb8b3396c6c6e728a7dbacab401cdcd14f07896db5fe77a2c4db719de36"
+  },
+  {
+    "path": "public/assets/neon/items/box-cutter.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/box-cutter.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "db4836d95c5df3dd29fef2d63c37ba553b17625a4ec9a1ead91094b095ebd3e2"
+  },
+  {
+    "path": "public/assets/neon/items/broken-broom-handle.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/broken-broom-handle.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6ca768b8bc4c714c98b49a5d58b4a61be9202d267eb870ea02a6989bb439a2c1"
+  },
+  {
+    "path": "public/assets/neon/items/bubble-bath.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/bubble-bath.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "e651c865f43f05e3e5754ab06187621a9fffcaa6459ad278fe9ff7d5f217ce86"
+  },
+  {
+    "path": "public/assets/neon/items/car-battery.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/car-battery.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "5512f0570cf0c94ccb8a2a2b330d4ac44a1903d128233edf84a4475bb612dcc7"
+  },
+  {
+    "path": "public/assets/neon/items/extension-cord.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/extension-cord.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6d51e37454369f00e603b17eb7fddfa27f3ffcb793fcdb26ffced02ac573e5e1"
+  },
+  {
+    "path": "public/assets/neon/items/fanny-pack.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/fanny-pack.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "222e60b8b50b4b46b1f4f913bcf9a43e21106d7a3399ff34af475d03d9544fea"
+  },
+  {
+    "path": "public/assets/neon/items/fire-extinguisher.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/fire-extinguisher.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f098c2cb698493cd5e99cc53d5a1cd76e05d13169368ec26f7841cb6ddc127ba"
+  },
+  {
+    "path": "public/assets/neon/items/foam-ball-blaster.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/foam-ball-blaster.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6b7966a667509cf3fd548deec170af82fa5685059d6ffa1aaade419802015f61"
+  },
+  {
+    "path": "public/assets/neon/items/gel-pens.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/gel-pens.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "fd79fa44917419cc35a77a2d3f7fba2006ab413f7aa9d19e9cb3253273c0300e"
+  },
+  {
+    "path": "public/assets/neon/items/grease-gun.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/grease-gun.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "9cad450afd27d304af9ac0f5ab9bda40deeea829b922622c62e725e655da84f7"
+  },
+  {
+    "path": "public/assets/neon/items/heavy-duty-spring.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/heavy-duty-spring.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "a92b3c77c32d3de1cc0409ebcec5d3a1d7a1be2f49d639e78d11ba80ad5f3e44"
+  },
+  {
+    "path": "public/assets/neon/items/mop.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/mop.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1066a7a40a02673990c3188ffd788a9ff02f18494c26defff21e9916dd95e03e"
+  },
+  {
+    "path": "public/assets/neon/items/needle-nozzle.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/needle-nozzle.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "efb5140e8940374aa48c54609b88cd023ec01a4cb4033b4d6f2cdffd3472c55b"
+  },
+  {
+    "path": "public/assets/neon/items/paint-marker.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/paint-marker.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "0612100af3843b2ad85d0557468ad1134ab1d8e812a22de0b08199851a086b82"
+  },
+  {
+    "path": "public/assets/neon/items/party-popper.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/party-popper.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "733ca74b6196a91e010d9d73207df65b85d942462a84f47151912f8f8ce7ba34"
+  },
+  {
+    "path": "public/assets/neon/items/plasma-globe.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/plasma-globe.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "5efb32cd0e168ec4950c4daa84464d39d2a00d972e477132693a720a656e4de2"
+  },
+  {
+    "path": "public/assets/neon/items/pump-soaker.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/pump-soaker.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "5599a483c09f5867e7c53e0d1b6066241adf5280dc428f3740f3c42255dbb8ed"
+  },
+  {
+    "path": "public/assets/neon/items/receipt-wallet.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/receipt-wallet.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f9d9f2d8eb506837be42f671ec1fed1eac1910d6e561790ec3c9739d18251b1e"
+  },
+  {
+    "path": "public/assets/neon/items/slushie-cup.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/slushie-cup.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "ab4cf03700e191a26a883ce9c64118745c09d0632620aab216772c6bc3d44c64"
+  },
+  {
+    "path": "public/assets/neon/items/vhs-rewinder.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/vhs-rewinder.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "28cfa2d28087b1f646dba406bc55b88706e2d3a188de4b787ace91d9a0afc0bd"
+  },
+  {
+    "path": "public/assets/neon/items/wide-nozzle.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/items/wide-nozzle.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "e51d38b71b03ac4b8867af173a766dd98d9584bb25eac2040c9bba8f409427a5"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/arcade-cabinet.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/arcade-cabinet.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      27,
+      59
+    ],
+    "sha256": "6942d90bd30262522d294fcf29d6b67b0bec8d5284188ddbfe06baf0dfaab80f"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/atm.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/atm.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      29,
+      47
+    ],
+    "sha256": "8d35a54b91b52886c72a5594dafdcfe9a080662906b02b7ffeb8f360393e0f0c"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/checkout-counter.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/checkout-counter.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      29
+    ],
+    "sha256": "97c7219d73b57e5a369969639c86ea0de9e01f902aaf3501f02eceaf517d5a6a"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/claw-machine.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/claw-machine.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      32,
+      57
+    ],
+    "sha256": "623bb82d5a4ed15e155e0e19ff544453a60767530f84242594cfc9bc9f076d31"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/clothing-rack.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/clothing-rack.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      36,
+      34
+    ],
+    "sha256": "b2c4d3b88ad510a66dbb479c907bf9997302227fedd61678faabd7b43ecf0bf6"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/condiment-stand.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/condiment-stand.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      41,
+      36
+    ],
+    "sha256": "beb60b94a07654838ff471dcd7035165cda8c4f8be87f48e61d8c9fdab767b14"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/drinking-fountain.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/drinking-fountain.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      20,
+      22
+    ],
+    "sha256": "75a592c7bbd467ea74885dbed60b1c0311fbbc92b455055ffcda8200729e17ab"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/food-court-chair.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/food-court-chair.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      19,
+      27
+    ],
+    "sha256": "763c25d754597adcef4bc2a467aee4037f3216d18e400d18909f74ad10931c5f"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/food-court-table.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/food-court-table.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      25,
+      21
+    ],
+    "sha256": "500f69e736e52f8fc2588973ecbfb6174ecd186efe5b5f8456926c6241314c41"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/kiddie-ride.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/kiddie-ride.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      41,
+      31
+    ],
+    "sha256": "724910cefcdd002fa8a98bb7dbc62b57c0344bdc29833869737a3b36f1708088"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/mall-bench.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/mall-bench.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      56,
+      30
+    ],
+    "sha256": "5d521bbcfa2f4fe096caaea85171727e37cdb1fd9f11ee4b7a764df19d6d8315"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/mall-directory.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/mall-directory.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      17,
+      54
+    ],
+    "sha256": "3eaf1ddfb90c83bb0b5263a32bd0ee743549068dbd881b50b07978e5bb41d3d6"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/payphone.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/payphone.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      31,
+      63
+    ],
+    "sha256": "8c569b779a3f4e4e26e1f3248c8cafcc39c212a5965596dc50fec5d9e8878edb"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/potted-palm.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/potted-palm.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      38,
+      58
+    ],
+    "sha256": "689cce9cc10e2750ca8c0f088b34c426db5c05feca93429865ff3f45c3c25d22"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/rc-car.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/rc-car.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      192,
+      22
+    ],
+    "sha256": "e312f10ec86a72f7853233e89c5a566c52c2635fcff43bf490914bcdfcc5cf3f"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/rubbish-bin.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/rubbish-bin.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      19,
+      25
+    ],
+    "sha256": "1b85e0e73974e2c9d0ceb3343593640f6915520655308c814d42b2726297b7e6"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/shopping-cart.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/shopping-cart.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      36,
+      33
+    ],
+    "sha256": "941ac35d350b22664eff5f7f44baeee4c8a958e3b247706b737488abb51e926b"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/store-gondola.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/store-gondola.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      30,
+      46
+    ],
+    "sha256": "277545d4cc15e95d8eb899b0406dfd7c3ca7199bafd7a529667cb468b8ce153a"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/vending-machine.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/vending-machine.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      22,
+      38
+    ],
+    "sha256": "043d40bd6eca19fe0e721b844c0ac11a784b8ae4b2ecf4a524c075be715f9ced"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/vhs-shelf.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/vhs-shelf.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      48,
+      30
+    ],
+    "sha256": "a981f2eb00156b2b4bf4aa65029f1a8566baad5141ae7161fc68d146511bada5"
+  },
+  {
+    "path": "public/assets/neon/legacy-props/wet-floor-sign.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/props/wet-floor-sign.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      19,
+      16
+    ],
+    "sha256": "524f470a110a2c9ce9185c6f4fe926c08999e387f74c9d8c173e0ba7d0ecb47a"
+  },
+  {
+    "path": "public/assets/neon/portraits/employee.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/portraits/employee.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      160,
+      160
+    ],
+    "sha256": "4933216d06b006d031e6dcbc6bd65d0a841b33ef6d91370109e082f763a9b515"
+  },
+  {
+    "path": "public/assets/neon/portraits/security-guard.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/portraits/security-guard.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      160,
+      160
+    ],
+    "sha256": "bf55e5410b3ea72abff551a912f87eccf5c44a735a4b9fd1734468c487c96cb8"
+  },
+  {
+    "path": "public/assets/neon/portraits/store-manager.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/portraits/store-manager.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      160,
+      160
+    ],
+    "sha256": "28e4c4dde56cc2be1952abe4dab49f855f48e61ae02b06522855fe0c4ed001f0"
+  },
+  {
+    "path": "public/assets/neon/portraits/teenager.png",
+    "source": "codex/pixellab-aseprite-proof:public/assets/portraits/teenager.png",
+    "generator": "PixelLab (earlier art pass)",
+    "size": [
+      160,
+      160
+    ],
+    "sha256": "29843af0f52d8ef01623902e3d0c870c6ab4ba416bfd85fdc27eef278a996ece"
+  },
+  {
+    "path": "public/assets/neon/props/booth-row.png",
+    "source": "docs/art/neon-overhaul/pixellab/booth-row.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      143,
+      38
+    ],
+    "sha256": "3822d2eeafc368aff27a8cbe223e9831f647b533d94ea5134ce0f92859dd2736"
+  },
+  {
+    "path": "public/assets/neon/props/bunny-mascot.png",
+    "source": "docs/art/neon-overhaul/pixellab/bunny-mascot.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      33,
+      91
+    ],
+    "sha256": "304fe3425032339642fe879b4f2a08ef07b66fd5682db9b0eabe2b1fd38a4c16"
+  },
+  {
+    "path": "public/assets/neon/props/concrete-pillar.png",
+    "source": "docs/art/neon-overhaul/pixellab/concrete-pillar.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      24,
+      99
+    ],
+    "sha256": "4e3e6a5f4be4b4e18cf7e9d207d0c23d33b22c4bf7417ee2b508e99d54bdd784"
+  },
+  {
+    "path": "public/assets/neon/props/crate-stack.png",
+    "source": "docs/art/neon-overhaul/pixellab/crate-stack.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      75,
+      86
+    ],
+    "sha256": "41100550c78c4a9e448f54607327e0f3914f39cbc002bc994190f08b56b7e26c"
+  },
+  {
+    "path": "public/assets/neon/props/food-table-set.png",
+    "source": "docs/art/neon-overhaul/pixellab/food-table-set.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      61,
+      61
+    ],
+    "sha256": "065ecf25cbaf91d05f08492fa8a7c0813280815cba22fb4c156c0fa0ede602e7"
+  },
+  {
+    "path": "public/assets/neon/props/globe-fountain.png",
+    "source": "docs/art/neon-overhaul/pixellab/globe-fountain.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      134,
+      105
+    ],
+    "sha256": "989924c03b945621622411272175071f1515926c28a86977dfe512d2be75b821"
+  },
+  {
+    "path": "public/assets/neon/props/planter-long.png",
+    "source": "docs/art/neon-overhaul/pixellab/planter-long.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      85,
+      55
+    ],
+    "sha256": "3cc5270cd1e29f2985677093e467bb8d00528ae2dc782bfa8efc3b1105ab409b"
+  },
+  {
+    "path": "public/assets/neon/props/security-desk.png",
+    "source": "docs/art/neon-overhaul/pixellab/security-desk.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      80,
+      45
+    ],
+    "sha256": "0c0c044d82d7af343c036f02407981190ab95d2bfc2bf5807e7e07cb4752f99d"
+  }
+]

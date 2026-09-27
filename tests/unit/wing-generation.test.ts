@@ -311,7 +311,8 @@ describe('wing graph validation', () => {
     const corrupted = replaceRoom(baseWing, 'service_corridor', (room) => ({
       ...room,
       enemySpawns: [
-        { slotId: 'corridor-utility-hanger-west', kind: 'hanger' as const, x: 480, y: 240 },
+        // Open floor south of the atrium fountain, so only the safe-room rule can fire.
+        { slotId: 'corridor-utility-hanger-west', kind: 'hanger' as const, x: 480, y: 330 },
       ],
     }));
     expect(() => validateWingGraph(corrupted)).toThrow(/safe room/i);
