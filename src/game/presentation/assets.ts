@@ -204,6 +204,9 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
 export const PLAYER_TEXTURE_KEYS = {
   idle: 'neon:player:alex-idle',
   walk: 'neon:player:alex-walk',
+  swing: 'neon:player:alex-swing',
+  hurt: 'neon:player:alex-hurt',
+  death: 'neon:player:alex-death',
 } as const;
 
 export const NEON_CIVILIAN_KEYS = {
@@ -216,6 +219,9 @@ export const NEON_CIVILIAN_KEYS = {
 export const CHARACTER_ASSETS: readonly PresentationAsset[] = [
   neon(PLAYER_TEXTURE_KEYS.idle, 'player/alex-idle.png'),
   neon(PLAYER_TEXTURE_KEYS.walk, 'player/alex-walk.png'),
+  neon(PLAYER_TEXTURE_KEYS.death, 'player/alex-death.png'),
+  neon(PLAYER_TEXTURE_KEYS.swing, 'player/alex-swing.png'),
+  neon(PLAYER_TEXTURE_KEYS.hurt, 'player/alex-hurt.png'),
   ...Object.values(NEON_CIVILIAN_KEYS).flatMap((keys) => [
     neon(keys.idle, `civilians/${keys.idle.slice('neon:civilian:'.length)}.png`),
     neon(keys.walk, `civilians/${keys.walk.slice('neon:civilian:'.length)}.png`),

@@ -241,3 +241,32 @@ export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], fr
   if (since < 0 || since >= ATTACK_RELEASE_TICKS) return null;
   return Math.min(frames - 1, windupFrames + Math.floor((since / ATTACK_RELEASE_TICKS) * release));
 }
+
+/** Ticks per frame of the janitor's hurt flinch. */
+export const PLAYER_HURT_TICKS_PER_FRAME = 3;
+/** Milliseconds per frame of the death fall; the clock stops at game over. */
+export const PLAYER_DEATH_MS_PER_FRAME = 110;
+
+export type PlayerBodyAction = { readonly sheet: 'swing' | 'hurt' | 'death'; readonly column: number };
+
+/**
+ * Which of the janitor's action sheets to draw, or null for walk/idle.
+ * Death overrides everything and holds its last frame; a hit interrupts a
+ * swing; the swing scrubs in step with the visible swing. A sheet with zero
+ * frames is not loaded and is skipped.
+ */
+export function playerBodyAction(
+  input: { readonly swing: number | null; readonly hurtAge: number | null; readonly deadMs: number | null },
+  frames: { readonly swing: number; readonly hurt: number; readonly death: number },
+): PlayerBodyAction | null {
+  if (input.deadMs !== null && frames.death > 0) {
+    return { sheet: 'death', column: Math.min(frames.death - 1, Math.floor(Math.max(0, input.deadMs) / PLAYER_DEATH_MS_PER_FRAME)) };
+  }
+  if (input.hurtAge !== null && frames.hurt > 0 && input.hurtAge >= 0 && input.hurtAge < frames.hurt * PLAYER_HURT_TICKS_PER_FRAME) {
+    return { sheet: 'hurt', column: Math.floor(input.hurtAge / PLAYER_HURT_TICKS_PER_FRAME) };
+  }
+  if (input.swing !== null && frames.swing > 0) {
+    return { sheet: 'swing', column: Math.min(frames.swing - 1, Math.floor(clamp01(input.swing) * frames.swing)) };
+  }
+  return null;
+}

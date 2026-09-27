@@ -12,6 +12,7 @@ import {
   enemyWindups,
   hitReaction,
   hitStopFor,
+  playerBodyAction,
 } from '../../src/game/view/combatBeats';
 
 function enemy(overrides: Partial<EnemyState>): EnemyState {
@@ -147,5 +148,29 @@ describe('attack animation frames', () => {
     expect(attackFrameFor(hanger, enemyWindups(hanger, farPlayer), 9, 0)).toBeNull();
     const close = enemyWindups(hanger, { x: 120, y: 100 });
     expect(attackFrameFor(hanger, close, 9, 7)).not.toBeNull();
+  });
+});
+
+describe('player body action', () => {
+  const frames = { swing: 7, hurt: 6, death: 7 };
+
+  it('is the normal walk/idle art when nothing is happening', () => {
+    expect(playerBodyAction({ swing: null, hurtAge: null, deadMs: null }, frames)).toBeNull();
+  });
+
+  it('scrubs the swing sheet with the visible swing', () => {
+    expect(playerBodyAction({ swing: 0, hurtAge: null, deadMs: null }, frames)).toEqual({ sheet: 'swing', column: 0 });
+    expect(playerBodyAction({ swing: 0.99, hurtAge: null, deadMs: null }, frames)).toEqual({ sheet: 'swing', column: 6 });
+  });
+
+  it('lets a hit interrupt a swing, and death override everything, holding the last frame', () => {
+    expect(playerBodyAction({ swing: 0.5, hurtAge: 0, deadMs: null }, frames)?.sheet).toBe('hurt');
+    expect(playerBodyAction({ swing: 0.5, hurtAge: 500, deadMs: null }, frames)?.sheet).toBe('swing');
+    expect(playerBodyAction({ swing: 0.5, hurtAge: 0, deadMs: 0 }, frames)).toEqual({ sheet: 'death', column: 0 });
+    expect(playerBodyAction({ swing: null, hurtAge: null, deadMs: 60_000 }, frames)).toEqual({ sheet: 'death', column: 6 });
+  });
+
+  it('skips any action whose sheet is not loaded', () => {
+    expect(playerBodyAction({ swing: 0.5, hurtAge: 0, deadMs: 0 }, { swing: 0, hurt: 0, death: 0 })).toBeNull();
   });
 });

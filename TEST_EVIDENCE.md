@@ -1,5 +1,15 @@
 # Test evidence
 
+## 2026-09-27 — round 5: Alex swing, flinch, death
+
+- `npx vitest run` — PASS: 39 files, 560 tests (new `player body action` block,
+  4 tests, failed first on the missing function).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.4 min).
+- Captures `artifacts/neon-overhaul/beats/*-swing.png`, `*-dead.png`. The first
+  death capture showed the killing blow's star and a Spitter wind-up frozen on
+  top of the body (the sim clock stops at game over); fixed by the real-time
+  effects clock and verified in the recapture.
+
 ## 2026-09-27 — round 4b: combat sound
 
 - `npx vitest run` — PASS: 39 files, 556 tests. New `combat beat cues` block in

@@ -988,5 +988,35 @@
       704
     ],
     "sha256": "2760925a486f8d0ea6b871f6d640e8e11876ea8cfae8ec6497f214b0b5e2523a"
+  },
+  {
+    "path": "public/assets/neon/player/alex-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-player-alex-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      448,
+      512
+    ],
+    "sha256": "d256115c2bffdfc41b1b03b29bdc6f00694d095a4f5b1de864a32b20912e711f"
+  },
+  {
+    "path": "public/assets/neon/player/alex-swing.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-player-alex-swing.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "c159d1b1909a4ef4513eada3e18d45c79217bb8978f202b8ad69ce4ef905852d"
+  },
+  {
+    "path": "public/assets/neon/player/alex-hurt.png",
+    "source": "docs/art/neon-overhaul/pixellab/char-player-alex-hurt.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "6e319e421adeef6fa932cf8ada4b2b12dadb1a3b85a0726f8caed81a627f09e7"
   }
 ]

@@ -69,17 +69,30 @@ export class WeaponView {
     this.held = scene.add.image(0, 0, '__DEFAULT').setVisible(false);
   }
 
-  /** Draws the held weapon and any live swing; returns lights for this frame. */
-  public sync(weapon: WeaponSnapshot, tick: number, effects: Phaser.GameObjects.Graphics, actorDepth: number): PointLight[] {
+  /**
+   * Notices a new attack: the active window jumping back up to its full
+   * length. Safe to call more than once per tick, so the body sprite can ask
+   * before the weapon is drawn and both start the swing on the same frame.
+   */
+  public noteAttack(weapon: Pick<WeaponSnapshot, 'attackActiveTicks' | 'facingX' | 'facingY'>, tick: number): void {
     if (tick < this.lastTick) this.swingStartTick = null;
     this.lastTick = tick;
-    const aim = Math.atan2(weapon.facingY, weapon.facingX);
-    // A new attack is the active window jumping back up to its full length.
     if (weapon.attackActiveTicks === ATTACK_ACTIVE_TICKS && this.lastActive !== ATTACK_ACTIVE_TICKS) {
       this.swingStartTick = tick;
-      this.swingAngle = aim;
+      this.swingAngle = Math.atan2(weapon.facingY, weapon.facingX);
     }
     this.lastActive = weapon.attackActiveTicks;
+  }
+
+  /** Progress 0..1 of the visible swing at `tick`, or null when idle. */
+  public swingAt(tick: number): number | null {
+    return swingProgress(this.swingStartTick, tick);
+  }
+
+  /** Draws the held weapon and any live swing; returns lights for this frame. */
+  public sync(weapon: WeaponSnapshot, tick: number, effects: Phaser.GameObjects.Graphics, actorDepth: number): PointLight[] {
+    this.noteAttack(weapon, tick);
+    const aim = Math.atan2(weapon.facingY, weapon.facingX);
     const lights: PointLight[] = [];
 
     const key = itemIconKey(weapon.definitionId);

@@ -42,7 +42,10 @@ async function fight(fixture, frames, { approach = true } = {}) {
   let corpseIn = -1;
   for (let frame = 0; frame < frames; frame++) {
     const s = await snap();
-    if (s.status !== 'playing') break;
+    if (s.status !== 'playing') {
+      if (s.status === 'dead') { await page.waitForTimeout(900); await once(`${fixture ?? 'foodcourt'}-dead`); }
+      break;
+    }
     const hurt = s.player.health < last.player.health;
     const hit = s.enemies.some((e) => { const b = last.enemies.find((o) => o.id === e.id); return b && e.health < b.health; });
     const kill = s.enemies.length < last.enemies.length;
@@ -67,6 +70,7 @@ async function fight(fixture, frames, { approach = true } = {}) {
     await hold(keys);
     await page.mouse.down(); await page.waitForTimeout(30); await page.mouse.up();
     await page.waitForTimeout(20);
+    if (frame === 12) await once(`${fixture ?? 'foodcourt'}-swing`);
   }
   await hold([]);
 }

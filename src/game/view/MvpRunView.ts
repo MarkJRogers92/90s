@@ -30,7 +30,7 @@ import {
   type ActorSnapshot,
   type SpriteSpec,
 } from './ActorSpriteView';
-import { attackFrameFor, combinePoses, enemyWindups, windupPose, type Windup } from './combatBeats';
+import { attackFrameFor, combinePoses, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { WeaponView } from './WeaponView';
@@ -84,6 +84,10 @@ export class MvpRunView {
   private readonly shadows = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedShadows = new Set<string>();
   private concourseAmbience: ConcourseAmbienceSnapshot | null = null;
+  /** Real time the shift ended in death; the sim clock stops at game over. */
+  private deadSince: number | null = null;
+  /** Real time the shift ended (won or dead), for the effects clock. */
+  private endedAt: number | null = null;
   private actorDebug: ActorPresentationDebugSnapshot = this.emptyActorDebug();
 
   public constructor(scene: Phaser.Scene) {
@@ -147,12 +151,15 @@ export class MvpRunView {
     );
     // Feedback reads this tick's hits first, so a struck sprite reacts on the
     // same frame the damage number appears.
+    const fxTick = this.effectsTick(state);
     this.feedback.sync(
       actorScope,
-      state.tick,
+      fxTick,
       state.room.combat.enemies,
       state.room.combat.player,
-      state.paused || state.status !== 'playing',
+      // Only the pause menu stops feedback: the blow that ends a shift lands on
+      // the same tick the status changes, and it deserves its impact too.
+      state.paused,
       state.room.combat.projectiles,
     );
     for (const patch of state.room.combat.surfaces) {
@@ -171,7 +178,9 @@ export class MvpRunView {
       const facing = enemy.kind === 'spitter'
         ? { x: (player0.x - enemy.x) * 1e-3, y: (player0.y - enemy.y) * 1e-3 }
         : enemyDelta;
-      const windups = enemyWindups(enemy, player0);
+      // A finished shift freezes the simulation mid-telegraph; never leave a
+      // frozen warning on screen over the game-over beat.
+      const windups = state.status === 'playing' ? enemyWindups(enemy, player0) : [];
       // A charging enemy turns to face its locked aim, so the strike reads.
       const charge = windups.find((windup) => windup.kind !== 'reach');
       const faced = charge ? { x: charge.aimX * 1e-3, y: charge.aimY * 1e-3 } : facing;
@@ -180,7 +189,7 @@ export class MvpRunView {
         x: enemy.x, y: enemy.y, moveX: faced.x, moveY: faced.y,
         attackTicks: 0, damaged: false, phase: enemy.phase,
       };
-      const pose = combinePoses(windupPose(windups, state.tick), this.feedback.poseFor(`enemy:${enemy.id}`, state.tick));
+      const pose = combinePoses(windupPose(windups, state.tick), this.feedback.poseFor(`enemy:${enemy.id}`, fxTick));
       const sheet = enemySpriteSheet(enemySnapshot.kind, false);
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
       const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
@@ -228,12 +237,16 @@ export class MvpRunView {
     const player = state.room.combat.player;
     const playerDelta = this.actorMovement.movementFor('player', player.x, player.y);
     const playerDepth = presentationDepth('actor', player.y);
+    const bodyAction = this.playerAction(state, fxTick);
+    // Invulnerability freezes with the sim at game over; its flicker and ring
+    // would strobe over the death fall, so they only show during a live shift.
+    const playerHurtCue = player.invulnerableTicks > 0 && state.status === 'playing';
     const playerSprite = this.syncActorSprite({
       id: 'player', kind: 'alex', x: player.x, y: player.y, moveX: playerDelta.x, moveY: playerDelta.y,
-      attackTicks: player.attackActiveTicks, damaged: player.invulnerableTicks > 0, phase: 'idle',
+      attackTicks: player.attackActiveTicks, damaged: playerHurtCue, phase: 'idle',
       // Isaac-style: the janitor looks where the pointer aims, even while backpedalling.
       faceX: player.facing.x, faceY: player.facing.y,
-    }, state.tick, playerDepth, this.feedback.poseFor('player', state.tick));
+    }, state.tick, playerDepth, this.feedback.poseFor('player', fxTick), null, bodyAction);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.contactShadow('player', player.x, player.y, 1);
     // The janitor carries a little warm light, so the player never loses themself in the dark.
@@ -251,7 +264,7 @@ export class MvpRunView {
       id: 'player', kind: 'alex', x: player.x, y: player.y,
       moveX: playerDelta.x, moveY: playerDelta.y,
       attackTicks: player.attackActiveTicks,
-      damaged: player.invulnerableTicks > 0,
+      damaged: playerHurtCue,
       phase: 'idle',
     }, playerSprite, playerEffects);
     const mopArcVisible = shouldDrawDirectAttackArc(
@@ -611,6 +624,11 @@ export class MvpRunView {
       graphics.strokeCircle(player.x, player.y, player.radius);
     }
     const primary = state.room.combat.compiledLoadout.primary;
+    if (state.status === 'dead') {
+      // The mop falls with him: the death sheet has empty hands.
+      this.weapon.hide();
+      return;
+    }
     const lights = this.weapon.sync({
       x: player.x,
       y: player.y,
@@ -638,10 +656,11 @@ export class MvpRunView {
     depth: number,
     pose: ActorPose = NEUTRAL_POSE,
     attackColumn: number | null = null,
+    bodyAction: PlayerBodyAction | null = null,
   ): ActorFrameEvidence {
     const visual = actorPresentation(this.actorMemory, snapshot, tick);
     if (snapshot.kind === 'alex') {
-      const neon = this.neonPlayerSpec(visual.walking);
+      const neon = this.neonPlayerSpec(visual.walking, bodyAction);
       if (neon) return this.syncSheetSprite(snapshot, visual, tick, depth, neon, pose);
     }
     const sheet = enemySpriteSheet(snapshot.kind, visual.walking);
@@ -699,11 +718,59 @@ export class MvpRunView {
     };
   }
 
+  /**
+   * The clock combat feedback runs on. It is the simulation tick while the
+   * shift is live, and keeps counting in real 60 Hz ticks after the shift
+   * ends, so the last hit's stars, words and sparks finish and fade instead
+   * of freezing on top of the death fall. (The pause menu still freezes.)
+   */
+  private effectsTick(state: MvpRunState): number {
+    if (state.status === 'playing') {
+      this.endedAt = null;
+      return state.tick;
+    }
+    if (this.endedAt === null) this.endedAt = this.scene.time.now;
+    return state.tick + Math.floor((this.scene.time.now - this.endedAt) / (1000 / 60));
+  }
+
+  /**
+   * The janitor's action this frame: death, a hurt flinch, or the body swing
+   * that goes with a melee weapon's visible swing. Detection runs before the
+   * sprite so the body and the weapon start the swing on the same frame.
+   */
+  private playerAction(state: MvpRunState, fxTick: number): PlayerBodyAction | null {
+    const player = state.room.combat.player;
+    const primary = state.room.combat.compiledLoadout.primary;
+    this.weapon.noteAttack({ attackActiveTicks: player.attackActiveTicks, facingX: player.facing.x, facingY: player.facing.y }, state.tick);
+    const dead = state.status === 'dead';
+    if (dead && this.deadSince === null) this.deadSince = this.scene.time.now;
+    if (!dead) this.deadSince = null;
+    return playerBodyAction(
+      {
+        swing: primary.delivery === 'direct' ? this.weapon.swingAt(state.tick) : null,
+        hurtAge: this.feedback.playerHurtAge(fxTick),
+        deadMs: this.deadSince === null ? null : this.scene.time.now - this.deadSince,
+      },
+      {
+        swing: this.sheetColumns(PLAYER_TEXTURE_KEYS.swing),
+        hurt: this.sheetColumns(PLAYER_TEXTURE_KEYS.hurt),
+        death: this.sheetColumns(PLAYER_TEXTURE_KEYS.death),
+      },
+    );
+  }
+
   /** The 64px PixelLab janitor, when its sheets loaded. */
-  private neonPlayerSpec(walking: boolean): { textureKey: string; rows: 1 | 8; walkFrames: number } | null {
+  private neonPlayerSpec(
+    walking: boolean,
+    action: PlayerBodyAction | null = null,
+  ): { textureKey: string; rows: 1 | 8; walkFrames: number; column?: number } | null {
     const textures = this.scene.textures;
     const walk = usableTextureKey(textures, PLAYER_TEXTURE_KEYS.walk);
     const idle = usableTextureKey(textures, PLAYER_TEXTURE_KEYS.idle);
+    if (action) {
+      const key = PLAYER_TEXTURE_KEYS[action.sheet];
+      return { textureKey: key, rows: 8, walkFrames: this.sheetColumns(key), column: action.column };
+    }
     if (walking && walk) {
       const source = textures.get(walk).getSourceImage() as { width: number; height: number };
       const frame = characterFrameSize(source.height, 8);
@@ -717,19 +784,25 @@ export class MvpRunView {
     visual: ReturnType<typeof actorPresentation>,
     tick: number,
     depth: number,
-    sheet: { textureKey: string; rows: 1 | 8; walkFrames: number },
+    sheet: { textureKey: string; rows: 1 | 8; walkFrames: number; column?: number },
     pose: ActorPose = NEUTRAL_POSE,
   ): ActorFrameEvidence {
     const source = this.scene.textures.get(sheet.textureKey).getSourceImage() as { height: number };
     const size = characterFrameSize(source.height, sheet.rows);
-    const spec: SpriteSpec = { textureKey: sheet.textureKey, frameWidth: size, frameHeight: size, scale: 1 };
+    // Action canvases grow around the idle canvas, so the feet sit half the
+    // growth lower than 84% of the idle frame.
+    const idleKey = usableTextureKey(this.scene.textures, PLAYER_TEXTURE_KEYS.idle);
+    const idleSize = idleKey ? characterFrameSize((this.scene.textures.get(idleKey).getSourceImage() as { height: number }).height, 1) : size;
+    const feetY = (size - idleSize) / 2 + idleSize * 0.84;
+    const spec: SpriteSpec = { textureKey: sheet.textureKey, frameWidth: size, frameHeight: size, scale: 1, feetY };
     let view = this.actorSprites.get(snapshot.id);
     if (!view) {
       view = new ActorSpriteView(this.scene, spec);
       this.actorSprites.set(snapshot.id, view);
     }
     this.usedActorSpriteIds.add(snapshot.id);
-    const frame = actorFrameFor(sheet.rows === 8 ? 'walk' : 'idle', visual.direction, tick, sheet.walkFrames, 5);
+    const moving = actorFrameFor(sheet.rows === 8 ? 'walk' : 'idle', visual.direction, tick, sheet.walkFrames, 5);
+    const frame = sheet.column === undefined ? moving : { row: moving.row, column: sheet.column };
     const spriteActive = view.sync(snapshot, frame, visual, true, depth, spec, pose);
     return {
       spriteActive,

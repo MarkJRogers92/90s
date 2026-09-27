@@ -119,6 +119,7 @@ export class CombatFeedback {
   private pendingLights: PointLight[] = [];
   private pendingHitStop = 0;
   private lastEnemyShots: Array<{ x: number; y: number }> = [];
+  private playerHurtTick: number | null = null;
   private landed: LandedAttack[] = [];
   private seed = 1;
 
@@ -201,6 +202,11 @@ export class CombatFeedback {
   /** Enemy attacks that went off on the latest synced tick. */
   public landedAttacks(): readonly LandedAttack[] {
     return this.landed;
+  }
+
+  /** Ticks since the janitor was last hurt in this room, or null. */
+  public playerHurtAge(tick: number): number | null {
+    return this.playerHurtTick === null ? null : tick - this.playerHurtTick;
   }
 
   /** The drawing pose for an actor that was just struck (or rest). */
@@ -351,6 +357,7 @@ export class CombatFeedback {
     const dirX = source ? player.x - source.x : 0;
     const dirY = source ? player.y - source.y : 1;
     this.reactions.set('player', { born: tick, dirX, dirY, heavy: true });
+    this.playerHurtTick = tick;
     const length = Math.hypot(dirX, dirY) || 1;
     const ix = player.x - (dirX / length) * 12;
     const iy = player.y - 18 - (dirY / length) * 8;
@@ -514,6 +521,7 @@ export class CombatFeedback {
     this.pendingLights = [];
     this.pendingHitStop = 0;
     this.lastEnemyShots = [];
+    this.playerHurtTick = null;
     this.landed = [];
     this.flashUntil = 0;
     this.vignetteUntil = 0;

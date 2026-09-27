@@ -174,6 +174,27 @@ timing or AI rule changed. Pure rules live in `src/game/view/combatBeats.ts`
   `audio.muffle(ms)`: a master low-pass closes for the hit stop and reopens.
   Cues are derived from state changes, so they fire on the frozen frame.
 
+## Round 5 — Alex's swing, flinch and death
+
+- PixelLab sheets `public/assets/neon/player/alex-{swing,hurt,death}.png`
+  (8 rows, same layout as the walk; action canvases grow around the 64px idle
+  canvas and the feet are placed from the idle frame). `playerBodyAction`
+  (`combatBeats.ts`) picks one: death overrides everything and holds its last
+  frame, a hit interrupts a swing, and the swing scrubs in step with the
+  visible 16-tick swing (melee only; guns keep the walk/idle body).
+- `WeaponView.noteAttack` is idempotent, so the body asks for the swing
+  before the weapon draws and both start on the same frame.
+- Sheet provenance: the swing is the v3 "sweep" (south/west/north; the
+  first "swing" attempt flapped its arms and baked in a stick, so it was
+  replaced). The hurt sheet combines the v3 "flinch" south row (first 6
+  frames) with the `taking-punch` template's west row. Death is the
+  `falling-back-death` template.
+- Game over: the sim clock stops, so combat feedback switches to a real-time
+  clock (`MvpRunView.effectsTick`) and the last hit's effects finish and fade
+  instead of freezing over the body; wind-ups and the hurt ring/flicker are
+  hidden once the shift is over; the blow that ends the shift now gets its
+  own impact (feedback is only suppressed by the pause menu).
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's
