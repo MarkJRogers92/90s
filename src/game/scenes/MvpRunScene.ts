@@ -271,6 +271,7 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.audio,
         () => this.presentationLoadFailures,
         () => this.runView?.presentationSnapshot() ?? null,
+        () => this.runView?.actorPresentationSnapshot() ?? null,
       );
       const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
       this.removeDebugBridge = () => {

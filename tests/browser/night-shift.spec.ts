@@ -70,6 +70,34 @@ type RunSnapshot = {
     promptDepths: Array<{ id: string; renderDepth: number }>;
     depthBands: { tallForeground: number; effect: number; prompt: number };
   };
+  actorPresentation?: {
+    player: {
+      spriteActive: boolean;
+      vectorFallbackActive: boolean;
+      textureKey: string;
+      direction: string;
+      frame: { row: number; column: number };
+      walking: boolean;
+      damageFlicker: boolean;
+      mopArcVisible: boolean;
+      actorDepth: number;
+      effectDepth: number;
+    } | null;
+    hangers: Array<{
+      id: string;
+      spriteActive: boolean;
+      vectorFallbackActive: boolean;
+      direction: string;
+      frame: { row: number; column: number };
+      walking: boolean;
+      lungeVisible: boolean;
+      actorDepth: number;
+      effectDepth: number;
+    }>;
+    telegraphs: Array<{ id: string; visible: boolean; effectDepth: number }>;
+    activeDeathEffectCount: number;
+    depthBands: { tallForeground: number; effect: number };
+  };
 };
 
 const CHECKPOINT_KEY = 'dead-mall:mvp-checkpoint:v1';
@@ -197,6 +225,79 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   expect(restarted.presentation?.staticDisplayObjectCount).toBe(counts.objects);
   expect(restarted.presentation?.dynamicDisplayObjectCount).toBe(counts.dynamic);
   expect(restarted.presentation?.sceneDisplayObjectCount).toBe(counts.scene);
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('actor presentation follows real movement, attack, and the first Food Court fight', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?seed=7');
+
+  const idle = (await runSnapshot(page)).actorPresentation?.player;
+  expect(idle).not.toBeNull();
+  expect(idle?.spriteActive).toBe(true);
+  expect(idle?.vectorFallbackActive).toBe(false);
+  expect(idle?.walking).toBe(false);
+  expect(idle?.textureKey).toBe('presentation:actor:alex-idle');
+
+  await page.keyboard.down('w');
+  await expect.poll(async () => {
+    const player = (await runSnapshot(page)).actorPresentation?.player;
+    return player?.walking && player.direction === 'north' && player.textureKey === 'presentation:actor:alex-walk';
+  }).toBe(true);
+  const firstWalkFrame = (await runSnapshot(page)).actorPresentation!.player!.frame.column;
+  await expect.poll(() => runSnapshot(page).then((state) => state.actorPresentation?.player?.frame.column))
+    .not.toBe(firstWalkFrame);
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000, intervals: [20] })
+    .toBeLessThan(75);
+  await page.keyboard.up('w');
+
+  const beforeAttack = await runSnapshot(page);
+  const aim = await worldToCanvas(page, beforeAttack.player.x + 80, beforeAttack.player.y);
+  const canvasBox = await page.locator('canvas').boundingBox();
+  expect(canvasBox).not.toBeNull();
+  if (!canvasBox) return;
+  await page.mouse.move(canvasBox.x + aim.x, canvasBox.y + aim.y);
+  await page.mouse.down();
+  await expect.poll(() => runSnapshot(page).then((state) => state.actorPresentation?.player?.mopArcVisible))
+    .toBe(true);
+  const attacking = (await runSnapshot(page)).actorPresentation!;
+  expect(attacking.player!.effectDepth).toBeGreaterThan(attacking.depthBands.tallForeground);
+  await page.mouse.up();
+
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.x), { timeout: 20_000, intervals: [20] })
+    .toBeGreaterThan(900);
+  await page.keyboard.up('d');
+  await page.keyboard.down('s');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000, intervals: [20] })
+    .toBeGreaterThan(235);
+  await page.keyboard.up('s');
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 20_000 })
+    .toBe('storefront_a');
+  await page.keyboard.up('d');
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 30_000 })
+    .toBe('food_court');
+  await page.keyboard.up('d');
+
+  await expect.poll(async () => {
+    const presentation = (await runSnapshot(page)).actorPresentation;
+    return presentation?.hangers.some((hanger) => hanger.spriteActive && hanger.lungeVisible) ?? false;
+  }, { timeout: 15_000 }).toBe(true);
+  const foodCourt = (await runSnapshot(page)).actorPresentation!;
+  const hanger = foodCourt.hangers.find((candidate) => candidate.spriteActive);
+  expect(hanger?.vectorFallbackActive).toBe(false);
+  expect(hanger?.effectDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
+
+  await expect.poll(async () => {
+    const presentation = (await runSnapshot(page)).actorPresentation;
+    return presentation?.telegraphs.some((telegraph) => telegraph.visible) ?? false;
+  }, { timeout: 15_000 }).toBe(true);
+  const telegraph = (await runSnapshot(page)).actorPresentation!.telegraphs.find((entry) => entry.visible);
+  expect(telegraph?.effectDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });

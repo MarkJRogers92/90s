@@ -23,7 +23,9 @@ export function actorVisualState(input: {
     attackLean: input.attackTicks > 0 ? 3 : 0,
     damageFlicker: input.invulnerableTicks > 0 && Math.floor(input.tick / 4) % 2 === 1,
     bobY: input.isHanger ? Math.sin(input.tick / 5) * 2 : 0,
-    lunge: input.isHanger && input.phase === 'telegraph' ? 3 : 0,
+    // Hangers have no authored telegraph phase. Their economical lunge is a
+    // renderer-only offset gated by real pursuit movement, not invented AI.
+    lunge: input.isHanger && input.moving ? 2 + Math.sin(input.tick / 3) : 0,
     mopArc: input.attackTicks > 0,
   };
 }

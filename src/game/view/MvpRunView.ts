@@ -15,22 +15,59 @@ import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
-import { ACTOR_TEXTURE_KEYS } from '../presentation/assets';
-import { ActorPresentationMemory, ActorSpriteView, actorFrameFor, actorPresentation, type ActorSnapshot } from './ActorSpriteView';
+import {
+  ACTOR_DEATH_EFFECT_TICKS,
+  ActorDeathEffectLifecycle,
+  ActorMovementMemory,
+  ActorPresentationMemory,
+  ActorSpriteView,
+  actorFrameFor,
+  actorPresentation,
+  actorTextureKey,
+  type ActorDirection,
+  type ActorSnapshot,
+  type SpriteSpec,
+} from './ActorSpriteView';
 import { OpeningConcourseView } from './OpeningConcourseView';
+import { shouldDrawDirectAttackArc } from './visualState';
+
+type ActorFrameEvidence = {
+  readonly spriteActive: boolean;
+  readonly vectorFallbackActive: boolean;
+  readonly textureKey: string;
+  readonly direction: ActorDirection;
+  readonly frame: { readonly row: number; readonly column: number };
+  readonly walking: boolean;
+  readonly damageFlicker: boolean;
+  readonly actorDepth: number;
+  readonly effectDepth: number;
+};
+
+export type ActorPresentationDebugSnapshot = {
+  readonly player: (ActorFrameEvidence & { readonly mopArcVisible: boolean }) | null;
+  readonly hangers: Array<ActorFrameEvidence & { readonly id: string; readonly lungeVisible: boolean }>;
+  readonly telegraphs: Array<{ readonly id: string; readonly visible: boolean; readonly effectDepth: number }>;
+  readonly activeDeathEffectCount: number;
+  readonly depthBands: { readonly tallForeground: number; readonly effect: number };
+};
 
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
   private readonly graphics: Phaser.GameObjects.Graphics;
+  private readonly effectGraphics: Phaser.GameObjects.Graphics;
   private readonly labels = new Map<string, Phaser.GameObjects.Text>();
   private readonly actorMemory = new ActorPresentationMemory();
+  private readonly actorMovement = new ActorMovementMemory();
+  private readonly deathEffects = new ActorDeathEffectLifecycle();
   private readonly actorSprites = new Map<string, ActorSpriteView>();
-  private readonly lastActorPositions = new Map<string, { x: number; y: number }>();
+  private readonly usedActorSpriteIds = new Set<string>();
   private openingConcourse: OpeningConcourseView | undefined;
+  private actorDebug: ActorPresentationDebugSnapshot = this.emptyActorDebug();
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
     this.graphics = scene.add.graphics();
+    this.effectGraphics = scene.add.graphics().setDepth(presentationDepth('effect', 1));
   }
 
   public sync(state: MvpRunState): void {
@@ -47,6 +84,8 @@ export class MvpRunView {
       this.openingConcourse = undefined;
     }
     graphics.clear();
+    this.effectGraphics.clear();
+    this.usedActorSpriteIds.clear();
 
     if (!this.openingConcourse) {
       graphics.fillStyle(0x1d2124, 1);
@@ -94,19 +133,41 @@ export class MvpRunView {
 
     const opening = this.openingConcourse;
     opening?.beginFrame();
+    const actorScope = `${state.roomIndex}:${room.id}`;
+    if (this.actorMovement.beginScope(actorScope)) this.actorMemory.reset();
+    this.deathEffects.sync(
+      actorScope,
+      state.tick,
+      state.room.combat.enemies.map((enemy) => ({ id: `enemy:${enemy.id}`, x: enemy.x, y: enemy.y })),
+    );
     for (const patch of state.room.combat.surfaces) {
-      this.drawSurfacePatch(patch, opening?.effectGraphics(`patch:${patch.id}`) ?? graphics);
+      this.drawSurfacePatch(patch, opening?.effectGraphics(`patch:${patch.id}`) ?? this.effectGraphics);
     }
 
+    const hangerEvidence: ActorPresentationDebugSnapshot['hangers'] = [];
+    const telegraphs: ActorPresentationDebugSnapshot['telegraphs'] = [];
     for (const enemy of state.room.combat.enemies) {
       const body = opening?.actorGraphics(`enemy:${enemy.id}`, enemy.y) ?? graphics;
-      const effects = opening?.effectGraphics(`enemy:${enemy.id}`) ?? body;
-      const enemyDelta = this.movementFor(`enemy:${enemy.id}`, enemy.x, enemy.y);
-      const spriteActive = enemy.kind === 'hanger' && this.syncActorSprite({
+      const effects = opening?.effectGraphics(`enemy:${enemy.id}`) ?? this.effectGraphics;
+      const enemyDelta = this.actorMovement.movementFor(`enemy:${enemy.id}`, enemy.x, enemy.y);
+      const actorDepth = presentationDepth('actor', enemy.y);
+      const sprite = enemy.kind === 'hanger' ? this.syncActorSprite({
         id: `enemy:${enemy.id}`, kind: 'hanger', x: enemy.x, y: enemy.y,
         moveX: enemyDelta.x, moveY: enemyDelta.y,
         attackTicks: 0, damaged: false, phase: enemy.phase,
-      }, state.tick, ACTOR_TEXTURE_KEYS.hangerIdle, 48, 48, 0.8, presentationDepth('actor', enemy.y));
+      }, state.tick, actorDepth) : null;
+      const spriteActive = sprite?.spriteActive ?? false;
+      if (sprite) {
+        hangerEvidence.push({
+          id: `enemy:${enemy.id}`,
+          ...sprite,
+        });
+      }
+      telegraphs.push({
+        id: `enemy:${enemy.id}`,
+        visible: enemy.phase === 'telegraph',
+        effectDepth: presentationDepth('effect', 1),
+      });
       if (enemy.kind === 'lp_manager') {
         this.drawBoss(enemy, body, effects);
       } else {
@@ -114,28 +175,52 @@ export class MvpRunView {
       }
     }
 
+    this.drawDeathEffects(opening);
+
     for (const projectile of state.room.combat.projectiles) {
-      this.drawProjectile(projectile, opening?.effectGraphics(`projectile:${projectile.id}`) ?? graphics);
+      this.drawProjectile(projectile, opening?.effectGraphics(`projectile:${projectile.id}`) ?? this.effectGraphics);
     }
 
     this.drawCarrier(
       state,
       state.carrier ? opening?.actorGraphics('carrier', state.carrier.y) ?? graphics : graphics,
-      state.carrier ? opening?.effectGraphics('carrier') ?? graphics : graphics,
+      state.carrier ? opening?.effectGraphics('carrier') ?? this.effectGraphics : this.effectGraphics,
     );
     const player = state.room.combat.player;
-    const playerDelta = this.movementFor('player', player.x, player.y);
+    const playerDelta = this.actorMovement.movementFor('player', player.x, player.y);
+    const playerDepth = presentationDepth('actor', player.y);
     const playerSprite = this.syncActorSprite({
       id: 'player', kind: 'alex', x: player.x, y: player.y, moveX: playerDelta.x, moveY: playerDelta.y,
       attackTicks: player.attackActiveTicks, damaged: player.invulnerableTicks > 0, phase: 'idle',
-    }, state.tick, playerDelta.x !== 0 || playerDelta.y !== 0 ? ACTOR_TEXTURE_KEYS.alexWalk : ACTOR_TEXTURE_KEYS.alexIdle, 32, 48, 0.9, presentationDepth('actor', player.y));
+    }, state.tick, playerDepth);
     this.drawPlayer(
       state,
       opening?.actorGraphics('player', state.room.combat.player.y) ?? graphics,
-      opening?.effectGraphics('player') ?? graphics,
-      !playerSprite,
+      opening?.effectGraphics('player') ?? this.effectGraphics,
+      !playerSprite.spriteActive,
     );
+    this.actorDebug = {
+      player: {
+        ...playerSprite,
+        mopArcVisible: shouldDrawDirectAttackArc(
+          player.attackActiveTicks,
+          state.room.combat.compiledLoadout.primary.delivery,
+        ),
+      },
+      hangers: hangerEvidence,
+      telegraphs,
+      activeDeathEffectCount: this.deathEffects.snapshot().length,
+      depthBands: {
+        tallForeground: presentationDepth('tallForeground', 0),
+        effect: presentationDepth('effect', 1),
+      },
+    };
     opening?.endFrame();
+    this.pruneActorSprites();
+    this.actorMovement.retain(new Set([
+      'player',
+      ...state.room.combat.enemies.map((enemy) => `enemy:${enemy.id}`),
+    ]));
     this.pruneLabels(state);
   }
 
@@ -428,7 +513,10 @@ export class MvpRunView {
       player.x + player.facing.x * (player.radius + 6),
       player.y + player.facing.y * (player.radius + 6),
     );
-    if (player.attackActiveTicks > 0) {
+    if (shouldDrawDirectAttackArc(
+      player.attackActiveTicks,
+      state.room.combat.compiledLoadout.primary.delivery,
+    )) {
       const angle = Math.atan2(player.facing.y, player.facing.x);
       effects.lineStyle(3, 0xe8dcc4, 0.95);
       effects.beginPath();
@@ -437,22 +525,55 @@ export class MvpRunView {
     }
   }
 
-  private movementFor(id: string, x: number, y: number): { x: number; y: number } {
-    const previous = this.lastActorPositions.get(id);
-    this.lastActorPositions.set(id, { x, y });
-    return previous ? { x: x - previous.x, y: y - previous.y } : { x: 0, y: 0 };
-  }
-
-  private syncActorSprite(snapshot: ActorSnapshot, tick: number, textureKey: string, frameWidth: number, frameHeight: number, scale: number, depth: number): boolean {
+  private syncActorSprite(snapshot: ActorSnapshot, tick: number, depth: number): ActorFrameEvidence & { lungeVisible: boolean } {
+    const visual = actorPresentation(this.actorMemory, snapshot, tick);
+    const textureKey = actorTextureKey(snapshot.kind, visual.walking);
+    const spec: SpriteSpec = snapshot.kind === 'hanger'
+      ? { textureKey, frameWidth: 48, frameHeight: 48, scale: 0.8 }
+      : { textureKey, frameWidth: 32, frameHeight: 48, scale: 0.9 };
     const usable = usableTextureKey(this.scene.textures, textureKey) !== null;
     let view = this.actorSprites.get(snapshot.id);
     if (!view) {
-      view = new ActorSpriteView(this.scene, { textureKey, frameWidth, frameHeight, scale });
+      view = new ActorSpriteView(this.scene, spec);
       this.actorSprites.set(snapshot.id, view);
     }
-    const visual = actorPresentation(this.actorMemory, snapshot, tick, new Set([snapshot.id]));
+    this.usedActorSpriteIds.add(snapshot.id);
     const frame = actorFrameFor(visual.walking && snapshot.kind === 'alex' ? 'walk' : 'idle', visual.direction, tick);
-    return view.sync(snapshot, frame, visual, usable, depth);
+    const spriteActive = view.sync(snapshot, frame, visual, usable, depth, spec);
+    return {
+      spriteActive,
+      vectorFallbackActive: !spriteActive,
+      textureKey,
+      direction: visual.direction,
+      frame,
+      walking: visual.walking,
+      damageFlicker: visual.damageFlicker,
+      lungeVisible: visual.lunge > 0,
+      actorDepth: depth,
+      effectDepth: presentationDepth('effect', 1),
+    };
+  }
+
+  private drawDeathEffects(opening: OpeningConcourseView | undefined): void {
+    for (const effect of this.deathEffects.snapshot()) {
+      const graphics = opening?.effectGraphics(`death:${effect.id}`) ?? this.effectGraphics;
+      const progress = 1 - effect.remainingTicks / ACTOR_DEATH_EFFECT_TICKS;
+      const radius = 8 + progress * 16;
+      graphics.lineStyle(3, 0xf6d365, Math.max(0.1, 1 - progress));
+      graphics.strokeCircle(effect.x, effect.y, radius);
+      graphics.lineStyle(2, 0xe8dcc4, Math.max(0.1, 1 - progress));
+      graphics.lineBetween(effect.x - radius, effect.y, effect.x + radius, effect.y);
+      graphics.lineBetween(effect.x, effect.y - radius, effect.x, effect.y + radius);
+    }
+  }
+
+  private pruneActorSprites(): void {
+    for (const [id, sprite] of this.actorSprites) {
+      if (!this.usedActorSpriteIds.has(id)) {
+        sprite.destroy();
+        this.actorSprites.delete(id);
+      }
+    }
   }
 
   private setLabel(key: string, text: string, x: number, y: number): void {
@@ -465,7 +586,7 @@ export class MvpRunView {
         backgroundColor: 'rgba(9, 11, 13, 0.75)',
         padding: { x: 3, y: 2 },
       });
-      label.setDepth(this.openingConcourse ? presentationDepth('prompt', 0) : 10);
+      label.setDepth(presentationDepth('prompt', 0));
       this.labels.set(key, label);
       return;
     }
@@ -509,14 +630,30 @@ export class MvpRunView {
       this.clearLabel(key);
     }
     this.graphics.destroy();
+    this.effectGraphics.destroy();
     for (const sprite of this.actorSprites.values()) sprite.destroy();
     this.actorSprites.clear();
-    this.lastActorPositions.clear();
+    this.actorMovement.reset();
+    this.actorMemory.reset();
+    this.deathEffects.destroy();
+    this.actorDebug = this.emptyActorDebug();
   }
 
   public resetForRun(): void {
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
+    for (const sprite of this.actorSprites.values()) sprite.destroy();
+    this.actorSprites.clear();
+    this.usedActorSpriteIds.clear();
+    this.actorMovement.reset();
+    this.actorMemory.reset();
+    this.deathEffects.reset();
+    this.effectGraphics.clear();
+    this.actorDebug = this.emptyActorDebug();
+  }
+
+  public actorPresentationSnapshot(): ActorPresentationDebugSnapshot {
+    return structuredClone(this.actorDebug);
   }
 
   public presentationSnapshot(): (ReturnType<OpeningConcourseView['debugSnapshot']> & {
@@ -526,6 +663,19 @@ export class MvpRunView {
     return {
       ...this.openingConcourse.debugSnapshot(),
       promptDepths: [...this.labels].map(([id, label]) => ({ id, renderDepth: label.depth })),
+    };
+  }
+
+  private emptyActorDebug(): ActorPresentationDebugSnapshot {
+    return {
+      player: null,
+      hangers: [],
+      telegraphs: [],
+      activeDeathEffectCount: 0,
+      depthBands: {
+        tallForeground: presentationDepth('tallForeground', 0),
+        effect: presentationDepth('effect', 1),
+      },
     };
   }
 }
