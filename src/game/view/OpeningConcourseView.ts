@@ -4,7 +4,7 @@ import { usableTextureKey } from '../presentation/assetFallback';
 import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, type CivilianTextureKey, type EnvironmentTextureKey } from '../presentation/assets';
 import { presentationDepth } from '../presentation/depth';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
-import { ConcourseAmbience, type ConcourseCivilianLane } from './ConcourseAmbience';
+import { ConcourseAmbience, type ConcourseAmbienceSnapshot, type ConcourseCivilianLane } from './ConcourseAmbience';
 
 type Layer = Phaser.GameObjects.Container;
 type Rect = { readonly x: number; readonly y: number; readonly width: number; readonly height: number };
@@ -35,6 +35,7 @@ export class OpeningConcourseView {
   private readonly ambience: ConcourseAmbience;
   private readonly civilianSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly warningEffects: Phaser.GameObjects.Graphics;
+  private visibleCivilianCount = 0;
   private fallbackCount = 0;
 
   public constructor(scene: Phaser.Scene, actors: Phaser.GameObjects.Graphics, state: MvpRunState) {
@@ -237,6 +238,7 @@ export class OpeningConcourseView {
       tick: snapshot.tick,
     });
     const active = new Set<string>();
+    let visibleCount = 0;
     for (const [index, lane] of this.ambience.debugLanes().entries()) {
       const sprite = this.civilianSprite(lane, ambience.phase);
       if (!sprite) continue;
@@ -254,10 +256,12 @@ export class OpeningConcourseView {
       const column = walking ? Math.floor(this.ambience.debugAnimationTick() / 5 + index) % 6 : (index + (ambience.phase === 'warning' ? 2 : 0)) % 8;
       const row = walking ? (lane.exitX < lane.x ? 2 : 6) : 0;
       sprite.setCrop(column * 32, row * 48, 32, 48);
+      if (sprite.visible) visibleCount += 1;
     }
     for (const [id, sprite] of this.civilianSprites) {
       if (!active.has(id)) sprite.setVisible(false);
     }
+    this.visibleCivilianCount = visibleCount;
     this.warningEffects.clear();
     if (ambience.phase === 'warning' || ambience.phase === 'evacuating') {
       const flicker = snapshot.tick % 12 < 4 ? 0.45 : 0.12;
@@ -282,6 +286,7 @@ export class OpeningConcourseView {
   public resetForRun(): void {
     this.ambience.resetForRun();
     for (const sprite of this.civilianSprites.values()) sprite.setVisible(false);
+    this.visibleCivilianCount = 0;
     for (const occluder of this.occluders) occluder.object.setAlpha(1);
   }
 
@@ -295,7 +300,7 @@ export class OpeningConcourseView {
     sceneDisplayObjectCount: number;
     actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
     effectDepths: Array<{ id: string; renderDepth: number }>;
-    ambience: ReturnType<ConcourseAmbience['snapshot']>;
+    ambience: ConcourseAmbienceSnapshot;
     depthBands: { tallForeground: number; effect: number; prompt: number };
   } {
     return {
@@ -316,13 +321,27 @@ export class OpeningConcourseView {
         id,
         renderDepth: this.effectLayer.depth + graphics.depth,
       })),
-      ambience: this.ambience.snapshot(),
+      ambience: this.ambienceSnapshot(),
       depthBands: {
         tallForeground: this.tallForeground.depth,
         effect: this.effectLayer.depth,
         prompt: presentationDepth('prompt', 0),
       },
     };
+  }
+
+  /** Marks the renderer-only group empty before the room entry disposes it. */
+  public leaveRoom(tick: number): ConcourseAmbienceSnapshot {
+    this.ambience.sync({ playerX: 0, roomX: 0, roomWidth: 1, inOpeningRoom: false, tick });
+    for (const sprite of this.civilianSprites.values()) sprite.setVisible(false);
+    this.visibleCivilianCount = 0;
+    this.warningEffects.clear();
+    return this.ambienceSnapshot();
+  }
+
+  /** Debug reports the sprites actually rendered, not intended lane count. */
+  public ambienceSnapshot(): ConcourseAmbienceSnapshot {
+    return { phase: this.ambience.snapshot().phase, visibleCount: this.visibleCivilianCount };
   }
 
   public destroy(): void {

@@ -29,6 +29,7 @@ import {
   type SpriteSpec,
 } from './ActorSpriteView';
 import { OpeningConcourseView } from './OpeningConcourseView';
+import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
 import { shouldDrawDirectAttackArc } from './visualState';
 
 type ActorFrameEvidence = {
@@ -65,6 +66,7 @@ export class MvpRunView {
   private readonly actorSprites = new Map<string, ActorSpriteView>();
   private readonly usedActorSpriteIds = new Set<string>();
   private openingConcourse: OpeningConcourseView | undefined;
+  private concourseAmbience: ConcourseAmbienceSnapshot | null = null;
   private actorDebug: ActorPresentationDebugSnapshot = this.emptyActorDebug();
 
   public constructor(scene: Phaser.Scene) {
@@ -82,7 +84,9 @@ export class MvpRunView {
     if (room.id === 'service_corridor') {
       this.openingConcourse ??= new OpeningConcourseView(this.scene, graphics, state);
       this.openingConcourse.render(state);
+      this.concourseAmbience = this.openingConcourse.ambienceSnapshot();
     } else if (this.openingConcourse) {
+      this.concourseAmbience = this.openingConcourse.leaveRoom(state.tick);
       this.openingConcourse.destroy();
       this.openingConcourse = undefined;
     }
@@ -681,6 +685,7 @@ export class MvpRunView {
   public destroy(): void {
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
+    this.concourseAmbience = null;
     for (const key of [...this.labels.keys()]) {
       this.clearLabel(key);
     }
@@ -697,6 +702,7 @@ export class MvpRunView {
   public resetForRun(): void {
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
+    this.concourseAmbience = null;
     for (const sprite of this.actorSprites.values()) sprite.destroy();
     this.actorSprites.clear();
     this.usedActorSpriteIds.clear();
@@ -709,6 +715,10 @@ export class MvpRunView {
 
   public actorPresentationSnapshot(): ActorPresentationDebugSnapshot {
     return structuredClone(this.actorDebug);
+  }
+
+  public concourseAmbienceSnapshot(): ConcourseAmbienceSnapshot | null {
+    return this.concourseAmbience ? { ...this.concourseAmbience } : null;
   }
 
   public presentationSnapshot(): (ReturnType<OpeningConcourseView['debugSnapshot']> & {

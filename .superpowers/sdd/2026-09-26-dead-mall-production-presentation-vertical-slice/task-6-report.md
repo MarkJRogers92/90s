@@ -32,3 +32,10 @@ Implemented the approved cosmetic Opening Concourse civilian group. Four to six 
 ## Self-review and concerns
 
 Reviewed the final diff for simulation, collision, checkpoint, seeded-wing, room-order, and combat changes: none were made. All created display objects are owned by `OpeningConcourseView` and destroyed on room exit/reset; absent civilian textures omit only that decorative sprite. No external release action was taken. No remaining concerns.
+
+## Correction round 1 — debug truthfulness and room exit
+
+- RED: the strengthened Chromium test reached `storefront_a` and expected `{ phase: 'empty', visibleCount: 0 }`, but received `undefined` because the concourse was destroyed before an empty snapshot was exposed.
+- `OpeningConcourseView` now counts only sprites whose textures loaded and whose `visible` flag remains true; its debug `visibleCount` no longer reports intended lanes after a missing texture or completed exit route.
+- On the actual room transition, `MvpRunView` calls `leaveRoom()` before destruction. That marks the controller empty, hides all sprites, and stores only the `{ phase, visibleCount }` read-only snapshot; no display object survives disposal. `DebugBridge` exposes the retained snapshot separately while preserving the existing `presentation: null` outside the concourse.
+- Final focused validation: `npx vitest run tests/unit/concourse-ambience.test.ts tests/unit/presentation-assets.test.ts` — PASS (2 files, 10 tests); `npm run typecheck` — PASS; `npx playwright test -c .task6-playwright.config.ts tests/browser/night-shift.spec.ts -g "civilians evacuate"` — PASS (Chromium, 12.9s); `git diff --check` — PASS. The temporary local port-4174 config was removed after the run.

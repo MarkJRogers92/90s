@@ -71,6 +71,7 @@ type RunSnapshot = {
     ambience: { phase: 'busy' | 'warning' | 'evacuating' | 'empty'; visibleCount: number };
     depthBands: { tallForeground: number; effect: number; prompt: number };
   };
+  concourseAmbience: { phase: 'busy' | 'warning' | 'evacuating' | 'empty'; visibleCount: number } | null;
   actorPresentation?: {
     player: {
       spriteActive: boolean;
@@ -251,6 +252,26 @@ test('Opening Concourse civilians evacuate monotonically from real input and res
     .toBeGreaterThanOrEqual(700);
   await page.keyboard.up('d');
   expect((await runSnapshot(page)).presentation?.ambience.phase).toBe('evacuating');
+  await expect.poll(() => runSnapshot(page).then((state) => state.presentation?.ambience.visibleCount), { timeout: 10_000 })
+    .toBe(0);
+
+  await page.keyboard.down('w');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000, intervals: [20] })
+    .toBeLessThan(75);
+  await page.keyboard.up('w');
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.x), { timeout: 20_000, intervals: [20] })
+    .toBeGreaterThan(850);
+  await page.keyboard.up('d');
+  await page.keyboard.down('s');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000, intervals: [20] })
+    .toBeGreaterThan(220);
+  await page.keyboard.up('s');
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 20_000 })
+    .toBe('storefront_a');
+  await page.keyboard.up('d');
+  expect((await runSnapshot(page)).concourseAmbience).toEqual({ phase: 'empty', visibleCount: 0 });
 
   await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(first.generation);

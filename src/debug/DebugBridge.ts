@@ -349,6 +349,8 @@ export type MvpRunDebugSnapshot = {
     promptDepths: Array<{ id: string; renderDepth: number }>;
     depthBands: { tallForeground: number; effect: number; prompt: number };
   };
+  /** Last read-only concourse ambience state, retained through disposal. */
+  concourseAmbience: import('../game/view/ConcourseAmbience').ConcourseAmbienceSnapshot | null;
   /** Read-only renderer evidence available in every run room. */
   actorPresentation: import('../game/view/MvpRunView').ActorPresentationDebugSnapshot | null;
 };
@@ -362,6 +364,7 @@ export function installMvpRunDebugBridge(
   getPresentationLoadFailures: () => number = () => 0,
   getPresentation: () => MvpRunDebugSnapshot['presentation'] = () => null,
   getActorPresentation: () => MvpRunDebugSnapshot['actorPresentation'] = () => null,
+  getConcourseAmbience: () => MvpRunDebugSnapshot['concourseAmbience'] = () => null,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -430,6 +433,7 @@ export function installMvpRunDebugBridge(
           })(),
           presentationLoadFailures: getPresentationLoadFailures(),
           presentation: getPresentation(),
+          concourseAmbience: getConcourseAmbience(),
           actorPresentation: getActorPresentation(),
         };
       },
