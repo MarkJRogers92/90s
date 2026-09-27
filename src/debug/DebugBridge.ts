@@ -335,6 +335,14 @@ export type MvpRunDebugSnapshot = {
   } | null;
   /** Failed optional presentation assets; gameplay remains on vector fallback. */
   presentationLoadFailures: number;
+  /** Renderer-owned, read-only status. Null outside the entry concourse. */
+  presentation: null | {
+    themeId: string;
+    fallbackCount: number;
+    occluderCount: number;
+    staticDisplayObjectCount: number;
+    staticTextureCount: number;
+  };
 };
 
 export function installMvpRunDebugBridge(
@@ -344,6 +352,7 @@ export function installMvpRunDebugBridge(
     | { created: boolean; running: boolean; isMuted: boolean; played: number }
     | undefined,
   getPresentationLoadFailures: () => number = () => 0,
+  getPresentation: () => MvpRunDebugSnapshot['presentation'] = () => null,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -411,6 +420,7 @@ export function installMvpRunDebugBridge(
               : null;
           })(),
           presentationLoadFailures: getPresentationLoadFailures(),
+          presentation: getPresentation(),
         };
       },
     },

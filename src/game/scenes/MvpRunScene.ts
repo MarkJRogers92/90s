@@ -270,6 +270,7 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.generation,
         () => this.audio,
         () => this.presentationLoadFailures,
+        () => this.runView?.presentationSnapshot() ?? null,
       );
       const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
       this.removeDebugBridge = () => {
@@ -372,6 +373,7 @@ export class MvpRunScene extends Phaser.Scene {
       ? 'none yet'
       : `clear unavailable: ${cleared.reason}`;
     this.inputAdapter?.clearHeld();
+    this.runView?.resetForRun();
     this.syncCheckpoint();
     this.syncView();
   }

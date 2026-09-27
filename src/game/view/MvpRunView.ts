@@ -13,11 +13,14 @@ import { runOfferPriceLabel } from '../../sim/run/economy';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
+import { presentationDepth } from '../presentation/depth';
+import { OpeningConcourseView } from './OpeningConcourseView';
 
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
   private readonly graphics: Phaser.GameObjects.Graphics;
   private readonly labels = new Map<string, Phaser.GameObjects.Text>();
+  private openingConcourse: OpeningConcourseView | undefined;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -30,32 +33,41 @@ export class MvpRunView {
     if (!room) {
       return;
     }
+    if (room.id === 'service_corridor') {
+      this.openingConcourse ??= new OpeningConcourseView(this.scene, graphics, state);
+      this.openingConcourse.render(state);
+    } else if (this.openingConcourse) {
+      this.openingConcourse.destroy();
+      this.openingConcourse = undefined;
+    }
     graphics.clear();
 
-    graphics.fillStyle(0x1d2124, 1);
-    graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
-    graphics.fillStyle(0x8c8873, 1);
-    graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
-    graphics.lineStyle(1, 0x74705f, 0.35);
-    for (let x = room.bounds.x; x <= room.bounds.x + room.bounds.width; x += 32) {
-      graphics.lineBetween(x, room.bounds.y, x, room.bounds.y + room.bounds.height);
-    }
-    for (let y = room.bounds.y; y <= room.bounds.y + room.bounds.height; y += 32) {
-      graphics.lineBetween(room.bounds.x, y, room.bounds.x + room.bounds.width, y);
-    }
+    if (!this.openingConcourse) {
+      graphics.fillStyle(0x1d2124, 1);
+      graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
+      graphics.fillStyle(0x8c8873, 1);
+      graphics.fillRect(room.bounds.x, room.bounds.y, room.bounds.width, room.bounds.height);
+      graphics.lineStyle(1, 0x74705f, 0.35);
+      for (let x = room.bounds.x; x <= room.bounds.x + room.bounds.width; x += 32) {
+        graphics.lineBetween(x, room.bounds.y, x, room.bounds.y + room.bounds.height);
+      }
+      for (let y = room.bounds.y; y <= room.bounds.y + room.bounds.height; y += 32) {
+        graphics.lineBetween(room.bounds.x, y, room.bounds.x + room.bounds.width, y);
+      }
 
-    for (const wall of room.walls) {
-      graphics.fillStyle(0x41453f, 1);
-      graphics.fillRect(wall.x, wall.y, wall.width, wall.height);
-      graphics.lineStyle(2, 0xc4b878, 0.45);
-      graphics.strokeRect(wall.x, wall.y, wall.width, wall.height);
-    }
+      for (const wall of room.walls) {
+        graphics.fillStyle(0x41453f, 1);
+        graphics.fillRect(wall.x, wall.y, wall.width, wall.height);
+        graphics.lineStyle(2, 0xc4b878, 0.45);
+        graphics.strokeRect(wall.x, wall.y, wall.width, wall.height);
+      }
 
-    for (const doorway of room.doorways) {
-      graphics.fillStyle(0xf6d365, 1);
-      graphics.fillRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
-      graphics.lineStyle(2, 0x12130f, 0.9);
-      graphics.strokeRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
+      for (const doorway of room.doorways) {
+        graphics.fillStyle(0xf6d365, 1);
+        graphics.fillRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
+        graphics.lineStyle(2, 0x12130f, 0.9);
+        graphics.strokeRect(doorway.rect.x, doorway.rect.y, doorway.rect.width, doorway.rect.height);
+      }
     }
 
     if (room.store) {
@@ -377,7 +389,7 @@ export class MvpRunView {
         backgroundColor: 'rgba(9, 11, 13, 0.75)',
         padding: { x: 3, y: 2 },
       });
-      label.setDepth(10);
+      label.setDepth(this.openingConcourse ? presentationDepth('prompt', 0) : 10);
       this.labels.set(key, label);
       return;
     }
@@ -415,9 +427,20 @@ export class MvpRunView {
   }
 
   public destroy(): void {
+    this.openingConcourse?.destroy();
+    this.openingConcourse = undefined;
     for (const key of [...this.labels.keys()]) {
       this.clearLabel(key);
     }
     this.graphics.destroy();
+  }
+
+  public resetForRun(): void {
+    this.openingConcourse?.destroy();
+    this.openingConcourse = undefined;
+  }
+
+  public presentationSnapshot(): ReturnType<OpeningConcourseView['debugSnapshot']> | null {
+    return this.openingConcourse?.debugSnapshot() ?? null;
   }
 }

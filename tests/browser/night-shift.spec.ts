@@ -57,6 +57,13 @@ type RunSnapshot = {
     /** Cues actually scheduled as voices, not merely decided. */
     played: number;
   } | null;
+  presentation?: {
+    themeId: string | null;
+    fallbackCount: number;
+    occluderCount: number;
+    staticDisplayObjectCount: number;
+    staticTextureCount: number;
+  };
 };
 
 const CHECKPOINT_KEY = 'dead-mall:mvp-checkpoint:v1';
@@ -100,7 +107,7 @@ async function offerTexts(page: Page): Promise<string[]> {
   return page.locator('#mvp-run-offers li').allInnerTexts();
 }
 
-test('launches Night Shift with one canvas, one HUD, and the service corridor', async ({
+test('launches Night Shift with one canvas, one HUD, and the Opening Concourse', async ({
   page,
 }) => {
   const errors = collectErrors(page);
@@ -119,9 +126,54 @@ test('launches Night Shift with one canvas, one HUD, and the service corridor', 
 
   await expect(page.locator('#mvp-run-cash')).toContainText('$30');
   await expect(page.locator('#mvp-run-seed')).toContainText(`seed ${state.seed}`);
-  await expect(page.locator('#mvp-run-room')).toContainText('Service Corridor');
+  await expect(page.locator('#mvp-run-room')).toContainText('Opening Concourse');
   await expect(page.locator('#mvp-run-checkpoint')).toContainText('saved');
 
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('Opening Concourse keeps its static scene stable and exits through real movement', async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?seed=7');
+  const first = await runSnapshot(page);
+  expect(first.roomId).toBe('service_corridor');
+  expect(first.enemies).toHaveLength(0);
+  expect(first.presentation?.themeId).toBe('opening_concourse');
+  expect(first.presentation?.occluderCount).toBeGreaterThan(0);
+  expect(first.presentation?.staticDisplayObjectCount).toBeGreaterThan(0);
+  await page.screenshot({ path: testInfo.outputPath('opening-concourse.png') });
+  const counts = {
+    objects: first.presentation?.staticDisplayObjectCount,
+    textures: first.presentation?.staticTextureCount,
+  };
+  await expect.poll(() => runSnapshot(page).then((state) => state.tick), { timeout: 15_000 })
+    .toBeGreaterThanOrEqual(first.tick + 300);
+  const afterSyncs = await runSnapshot(page);
+  expect(afterSyncs.presentation?.staticDisplayObjectCount).toBe(counts.objects);
+  expect(afterSyncs.presentation?.staticTextureCount).toBe(counts.textures);
+  expect(afterSyncs.enemies).toHaveLength(0);
+
+  const northAisle = await worldToCanvas(page, 480, 60);
+  await page.mouse.move(northAisle.x, northAisle.y);
+  await page.keyboard.down('w');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000 })
+    .toBeLessThan(75);
+  await page.keyboard.up('w');
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.x), { timeout: 20_000 })
+    .toBeGreaterThan(850);
+  await page.keyboard.up('d');
+  await page.keyboard.down('s');
+  await expect.poll(() => runSnapshot(page).then((state) => state.player.y), { timeout: 20_000 })
+    .toBeGreaterThan(220);
+  await page.keyboard.up('s');
+  await page.keyboard.down('d');
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 20_000 })
+    .toBe('storefront_a');
+  await page.keyboard.up('d');
+  expect((await runSnapshot(page)).presentation).toBeNull();
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });

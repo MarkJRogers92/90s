@@ -66,7 +66,7 @@ export const STOREFRONT_ROLES: readonly WingRoomRole[] = [
 ];
 
 export const ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
-  service_corridor: 'Service Corridor',
+  service_corridor: 'Opening Concourse',
   storefront_a: 'West Storefront',
   food_court: 'Food Court',
   storefront_b: 'East Storefront',
