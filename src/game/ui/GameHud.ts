@@ -17,7 +17,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
-import { buildGameHudModel, type GameHudModel } from './gameHudModel';
+import { buildGameHudModel, type GameHudModel, type HudOfferDetail } from './gameHudModel';
 import { itemBlurb } from './itemBlurbs';
 
 const HUD_DEPTH = 20_000;
@@ -48,6 +48,7 @@ export class GameHud {
   private readonly weaponIcons: Phaser.GameObjects.Image[] = [];
   private readonly passiveIcons: Phaser.GameObjects.Image[] = [];
   private readonly portrait: Phaser.GameObjects.Image | null;
+  private readonly promptIcon: Phaser.GameObjects.Image;
   private readonly log: Array<{ text: string; tick: number }> = [];
   private slotRects: Array<Rect & { slot: number }> = [];
   private lastRecent = '';
@@ -78,6 +79,8 @@ export class GameHud {
       this.hearts.push(heart);
       this.bottom.add(heart);
     }
+    this.promptIcon = scene.add.image(0, 0, '__DEFAULT').setVisible(false);
+    this.root.add(this.promptIcon);
     for (let i = 0; i < 9; i += 1) {
       const icon = scene.add.image(0, 0, '__DEFAULT').setVisible(false);
       this.weaponIcons.push(icon);
@@ -116,7 +119,7 @@ export class GameHud {
     this.drawVitals(model, state);
     this.drawHotbar(model);
     this.drawLog(state);
-    this.drawPrompt(model);
+    this.drawPrompt(model, state.room.combat.player.y > 260);
     this.drawToast(state);
     this.drawControlsCard(state);
     this.drawTitleCard(state);
@@ -161,6 +164,7 @@ export class GameHud {
     const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
     return JSON.stringify([
       model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, this.windupActive(state),
+      state.room.combat.player.y > 260,
       state.room.combat.player.y > 380,
       titleAge !== null && titleAge < 160 ? bucket(titleAge) : 'x',
       toastAge !== null && toastAge < 280 ? bucket(toastAge) : 'x',
@@ -193,10 +197,10 @@ export class GameHud {
     g.fillRect(x + w - 10, y + h - 2, 10, 2).fillRect(x + w - 2, y + h - 10, 2, 10);
   }
 
-  private keycap(g: Phaser.GameObjects.Graphics, id: string, key: string, x: number, y: number): number {
+  private keycap(g: Phaser.GameObjects.Graphics, id: string, key: string, x: number, y: number, disabled = false): number {
     const width = key.length * 12 + 10;
-    g.fillStyle(0xf4ecff, 1).fillRect(x, y, width, 22);
-    g.fillStyle(0x8a7fa8, 1).fillRect(x, y + 20, width, 2);
+    g.fillStyle(disabled ? 0x5a5270 : 0xf4ecff, 1).fillRect(x, y, width, 22);
+    g.fillStyle(disabled ? 0x3a3450 : 0x8a7fa8, 1).fillRect(x, y + 20, width, 2);
     this.text(id, key, x + 5, y + 4, '#0b0714', 2);
     return width;
   }
@@ -366,9 +370,14 @@ export class GameHud {
     });
   }
 
-  private drawPrompt(model: GameHudModel): void {
+  private drawPrompt(model: GameHudModel, playerLow = false): void {
     const prompt = model.prompt;
+    this.promptIcon.setVisible(false);
     if (!prompt) return;
+    if (prompt.detail) {
+      this.drawOfferCard(prompt, prompt.detail, playerLow);
+      return;
+    }
     const keysW = prompt.keys.reduce((sum, key) => sum + key.key.length * 12 + 10 + 8 + key.action.length * 12 + 16, 0);
     const subjectW = prompt.subject.length * 12;
     const width = Math.max(keysW, subjectW) + 28;
@@ -382,6 +391,43 @@ export class GameHud {
       this.text(`prompt-action-${index}`, entry.action, cx, y + 36, TEXT);
       cx += entry.action.length * 12 + 16;
     });
+  }
+
+  /**
+   * The store card for the offer the janitor is standing at: icon, name and
+   * price, what it does, weapon or passive, the keys (greyed when refused),
+   * and the one line that decides it — how short you are, or what stealing
+   * costs.
+   */
+  private drawOfferCard(prompt: NonNullable<GameHudModel['prompt']>, detail: HudOfferDetail, playerLow: boolean): void {
+    const width = 560;
+    const height = 104;
+    const x = Math.round((SCREEN_W - width) / 2);
+    // Never cover the shelf the janitor is standing at: flip to the top when
+    // they are in the lower half of the room.
+    const y = playerLow ? 192 : 372;
+    this.panel(this.frame, x, y, width, height, detail.canBuy ? YELLOW : 0xff5a6a);
+    // Icon well.
+    this.frame.fillStyle(0x140d22, 1).fillRect(x + 12, y + 12, 80, 80);
+    this.frame.lineStyle(2, detail.kind === 'WEAPON' ? CYAN : 0x6aff8a, 1).strokeRect(x + 13, y + 13, 78, 78);
+    const key = itemIconKey(detail.itemDefinitionId);
+    const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+    if (usable) {
+      this.promptIcon.setTexture(usable).setVisible(true).setPosition(x + 52, y + 52);
+      const size = Math.max(this.promptIcon.width, this.promptIcon.height) || 1;
+      this.promptIcon.setScale(64 / size);
+    }
+    const tx = x + 106;
+    this.text('prompt-subject', prompt.subject, tx, y + 12, '#ffd84a', 2);
+    this.text('prompt-kind', detail.kind, x + width - 14, y + 12, detail.kind === 'WEAPON' ? '#3ff0ff' : '#6aff8a', 1, false, 1, 'right');
+    this.text('prompt-blurb', detail.blurb, tx, y + 34, TEXT, 1);
+    let cx = tx;
+    prompt.keys.forEach((entry, index) => {
+      cx += this.keycap(this.frame, `prompt-key-${index}`, entry.key, cx, y + 48, entry.disabled) + 8;
+      this.text(`prompt-action-${index}`, entry.action, cx, y + 52, entry.disabled ? MUTED : TEXT);
+      cx += entry.action.length * 12 + 18;
+    });
+    this.text('prompt-note', detail.note, tx, y + 80, detail.canBuy ? '#ffb040' : '#ff5a6a', 1);
   }
 
   /** Announces every newly owned item: weapons with their key, passives as always on. */

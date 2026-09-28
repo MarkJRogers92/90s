@@ -1460,3 +1460,37 @@ body[data-mode='run'] .marquee {
   width: max-content !important;
   max-width: none !important;
 }
+
+/* The store list and the Bench Warrant now live in the canvas (the offer card
+   and the Bench Warrant card). Their DOM copies move into the top strip, off
+   the play area: the store list becomes a small chip there, and the bench
+   keeps only its two buttons on screen; its text stays in the page for
+   assistive tech and the browser tests. */
+.run-shell[data-mode='run'] .mvp-run-offers-wrap {
+  top: 8px !important;
+  left: 10px !important;
+}
+
+.run-shell[data-mode='run'] .mvp-run-bench {
+  top: 6px !important;
+  left: 12px !important;
+  transform: none !important;
+  width: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.run-shell[data-mode='run'] .mvp-run-bench-title,
+.run-shell[data-mode='run'] .mvp-run-bench-line {
+  position: absolute !important;
+  left: -10000px !important;
+  width: max-content !important;
+}
+
+.run-shell[data-mode='run'] .mvp-run-bench-actions {
+  margin: 0 !important;
+}

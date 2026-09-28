@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { buildGameHudModel, heartsFor } from '../../src/game/ui/gameHudModel';
+import { enterDoorway } from '../../src/sim/run/tickMvpRun';
 
 describe('HUD hearts', () => {
   it('shows two health per heart, Isaac style', () => {
@@ -37,5 +38,39 @@ describe('game HUD model', () => {
     const heat = buildGameHudModel(run).objectives.at(-1)!;
     expect(heat.done).toBe(false);
     expect(heat.text).toContain('3');
+  });
+});
+
+describe('store offer prompt', () => {
+  function atFirstOffer() {
+    const run = createMvpRun(7);
+    run.room.combat.enemies = [];
+    for (let guard = 0; guard < 6 && !run.wing.rooms[run.roomIndex]?.store; guard += 1) {
+      run.room.combat.enemies = [];
+      enterDoorway(run, 'east');
+    }
+    const offer = run.wing.rooms[run.roomIndex]!.offers[0]!;
+    run.room.combat.player.x = offer.position.x;
+    run.room.combat.player.y = offer.position.y;
+    return { run, offer };
+  }
+
+  it('says what the item does, whether it is a weapon, and what stealing costs', () => {
+    const { run, offer } = atFirstOffer();
+    run.cash = 999;
+    const prompt = buildGameHudModel(run).prompt!;
+    expect(prompt.detail?.itemDefinitionId).toBe(offer.itemDefinitionId);
+    expect(prompt.detail?.blurb.length).toBeGreaterThan(0);
+    expect(['WEAPON', 'PASSIVE']).toContain(prompt.detail?.kind);
+    expect(prompt.detail?.note).toMatch(/HEAT/);
+    expect(prompt.detail?.canBuy).toBe(true);
+  });
+
+  it('tells a broke janitor exactly how short they are', () => {
+    const { run } = atFirstOffer();
+    run.cash = 0;
+    const prompt = buildGameHudModel(run).prompt!;
+    expect(prompt.detail?.canBuy).toBe(false);
+    expect(prompt.detail?.note).toMatch(/^NEED \$\d+ MORE/);
   });
 });

@@ -9,7 +9,15 @@ import { BOSS_MAX_HEALTH, bossPhaseForHealth } from '../../sim/combat/boss';
 import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import type { MvpRunState } from '../../sim/run/types';
 import type { WingRoomId } from '../../sim/wing/types';
-import { itemDefinitionName } from '../../sim/run/economy';
+import {
+  RUN_SECURED_THEFT_HEAT,
+  RUN_SMUGGLE_POUCH_HEAT_REDUCTION,
+  itemDefinitionName,
+  runCarryLimit,
+  runOfferPrice,
+  runOwnsCapability,
+} from '../../sim/run/economy';
+import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
@@ -46,7 +54,20 @@ export type HudWeapon = {
 export type HudPassive = { readonly instanceId: string; readonly itemDefinitionId: string; readonly name: string };
 
 /** What pressing a key would do right now, spelled out with the key. */
-export type HudPrompt = { readonly keys: ReadonlyArray<{ key: string; action: string }>; readonly subject: string } | null;
+export type HudOfferDetail = {
+  readonly itemDefinitionId: string;
+  readonly blurb: string;
+  readonly kind: 'WEAPON' | 'PASSIVE';
+  /** Why you cannot buy, or what stealing it will cost. */
+  readonly note: string;
+  readonly canBuy: boolean;
+};
+
+export type HudPrompt = {
+  readonly keys: ReadonlyArray<{ key: string; action: string; disabled?: boolean }>;
+  readonly subject: string;
+  readonly detail?: HudOfferDetail;
+} | null;
 
 export type GameHudModel = {
   readonly hearts: readonly HeartState[];
@@ -161,8 +182,31 @@ function promptFor(state: MvpRunState): HudPrompt {
   if (state.status !== 'playing' || state.paused || state.preview !== null) return null;
   const interaction = nearestMvpInteraction(state);
   switch (interaction.kind) {
-    case 'offer':
-      return { subject: interaction.label.toUpperCase().replace(' — ', '  '), keys: [{ key: 'E', action: 'BUY' }, { key: 'F', action: 'STEAL' }] };
+    case 'offer': {
+      const offer = state.wing.rooms[state.roomIndex]?.offers.find((candidate) => candidate.id === interaction.offerId);
+      const subject = interaction.label.toUpperCase().replace(' — ', '  ');
+      if (!offer) return { subject, keys: [{ key: 'E', action: 'BUY' }, { key: 'F', action: 'STEAL' }] };
+      const price = runOfferPrice(state, offer);
+      const short = price - state.cash;
+      const handsFull = state.carried.length >= runCarryLimit(state);
+      const stealHeat = Math.max(0, RUN_SECURED_THEFT_HEAT - (runOwnsCapability(state, 'smuggle_pouch') ? RUN_SMUGGLE_POUCH_HEAT_REDUCTION : 0));
+      const note = short > 0
+        ? `NEED $${short} MORE - OR STEAL IT (+${stealHeat} HEAT)`
+        : handsFull
+          ? 'HANDS FULL - CARRY YOUR LOOT OUT FIRST'
+          : `STEAL: FREE, +${stealHeat} HEAT AT THE EXIT`;
+      return {
+        subject,
+        keys: [{ key: 'E', action: 'BUY', disabled: short > 0 }, { key: 'F', action: 'STEAL', disabled: handsFull }],
+        detail: {
+          itemDefinitionId: offer.itemDefinitionId,
+          blurb: itemBlurb(offer.itemDefinitionId),
+          kind: ITEM_CATALOG.find((definition) => definition.id === offer.itemDefinitionId)?.base ? 'WEAPON' : 'PASSIVE',
+          note,
+          canBuy: short <= 0,
+        },
+      };
+    }
     case 'bench':
       return { subject: 'BENCH WARRANT KIOSK', keys: [{ key: 'E', action: 'FUSE' }] };
     case 'door':

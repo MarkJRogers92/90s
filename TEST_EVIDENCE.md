@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-09-27 — round 8: soundtrack, store card, Bench Warrant card
+
+- `npx vitest run` — PASS: 45 files, 594 tests. New: `music.test.ts` (5),
+  `bench-card-model.test.ts` (4), store offer prompt (2). Each failed first.
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.6 min).
+- Music rendered offline per track in Chromium (RMS / peak): muzak
+  0.014/0.18 (then given a higher bus gain), combat 0.040/0.39, boss
+  0.056/0.43, boss phase 3 0.060/0.42; no page errors.
+- Real-input check of the Bench Warrant card: Esc closes the preview and
+  resumes; Enter commits the Emitter Mount (composite in inventory, cash
+  $30 -> $26). Captures `artifacts/neon-overhaul/{shop,bench}-after.png`.
+- Found and fixed: the new pause card was drawing under the fusion preview
+  (the preview holds the sim clock too).
+
 ## 2026-09-27 — round 7: dash readiness/hint, last heart, arrivals, pause card
 
 - `npx vitest run` — PASS: 43 files, 583 tests (new `player-cues.test.ts`, 7

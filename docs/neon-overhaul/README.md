@@ -236,6 +236,28 @@ Pure rules in `src/game/view/playerCues.ts` (tests: `player-cues.test.ts`).
 - **Pause card** (`src/game/ui/PauseCard.ts`): neon PAUSED, the controls
   (including SPACE DASH) and ESC TO RESUME, instead of one DOM line.
 
+## Round 8 — soundtrack, store card, Bench Warrant card
+
+- **Soundtrack** (`src/game/audio/music.ts`, pick in `musicState.ts`): warped
+  electric-piano muzak in quiet rooms, four-on-the-floor synthwave while
+  enemies live, a broken-beat D minor Loss Prevention theme that speeds up
+  with his phase. Tracks are data (sixteenth steps, MIDI notes) booked 0.25 s
+  ahead on the Web Audio clock and crossfaded on their own gains. Paused
+  ducks it, shift end silences it, `N` toggles music alone, and it runs
+  through the master bus (mute and the hurt muffle apply). Verified by
+  offline-rendering each track in Chromium: non-silent, no clipping.
+- **Store card**: standing at an offer shows its icon, name and price, what
+  it does (`itemBlurbs.ts`), WEAPON/PASSIVE, the keys (greyed when refused)
+  and the deciding line — `NEED $N MORE`, `HANDS FULL`, or the real steal
+  cost (`+15 HEAT AT THE EXIT`, less with the Smuggle Pouch). It flips to the
+  top when the janitor is in the lower half so it never covers the shelf.
+- **Bench Warrant card** (`src/game/ui/BenchCard.ts`, model
+  `benchCardModel.ts`): ingredients with icons, what they become, a
+  before/after table, fee vs cash, the permanence warning, and FUSE (Enter)
+  / CANCEL (Esc) buttons. Replaces the dense DOM modal; the DOM copy keeps
+  only its two buttons in the top strip (text off-screen for assistive tech
+  and the tests). The pause card no longer shows under an open preview.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

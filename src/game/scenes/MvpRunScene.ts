@@ -12,6 +12,7 @@ import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { PauseCard } from '../ui/PauseCard';
+import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { heartbeatIntervalMs } from '../view/playerCues';
 import { installMvpRunDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
@@ -102,6 +103,12 @@ class MvpRunInputAdapter {
   private pendingDash = false;
   /** Returns a weapon slot when a click lands on the HUD hotbar, else null. */
   public hudSlotAt: ((x: number, y: number) => number | null) | null = null;
+  /** The Bench Warrant card, when a fusion preview is open. */
+  public benchCard: {
+    readonly isOpen: () => boolean;
+    readonly buttonAt: (x: number, y: number) => BenchCardAction | null;
+    readonly act: (action: BenchCardAction) => void;
+  } | null = null;
   /** N toggles the soundtrack on its own. */
   public onToggleMusic: (() => void) | null = null;
   /** The end-of-shift card, when it is open: its buttons and key actions. */
@@ -112,6 +119,11 @@ class MvpRunInputAdapter {
   } | null = null;
 
   private readonly handlePointerDown = (pointer: Phaser.Input.Pointer): void => {
+    const benchAction = this.benchCard?.buttonAt(pointer.x, pointer.y) ?? null;
+    if (benchAction !== null) {
+      this.benchCard?.act(benchAction);
+      return;
+    }
     const endAction = this.endCard?.buttonAt(pointer.x, pointer.y) ?? null;
     if (endAction !== null) {
       this.endCard?.act(endAction);
@@ -137,6 +149,17 @@ class MvpRunInputAdapter {
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
     if (event.repeat) {
       return;
+    }
+    if (this.benchCard?.isOpen()) {
+      if (event.code === 'Enter' || event.code === 'NumpadEnter') {
+        this.benchCard.act('fuse');
+        return;
+      }
+      if (event.code === 'Escape') {
+        event.preventDefault();
+        this.benchCard.act('cancel');
+        return;
+      }
     }
     if (this.endCard?.isOpen()) {
       if (event.code === 'KeyR' || event.code === 'Enter') this.endCard.act('retry');
@@ -286,6 +309,7 @@ export class MvpRunScene extends Phaser.Scene {
   private gameHud: GameHud | undefined;
   private shiftCard: ShiftCard | undefined;
   private pauseCard: PauseCard | undefined;
+  private benchCard: BenchCard | undefined;
   private removeBloom: (() => void) | undefined;
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
@@ -347,6 +371,13 @@ export class MvpRunScene extends Phaser.Scene {
       this.audio?.toggleMusic();
     };
     this.pauseCard = new PauseCard(this);
+    const bench = new BenchCard(this);
+    this.benchCard = bench;
+    this.inputAdapter.benchCard = {
+      isOpen: () => bench.open,
+      buttonAt: (x, y) => bench.buttonAt(x, y),
+      act: (action) => (action === 'fuse' ? this.confirmFusion() : this.cancelFusion()),
+    };
     const card = new ShiftCard(this);
     this.shiftCard = card;
     this.inputAdapter.endCard = {
@@ -546,8 +577,11 @@ export class MvpRunScene extends Phaser.Scene {
     this.gameHud?.sync(this.run);
     const pointer = this.input.activePointer;
     this.shiftCard?.hover(pointer.x, pointer.y);
+    this.benchCard?.hover(pointer.x, pointer.y);
+    this.benchCard?.sync(this.run);
     this.shiftCard?.sync(this.run);
-    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing');
+    // A fusion preview also holds the clock; it has its own panel, not the pause card.
+    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
@@ -686,6 +720,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.shiftCard = undefined;
     this.pauseCard?.destroy();
     this.pauseCard = undefined;
+    this.benchCard?.destroy();
+    this.benchCard = undefined;
     this.removeBloom?.();
     this.removeBloom = undefined;
     window.removeEventListener('pointerdown', this.unlockAudio);
