@@ -9,7 +9,7 @@ import type {
 } from './items/types';
 
 export type RunStatus = 'playing' | 'won' | 'dead';
-export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin';
+export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper';
 export type Vec2 = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 
@@ -54,6 +54,12 @@ export type EnemyState = Vec2 & {
   kind: EnemyKind;
   /** A CLEARANCE elite: double health, triple change. Optional for fixtures. */
   elite?: boolean;
+  /** Static: the spot it will blink onto at the end of its wind-up. */
+  blinkX?: number;
+  blinkY?: number;
+  /** Bargain Hunter: ticks left in a charge, and a wall-stun. */
+  chargeTicks?: number;
+  stunnedTicks?: number;
   health: number;
   radius: number;
   phase: 'pursue' | 'telegraph' | 'recover';

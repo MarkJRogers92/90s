@@ -1,10 +1,12 @@
 import type { RunState } from '../model';
-import { updateLpManager } from './boss';
+import { isBossKind, updateLpManager } from './boss';
 import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
 import { effectiveSpeedMultiplier } from '../effects/statuses';
 import { moveCircle, scaleMovementDelta } from './movement';
 import { playerDashing } from './dash';
 import { updateMannequin } from './mannequin';
+import { updateShopper } from './shopper';
+import { updateStatic } from './staticEnemy';
 import {
   circlesOverlap,
   sweptCircleIntersectsCircle,
@@ -47,13 +49,23 @@ export function updateEnemies(state: RunState): void {
       continue;
     }
 
-    if (enemy.kind === 'lp_manager') {
+    if (isBossKind(enemy.kind)) {
       updateLpManager(state, index);
       continue;
     }
 
     if (enemy.kind === 'mannequin') {
       updateMannequin(state, enemy);
+      continue;
+    }
+
+    if (enemy.kind === 'static') {
+      updateStatic(state, enemy);
+      continue;
+    }
+
+    if (enemy.kind === 'shopper') {
+      updateShopper(state, enemy);
       continue;
     }
 

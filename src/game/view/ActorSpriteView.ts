@@ -6,7 +6,7 @@ export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
 ] as const;
 export type ActorDirection = (typeof ACTOR_DIRECTION_ORDER)[number];
-export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin';
+export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper';
 
 export type ActorSnapshot = {
   readonly id: string;
@@ -49,7 +49,7 @@ export function shouldRenderActorSprite(key: string, available: ReadonlySet<stri
 
 export function actorTextureKey(kind: ActorKind, walking: boolean): ActorTextureKey {
   if (kind === 'hanger') return ACTOR_TEXTURE_KEYS.hangerIdle;
-  if (kind === 'spitter' || kind === 'lp_manager' || kind === 'mannequin') return ACTOR_TEXTURE_KEYS.hangerIdle;
+  if (kind !== 'alex') return ACTOR_TEXTURE_KEYS.hangerIdle;
   return walking ? ACTOR_TEXTURE_KEYS.alexWalk : ACTOR_TEXTURE_KEYS.alexIdle;
 }
 
