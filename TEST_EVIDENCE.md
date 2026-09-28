@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-09-28 — round 16: a new mall every shift, sharper upstairs
+
+- New `shift-seed.test.ts` (3) failed first (missing module); the Floor 2
+  tuning tests failed first (`expected 42 to be 34`, `expected 40 to be 24`);
+  the end card's MALL row test failed first. `npx vitest run` — PASS: 59
+  files, 676 tests.
+- Browser suite with random seeds for seedless launches: 58/59 — "real
+  keyboard theft secures at the store exit" relied on mall 0's storefront
+  layout (walks straight down to the exit). Pinned both storefront tests to
+  `seed=0`; new "each shift clocks into its own mall" test added.
+  `PW_PORT=4193 npx playwright test --workers=2` — PASS: 59/59 (2.4 min).
+- Real browser: a real boss kill on `?fixture=mvp-boss-win&seed=4242` shows
+  the end card with `MALL #4242`, rows and buttons clear; no page errors
+  (`artifacts/neon-overhaul/floor2/endcard-mall.png`).
+
 ## 2026-09-28 — round 15: Floor 2, the Upper Level
 
 - `npx vitest run` — PASS: 58 files, 666 tests. New `manager-boss.test.ts`,

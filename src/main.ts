@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import { BenchScene } from './game/scenes/BenchScene';
 import { BootScene } from './game/scenes/BootScene';
 import { MvpRunScene, setMvpRunLaunch } from './game/scenes/MvpRunScene';
+import { firstShiftSeed, type ShiftSeed } from './game/run/shiftSeed';
 import { RunScene } from './game/scenes/RunScene';
 import { WingScene } from './game/scenes/WingScene';
 import {
@@ -35,13 +36,9 @@ function browserCheckpointStorage(): CheckpointStorageLike | null {
   }
 }
 
-function seedFromUrl(): number {
-  const raw = new URLSearchParams(window.location.search).get('seed');
-  if (raw === null || raw.trim() === '') {
-    return 0;
-  }
-  const parsed = Number(raw);
-  return Number.isFinite(parsed) ? Math.trunc(parsed) : 0;
+/** The address bar's `?seed=` pins the mall; without it every shift rolls one. */
+function seedFromUrl(): ShiftSeed {
+  return firstShiftSeed(new URLSearchParams(window.location.search).get('seed'));
 }
 
 const startButton = requireElement<HTMLButtonElement>('#start-shift');
@@ -155,11 +152,11 @@ function launch(mode: RunMode): void {
   }
 }
 
-function launchRun(checkpoint: MvpCheckpoint | null, seed: number): void {
+function launchRun(checkpoint: MvpCheckpoint | null, shift: ShiftSeed): void {
   if (game) {
     return;
   }
-  setMvpRunLaunch({ seed, checkpoint, store: checkpointStore });
+  setMvpRunLaunch({ seed: shift.seed, seedPinned: shift.pinned, checkpoint, store: checkpointStore });
   setLaunchButtonsDisabled(true);
   continueButton.disabled = true;
   startupStatus.textContent = 'Clocking in…';
@@ -267,7 +264,7 @@ continueButton.addEventListener('click', () => {
     refreshContinueAvailability();
     return;
   }
-  launchRun(result.checkpoint, result.checkpoint.seed);
+  launchRun(result.checkpoint, { seed: result.checkpoint.seed, pinned: false });
 });
 
 window.addEventListener(RETURN_TO_TITLE_EVENT, returnToTitle);

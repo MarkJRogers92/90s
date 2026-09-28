@@ -15,8 +15,8 @@ import { moveCircle, scaleMovementDelta } from './movement';
 
 export const STATIC_HEALTH = 14;
 export const STATIC_RADIUS = 14;
-export const STATIC_DRIFT_TICKS = 80;
-export const STATIC_TELEGRAPH_TICKS = 42;
+export const STATIC_DRIFT_TICKS = 64;
+export const STATIC_TELEGRAPH_TICKS = 34;
 export const STATIC_RECOVER_TICKS = 60;
 export const STATIC_BURST_RADIUS = 48;
 const STATIC_DRIFT_SPEED_PER_TICK = 40 / 60;

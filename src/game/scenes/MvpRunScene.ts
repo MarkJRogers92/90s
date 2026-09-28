@@ -12,6 +12,7 @@ import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
+import { nextShiftSeed } from '../run/shiftSeed';
 import { PauseCard } from '../ui/PauseCard';
 import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
@@ -79,6 +80,8 @@ const PRESENTATION_ASSET_KEYS = new Set(PRESENTATION_ASSETS.map((asset) => asset
 
 export type MvpRunLaunch = {
   readonly seed: number;
+  /** True when the address bar chose the seed: every shift keeps it. */
+  readonly seedPinned?: boolean;
   readonly checkpoint: MvpCheckpoint | null;
   readonly store: CheckpointStore;
 };
@@ -340,6 +343,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   private run: MvpRunState = createMvpRun(0);
   private seed = 0;
+  private seedPinned = true;
   private store: CheckpointStore = new InMemoryCheckpointStore();
   private generation = 1;
   private accumulator = 0;
@@ -383,6 +387,7 @@ export class MvpRunScene extends Phaser.Scene {
     const launch = takeMvpRunLaunch();
     this.store = launch?.store ?? new InMemoryCheckpointStore();
     this.seed = launch?.checkpoint ? launch.checkpoint.seed : (launch?.seed ?? 0);
+    this.seedPinned = launch?.seedPinned ?? true;
     this.run =
       launch?.checkpoint !== null && launch?.checkpoint !== undefined
         ? restoreMvpRun(launch.checkpoint)
@@ -434,7 +439,7 @@ export class MvpRunScene extends Phaser.Scene {
       isOpen: () => card.open,
       ascends: () => card.offersAscend,
       buttonAt: (x, y) => card.buttonAt(x, y),
-      act: (action) => (action === 'ascend' ? this.ascend() : action === 'retry' ? this.restartRun() : this.returnToTitle()),
+      act: (action) => (action === 'ascend' ? this.ascend() : action === 'retry' ? this.restartRun(true) : this.returnToTitle()),
     };
     this.hud = new MvpRunHud(
       () => this.restartRun(),
@@ -483,7 +488,7 @@ export class MvpRunScene extends Phaser.Scene {
     if (this.shiftCard?.open) {
       if (pad.confirm) {
         if (this.shiftCard.offersAscend) this.ascend();
-        else this.restartRun();
+        else this.restartRun(true);
       }
       else if (pad.cancel) this.returnToTitle();
       return;
@@ -579,7 +584,10 @@ export class MvpRunScene extends Phaser.Scene {
     clearMvpHeldActions(this.run);
   }
 
-  private restartRun(): void {
+  /** From the end card, a won shift clocks into a new mall; otherwise the same one. */
+  private restartRun(fromEndCard = false): void {
+    const won = fromEndCard && this.run.status === 'won';
+    this.seed = nextShiftSeed({ seed: this.seed, pinned: this.seedPinned }, won);
     this.recordQuit();
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
@@ -688,7 +696,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.shiftCard?.hover(pointer.x, pointer.y);
     this.benchCard?.hover(pointer.x, pointer.y);
     this.benchCard?.sync(this.run);
-    this.shiftCard?.sync(this.run);
+    this.shiftCard?.sync(this.run, this.seed);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
     this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never

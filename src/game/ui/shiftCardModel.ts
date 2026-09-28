@@ -44,7 +44,11 @@ function namesFor(state: MvpRunState, instanceIds: readonly string[]): string {
   return names.join(', ').toUpperCase();
 }
 
-export function buildShiftCardModel(state: MvpRunState): ShiftCardModel | null {
+/**
+ * `mallSeed` is the seed the shift clocked in with (what `?seed=` replays);
+ * upstairs the run's own seed is the derived Floor 2 one, so the scene passes it.
+ */
+export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state.seed): ShiftCardModel | null {
   const summary = state.summary;
   if (state.status === 'playing' || !summary) return null;
   const won = summary.status === 'won';
@@ -85,6 +89,7 @@ export function buildShiftCardModel(state: MvpRunState): ShiftCardModel | null {
       { label: 'HEAT', value: `${summary.heat}` },
       { label: 'BOUGHT', value: namesFor(state, summary.purchasedInstanceIds) },
       { label: 'STOLEN', value: namesFor(state, summary.stolenInstanceIds) },
+      { label: 'MALL', value: `#${mallSeed}` },
     ],
   };
 }

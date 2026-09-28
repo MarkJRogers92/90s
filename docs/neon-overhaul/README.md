@@ -398,6 +398,20 @@ CLEARED and offers the ESCALATOR (R / Enter / pad A) or CLOCK OUT.
   charges are their own damage sources; the summary keys upstairs rooms as
   `2:<roomId>` so the Cinema Lobby never merges with the Food Court.
 
+## Round 16 — a new mall every shift, sharper upstairs
+
+- **Seeds** (`src/game/run/shiftSeed.ts`): without `?seed=` every fresh shift
+  rolls a mall (1..999,999); RETRY after dying and Restart replay the same
+  one; NEW SHIFT after a win rolls again. `?seed=N` pins the mall for sharing
+  and for the browser tests (those that depend on a layout pin it). The end
+  card's MALL row shows the number to share (the floor-1 seed, upstairs too).
+  Before this, every shift without `?seed=` was mall 0.
+- **Tuning from the first Floor 2 playtest** (a win with 3 damage, all from the
+  Manager's volley; Statics and Bargain Hunters landed nothing in 10 kills):
+  Static lock-on 42 → 34 ticks and drift 80 → 64; Bargain Hunter recovery 40 →
+  24 ticks and walk 55 → 70 px/s. Wind-ups stay dodgeable on foot (asserted in
+  `difficulty-tuning.test.ts`).
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

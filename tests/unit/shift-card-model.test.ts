@@ -55,6 +55,16 @@ describe('shift card model', () => {
     expect(card.rows).toContainEqual({ label: 'BOUGHT', value: 'NOTHING' });
   });
 
+  it('names the mall so a good one can be shared with ?seed=, upstairs too', () => {
+    expect(buildShiftCardModel(ended('dead'))!.rows).toContainEqual({ label: 'MALL', value: '#7' });
+    const below = createMvpRun(7);
+    below.status = 'won';
+    const above = ascendToFloorTwo(below);
+    above.status = 'dead';
+    above.summary = { seed: above.seed, status: 'dead', roomIndex: 2, roomsCleared: 2, purchasedInstanceIds: [], stolenInstanceIds: [], cash: 10, heat: 0, tick: 100 };
+    expect(buildShiftCardModel(above, 7)!.rows).toContainEqual({ label: 'MALL', value: '#7' });
+  });
+
   it('formats shift time from 60 Hz ticks', () => {
     expect(formatShiftTime(0)).toBe('0:00');
     expect(formatShiftTime(60 * 75)).toBe('1:15');

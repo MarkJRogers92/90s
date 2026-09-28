@@ -76,8 +76,8 @@ export class ShiftCard {
     this.hovered = this.buttonAt(x, y);
   }
 
-  public sync(state: MvpRunState): void {
-    const model = buildShiftCardModel(state);
+  public sync(state: MvpRunState, mallSeed: number = state.seed): void {
+    const model = buildShiftCardModel(state, mallSeed);
     if (!model) {
       this.endedAt = null;
       this.model = null;
