@@ -14,8 +14,9 @@
   `artifacts/neon-overhaul/mannequin-{watched,moving}.png`.
 - Browser suite under host load (three ffmpeg jobs, load average 17 -> 143):
   53/57, then the four failures rerun alone: 3 pass, the ten-restart-cycles
-  test failed in its real-time movement helper (`moveUntil`) at load ~143. A
-  clean 57/57 on a quiet host is owed for this round.
+  test failed in its real-time movement helper (`moveUntil`) at load ~143.
+- Rerun with two workers once the host eased: `PW_PORT=4193 npx playwright test
+  --workers=2` — PASS: 57/57 (3.5 min).
 
 ## 2026-09-28 — round 12: controller support
 
