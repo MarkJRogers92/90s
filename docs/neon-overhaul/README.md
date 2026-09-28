@@ -287,6 +287,32 @@ Pure rules in `src/game/view/playerCues.ts` (tests: `player-cues.test.ts`).
   (Settings) and the game (O, the SETTINGS button, listed on the pause card).
   Opening it mid-shift pauses; Esc closes it first without unpausing.
 
+## Round 11 — first playtest: tuning, readability, new features
+
+Scope note: the owner explicitly asked for new features past the M0-M1
+boundary ("add whatever other features you think might be fun"); these are
+additive, seeded and rule-owned by `src/sim`.
+
+- **Playtest** (2 runs, both won, 0 and 2 damage, boss never landed a hit) →
+  Hangers/Spitters 8 → 12 health, Spitters rest 90 → 66 ticks and shoot 150 →
+  175 px/s, boss 60 → 90 health, chases 30 → 48 px/s, slam reach 44 → 52
+  (`tests/unit/difficulty-tuning.test.ts`).
+- **Store items readable from afar**: colored loot beams and pedestals (cyan
+  weapons, green passives), 36 px ringed icons, name labels (nearest grows).
+- **Cleanup Combo** (`src/sim/run/combo.ts`): landed blows chain; hurt or 2.5 s
+  idle drops it; every x5 drops a bonus token pile; HUD meter + chime.
+- **CLEARANCE elites** and **pretzels** (`src/sim/run/luck.ts`): ~18% of regular
+  enemies spawn elite (2x health, 3x change, gold aura, tag); kills sometimes
+  drop a pretzel that heals half a heart and waits until you need it. Rolls
+  are an independent seeded hash, so wing generation is untouched.
+- **Room events** (`src/sim/run/roomEvents.ts`): BLACKOUT (one combat room,
+  flashlight cone and glowing eyes) and BLUE LIGHT SPECIAL (one item half
+  price in `runOfferPrice`, blue beacon, tagged name, explained on the card);
+  announced in the room title card.
+- **Score and best run** (`src/game/score/score.ts`): score on the end card
+  with a NEW BEST stamp; best shift shown on the title (this browser only).
+- **Boss intro**: LOSS PREVENTION card with letterbox bars and a door slam.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

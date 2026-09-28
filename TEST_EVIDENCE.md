@@ -1,5 +1,21 @@
 # Test evidence
 
+## 2026-09-28 — round 11: playtest tuning, readability, combo, elites, events, score
+
+- `npx vitest run` — PASS: 52 files, 628 tests. New: `difficulty-tuning` (4),
+  `combo` (4), `elites-snacks` (5), `room-events` (3), `score` (5), shift-card
+  score (1), combo and boss-intro cues (2). Each failed first on its missing
+  module or constant, except `score.test.ts`, which was written together with
+  its module (not observed red first).
+- Boss tests re-pinned to the same 66%/34% phase thresholds of the new 90 max;
+  the DOM boss chip's hardcoded `/60` fixed and its test updated to `60/90`.
+- Bot comparison after tuning (sim-level, 150 seeds, no dashing): won 29 -> 4,
+  HP lost per run 5.70 -> 7.27. The bot was already losing ~6 HP per run where
+  the human lost 0-2, so this is a relative signal only.
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (3.1 min).
+- Captures: `shop-readable.png`, `event-blackout.png`, `event-bluelight.png`,
+  `boss-intro.png` in `artifacts/neon-overhaul/`.
+
 ## 2026-09-27 — round 10: settings
 
 - `npx vitest run` — PASS: 47 files, 604 tests (new `settings.test.ts`, 5 tests;
