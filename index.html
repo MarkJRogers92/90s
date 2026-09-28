@@ -8,34 +8,40 @@
   <body>
     <main id="app">
       <section id="start-screen" class="start-screen" aria-labelledby="game-title">
+        <img class="start-keyart" src="/assets/neon/ui/title-keyart.png" alt="" width="688" height="384" />
         <p class="eyebrow">CORPORATE FACILITIES // NIGHT SHIFT</p>
         <h1 id="game-title"><span class="title-dead">DEAD</span> <span class="title-mall">MALL</span></h1>
         <p class="title-script" aria-hidden="true">Shop. Survive. Merge.</p>
         <p class="tagline">Steal the '90s. Void the warranty. Survive the return policy.</p>
         <p id="best-run" class="best-run" hidden></p>
         <div class="start-actions">
-          <button id="start-shift" type="button">Start shift</button>
-          <button id="interaction-lab-launch" class="secondary-action" type="button">
-            Interaction Lab
-          </button>
-          <button id="shoplifting-loop-launch" class="secondary-action" type="button">
-            Shoplifting Loop
-          </button>
-          <button id="void-warranty-launch" class="secondary-action" type="button">
-            Void the Warranty
-          </button>
-          <button id="night-shift-launch" type="button">
-            Night Shift
-          </button>
-          <button id="continue-run" class="secondary-action" type="button" disabled>
-            Continue run
-          </button>
-          <button id="playtest-open" class="secondary-action" type="button">
-            Playtest stats
-          </button>
-          <button id="settings-open" class="secondary-action" type="button">
-            Settings
-          </button>
+          <div class="start-primary">
+            <button id="night-shift-launch" type="button">Night Shift</button>
+            <button id="continue-run" class="secondary-action" type="button" disabled>
+              Continue run
+            </button>
+          </div>
+          <div class="start-utility">
+            <button id="playtest-open" class="secondary-action" type="button">
+              Playtest stats
+            </button>
+            <button id="settings-open" class="secondary-action" type="button">
+              Settings
+            </button>
+          </div>
+          <div class="start-prototypes" role="group" aria-label="Prototypes">
+            <span class="start-prototypes-label" aria-hidden="true">Prototypes</span>
+            <button id="start-shift" type="button">Start shift</button>
+            <button id="interaction-lab-launch" class="secondary-action" type="button">
+              Interaction Lab
+            </button>
+            <button id="shoplifting-loop-launch" class="secondary-action" type="button">
+              Shoplifting Loop
+            </button>
+            <button id="void-warranty-launch" class="secondary-action" type="button">
+              Void the Warranty
+            </button>
+          </div>
         </div>
         <section id="playtest-panel" class="playtest-panel" aria-labelledby="playtest-title" hidden>
           <h2 id="playtest-title">Playtest stats</h2>

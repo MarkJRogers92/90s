@@ -520,6 +520,18 @@ export class MvpRunView {
         offer.position.y - 12,
       );
     }
+    // The grown name is wider than the gap to its neighbours: any name it
+    // would run into steps aside (the store card names the item anyway).
+    const featured = nearestId ? this.offerNames.get(nearestId) : undefined;
+    if (featured?.visible) {
+      const bounds = featured.getBounds();
+      for (const [id, image] of this.offerNames) {
+        if (id === nearestId || !image.visible) continue;
+        const other = image.getBounds();
+        const overlaps = other.right + 6 > bounds.left && other.left - 6 < bounds.right && other.bottom > bounds.top && other.top < bounds.bottom;
+        if (overlaps) image.setVisible(false);
+      }
+    }
   }
 
   private drawEnemy(

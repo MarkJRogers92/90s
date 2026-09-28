@@ -100,6 +100,15 @@ const SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
   security_office: 'SECURITY',
 };
 
+const UPSTAIRS_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
+  service_corridor: 'LANDING',
+  storefront_a: 'WEST WING',
+  food_court: 'CINEMA',
+  storefront_b: 'EAST WING',
+  back_hall: 'STAIRWELL',
+  security_office: 'MANAGEMENT',
+};
+
 export function heartsFor(health: number, maxHealth = PLAYER_MAX_HEALTH): HeartState[] {
   const hearts: HeartState[] = [];
   for (let i = 0; i < Math.ceil(maxHealth / 2); i += 1) {
@@ -143,7 +152,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const cleared = new Set(state.clearedRooms);
   const rooms = state.wing.rooms.map((candidate, index): HudRoomCell => ({
     id: candidate.id,
-    short: SHORT_NAMES[candidate.id],
+    short: (state.wing.floor === 2 ? UPSTAIRS_SHORT_NAMES : SHORT_NAMES)[candidate.id],
     state: index === state.roomIndex ? 'current' : cleared.has(candidate.id) || index < state.roomIndex ? 'cleared' : 'ahead',
     boss: candidate.bossAnchor != null,
     store: candidate.store !== null,
@@ -240,4 +249,33 @@ function promptFor(state: MvpRunState): HudPrompt {
     default:
       return null;
   }
+}
+
+/** The pickup log's line width in characters, and how many lines one message may take. */
+export const LOG_LINE_CHARS = 34;
+
+/** Wraps a log message at word boundaries onto at most two lines; a longer one ends on "...". */
+export function wrapLogText(text: string, width = LOG_LINE_CHARS, maxLines = 2): string[] {
+  const lines: string[] = [];
+  let line = '';
+  const words = text.split(/\s+/).filter(Boolean);
+  for (let index = 0; index < words.length; index += 1) {
+    const word = words[index]!;
+    const next = line ? `${line} ${word}` : word;
+    if (next.length <= width) {
+      line = next;
+      continue;
+    }
+    if (lines.length === maxLines - 1) {
+      // Last line: end on the last whole word that leaves room for the ellipsis.
+      let cut = line;
+      while (cut.length + 3 > width && cut.includes(' ')) cut = cut.slice(0, cut.lastIndexOf(' '));
+      lines.push(`${cut.replace(/[.,:;]$/, '')}...`);
+      return lines;
+    }
+    lines.push(line || word.slice(0, width));
+    line = line ? word : '';
+  }
+  if (line) lines.push(line);
+  return lines;
 }

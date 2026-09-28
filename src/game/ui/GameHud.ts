@@ -17,7 +17,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
-import { buildGameHudModel, type GameHudModel, type HudOfferDetail } from './gameHudModel';
+import { buildGameHudModel, wrapLogText, type GameHudModel, type HudOfferDetail } from './gameHudModel';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { itemBlurb } from './itemBlurbs';
 
@@ -356,7 +356,8 @@ export class GameHud {
   private pushLog(state: MvpRunState): void {
     this.lastRecent = state.recentChange;
     const text = state.recentChange.toUpperCase().replace(/—/g, '-');
-    this.log.unshift({ text: text.length > 34 ? `${text.slice(0, 33)}.` : text, tick: state.tick });
+    // Newest on top; a long message takes two lines rather than losing its end.
+    for (const line of wrapLogText(text).reverse()) this.log.unshift({ text: line, tick: state.tick });
     this.log.length = Math.min(this.log.length, 4);
   }
 
@@ -367,10 +368,12 @@ export class GameHud {
     const x = SCREEN_W - width - 12;
     const y = SCREEN_H - 12 - 80;
     this.panel(this.bottomFrame, x, y, width, 80, 0x4a3d62);
+    const newest = visible[0]!.tick;
     visible.forEach((entry, index) => {
       const age = state.tick - entry.tick;
-      const alpha = index === 0 ? 1 : Math.max(0.35, 1 - age / 480);
-      this.text(`log-${index}`, entry.text, x + 10, y + 10 + index * 16, index === 0 ? '#ffd84a' : '#c8b8e0', 1, true, alpha);
+      const fresh = entry.tick === newest;
+      const alpha = fresh ? 1 : Math.max(0.35, 1 - age / 480);
+      this.text(`log-${index}`, entry.text, x + 10, y + 10 + index * 16, fresh ? '#ffd84a' : '#c8b8e0', 1, true, alpha);
     });
   }
 
@@ -457,8 +460,6 @@ export class GameHud {
     if (state.tick === 0) this.mannequinHintShown = false;
     if (this.mannequinHintShown) return;
     if (!state.room.combat.enemies.some((enemy) => enemy.kind === 'mannequin' && enemy.health > 0)) return;
-    // Wait for the room's title card to clear so the two never overlap.
-    if (this.titleCard && state.tick - this.titleCard.startedTick < 150) return;
     this.mannequinHintShown = true;
     this.toast = {
       title: 'MANNEQUINS',
@@ -489,8 +490,24 @@ export class GameHud {
     this.knownItems = ids;
   }
 
+  /** True while this room's title card is (or is about to be) on screen. */
+  private titleCardBusy(state: MvpRunState): boolean {
+    if (this.roomKey(state) !== this.titleRoomKey) return true;
+    if (!this.titleCard) return false;
+    return state.tick - this.titleCard.startedTick < (this.bossIntro ? 150 : 110) + 40;
+  }
+
+  private roomKey(state: MvpRunState): string {
+    return `${state.roomIndex}:${state.wing.rooms[state.roomIndex]?.id}`;
+  }
+
   private drawToast(state: MvpRunState): void {
     if (!this.toast) return;
+    // Toasts share the title card's spot: they wait for it to clear.
+    if (this.titleCardBusy(state)) {
+      this.toast = { ...this.toast, startedTick: state.tick };
+      return;
+    }
     const age = state.tick - this.toast.startedTick;
     if (age > 60 * 4.5 || age < 0) {
       this.toast = null;
@@ -535,7 +552,7 @@ export class GameHud {
 
   /** A neon area name that fades up on arrival, like the reference title plates. */
   private drawTitleCard(state: MvpRunState): void {
-    const roomKey = `${state.roomIndex}:${state.wing.rooms[state.roomIndex]?.id}`;
+    const roomKey = this.roomKey(state);
     if (roomKey !== this.titleRoomKey) {
       this.titleRoomKey = roomKey;
       this.titleCard?.images.forEach((image) => image.destroy());

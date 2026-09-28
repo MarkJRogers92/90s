@@ -1138,5 +1138,15 @@
       768
     ],
     "sha256": "dca933447afe84a7b974e9479ed8b4faf219f55e08f92effe3e247172eb5c072"
+  },
+  {
+    "path": "public/assets/neon/ui/title-keyart.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-title-keyart.png",
+    "generator": "PixelLab create_image_pro (688x384 scene)",
+    "size": [
+      688,
+      384
+    ],
+    "sha256": "dd77bed735f8be306490fef00970125b57ac3e22de350617beb44bca0f50ca8e"
   }
 ]
