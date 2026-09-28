@@ -17,7 +17,7 @@ describe('difficulty tuning after the first playtest', () => {
       enemies = state.room.combat.enemies;
     }
     expect(enemies.length).toBeGreaterThan(0);
-    for (const enemy of enemies) expect(Math.ceil(enemy.health / MOP_DAMAGE)).toBe(3);
+    for (const enemy of enemies.filter((e) => (e.kind === 'hanger' || e.kind === 'spitter') && !e.elite)) expect(Math.ceil(enemy.health / MOP_DAMAGE)).toBe(3);
     expect(Math.ceil(BOSS_SUMMONED_HEALTH / MOP_DAMAGE)).toBe(3);
   });
 

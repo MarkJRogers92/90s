@@ -4,6 +4,7 @@ import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/
 import { effectiveSpeedMultiplier } from '../effects/statuses';
 import { moveCircle, scaleMovementDelta } from './movement';
 import { playerDashing } from './dash';
+import { updateMannequin } from './mannequin';
 import {
   circlesOverlap,
   sweptCircleIntersectsCircle,
@@ -51,6 +52,11 @@ export function updateEnemies(state: RunState): void {
       continue;
     }
 
+    if (enemy.kind === 'mannequin') {
+      updateMannequin(state, enemy);
+      continue;
+    }
+
     if (enemy.kind === 'hanger') {
       const direction = normalizedDirection(state.player.x - enemy.x, state.player.y - enemy.y);
       // Sticky only slows pursuit. Spitter telegraph and firing timings are
@@ -88,7 +94,8 @@ export function resolveEnemyDamage(state: RunState): void {
   const touchingHanger = state.enemies.some(
     (enemy) =>
       enemy.health > 0 &&
-      enemy.kind === 'hanger' &&
+      // A watched mannequin is frozen and harmless; a moving one bites.
+      (enemy.kind === 'hanger' || (enemy.kind === 'mannequin' && enemy.phase === 'pursue')) &&
       circlesOverlap(
         state.player.x,
         state.player.y,

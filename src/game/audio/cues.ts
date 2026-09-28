@@ -22,6 +22,7 @@ export type AudioCue =
   | 'heartbeat'
   | 'combo'
   | 'boss_intro'
+  | 'mannequin'
   | 'shot'
   | 'splash'
   | 'hit'
@@ -59,6 +60,8 @@ export type AudioSnapshot = {
   readonly dashTicks: number;
   /** Combo milestones reached in the current streak. */
   readonly comboTier: number;
+  /** Mannequins currently moving (unwatched). */
+  readonly mannequinsMoving: number;
   readonly livingEnemyIds: readonly number[];
   /** Health per living enemy id, so a blow that does not kill is audible. */
   readonly enemyHealth: Readonly<Record<number, number>>;
@@ -88,6 +91,7 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     attackActiveTicks: combat.player.attackActiveTicks,
     dashTicks: combat.player.dashTicks ?? 0,
     comboTier: Math.floor((state.stats?.combo ?? 0) / COMBO_MILESTONE),
+    mannequinsMoving: combat.enemies.filter((enemy) => enemy.kind === 'mannequin' && enemy.health > 0 && enemy.phase === 'pursue').length,
     livingEnemyIds: combat.enemies
       .filter((enemy) => enemy.health > 0)
       .map((enemy) => enemy.id)
@@ -225,6 +229,10 @@ export function deriveAudioCues(
   }
   if (current.attackActiveTicks > 0 && previous.attackActiveTicks === 0) {
     cues.push('swing');
+  }
+  // A creak and a clatter the moment a mannequin you stopped watching moves.
+  if (current.mannequinsMoving > previous.mannequinsMoving) {
+    cues.push('mannequin');
   }
   if (current.comboTier > previous.comboTier) {
     cues.push('combo');

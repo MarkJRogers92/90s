@@ -78,7 +78,7 @@ export type RunSummary = {
 
 export function summarizeRuns(records: readonly RunRecord[]): RunSummary {
   const deathsByRoom: Record<string, number> = {};
-  const damageBySource: Record<DamageSource, number> = { hanger: 0, glob: 0, slam: 0, bossShot: 0, other: 0 };
+  const damageBySource: Record<DamageSource, number> = { hanger: 0, mannequin: 0, glob: 0, slam: 0, bossShot: 0, other: 0 };
   const roomTime: Record<string, { ticks: number; visits: number }> = {};
   const bought = new Map<string, number>();
   const roomNames: Record<string, string> = {};

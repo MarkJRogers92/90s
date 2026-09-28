@@ -126,7 +126,7 @@ function applyStatusModifierEffects(
 export const MELEE_KNOCKBACK = 48;
 
 function knockBack(state: RunState, target: EnemyState): void {
-  if (target.kind !== 'hanger') return;
+  if (target.kind !== 'hanger' && target.kind !== 'mannequin') return;
   const dx = target.x - state.player.x;
   const dy = target.y - state.player.y;
   const distance = Math.hypot(dx, dy);

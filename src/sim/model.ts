@@ -9,7 +9,7 @@ import type {
 } from './items/types';
 
 export type RunStatus = 'playing' | 'won' | 'dead';
-export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager';
+export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin';
 export type Vec2 = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 

@@ -9,6 +9,7 @@ import type { DamageSource, RunRecord } from '../playtest/recorder';
 
 const SOURCE_NAMES: Record<DamageSource, string> = {
   hanger: 'Hanger touch',
+  mannequin: 'Mannequin',
   glob: 'Spitter glob',
   slam: 'Boss slam',
   bossShot: 'Boss volley',

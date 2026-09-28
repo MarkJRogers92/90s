@@ -77,7 +77,13 @@ export function diffEnemyHealth(
 function deathSheet(kind: EnemyState['kind']): string {
   return kind === 'hanger' ? ENEMY_TEXTURE_KEYS.hangerDeath
     : kind === 'spitter' ? ENEMY_TEXTURE_KEYS.spitterDeath
-      : ENEMY_TEXTURE_KEYS.lpManagerDeath;
+      : kind === 'mannequin' ? ENEMY_TEXTURE_KEYS.mannequinDeath
+        : ENEMY_TEXTURE_KEYS.lpManagerDeath;
+}
+
+/** What spills when this kind is hit: blood, green goo, or beige plastic chips. */
+function spillColor(kind: EnemyState['kind']): number {
+  return kind === 'spitter' ? 0x9aff6a : kind === 'mannequin' ? 0xf0d0a8 : 0xff3a4a;
 }
 
 const VIGNETTE_TEXTURE = 'fx:hurt-vignette';
@@ -273,7 +279,7 @@ export class CombatFeedback {
     const label = ensurePixelLabel(this.scene, heavy ? `${hit.amount}!` : `${hit.amount}`, heavy ? '#ffd84a' : '#ffffff', 3, '#3a0010');
     const image = this.scene.add.image(hit.x + (this.random() - 0.5) * 14, hit.y - 44, label.key).setDepth(presentationDepth('prompt', 10));
     this.floaters.push({ image, born: tick, vx: (dirX / length) * 0.9 + (this.random() - 0.5) * 0.5, vy: -1.5, life: FLOAT_TICKS, pop: heavy ? 2.2 : 1.7 });
-    const blood = hit.kind === 'spitter' ? 0x9aff6a : 0xff3a4a;
+    const blood = spillColor(hit.kind);
     this.bursts.push({ kind: 'star', x: ix, y: iy, born: tick, life: heavy ? 9 : 7, radius: heavy ? 34 : 24, color: blood, angle: this.random() * Math.PI });
     this.bursts.push({ kind: 'ring', x: ix, y: iy, born: tick, life: 12, radius: heavy ? 46 : 32, color: 0xffffff, angle: 0 });
     this.addDecal(hit.x + (dirX / length) * 14, hit.y + (dirY / length) * 8, this.random() < 0.5 ? DECAL_TEXTURE_KEYS.bloodDrops : DECAL_TEXTURE_KEYS.bloodSplash, 1.7 + this.random() * 0.7, hit.kind);
@@ -286,8 +292,8 @@ export class CombatFeedback {
 
   private onDeath(death: Tracked & { id: string }, player: { x: number; y: number }, tick: number): HitStopBeat {
     const boss = death.kind === 'lp_manager';
-    const blood = death.kind === 'spitter' ? 0x9aff6a : 0xff2a3a;
-    this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : DECAL_TEXTURE_KEYS.bloodPool, boss ? 3.6 : 2.6, death.kind);
+    const blood = spillColor(death.kind);
+    this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : death.kind === 'mannequin' ? DECAL_TEXTURE_KEYS.glass : DECAL_TEXTURE_KEYS.bloodPool, boss ? 3.6 : 2.6, death.kind);
     this.addDecal(death.x + 14, death.y + 8, DECAL_TEXTURE_KEYS.bloodDrag, 2, death.kind);
     this.addDecal(death.x - 18, death.y - 4, DECAL_TEXTURE_KEYS.bloodSplash, 1.8, death.kind);
     for (let i = 0; i < (boss ? 60 : 28); i += 1) this.spark(death.x, death.y - 14, tick, blood);
@@ -318,8 +324,8 @@ export class CombatFeedback {
     const row = ACTOR_DIRECTION_ORDER.indexOf(direction);
     // Death canvases are grown copies of the 64px idle canvas, centred on it,
     // so pixel scale and the feet row come from the idle frame.
-    const idleFrame = 64;
-    const scale = (death.kind === 'lp_manager' ? 128 : 64) / idleFrame;
+    const idleFrame = death.kind === 'mannequin' ? 96 : 64;
+    const scale = (death.kind === 'lp_manager' ? 128 : death.kind === 'mannequin' ? 72 : 64) / idleFrame;
     const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
     const image = this.scene.add.image(death.x, death.y, key).setDepth(presentationDepth('actor', death.y - 1)).setScale(scale);
     this.corpses.push({ image, born: tick, frames, frameSize, row, scale, feetY });
@@ -411,7 +417,7 @@ export class CombatFeedback {
       .setRotation(this.random() * Math.PI * 2)
       .setAlpha(0.92);
     // Fresh blood reads bright under the mall lights, even on the red food-court tile.
-    decal.setTint(kind === 'spitter' ? 0xc8ff9a : kind === 'lp_manager' && key === DECAL_TEXTURE_KEYS.scorch ? 0x9a8a70 : 0xff8a8a);
+    decal.setTint(kind === 'spitter' ? 0xc8ff9a : kind === 'mannequin' ? 0xf0dcc0 : kind === 'lp_manager' && key === DECAL_TEXTURE_KEYS.scorch ? 0x9a8a70 : 0xff8a8a);
     this.decals.push(decal);
     if (this.decals.length > MAX_DECALS) this.decals.shift()?.destroy();
   }

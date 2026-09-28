@@ -69,6 +69,8 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
     }
     return windups;
   }
+  // A watched mannequin is frozen: nothing is coming.
+  if (enemy.kind === 'mannequin' && enemy.phase !== 'pursue') return [];
   const dx = player.x - enemy.x;
   const dy = player.y - enemy.y;
   const distance = Math.hypot(dx, dy);

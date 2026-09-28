@@ -123,6 +123,9 @@ export const ENEMY_TEXTURE_KEYS = {
   hangerDeath: 'neon:enemy:hanger-death',
   spitterDeath: 'neon:enemy:spitter-death',
   lpManagerDeath: 'neon:enemy:lp-manager-death',
+  mannequinIdle: 'neon:enemy:mannequin-idle',
+  mannequinWalk: 'neon:enemy:mannequin-walk',
+  mannequinDeath: 'neon:enemy:mannequin-death',
 } as const;
 
 /** Item icons keyed by the simulation's item definition id. */
@@ -194,6 +197,9 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.lpManagerDeath, 'enemies/lp-manager-death.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerAttack, 'enemies/hanger-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerDeath, 'enemies/hanger-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.mannequinIdle, 'enemies/mannequin-idle.png'),
+  neon(ENEMY_TEXTURE_KEYS.mannequinWalk, 'enemies/mannequin-walk.png'),
+  neon(ENEMY_TEXTURE_KEYS.mannequinDeath, 'enemies/mannequin-death.png'),
   neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
   ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),

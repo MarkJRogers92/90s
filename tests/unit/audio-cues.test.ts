@@ -308,3 +308,11 @@ describe('boss intro cue', () => {
     expect(cues).not.toContain('pa_chime');
   });
 });
+
+describe('mannequin cue', () => {
+  it('creaks when a watched mannequin starts moving', () => {
+    const state = createMvpRun(9);
+    state.room.combat.enemies = [{ ...makeHanger(7, 300, 200), kind: 'mannequin', phase: 'recover' }];
+    expect(cuesBetween(state, (current) => { current.room.combat.enemies[0]!.phase = 'pursue'; })).toContain('mannequin');
+  });
+});

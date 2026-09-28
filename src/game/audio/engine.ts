@@ -53,6 +53,15 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 130, gain: 0.12, cutoff: 1800 }],
     minGapMs: 120,
   },
+  mannequin: {
+    // Stiff plastic joints: a dry creak and a hollow knock.
+    tones: [
+      { wave: 'square', from: 180, to: 140, ms: 60, gain: 0.07 },
+      { wave: 'triangle', from: 90, to: 70, ms: 90, gain: 0.14, atMs: 50 },
+    ],
+    noise: [{ ms: 120, gain: 0.1, cutoff: 3200, cutoffTo: 1200 }],
+    minGapMs: 350,
+  },
   boss_intro: {
     // The security office door slams: a sub boom, a metal clank, a low sting.
     tones: [

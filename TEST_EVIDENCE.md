@@ -1,5 +1,23 @@
 # Test evidence
 
+## 2026-09-28 — round 13: the Mannequin
+
+- `npx vitest run` — PASS: 55 files, 643 tests. New `mannequin.test.ts` (5) and
+  `mannequin-spawns.test.ts` (3) failed first (missing module / no spawns). The
+  mannequin creak cue test was added after its implementation (not red first).
+- Updated contracts: `tests/integration/mvp-run.test.ts` now asserts authored
+  enemies first and in order, then only display mannequins, unique ids and
+  `nextEntityId`; the difficulty test counts only regular non-elite enemies.
+- Real browser (`?fixture=mvp-back-hall`): 2 mannequins; aiming at them kept
+  both frozen (`phase: recover`), aiming away sent both ~100 px toward the
+  janitor in 0.45 s (`pursue`); no errors. Captures
+  `artifacts/neon-overhaul/mannequin-{watched,moving}.png`.
+- Browser suite under host load (three ffmpeg jobs, load average 17 -> 143):
+  53/57, then the four failures rerun alone: 3 pass, the ten-restart-cycles
+  test failed in its real-time movement helper (`moveUntil`) at load ~143.
+- Rerun with two workers once the host eased: `PW_PORT=4193 npx playwright test
+  --workers=2` — PASS: 57/57 (3.5 min).
+
 ## 2026-09-28 — round 12: controller support
 
 - `npx vitest run` — PASS: 53 files, 634 tests (new `gamepad.test.ts`, 6 tests:

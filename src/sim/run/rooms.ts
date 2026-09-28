@@ -13,17 +13,18 @@ import {
   BOSS_RADIUS,
   BOSS_VOLLEY_CADENCE_PHASE2,
 } from '../combat/boss';
-import { PLAYFIELD_WIDTH } from '../core/geometry';
+import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH, circleIntersectsRect } from '../core/geometry';
 import { createEnemyStatusState } from '../effects/statuses';
 import { projectFusionInventory } from '../fusion/inventory';
 import type { FusionInventoryState } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import { compileLoadout } from '../items/compileLoadout';
 import type { EnemyState, RunState } from '../model';
-import type { GeneratedWing, WingEnemySpawn } from '../wing/types';
+import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
 import { runCompilerInstances } from './loadout';
 import type { MvpRoomEntryFrom } from './types';
 import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
+import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -100,6 +101,48 @@ export function clearRoomEnemies(combat: RunState): void {
   combat.status = 'playing';
 }
 
+/** Display mannequins per room: the back hall always, the food court sometimes. */
+function mannequinCount(room: WingRoomDefinition, seed: number, roomIndex: number): number {
+  if (room.id === 'back_hall') return 2;
+  if (room.id === 'food_court') return luck(seed, 'mannequin', roomIndex, 0) < 0.4 ? 1 : 0;
+  return 0;
+}
+
+/**
+ * Where the display mannequins stand: seeded picks from an open grid, clear
+ * of walls, well away from either doorway entry (so a restore from either
+ * side agrees) and from the room's other enemies and each other.
+ */
+function displayMannequinSpots(
+  room: WingRoomDefinition,
+  seed: number,
+  roomIndex: number,
+  enemies: readonly EnemyState[],
+): Array<{ x: number; y: number }> {
+  const count = mannequinCount(room, seed, roomIndex);
+  if (count === 0) return [];
+  const entries = [room.playerEntry, { x: PLAYFIELD_WIDTH - room.playerEntry.x, y: room.playerEntry.y }];
+  const candidates: Array<{ x: number; y: number; key: number }> = [];
+  let index = 0;
+  for (let y = 80; y <= PLAYFIELD_HEIGHT - 60; y += 50) {
+    for (let x = 120; x <= PLAYFIELD_WIDTH - 120; x += 60) {
+      index += 1;
+      if (room.walls.some((wall) => circleIntersectsRect(x, y, MANNEQUIN_RADIUS + 8, wall))) continue;
+      if (entries.some((entry) => Math.hypot(entry.x - x, entry.y - y) < 230)) continue;
+      if (enemies.some((enemy) => Math.hypot(enemy.x - x, enemy.y - y) < 80)) continue;
+      candidates.push({ x, y, key: luck(seed, 'mannequin-spot', roomIndex, index) });
+    }
+  }
+  candidates.sort((a, b) => a.key - b.key);
+  const chosen: Array<{ x: number; y: number }> = [];
+  for (const candidate of candidates) {
+    if (chosen.length >= count) break;
+    if (chosen.some((spot) => Math.hypot(spot.x - candidate.x, spot.y - candidate.y) < 160)) continue;
+    chosen.push({ x: candidate.x, y: candidate.y });
+  }
+  return chosen;
+}
+
 /**
  * Builds one room's combat state directly from the wing room data.
  *
@@ -132,6 +175,22 @@ export function buildRoomCombatState(
   );
   if (room.bossAnchor) {
     enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y));
+  }
+  for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
+    enemies.push({
+      id: enemies.length + 1,
+      kind: 'mannequin',
+      x: spot.x,
+      y: spot.y,
+      health: MANNEQUIN_HEALTH,
+      radius: MANNEQUIN_RADIUS,
+      phase: 'recover',
+      phaseTicks: 0,
+      cooldownTicks: 0,
+      telegraphAimX: 0,
+      telegraphAimY: 0,
+      statuses: createEnemyStatusState(),
+    });
   }
 
   const entry =

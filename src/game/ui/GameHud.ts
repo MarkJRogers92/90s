@@ -105,6 +105,7 @@ export class GameHud {
     const model = buildGameHudModel(state);
     if (this.shiftStartTick === null || state.tick < this.shiftStartTick) this.shiftStartTick = state.tick;
     this.trackNewItems(state, model);
+    this.trackMannequins(state);
     this.joltHearts(state);
     if (state.recentChange && state.recentChange !== this.lastRecent) this.pushLog(state);
     // Rebuilding vector panels every frame is expensive on software renderers,
@@ -447,6 +448,25 @@ export class GameHud {
       cx += entry.action.length * 12 + 18;
     });
     this.text('prompt-note', detail.note, tx, y + 80, detail.canBuy ? '#ffb040' : '#ff5a6a', 1);
+  }
+
+  private mannequinHintShown = false;
+
+  /** The first mannequin of a shift gets a one-time explanation. */
+  private trackMannequins(state: MvpRunState): void {
+    if (state.tick === 0) this.mannequinHintShown = false;
+    if (this.mannequinHintShown) return;
+    if (!state.room.combat.enemies.some((enemy) => enemy.kind === 'mannequin' && enemy.health > 0)) return;
+    // Wait for the room's title card to clear so the two never overlap.
+    if (this.titleCard && state.tick - this.titleCard.startedTick < 150) return;
+    this.mannequinHintShown = true;
+    this.toast = {
+      title: 'MANNEQUINS',
+      titleColor: '#ff5a6a',
+      body: 'THEY ONLY MOVE WHEN YOU LOOK AWAY',
+      hint: 'KEEP YOUR AIM ON THEM',
+      startedTick: state.tick,
+    };
   }
 
   /** Announces every newly owned item: weapons with their key, passives as always on. */

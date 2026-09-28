@@ -33,6 +33,7 @@ import {
   type SpriteSpec,
 } from './ActorSpriteView';
 import { DASH_TICKS } from '../../sim/combat/dash';
+import { WATCH_HALF_ANGLE } from '../../sim/combat/mannequin';
 import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
 import { flashAllowed, gameSettings } from '../settings/settings';
 import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
@@ -222,6 +223,11 @@ export class MvpRunView {
         effects.lineStyle(4 * (1 - t) + 1, enemy.kind === 'spitter' ? 0x9aff6a : 0xff3a5a, 1 - t).strokeEllipse(enemy.x, enemy.y, r * 2, r);
       }
       this.threats.push({ enemy, windups });
+      if (enemy.kind === 'mannequin' && enemy.phase === 'pursue') {
+        // Moving: red eyes in the blank face.
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 52, radius: 20, color: 0xff2a3a, intensity: 1 });
+        effects.fillStyle(0xff2a3a, 1).fillRect(Math.round(enemy.x) - 4, Math.round(enemy.y) - 54, 2, 2).fillRect(Math.round(enemy.x) + 2, Math.round(enemy.y) - 54, 2, 2);
+      }
       if (enemy.elite) {
         // CLEARANCE: a pulsing gold aura and a price-tag label.
         const glow = 0.6 + 0.3 * Math.sin(state.tick / 7 + enemy.id);
@@ -232,7 +238,11 @@ export class MvpRunView {
       const sheet = enemySpriteSheet(enemySnapshot.kind, false);
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
       const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
-      const shown = enemy.elite ? combinePoses(pose, { offsetX: 0, offsetY: 0, scaleX: 1.18, scaleY: 1.18, flash: false, tint: 0x302000 }) : pose;
+      let shown = enemy.elite ? combinePoses(pose, { offsetX: 0, offsetY: 0, scaleX: 1.18, scaleY: 1.18, flash: false, tint: 0x302000 }) : pose;
+      if (enemy.kind === 'mannequin' && enemy.phase === 'pursue') {
+        // A moving mannequin jitters, like a bad stop-motion frame.
+        shown = combinePoses(shown, { offsetX: ((state.tick * 7) % 3) - 1, offsetY: ((state.tick * 5) % 3) - 1, scaleX: 1, scaleY: 1, flash: false });
+      }
       const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, shown, attackColumn);
       const spriteActive = sprite.spriteActive;
       this.drawActorEffectCues(enemySnapshot, sprite, effects);
@@ -290,6 +300,7 @@ export class MvpRunView {
     this.syncDashTrail(state, fxTick);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.drawDashReadiness(state, playerEffects, fxTick);
+    this.drawGazeCone(state, playerEffects);
     this.contactShadow('player', player.x, player.y, 1);
     // The janitor carries a little warm light, so the player never loses themself in the dark.
     opening?.addLight({ x: player.x, y: player.y - 10, radius: blackout ? 70 : 96, color: 0xffe6c8, intensity: blackout ? 0.5 : 0.62 });
@@ -837,6 +848,30 @@ export class MvpRunView {
       }
     }
     this.usedEliteTags.clear();
+  }
+
+  /**
+   * With a mannequin in the room, a faint cone shows where the janitor is
+   * looking — exactly the arc (and reach) that freezes them.
+   */
+  private drawGazeCone(state: MvpRunState, effects: Phaser.GameObjects.Graphics): void {
+    if (state.status !== 'playing') return;
+    const mannequins = state.room.combat.enemies.filter((enemy) => enemy.kind === 'mannequin' && enemy.health > 0);
+    if (mannequins.length === 0) return;
+    const player = state.room.combat.player;
+    const aim = Math.atan2(player.facing.y, player.facing.x);
+    // Watching works at any range with a clear line; the cone spans the room.
+    const reach = 620;
+    const points = [new Phaser.Math.Vector2(player.x, player.y - 10)];
+    for (let i = 0; i <= 10; i += 1) {
+      const a = aim - WATCH_HALF_ANGLE + (2 * WATCH_HALF_ANGLE * i) / 10;
+      points.push(new Phaser.Math.Vector2(player.x + Math.cos(a) * reach, player.y - 10 + Math.sin(a) * reach));
+    }
+    const anyWatched = mannequins.some((enemy) => enemy.phase !== 'pursue');
+    effects.fillStyle(anyWatched ? 0x3ff0ff : 0xff5a6a, 0.05).fillPoints(points, true);
+    effects.lineStyle(1, anyWatched ? 0x3ff0ff : 0xff5a6a, 0.3);
+    effects.lineBetween(player.x, player.y - 10, points[1]!.x, points[1]!.y);
+    effects.lineBetween(player.x, player.y - 10, points.at(-1)!.x, points.at(-1)!.y);
   }
 
   /** First tick an id was seen in this room; a new room starts a fresh map. */

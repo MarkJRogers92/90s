@@ -1018,5 +1018,35 @@
       736
     ],
     "sha256": "6e319e421adeef6fa932cf8ada4b2b12dadb1a3b85a0726f8caed81a627f09e7"
+  },
+  {
+    "path": "public/assets/neon/enemies/mannequin-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-mannequin-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      768,
+      96
+    ],
+    "sha256": "7b26b834488275e185d70e7c13be2b37faa4b1317d0c9721b199f34baf5146fc"
+  },
+  {
+    "path": "public/assets/neon/enemies/mannequin-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-mannequin-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      576,
+      768
+    ],
+    "sha256": "be01293af7f6489713c0899dd258822fc014b7150059ff433c5d34b143192219"
+  },
+  {
+    "path": "public/assets/neon/enemies/mannequin-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-mannequin-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      672,
+      768
+    ],
+    "sha256": "742bf4b2c116a4ea06b8bd03b74a7dfbe3e8647600d4abda42da2094f6c6bb4b"
   }
 ]
