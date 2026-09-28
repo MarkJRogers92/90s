@@ -9,7 +9,9 @@
  */
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
-import { runOfferPriceLabel } from '../../sim/run/economy';
+import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
+import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
+import { ITEM_CATALOG } from '../../sim/items/catalog';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
@@ -31,6 +33,7 @@ import {
   type SpriteSpec,
 } from './ActorSpriteView';
 import { DASH_TICKS } from '../../sim/combat/dash';
+import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
 import { flashAllowed, gameSettings } from '../settings/settings';
 import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
 import { attackFrameFor, combinePoses, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
@@ -81,6 +84,7 @@ export class MvpRunView {
   private readonly feedback: CombatFeedback;
   private readonly weapon: WeaponView;
   private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
+  private readonly offerNames = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedOfferIcons = new Set<string>();
   private readonly storeGraphics: Phaser.GameObjects.Graphics;
   private readonly tokenSprites = new Map<string, Phaser.GameObjects.Image>();
@@ -130,6 +134,8 @@ export class MvpRunView {
       this.mallRoomKey = roomKey;
     }
     this.openingConcourse.render(state);
+    const blackout = roomEventFor(state, state.roomIndex) === 'blackout';
+    this.openingConcourse.setBlackout(blackout);
     if (room.id === 'service_corridor') {
       this.concourseAmbience = this.openingConcourse.ambienceSnapshot();
     }
@@ -216,10 +222,18 @@ export class MvpRunView {
         effects.lineStyle(4 * (1 - t) + 1, enemy.kind === 'spitter' ? 0x9aff6a : 0xff3a5a, 1 - t).strokeEllipse(enemy.x, enemy.y, r * 2, r);
       }
       this.threats.push({ enemy, windups });
+      if (enemy.elite) {
+        // CLEARANCE: a pulsing gold aura and a price-tag label.
+        const glow = 0.6 + 0.3 * Math.sin(state.tick / 7 + enemy.id);
+        effects.lineStyle(3, 0xffd84a, glow).strokeEllipse(enemy.x, enemy.y + 2, 58, 22);
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 70, color: 0xffd84a, intensity: 0.5 * glow });
+        this.eliteTag(`enemy:${enemy.id}`, enemy.x, enemy.y - 70);
+      }
       const sheet = enemySpriteSheet(enemySnapshot.kind, false);
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
       const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
-      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, pose, attackColumn);
+      const shown = enemy.elite ? combinePoses(pose, { offsetX: 0, offsetY: 0, scaleX: 1.18, scaleY: 1.18, flash: false, tint: 0x302000 }) : pose;
+      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, shown, attackColumn);
       const spriteActive = sprite.spriteActive;
       this.drawActorEffectCues(enemySnapshot, sprite, effects);
       if (enemy.kind === 'hanger') {
@@ -278,7 +292,19 @@ export class MvpRunView {
     this.drawDashReadiness(state, playerEffects, fxTick);
     this.contactShadow('player', player.x, player.y, 1);
     // The janitor carries a little warm light, so the player never loses themself in the dark.
-    opening?.addLight({ x: player.x, y: player.y - 10, radius: 96, color: 0xffe6c8, intensity: 0.62 });
+    opening?.addLight({ x: player.x, y: player.y - 10, radius: blackout ? 70 : 96, color: 0xffe6c8, intensity: blackout ? 0.5 : 0.62 });
+    if (blackout) {
+      // A flashlight: a cone of pools thrown along the aim, widening with distance.
+      const fx = player.facing.x;
+      const fy = player.facing.y;
+      for (const [distance, radius, intensity] of [[46, 44, 0.85], [100, 62, 0.8], [160, 82, 0.7], [224, 100, 0.55]] as const) {
+        opening?.addLight({ x: player.x + fx * distance, y: player.y - 8 + fy * distance, radius, color: 0xfff4d8, intensity });
+      }
+      // Eyes in the dark: every enemy shows where it is, not what it is doing.
+      for (const enemy of state.room.combat.enemies) {
+        opening?.addLight({ x: enemy.x, y: enemy.y - (enemy.kind === 'lp_manager' ? 70 : 34), radius: 18, color: enemy.kind === 'spitter' ? 0x9aff6a : 0xff2a3a, intensity: 0.95 });
+      }
+    }
     if (player.attackActiveTicks > 0) {
       opening?.addLight({ x: player.x + player.facing.x * 24, y: player.y + player.facing.y * 24 - 8, radius: 70, color: 0xfff4d0, intensity: 0.7 });
     }
@@ -322,6 +348,7 @@ export class MvpRunView {
     opening?.renderLighting(state.tick);
     opening?.endFrame();
     this.pruneShadows();
+    this.pruneEliteTags();
     this.pruneOfferIcons();
     this.pruneActorSprites();
     this.actorMovement.retain(new Set([
@@ -429,16 +456,50 @@ export class MvpRunView {
 
     this.setLabel(`store:${templateId}`, store.name.toUpperCase(), store.bounds.x + 6, store.bounds.y - 16);
 
+    const player = state.room.combat.player;
+    // Only the nearest available item's name grows, so neighbours never collide.
+    let nearestId: string | null = null;
+    let nearestDistance = 150;
+    for (const offer of room?.offers ?? []) {
+      if ((state.offerStatus[offer.id] ?? 'available') !== 'available') continue;
+      const distance = Math.hypot(player.x - offer.position.x, player.y - offer.position.y);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestId = offer.id;
+      }
+    }
     for (const offer of room?.offers ?? []) {
       const status = state.offerStatus[offer.id] ?? 'available';
+      const weapon = ITEM_CATALOG.find((definition) => definition.id === offer.itemDefinitionId)?.base !== undefined;
+      const kindColor = weapon ? 0x3ff0ff : 0x6aff8a;
       if (status === 'available') {
-        floor.lineStyle(2, 0x6aff8a, 0.8).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
+        // Readable from across the room: a coloured loot beam and pedestal,
+        // cyan for weapons and green for passives.
+        const pulse = 0.55 + 0.25 * Math.sin((state.tick + offer.position.x) / 18);
+        cues.fillStyle(kindColor, 0.1 * pulse).fillRect(offer.position.x - 9, offer.position.y - 58, 18, 58);
+        cues.fillStyle(kindColor, 0.22 * pulse).fillRect(offer.position.x - 3, offer.position.y - 58, 6, 58);
+        floor.fillStyle(kindColor, 0.18).fillEllipse(offer.position.x, offer.position.y, 40, 15);
+        floor.lineStyle(2, kindColor, 0.9).strokeEllipse(offer.position.x, offer.position.y, 40, 15);
+        const special = offer.id === blueLightOfferId(state);
+        const name = itemDefinitionName(offer.itemDefinitionId).toUpperCase();
+        this.offerName(offer.id, special ? `${name} - HALF PRICE` : name, weapon, offer.position.x, offer.position.y - 74, Math.hypot(player.x - offer.position.x, player.y - offer.position.y), offer.id === nearestId, special);
       } else if (status === 'carried') {
         floor.lineStyle(2, 0xffd84a, 1).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       } else {
         floor.lineStyle(1, 0x5a5e55, 0.8).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       }
-      this.offerIcon(offer.id, offer.itemDefinitionId, offer.position.x, offer.position.y, state.tick, status);
+      if (status === 'available' && offer.id === blueLightOfferId(state)) {
+        // BLUE LIGHT SPECIAL: a spinning blue beacon over the half-price item.
+        const spin = state.tick / 8;
+        const bx = offer.position.x;
+        // The beacon sits on the item's own ring, so there is no doubt which one is on sale.
+        const by = offer.position.y - 72;
+        cues.fillStyle(0x1a2a6a, 1).fillRect(bx + 18, by + 2, 12, 8);
+        cues.fillStyle(Math.floor(state.tick / 10) % 2 === 0 ? 0x8ab4ff : 0x2a4aff, 1).fillCircle(bx + 24, by, 6);
+        this.openingConcourse?.addLight({ x: bx + Math.cos(spin) * 60, y: offer.position.y - 30 + Math.sin(spin) * 22, radius: 80, color: 0x3a6aff, intensity: 0.9, squash: 0.6 });
+      }
+      if (status !== 'available') this.offerNames.get(offer.id)?.setVisible(false);
+      this.offerIcon(offer.id, offer.itemDefinitionId, offer.position.x, offer.position.y, state.tick, status, kindColor);
       // The same run offer price the HUD card shows, so a world label can
       // never disagree with the discounted price the run actually charges.
       this.setLabel(
@@ -478,7 +539,12 @@ export class MvpRunView {
     effects.fillStyle(0x12060c, 0.9);
     effects.fillRect(enemy.x - 14, barY, 28, 4);
     effects.fillStyle(0xe8243c, 1);
-    effects.fillRect(enemy.x - 13, barY + 1, 26 * Math.max(0, Math.min(1, enemy.health / 8)), 2);
+    // Measured against the health it arrived with, so elites and retuned
+    // enemies read correctly.
+    const key = `enemy:${enemy.id}`;
+    const max = Math.max(this.enemyMaxHealth.get(key) ?? 0, enemy.health);
+    this.enemyMaxHealth.set(key, max);
+    effects.fillRect(enemy.x - 13, barY + 1, 26 * Math.max(0, Math.min(1, enemy.health / max)), 2);
   }
 
   /**
@@ -748,11 +814,37 @@ export class MvpRunView {
     };
   }
 
+  private readonly enemyMaxHealth = new Map<string, number>();
+  private readonly eliteTags = new Map<string, Phaser.GameObjects.Image>();
+  private readonly usedEliteTags = new Set<string>();
+
+  private eliteTag(id: string, x: number, y: number): void {
+    const label = ensurePixelLabel(this.scene, 'CLEARANCE', '#ffd84a', 1, '#2a1400');
+    let tag = this.eliteTags.get(id);
+    if (!tag) {
+      tag = this.scene.add.image(0, 0, label.key).setDepth(presentationDepth('prompt', 2));
+      this.eliteTags.set(id, tag);
+    }
+    this.usedEliteTags.add(id);
+    tag.setVisible(true).setPosition(Math.round(x), Math.round(y));
+  }
+
+  private pruneEliteTags(): void {
+    for (const [id, tag] of this.eliteTags) {
+      if (!this.usedEliteTags.has(id)) {
+        tag.destroy();
+        this.eliteTags.delete(id);
+      }
+    }
+    this.usedEliteTags.clear();
+  }
+
   /** First tick an id was seen in this room; a new room starts a fresh map. */
   private firstSeen(scope: string, id: string, tick: number): number {
     if (scope !== this.enemyScope) {
       this.enemyScope = scope;
       this.enemyFirstSeen.clear();
+      this.enemyMaxHealth.clear();
     }
     let seen = this.enemyFirstSeen.get(id);
     if (seen === undefined || seen > tick) {
@@ -1057,11 +1149,22 @@ export class MvpRunView {
     for (const token of state.room.tokens) {
       live.add(token.id);
       let sprite = this.tokenSprites.get(token.id);
+      const snack = token.kind === 'snack';
       if (!sprite) {
-        sprite = this.scene.add.image(token.x, token.y, FX_TEXTURES.token).setDepth(presentationDepth('actor', token.y - 1));
+        sprite = this.scene.add.image(token.x, token.y, snack ? FX_TEXTURES.pretzel : FX_TEXTURES.token).setDepth(presentationDepth('actor', token.y - 1));
         this.tokenSprites.set(token.id, sprite);
       }
       const age = state.tick - token.droppedTick;
+      if (snack) {
+        // A pretzel sits still and glows warm; it pulses when the janitor is hurt.
+        const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 18 : 0;
+        const hurt = state.room.combat.player.health < PLAYER_MAX_HEALTH;
+        const pulse = hurt ? 1 + 0.12 * Math.sin(state.tick / 6) : 1;
+        sprite.setPosition(Math.round(token.x), Math.round(token.y - 8 - hop)).setScale(2 * pulse);
+        this.contactShadow(`token:${token.id}`, token.x, token.y, 0.45);
+        this.openingConcourse?.addLight({ x: token.x, y: token.y - 8, radius: hurt ? 50 : 34, color: 0xffa040, intensity: hurt ? 0.9 : 0.55 });
+        continue;
+      }
       // A short pop out of the body, then a lazy spin and bob on the floor.
       const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 14 : 0;
       const spin = Math.abs(Math.cos((state.tick + token.x) / 9));
@@ -1088,7 +1191,19 @@ export class MvpRunView {
   }
 
   /** Store stock drawn as the actual item, bobbing on its shelf under a spotlight. */
-  private offerIcon(offerId: string, itemDefinitionId: string, x: number, y: number, tick: number, status: string): void {
+  /** The item's name over its pedestal: dim from afar, bright up close. */
+  private offerName(offerId: string, name: string, weapon: boolean, x: number, y: number, distance: number, featured: boolean, special = false): void {
+    const label = ensurePixelLabel(this.scene, name, special ? '#8ab4ff' : weapon ? '#3ff0ff' : '#6aff8a', 1, '#05030a');
+    let image = this.offerNames.get(offerId);
+    if (!image) {
+      image = this.scene.add.image(0, 0, label.key).setDepth(presentationDepth('prompt', 4));
+      this.offerNames.set(offerId, image);
+    }
+    if (image.texture.key !== label.key) image.setTexture(label.key);
+    image.setVisible(true).setPosition(Math.round(x), Math.round(y)).setScale(featured ? 2 : 1).setAlpha(featured || distance < 320 ? 1 : 0.65);
+  }
+
+  private offerIcon(offerId: string, itemDefinitionId: string, x: number, y: number, tick: number, status: string, ring = 0x6aff8a): void {
     const key = itemIconKey(itemDefinitionId);
     const usable = key ? usableTextureKey(this.scene.textures, key) : null;
     if (!usable) return;
@@ -1098,9 +1213,15 @@ export class MvpRunView {
       icon = this.scene.add.image(x, y, usable);
       this.offerIcons.set(offerId, icon);
     }
-    const scale = Math.min(22 / icon.width, 22 / icon.height);
+    const scale = Math.min(36 / icon.width, 36 / icon.height);
     const bob = Math.sin((tick + x) / 14) * 2;
-    icon.setPosition(Math.round(x), Math.round(y - 30 + bob)).setScale(scale)
+    if (status === 'available') {
+      // A dark disc and a coloured ring behind the icon so it reads on any floor.
+      const iy = Math.round(y - 40 + bob);
+      this.effectGraphics.fillStyle(0x05030a, 0.85).fillCircle(Math.round(x), iy, 24);
+      this.effectGraphics.lineStyle(2, ring, 1).strokeCircle(Math.round(x), iy, 24);
+    }
+    icon.setPosition(Math.round(x), Math.round(y - 40 + bob)).setScale(scale)
       .setDepth(presentationDepth('effect', 5))
       .setAlpha(status === 'available' ? 1 : status === 'carried' ? 0.9 : 0.25)
       .setVisible(status !== 'purchased' && status !== 'secured');
@@ -1114,6 +1235,8 @@ export class MvpRunView {
       if (!this.usedOfferIcons.has(id)) {
         icon.destroy();
         this.offerIcons.delete(id);
+        this.offerNames.get(id)?.destroy();
+        this.offerNames.delete(id);
       }
     }
   }

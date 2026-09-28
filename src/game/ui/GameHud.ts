@@ -18,6 +18,7 @@ import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildGameHudModel, type GameHudModel, type HudOfferDetail } from './gameHudModel';
+import { roomEventFor } from '../../sim/run/roomEvents';
 import { itemBlurb } from './itemBlurbs';
 
 const HUD_DEPTH = 20_000;
@@ -56,6 +57,7 @@ export class GameHud {
   private toast: Toast | null = null;
   private titleCard: { images: Phaser.GameObjects.Image[]; startedTick: number } | null = null;
   private titleRoomKey = '';
+  private bossIntro = false;
   private shiftStartTick: number | null = null;
   /** Everything the HUD would draw this frame; unchanged means skip the redraw. */
   private lastSignature = '';
@@ -119,7 +121,8 @@ export class GameHud {
     this.drawVitals(model, state);
     this.drawHotbar(model);
     this.drawLog(state);
-    this.drawPrompt(model, state.room.combat.player.y > 260);
+    this.drawPrompt(model, state.room.combat.player.y > 200);
+    this.drawCombo(model);
     this.drawToast(state);
     this.drawControlsCard(state);
     this.drawTitleCard(state);
@@ -164,9 +167,9 @@ export class GameHud {
     const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
     return JSON.stringify([
       model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, this.windupActive(state),
-      state.room.combat.player.y > 260,
+      state.room.combat.player.y > 200,
       state.room.combat.player.y > 380,
-      titleAge !== null && titleAge < 160 ? bucket(titleAge) : 'x',
+      titleAge !== null && titleAge < 200 ? bucket(titleAge) : 'x',
       toastAge !== null && toastAge < 280 ? bucket(toastAge) : 'x',
       cardAge !== null && cardAge < 560 ? bucket(cardAge) : 'x',
       this.log.map((entry) => entry.text).join('|'), logAges,
@@ -393,6 +396,22 @@ export class GameHud {
     });
   }
 
+  /** The Cleanup Combo: a big neon count, a draining window bar, the next payout. */
+  private drawCombo(model: GameHudModel): void {
+    const combo = model.combo;
+    if (!combo) return;
+    const x = SCREEN_W - 190;
+    const y = 180;
+    const hot = combo.count >= 10;
+    const color = hot ? '#ffd84a' : '#ff3fc8';
+    this.panel(this.frame, x, y, 178, 74, hot ? YELLOW : MAGENTA);
+    this.text('combo-label', 'CLEANUP COMBO', x + 10, y + 8, '#9a8fb4', 1);
+    this.text('combo-count', `X${combo.count}`, x + 10, y + 20, color, 4);
+    this.frame.fillStyle(0x2a1c3a, 1).fillRect(x + 10, y + 56, 158, 6);
+    this.frame.fillStyle(hot ? YELLOW : MAGENTA, 1).fillRect(x + 10, y + 56, Math.round(158 * combo.remaining), 6);
+    this.text('combo-next', `$${combo.nextBonus} AT X${combo.nextBonusAt}`, x + 168, y + 26, '#6aff8a', 1, false, 1, 'right');
+  }
+
   /**
    * The store card for the offer the janitor is standing at: icon, name and
    * price, what it does, weapon or passive, the keys (greyed when refused),
@@ -502,7 +521,20 @@ export class GameHud {
       this.titleCard?.images.forEach((image) => image.destroy());
       const room = state.wing.rooms[state.roomIndex];
       const name = (room?.store?.name ?? room?.name ?? '').toUpperCase();
-      const sign = ensureNeonSign(this.scene, { text: name, color: '#ff3fc8', scale: 4, subtitle: `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`, subtitleColor: '#3ff0ff' });
+      // Room events announce themselves in the title card's subtitle.
+      const event = roomEventFor(state, state.roomIndex);
+      const subtitle = event === 'blackout'
+        ? 'BLACKOUT - STAY IN YOUR FLASHLIGHT'
+        : event === 'blue_light'
+          ? 'BLUE LIGHT SPECIAL - ONE ITEM HALF PRICE'
+          : `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`;
+      const subtitleColor = event === 'blackout' ? '#ff5a6a' : event === 'blue_light' ? '#6a9aff' : '#3ff0ff';
+      // The boss room gets a boss card instead of a room name.
+      const bossRoom = (room?.bossAnchor ?? null) !== null;
+      const sign = bossRoom
+        ? ensureNeonSign(this.scene, { text: 'LOSS PREVENTION', color: '#ff2a3a', scale: 6, subtitle: 'NO REFUNDS. NO EXCHANGES. NO SURVIVORS.', subtitleColor: '#ffd84a' })
+        : ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });
+      this.bossIntro = bossRoom;
       const halo = this.scene.add.image(SCREEN_W / 2, 200, sign.halo).setBlendMode(Phaser.BlendModes.ADD);
       const core = this.scene.add.image(SCREEN_W / 2, 200, sign.core);
       this.root.add([halo, core]);
@@ -510,7 +542,14 @@ export class GameHud {
     }
     if (!this.titleCard) return;
     const age = state.tick - this.titleCard.startedTick;
-    const fade = age < 20 ? age / 20 : age < 110 ? 1 : Math.max(0, 1 - (age - 110) / 40);
+    const hold = this.bossIntro ? 150 : 110;
+    const fade = age < 20 ? age / 20 : age < hold ? 1 : Math.max(0, 1 - (age - hold) / 40);
+    if (this.bossIntro && fade > 0) {
+      // Letterbox bars slam in for the boss card.
+      const bar = Math.round(Math.min(1, age / 10) * 46 * fade);
+      this.frame.fillStyle(0x05030a, 0.92).fillRect(0, 0, SCREEN_W, bar).fillRect(0, SCREEN_H - bar, SCREEN_W, bar);
+      this.frame.fillStyle(0xff2a3a, fade).fillRect(0, bar, SCREEN_W, 2).fillRect(0, SCREEN_H - bar - 2, SCREEN_W, 2);
+    }
     // A wind-up must never hide behind the room title: it steps aside.
     const alpha = Math.min(fade, this.windupActive(state) ? 0.2 : 1);
     for (const image of this.titleCard.images) image.setAlpha(alpha).setVisible(alpha > 0);

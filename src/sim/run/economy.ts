@@ -27,6 +27,7 @@ import type { CarriedTheft, StoreDefinition } from '../shop/types';
 import type { WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/types';
 import { refreshRunLoadout } from './loadout';
 import type { MvpCommandResult, MvpRunState } from './types';
+import { blueLightOfferId } from './roomEvents';
 
 /**
  * The run's authored numbers, imported from M3 rather than re-declared. The
@@ -133,7 +134,10 @@ export function runCarryLimit(state: MvpRunState): number {
 
 /** The discounted price of one authored offer, never below the floor. */
 export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
-  return Math.max(RUN_PRICE_FLOOR, offer.price - runPurchaseDiscount(state));
+  const price = offer.price - runPurchaseDiscount(state);
+  // BLUE LIGHT SPECIAL: this shift's one half-price item.
+  const special = blueLightOfferId(state) === offer.id;
+  return Math.max(RUN_PRICE_FLOOR, special ? Math.ceil(price / 2) : price);
 }
 
 /**

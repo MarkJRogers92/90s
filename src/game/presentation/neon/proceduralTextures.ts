@@ -17,6 +17,7 @@ export const FX_TEXTURES = {
   spark: 'fx:spark',
   vignette: 'fx:vignette',
   token: 'fx:mall-token',
+  pretzel: 'fx:pretzel',
 } as const;
 
 export type FloorStyle =
@@ -119,6 +120,33 @@ export function ensureFxTextures(scene: Phaser.Scene): void {
     ];
     const palette: Record<string, string> = { '#': '#3a2208', y: '#ffc83a', h: '#fff2b0', M: '#b86a10', d: '#d8901a' };
     const canvas = textures.createCanvas(FX_TEXTURES.token, 10, 10);
+    if (canvas) {
+      const context = canvas.getContext();
+      rows.forEach((row, y) => [...row].forEach((cell, x) => {
+        const color = palette[cell];
+        if (!color) return;
+        context.fillStyle = color;
+        context.fillRect(x, y, 1, 1);
+      }));
+      canvas.refresh();
+    }
+  }
+  if (!textures.exists(FX_TEXTURES.pretzel)) {
+    // A food-court soft pretzel: the classic knot, salted, with a warm highlight.
+    const rows = [
+      '..####..####..',
+      '.#bbbb##bbbb#.',
+      '#bhbs#bb#sbhb#',
+      '#bb#..bb..#bb#',
+      '#bb#.#bb#.#bb#',
+      '.#bb#bsbb#bb#.',
+      '..#bbb##bbb#..',
+      '.#bb#....#bb#.',
+      '.#bs#....#sb#.',
+      '..##......##..',
+    ];
+    const palette: Record<string, string> = { '#': '#3a1a06', b: '#c8742a', h: '#f0b060', s: '#fff4e0' };
+    const canvas = textures.createCanvas(FX_TEXTURES.pretzel, 14, 10);
     if (canvas) {
       const context = canvas.getContext();
       rows.forEach((row, y) => [...row].forEach((cell, x) => {

@@ -23,6 +23,7 @@ import type { EnemyState, RunState } from '../model';
 import type { GeneratedWing, WingEnemySpawn } from '../wing/types';
 import { runCompilerInstances } from './loadout';
 import type { MvpRoomEntryFrom } from './types';
+import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -38,19 +39,21 @@ export const PLAYER_MAX_HEALTH = 6;
  */
 export const ROOM_CLEAR_HEAL = 2;
 const PLAYER_RADIUS = 10;
-const HANGER_HEALTH = 8;
+const HANGER_HEALTH = 12;
 const HANGER_RADIUS = 14;
-const SPITTER_HEALTH = 8;
+const SPITTER_HEALTH = 12;
 const SPITTER_RADIUS = 16;
 
-function spawnEnemy(spawn: WingEnemySpawn, id: number): EnemyState {
+function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemyState {
   const isSpitter = spawn.kind === 'spitter';
+  const health = (isSpitter ? SPITTER_HEALTH : HANGER_HEALTH) * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
   return {
+    ...(elite ? { elite: true } : {}),
     id,
     kind: spawn.kind,
     x: spawn.x,
     y: spawn.y,
-    health: isSpitter ? SPITTER_HEALTH : HANGER_HEALTH,
+    health,
     radius: isSpitter ? SPITTER_RADIUS : HANGER_RADIUS,
     phase: isSpitter ? 'recover' : 'pursue',
     phaseTicks: isSpitter ? 45 : 0,
@@ -124,7 +127,9 @@ export function buildRoomCombatState(
     projected.selectedPrimaryInstanceId,
   );
 
-  const enemies = room.enemySpawns.map((spawn, index) => spawnEnemy(spawn, index + 1));
+  const enemies = room.enemySpawns.map((spawn, index) =>
+    spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE),
+  );
   if (room.bossAnchor) {
     enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y));
   }

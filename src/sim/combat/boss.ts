@@ -8,12 +8,12 @@ import {
 import { moveCircle } from './movement';
 import { playerDashing } from './dash';
 
-export const BOSS_MAX_HEALTH = 60;
+export const BOSS_MAX_HEALTH = 90;
 export const BOSS_RADIUS = 22;
-export const BOSS_PURSUE_SPEED_PER_TICK = 0.5;
+export const BOSS_PURSUE_SPEED_PER_TICK = 0.8;
 export const BOSS_PURSUE_TICKS = 60;
 export const BOSS_SLAM_TELEGRAPH_TICKS = 36;
-export const BOSS_SLAM_REACH = 44;
+export const BOSS_SLAM_REACH = 52;
 export const BOSS_SLAM_DAMAGE = 2;
 export const BOSS_SLAM_RECOVER_TICKS = 90;
 export const BOSS_SLAM_RECOVER_TICKS_PHASE3 = 60;
@@ -31,7 +31,7 @@ export const BOSS_SUMMON_OFFSETS = [
   { x: -64, y: 0 },
 ] as const;
 export const BOSS_SUMMONED_KIND = 'hanger';
-export const BOSS_SUMMONED_HEALTH = 8;
+export const BOSS_SUMMONED_HEALTH = 12;
 export const BOSS_SUMMONED_RADIUS = 14;
 
 /** Offsets in degrees, ascending, for the five-projectile volley fan. */

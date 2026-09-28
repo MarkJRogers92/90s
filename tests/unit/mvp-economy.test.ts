@@ -481,7 +481,7 @@ describe('run presentation fidelity', () => {
 
     const parts = bossHudParts(boss);
 
-    expect(parts[0]).toBe('BOSS: phase 3 · HP 60/60');
+    expect(parts[0]).toBe('BOSS: phase 3 · HP 60/90');
     expect(parts).toContain('BACKUP CALLED');
   });
 

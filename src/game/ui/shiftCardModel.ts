@@ -6,11 +6,14 @@
  */
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
+import { scoreFor } from '../score/score';
 
 export type ShiftCardRow = { readonly label: string; readonly value: string };
 
 export type ShiftCardModel = {
   readonly won: boolean;
+  readonly score: number;
+  readonly seconds: number;
   readonly headline: string;
   readonly subline: string;
   readonly rows: readonly ShiftCardRow[];
@@ -45,8 +48,20 @@ export function buildShiftCardModel(state: MvpRunState): ShiftCardModel | null {
   const won = summary.status === 'won';
   const room = state.wing.rooms[summary.roomIndex];
   const where = (room?.store?.name ?? room?.name ?? 'THE MALL').toUpperCase();
+  const seconds = Math.floor(summary.tick / TICKS_PER_SECOND);
+  const score = scoreFor({
+    won,
+    roomsReached: summary.roomIndex + 1,
+    kills: state.stats.kills,
+    bestCombo: state.stats.bestCombo,
+    cash: summary.cash,
+    heat: summary.heat,
+    seconds,
+  });
   return {
     won,
+    score,
+    seconds,
     headline: won ? 'CLOCKED OUT' : 'SHIFT OVER',
     subline: won ? 'LOSS PREVENTION HAS BEEN PREVENTED' : `FELL IN ${where}`,
     rows: [
@@ -54,6 +69,8 @@ export function buildShiftCardModel(state: MvpRunState): ShiftCardModel | null {
       // How far into the wing the shift got. The cleared count lags on a win
       // (the boss room is not yet marked cleared), which read as 5/6.
       { label: 'REACHED', value: `${summary.roomIndex + 1}/${state.wing.rooms.length}` },
+      { label: 'KILLS', value: `${state.stats.kills}` },
+      { label: 'BEST COMBO', value: `X${state.stats.bestCombo}` },
       { label: 'CASH', value: `$${summary.cash}` },
       { label: 'HEAT', value: `${summary.heat}` },
       { label: 'BOUGHT', value: namesFor(state, summary.purchasedInstanceIds) },

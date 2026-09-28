@@ -14,11 +14,14 @@
  */
 import type { MvpRunState } from '../../sim/run/types';
 import { HEAVY_HIT_DAMAGE } from '../view/combatBeats';
+import { COMBO_MILESTONE } from '../../sim/run/combo';
 
 export type AudioCue =
   | 'swing'
   | 'dash'
   | 'heartbeat'
+  | 'combo'
+  | 'boss_intro'
   | 'shot'
   | 'splash'
   | 'hit'
@@ -54,6 +57,8 @@ export type AudioSnapshot = {
   readonly health: number;
   readonly attackActiveTicks: number;
   readonly dashTicks: number;
+  /** Combo milestones reached in the current streak. */
+  readonly comboTier: number;
   readonly livingEnemyIds: readonly number[];
   /** Health per living enemy id, so a blow that does not kill is audible. */
   readonly enemyHealth: Readonly<Record<number, number>>;
@@ -82,6 +87,7 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     health: combat.player.health,
     attackActiveTicks: combat.player.attackActiveTicks,
     dashTicks: combat.player.dashTicks ?? 0,
+    comboTier: Math.floor((state.stats?.combo ?? 0) / COMBO_MILESTONE),
     livingEnemyIds: combat.enemies
       .filter((enemy) => enemy.health > 0)
       .map((enemy) => enemy.id)
@@ -220,6 +226,9 @@ export function deriveAudioCues(
   if (current.attackActiveTicks > 0 && previous.attackActiveTicks === 0) {
     cues.push('swing');
   }
+  if (current.comboTier > previous.comboTier) {
+    cues.push('combo');
+  }
   if (current.dashTicks > previous.dashTicks && previous.dashTicks === 0) {
     cues.push('dash');
   }
@@ -229,7 +238,8 @@ export function deriveAudioCues(
 
   // Entering a room announces itself the way a dying mall would.
   if (current.roomIndex !== previous.roomIndex) {
-    cues.push('pa_chime');
+    // Walking in on Loss Prevention is a door slam, not a PA chime.
+    cues.push(current.bossId !== null ? 'boss_intro' : 'pa_chime');
   }
 
   return cues;

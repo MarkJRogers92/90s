@@ -13,6 +13,7 @@ import type { RunState } from '../model';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
 import type { MallTokenPickup } from './tokens';
+import type { RunStats } from './combo';
 
 export type MvpRunStatus = 'playing' | 'won' | 'dead';
 
@@ -123,4 +124,6 @@ export type MvpRunState = {
   carrier: CarrierState | null;
   /** The open Bench Warrant preview, which pauses the run while it is set. */
   preview: EmitterMountProposal | null;
+  /** Cleanup Combo and kill count for this session (not checkpointed). */
+  stats: RunStats;
 };

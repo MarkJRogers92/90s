@@ -46,3 +46,12 @@ describe('shift card model', () => {
     expect(formatShiftTime(60 * 75)).toBe('1:15');
   });
 });
+
+describe('shift card score', () => {
+  it('scores the shift from its stats and lists kills and best combo', () => {
+    const card = buildShiftCardModel(ended('dead', (state) => { state.stats.kills = 7; state.stats.bestCombo = 9; }))!;
+    expect(card.rows).toContainEqual({ label: 'KILLS', value: '7' });
+    expect(card.rows).toContainEqual({ label: 'BEST COMBO', value: 'X9' });
+    expect(card.score).toBeGreaterThan(0);
+  });
+});

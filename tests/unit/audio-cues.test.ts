@@ -288,3 +288,23 @@ describe('dash cue', () => {
     })).not.toContain('dash');
   });
 });
+
+describe('combo cue', () => {
+  it('chimes when the combo crosses a milestone', () => {
+    expect(cuesAfter((state) => { state.stats.combo = 5; })).toContain('combo');
+    const going = createMvpRun(9);
+    going.stats.combo = 6;
+    expect(cuesBetween(going, (state) => { state.stats.combo = 7; })).not.toContain('combo');
+  });
+});
+
+describe('boss intro cue', () => {
+  it('slams the door instead of chiming when the room has the boss', () => {
+    const cues = cuesAfter((state) => {
+      state.roomIndex += 1;
+      state.room.combat.enemies = [makeBoss()];
+    });
+    expect(cues).toContain('boss_intro');
+    expect(cues).not.toContain('pa_chime');
+  });
+});

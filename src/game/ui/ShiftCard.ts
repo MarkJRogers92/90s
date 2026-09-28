@@ -11,16 +11,17 @@ import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildShiftCardModel, type ShiftCardModel } from './shiftCardModel';
+import { browserBestRuns } from '../score/score';
 import { flashAllowed, gameSettings } from '../settings/settings';
 
 const DEPTH = 20_600;
 const W = 960;
 const H = 600;
 const CARD_W = 540;
-const CARD_H = 380;
+const CARD_H = 470;
 const CARD_X = (W - CARD_W) / 2;
 const CARD_Y = (H - CARD_H) / 2;
-const ROW_MS = 150;
+const ROW_MS = 120;
 const MAX_VALUE_CHARS = 30;
 
 export type ShiftCardAction = 'retry' | 'title';
@@ -45,6 +46,9 @@ export class ShiftCard {
   private model: ShiftCardModel | null = null;
   private buttons: Rect[] = [];
   private hovered: ShiftCardAction | null = null;
+  private newBest = false;
+  private submitted = false;
+  private readonly bests = browserBestRuns();
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -72,6 +76,8 @@ export class ShiftCard {
     if (!model) {
       this.endedAt = null;
       this.model = null;
+      this.submitted = false;
+      this.newBest = false;
       this.buttons = [];
       this.root.setVisible(false);
       return;
@@ -79,6 +85,10 @@ export class ShiftCard {
     const now = this.scene.time.now;
     if (this.endedAt === null || this.model?.won !== model.won) this.endedAt = now;
     this.model = model;
+    if (!this.submitted) {
+      this.submitted = true;
+      this.newBest = this.bests.submit({ score: model.score, won: model.won, seconds: model.seconds });
+    }
     const age = now - this.endedAt - shiftCardDelayMs(model.won);
     if (age < 0) {
       this.root.setVisible(false);
@@ -127,12 +137,12 @@ export class ShiftCard {
     this.image(slot++, sub.key, W / 2, CARD_Y + oy + 104).setAlpha(ease);
 
     // Rows land one at a time, each with a little pop.
-    const rowTop = CARD_Y + oy + 134;
+    const rowTop = CARD_Y + oy + 128;
     model.rows.forEach((row, index) => {
       const rowAge = age - 300 - index * ROW_MS;
       if (rowAge < 0) return;
       const pop = rowAge < 90 ? 1.25 - (rowAge / 90) * 0.25 : 1;
-      const y = rowTop + index * 30;
+      const y = rowTop + index * 27;
       g.fillStyle(0xffffff, index % 2 === 0 ? 0.04 : 0).fillRect(CARD_X + 24, y - 4, CARD_W - 48, 28);
       const label = ensurePixelLabel(this.scene, row.label, '#9a8fb4', 2);
       this.image(slot++, label.key, CARD_X + 40, y + 10).setOrigin(0, 0.5);
@@ -140,8 +150,20 @@ export class ShiftCard {
       this.image(slot++, value.key, CARD_X + CARD_W - 40, y + 10).setOrigin(1, 0.5).setScale(pop);
     });
 
+    // The score lands last, with a NEW BEST stamp when it is one.
+    const scoreAge = age - 300 - model.rows.length * ROW_MS;
+    if (scoreAge >= 0) {
+      const pop = scoreAge < 120 ? 1.4 - (scoreAge / 120) * 0.4 : 1;
+      const scoreY = rowTop + model.rows.length * 27 + 22;
+      const scoreLabel = ensurePixelLabel(this.scene, `SCORE ${model.score.toLocaleString('en-US')}`, '#ffd84a', 3);
+      this.image(slot++, scoreLabel.key, W / 2, scoreY).setScale(pop);
+      if (this.newBest) {
+        const best = ensurePixelLabel(this.scene, 'NEW BEST!', '#ff3fc8', 2);
+        this.image(slot++, best.key, W / 2 + 190, scoreY - 4).setRotation(-0.12).setScale(Math.floor(age / 250) % 2 === 0 ? 1.1 : 1);
+      }
+    }
     // Buttons appear once every row is in.
-    const buttonsAge = age - 300 - model.rows.length * ROW_MS;
+    const buttonsAge = age - 460 - model.rows.length * ROW_MS;
     this.buttons = [];
     if (buttonsAge >= 0) {
       const y = CARD_Y + oy + CARD_H - 64;

@@ -1639,3 +1639,11 @@ body[data-mode='run'] .marquee {
   gap: 8px;
   justify-content: flex-end;
 }
+
+.best-run {
+  margin: 4px 0 14px;
+  color: #ffd84a;
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+  text-shadow: 0 0 8px rgb(255 216 74 / 55%);
+}

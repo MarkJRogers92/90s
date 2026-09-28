@@ -1,6 +1,8 @@
+import { SPITTER_RECOVER_TICKS } from '../../src/sim/combat/enemies';
 import { describe, expect, it } from 'vitest';
 import {
   BOSS_PURSUE_TICKS,
+  BOSS_SUMMONED_HEALTH,
   BOSS_SLAM_RECOVER_TICKS,
   BOSS_SLAM_RECOVER_TICKS_PHASE3,
   BOSS_SLAM_TELEGRAPH_TICKS,
@@ -21,7 +23,7 @@ function boss(overrides: Partial<EnemyState> = {}): EnemyState {
     kind: 'lp_manager',
     x: 500,
     y: 240,
-    health: 60,
+    health: 90,
     radius: 22,
     phase: 'pursue',
     phaseTicks: BOSS_PURSUE_TICKS,
@@ -45,30 +47,30 @@ function stateWithBoss(current: EnemyState): RunState {
 
 describe('boss phase thresholds', () => {
   it.each([
+    [90, 1],
     [60, 1],
-    [40, 1],
-    [39, 2],
-    [21, 2],
-    [20, 3],
+    [59, 2],
+    [31, 2],
+    [30, 3],
     [1, 3],
   ] as const)('maps health %i to boss phase %i', (health, expected) => {
     expect(bossPhaseForHealth(health)).toBe(expected);
   });
 
   it('recomputes the phase exactly when health crosses a threshold', () => {
-    const state = stateWithBoss(quietBoss({ health: 40, bossSummoned: true }));
+    const state = stateWithBoss(quietBoss({ health: 60, bossSummoned: true }));
     tickRun(state, frame());
     expect(state.enemies[0]?.bossPhase).toBe(1);
 
-    state.enemies[0]!.health = 39;
+    state.enemies[0]!.health = 59;
     tickRun(state, frame());
     expect(state.enemies[0]?.bossPhase).toBe(2);
 
-    state.enemies[0]!.health = 21;
+    state.enemies[0]!.health = 31;
     tickRun(state, frame());
     expect(state.enemies[0]?.bossPhase).toBe(2);
 
-    state.enemies[0]!.health = 20;
+    state.enemies[0]!.health = 30;
     tickRun(state, frame());
     expect(state.enemies[0]?.bossPhase).toBe(3);
   });
@@ -135,7 +137,7 @@ describe('boss slam', () => {
   it('shortens the slam recover to 60 ticks in phase 3', () => {
     const state = stateWithBoss(
       boss({
-        health: 20,
+        health: 30,
         bossSummoned: true,
         phase: 'telegraph',
         phaseTicks: 1,
@@ -170,7 +172,7 @@ describe('boss slam', () => {
 describe('boss volley', () => {
   it('never fires a volley in phase 1', () => {
     const state = stateWithBoss(
-      quietBoss({ health: 60, cooldownTicks: 1 }),
+      quietBoss({ health: 90, cooldownTicks: 1 }),
     );
     advance(state, frame(), 200);
     expect(state.projectiles).toHaveLength(0);
@@ -178,7 +180,7 @@ describe('boss volley', () => {
 
   it('telegraphs for 45 ticks then fires five projectiles in stable angular order', () => {
     const state = stateWithBoss(
-      quietBoss({ health: 39, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
+      quietBoss({ health: 59, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
     );
     const bossX = state.enemies[0]!.x;
     const bossY = state.enemies[0]!.y;
@@ -225,7 +227,7 @@ describe('boss volley', () => {
 
   it('repeats every 150 ticks in phase 2', () => {
     const state = stateWithBoss(
-      quietBoss({ health: 39, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
+      quietBoss({ health: 59, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
     );
     state.player.x = 900;
     state.player.y = 440;
@@ -243,7 +245,7 @@ describe('boss volley', () => {
 
   it('repeats every 120 ticks in phase 3', () => {
     const state = stateWithBoss(
-      quietBoss({ health: 20, bossSummoned: true, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
+      quietBoss({ health: 30, bossSummoned: true, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
     );
     state.player.x = 900;
     state.player.y = 440;
@@ -261,7 +263,7 @@ describe('boss volley', () => {
 
   it('exposes a 45-tick volley telegraph that fires when it reaches zero', () => {
     const state = stateWithBoss(
-      quietBoss({ health: 39, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
+      quietBoss({ health: 59, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1 }),
     );
     state.player.x = 900;
     state.player.y = 440;
@@ -280,7 +282,7 @@ describe('boss volley', () => {
   });
 
   it('leaves the volley telegraph clear in phase 1', () => {
-    const state = stateWithBoss(quietBoss({ health: 60, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS }));
+    const state = stateWithBoss(quietBoss({ health: 90, cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS }));
 
     advance(state, frame(), 5);
 
@@ -291,7 +293,7 @@ describe('boss volley', () => {
   it('defers the slam telegraph until the volley telegraph clears', () => {
     const state = stateWithBoss(
       boss({
-        health: 39,
+        health: 59,
         phase: 'pursue',
         phaseTicks: 1,
         cooldownTicks: BOSS_VOLLEY_TELEGRAPH_TICKS + 1,
@@ -319,7 +321,7 @@ describe('boss volley', () => {
 
 describe('boss summon', () => {
   it('summons exactly two hangers once on phase-3 entry with stable ids', () => {
-    const state = stateWithBoss(quietBoss({ health: 21, cooldownTicks: 150 }));
+    const state = stateWithBoss(quietBoss({ health: 31, cooldownTicks: 150 }));
     state.nextEntityId = 100;
     state.player.x = 900;
     state.player.y = 440;
@@ -328,7 +330,7 @@ describe('boss summon', () => {
     expect(state.enemies).toHaveLength(1);
     expect(state.enemies[0]?.bossSummoned).toBeFalsy();
 
-    state.enemies[0]!.health = 20;
+    state.enemies[0]!.health = 30;
     tickRun(state, frame());
     expect(state.enemies).toHaveLength(3);
     expect(state.enemies[0]?.bossPhase).toBe(3);
@@ -353,7 +355,7 @@ describe('boss summon', () => {
     expect(state.nextEntityId).toBe(102);
     for (const summoned of [first, second]) {
       expect(summoned.kind).toBe('hanger');
-      expect(summoned.health).toBe(8);
+      expect(summoned.health).toBe(BOSS_SUMMONED_HEALTH);
       expect(summoned.radius).toBe(14);
       expect(summoned.phase).toBe('pursue');
     }
@@ -375,7 +377,7 @@ describe('boss summon', () => {
   });
 
   it('never summons again after healing and re-entering phase 3', () => {
-    const state = stateWithBoss(quietBoss({ health: 20, cooldownTicks: 150 }));
+    const state = stateWithBoss(quietBoss({ health: 30, cooldownTicks: 150 }));
     state.nextEntityId = 100;
     state.player.x = 900;
     state.player.y = 440;
@@ -383,7 +385,7 @@ describe('boss summon', () => {
     tickRun(state, frame());
     expect(state.enemies).toHaveLength(3);
 
-    state.enemies[0]!.health = 60;
+    state.enemies[0]!.health = 90;
     tickRun(state, frame());
     expect(state.enemies[0]?.bossPhase).toBe(1);
 
@@ -399,7 +401,7 @@ describe('boss summon', () => {
     // clamps into solid geometry and both summons would otherwise fall back to
     // the single reachable boss-64 spot.
     const state = stateWithBoss(
-      quietBoss({ health: 21, cooldownTicks: 150, x: 928, y: 240 }),
+      quietBoss({ health: 31, cooldownTicks: 150, x: 928, y: 240 }),
     );
     state.nextEntityId = 100;
     state.player.x = 900;
@@ -409,7 +411,7 @@ describe('boss summon', () => {
     tickRun(state, frame());
     expect(state.enemies).toHaveLength(1);
 
-    state.enemies[0]!.health = 20;
+    state.enemies[0]!.health = 30;
     tickRun(state, frame());
 
     expect(state.enemies).toHaveLength(3);
@@ -432,7 +434,7 @@ describe('boss summon', () => {
 });
 
 describe('boss movement and contact', () => {
-  it('pursues at 0.5 units per tick without passing through walls', () => {
+  it('pursues at 0.8 units per tick without passing through walls', () => {
     const state = stateWithBoss(boss({ phase: 'pursue', phaseTicks: 1000, cooldownTicks: 150 }));
     state.player.x = 300;
     state.player.y = 160;
@@ -446,7 +448,7 @@ describe('boss movement and contact', () => {
     const endY = state.enemies[0]!.y;
     const endDistance = Math.hypot(state.player.x - endX, state.player.y - endY);
     expect(endDistance).toBeLessThan(startDistance);
-    expect(Math.hypot(endX - startX, endY - startY)).toBeCloseTo(0.5 * 10, 8);
+    expect(Math.hypot(endX - startX, endY - startY)).toBeCloseTo(0.8 * 10, 8);
     for (const wall of state.walls) {
       expect(circleIntersectsRect(endX, endY, 22, wall)).toBe(false);
     }
@@ -465,7 +467,7 @@ describe('boss movement and contact', () => {
 
   it('never damages the player by body contact', () => {
     const state = stateWithBoss(
-      quietBoss({ health: 60, x: 300, y: 160, cooldownTicks: 150 }),
+      quietBoss({ health: 90, x: 300, y: 160, cooldownTicks: 150 }),
     );
     advance(state, frame(), 30);
     expect(state.player.health).toBe(6);
@@ -526,6 +528,6 @@ describe('unchanged M1 enemies', () => {
     tickRun(state, frame());
     expect(state.projectiles).toHaveLength(1);
     expect(state.enemies[0]?.phase).toBe('recover');
-    expect(state.enemies[0]?.phaseTicks).toBe(90);
+    expect(state.enemies[0]?.phaseTicks).toBe(SPITTER_RECOVER_TICKS);
   });
 });

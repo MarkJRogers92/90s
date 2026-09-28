@@ -12,6 +12,7 @@ import { generateWing } from '../wing/generateWing';
 import { syncRunCarrier } from './carrier';
 import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
+import { createRunStats } from './combo';
 
 /** The Associate-Issue Mop every shift starts with, owned and selected. */
 export const ASSOCIATE_MOP_DEFINITION_ID = 'janitor_mop';
@@ -83,6 +84,7 @@ export function createMvpRun(seed: number): MvpRunState {
     behaviorTrace: [],
     carrier: null,
     preview: null,
+    stats: createRunStats(),
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   // The shift starts with no emitter carrier, so this is a no-op today; going

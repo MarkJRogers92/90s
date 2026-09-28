@@ -53,6 +53,29 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 130, gain: 0.12, cutoff: 1800 }],
     minGapMs: 120,
   },
+  boss_intro: {
+    // The security office door slams: a sub boom, a metal clank, a low sting.
+    tones: [
+      { wave: 'sine', from: 70, to: 24, ms: 700, gain: 0.45 },
+      { wave: 'square', from: 420, to: 180, ms: 90, gain: 0.12, atMs: 40 },
+      { wave: 'sawtooth', from: 110, to: 104, ms: 900, gain: 0.14, atMs: 250 },
+      { wave: 'sawtooth', from: 116, to: 110, ms: 900, gain: 0.12, atMs: 250 },
+    ],
+    noise: [
+      { ms: 60, gain: 0.3, cutoff: 6000 },
+      { ms: 500, gain: 0.25, cutoff: 900, cutoffTo: 80 },
+    ],
+    minGapMs: 1500,
+  },
+  combo: {
+    // A bright three-note climb: the register changes, and so does the payout.
+    tones: [
+      { wave: 'square', from: 988, to: 988, ms: 70, gain: 0.08 },
+      { wave: 'square', from: 1319, to: 1319, ms: 70, gain: 0.08, atMs: 70 },
+      { wave: 'triangle', from: 1976, to: 1976, ms: 200, gain: 0.1, atMs: 140 },
+    ],
+    minGapMs: 200,
+  },
   heartbeat: {
     // Lub-dub, low and dull: played by the scene on a timer at the last heart.
     tones: [
