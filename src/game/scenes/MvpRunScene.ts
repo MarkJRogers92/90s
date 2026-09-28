@@ -14,6 +14,11 @@ import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide } from '../ui/EscalatorRide';
+import { KillCam } from '../ui/KillCam';
+import { DawnEnding } from '../ui/DawnEnding';
+import { ClockIn } from '../ui/ClockIn';
+import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
+import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
 import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
@@ -61,7 +66,7 @@ import { STAGE_HEIGHT, STAGE_TOP, STAGE_WIDTH, dressingTextureFiles } from '../p
 import { GameHud } from '../ui/GameHud';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
-import { isBossKind } from '../../sim/combat/boss';
+import { isBossKind, type BossKind } from '../../sim/combat/boss';
 import {
   centreCameraOn,
   pointerToWorld,
@@ -367,6 +372,17 @@ export class MvpRunScene extends Phaser.Scene {
   private shiftCard: ShiftCard | undefined;
   /** The ride up to Floor 2, while it plays (the run does not tick). */
   private ride: EscalatorRide | null = null;
+  /** The boss kill cam, while it plays; the end card waits for it. */
+  private killCam: KillCam | null = null;
+  /** The walk out at dawn after the Mall Manager; the end card waits for it. */
+  private ending: DawnEnding | null = null;
+  /** The clock-in cold open over a fresh shift (it never holds the run). */
+  private clockIn: ClockIn | null = null;
+  /** True once the ending has played out and holds its last shot under the card. */
+  private endingHeld = false;
+  /** The live boss last frame, so its fall can be framed once it is gone. */
+  private lastBoss: { kind: BossKind; x: number; y: number } | null = null;
+  private lastStatus: MvpRunState['status'] = 'playing';
   private pauseCard: PauseCard | undefined;
   private benchCard: BenchCard | undefined;
   private removeBloom: (() => void) | undefined;
@@ -399,6 +415,7 @@ export class MvpRunScene extends Phaser.Scene {
         ? restoreMvpRun(launch.checkpoint)
         : createMvpRun(this.seed);
     this.run = this.applyDevFixture(this.run);
+    this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
     this.accumulator = 0;
     this.lastRoomIndex = this.run.roomIndex;
@@ -441,7 +458,8 @@ export class MvpRunScene extends Phaser.Scene {
     };
     const card = new ShiftCard(this);
     this.shiftCard = card;
-    this.inputAdapter.riding = () => this.ride !== null;
+    // Cinematic moments own every key and click while they play.
+    this.inputAdapter.riding = () => this.ride !== null || this.killCam !== null || (this.ending !== null && !this.endingHeld);
     this.inputAdapter.endCard = {
       isOpen: () => card.open,
       ascends: () => card.offersAscend,
@@ -465,6 +483,7 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.runView?.presentationSnapshot() ?? null,
         () => this.runView?.actorPresentationSnapshot() ?? null,
         () => this.runView?.concourseAmbienceSnapshot() ?? null,
+        () => this.clockIn !== null || this.killCam !== null || this.ride !== null || this.ending !== null,
       );
       const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
       this.removeDebugBridge = () => {
@@ -487,8 +506,8 @@ export class MvpRunScene extends Phaser.Scene {
     const pad = this.gamepad.read(firstGamepad(), this.run.room.combat.player);
     this.inputAdapter.setPad(pad);
     if (!pad.active || settingsDialogOpen()) return;
-    if (this.ride) {
-      if (pad.confirm || pad.cancel || pad.pause) this.ride.requestSkip();
+    if (this.ride || (this.ending && !this.endingHeld)) {
+      if (pad.confirm || pad.cancel || pad.pause) (this.ride ?? this.ending)?.requestSkip();
       return;
     }
     if (this.benchCard?.open) {
@@ -509,6 +528,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   public update(_time: number, elapsedMs: number): void {
     this.pollGamepad();
+    if (this.clockIn && this.clockIn.update(elapsedMs)) this.stopClockIn();
     if (this.ride) {
       this.accumulator = 0;
       if (this.ride.update(elapsedMs)) this.endRide();
@@ -516,6 +536,8 @@ export class MvpRunScene extends Phaser.Scene {
     }
     if (!this.inputAdapter || this.run.paused || this.run.status !== 'playing') {
       this.accumulator = 0;
+      if (this.killCam && this.killCam.update(elapsedMs)) this.endKillCam(true);
+      if (this.ending && !this.endingHeld && this.ending.update(elapsedMs)) this.endingHeld = true;
       this.syncCheckpoint();
       this.syncView();
       return;
@@ -602,8 +624,11 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** From the end card, a won shift clocks into a new mall; otherwise the same one. */
   private restartRun(fromEndCard = false): void {
+    this.endKillCam();
+    this.lastStatus = 'playing';
     const won = fromEndCard && this.run.status === 'won';
     this.seed = nextShiftSeed({ seed: this.seed, pinned: this.seedPinned }, won);
+    this.startClockIn(won ? 'new-shift' : 'retry', false);
     this.recordQuit();
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
@@ -632,6 +657,9 @@ export class MvpRunScene extends Phaser.Scene {
    */
   private ascend(): void {
     if (!canAscend(this.run)) return;
+    this.stopClockIn();
+    this.endKillCam();
+    this.lastStatus = 'playing';
     this.run = ascendToFloorTwo(this.run);
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
@@ -709,7 +737,60 @@ export class MvpRunScene extends Phaser.Scene {
     return this.audio?.toggleMuted() ?? false;
   }
 
+  /** The cold open for a fresh shift: not for a retry, a continued run or a dev fixture. */
+  private startClockIn(reason: ClockInReason, restored: boolean): void {
+    this.stopClockIn();
+    if (!shouldClockIn({ reason, fixture: this.devFixture(), restored })) return;
+    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'));
+  }
+
+  private stopClockIn(): void {
+    this.clockIn?.destroy();
+    this.clockIn = null;
+  }
+
+  private devFixture(): string | null {
+    if (!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true')) return null;
+    return new URLSearchParams(window.location.search).get('fixture');
+  }
+
+  /** Frames a boss's fall: starts the kill cam on the frame the shift is won. */
+  private watchBossKill(): void {
+    if (this.run.status === 'playing') {
+      const boss = this.run.room.combat.enemies.find((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
+      this.lastBoss = boss && isBossKind(boss.kind) ? { kind: boss.kind, x: boss.x, y: boss.y } : null;
+    } else if (this.lastStatus === 'playing' && this.run.status === 'won' && this.lastBoss && !this.killCam) {
+      this.killCam = new KillCam(this, this.lastBoss.kind, this.lastBoss, () => this.audio?.play('stamp'));
+      this.runView?.setEffectsTimeWarp(slowMoMs);
+      this.gameHud?.setHidden(true);
+    }
+    this.lastStatus = this.run.status;
+  }
+
+  /** `finished` is true when the kill cam played out (not cut short by a restart). */
+  private endKillCam(finished = false): void {
+    const played = this.killCam !== null;
+    this.killCam?.destroy();
+    this.killCam = null;
+    // Beating the Mall Manager ends the night: walk out into the sunrise first.
+    if (finished && played && this.run.status === 'won' && this.run.wing.floor === 2) {
+      this.ending = new DawnEnding(this);
+      this.endingHeld = false;
+      this.audio?.play('dawn');
+      return;
+    }
+    this.endEnding();
+  }
+
+  private endEnding(): void {
+    this.ending?.destroy();
+    this.ending = null;
+    this.endingHeld = false;
+    this.gameHud?.setHidden(false);
+  }
+
   private syncView(): void {
+    this.watchBossKill();
     this.runView?.sync(this.run);
     this.recordPlaytest();
     this.syncHeartbeat();
@@ -718,14 +799,15 @@ export class MvpRunScene extends Phaser.Scene {
     this.hitStopMs = Math.max(this.hitStopMs, hold);
     // Getting hurt (and the boss kill) ring the ears: the mix muffles while the frame holds.
     if (rawHold >= HIT_STOP_MS.playerHurt) this.audio?.muffle(Math.max(hold, 120));
-    centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
+    if (!this.killCam) centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);
     const pointer = this.input.activePointer;
     this.shiftCard?.hover(pointer.x, pointer.y);
     this.benchCard?.hover(pointer.x, pointer.y);
     this.benchCard?.sync(this.run);
-    this.shiftCard?.sync(this.run, this.seed);
+    // The end card waits for the kill cam to finish framing the fall.
+    if (!this.killCam && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
     this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
@@ -808,7 +890,7 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
-    if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-boss') {
+    if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-boss' || fixture === 'mvp-floor-two-boss-win') {
       // Straight up the escalator, optionally on to the Cinema Lobby fight or the Mall Manager.
       state.status = 'won';
       const upstairs = ascendToFloorTwo(state);
@@ -820,6 +902,15 @@ export class MvpRunScene extends Phaser.Scene {
           upstairs.room.combat.enemies = [];
           tickMvpRun(upstairs, { moveX: 0, moveY: 0, aimX: upstairs.room.combat.player.x, aimY: upstairs.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
           if (!enterDoorway(upstairs, 'east').accepted) break;
+        }
+      }
+      if (fixture === 'mvp-floor-two-boss-win') {
+        // One swing from the ending: the Mall Manager at a single point of health.
+        const boss = upstairs.room.combat.enemies.find((enemy) => isBossKind(enemy.kind));
+        if (boss) {
+          boss.health = 1;
+          upstairs.room.combat.player.x = boss.x - 80;
+          upstairs.room.combat.player.y = boss.y;
         }
       }
       return upstairs;
@@ -893,6 +984,11 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private readonly destroyRun = (): void => {
+    this.stopClockIn();
+    this.killCam?.destroy();
+    this.killCam = null;
+    this.ending?.destroy();
+    this.ending = null;
     this.ride?.destroy();
     this.ride = null;
     this.inputAdapter?.destroy();

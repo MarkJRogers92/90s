@@ -62,6 +62,30 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 120, gain: 0.1, cutoff: 3200, cutoffTo: 1200 }],
     minGapMs: 350,
   },
+  dawn: {
+    // Morning: a slow, bright major arpeggio on bells over a warm swell.
+    tones: [
+      { wave: 'sine', from: 523, to: 523, ms: 900, gain: 0.1 },
+      { wave: 'sine', from: 659, to: 659, ms: 900, gain: 0.09, atMs: 260 },
+      { wave: 'sine', from: 784, to: 784, ms: 900, gain: 0.09, atMs: 520 },
+      { wave: 'sine', from: 1047, to: 1047, ms: 1400, gain: 0.08, atMs: 780 },
+      { wave: 'triangle', from: 131, to: 131, ms: 2400, gain: 0.08 },
+      { wave: 'triangle', from: 196, to: 196, ms: 2400, gain: 0.05, atMs: 200 },
+    ],
+    minGapMs: 3000,
+  },
+  stamp: {
+    // A rubber stamp slammed onto a desk: a heavy thud and a paper slap.
+    tones: [
+      { wave: 'sine', from: 140, to: 40, ms: 260, gain: 0.45 },
+      { wave: 'square', from: 90, to: 60, ms: 70, gain: 0.12 },
+    ],
+    noise: [
+      { ms: 50, gain: 0.35, cutoff: 7000 },
+      { ms: 200, gain: 0.15, cutoff: 1200, cutoffTo: 300, atMs: 20 },
+    ],
+    minGapMs: 800,
+  },
   escalator: {
     // The escalator starting up: a motor hum winding up under the clack of steps.
     tones: [

@@ -1,5 +1,23 @@
 # Test evidence
 
+## 2026-09-28 — round 19: cinematic bookends
+
+- Model tests: `dawn-ending.test.ts` (5) and `clock-in.test.ts` (5) failed first
+  on their missing modules; the ending's hold-the-last-shot change failed
+  first (`expected 1 to be +0`). `kill-cam.test.ts` (5) was written alongside
+  its model and not observed red.
+- Browser: new "beating the Mall Manager plays out to the CLOCKED OUT card,
+  and a new shift starts from it" drives kill cam, dawn ending and card from
+  a real killing blow. The escalator test now presses Enter only while still
+  downstairs (the card opens after the kill cam). Two stability tests
+  (Opening Concourse static scene; ten restart cycles) first failed because
+  their baseline was taken during the cold open (one extra display object and
+  keydown listener); they now wait for `cinematic: false`.
+- Captures in `artifacts/neon-overhaul/audit/`: `kill-*.png`, `ending-*.png`,
+  `clockin-*.png`; no page errors.
+- `npx vitest run` — PASS: 63 files, 702 tests. `PW_PORT=4193 npx playwright
+  test --workers=2` — PASS: 61/61 (3.0 min).
+
 ## 2026-09-28 — round 18: the escalator ride
 
 - New `escalator-ride.test.ts` (6) failed first on the missing model: rider

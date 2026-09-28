@@ -1148,5 +1148,25 @@
       768
     ],
     "sha256": "d24cbb8710706b61c0f57396f9409692571b7b6106725fc7ac1c548adb5be526"
+  },
+  {
+    "path": "public/assets/neon/ui/dawn-exit.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-dawn-exit.png",
+    "generator": "PixelLab create_image_pro (688x384 scene)",
+    "size": [
+      688,
+      384
+    ],
+    "sha256": "5dcbedbf006e96f2594dcb3b4cc9a6b56d28ba6f16e5904988ccadbfa5c71fc7"
+  },
+  {
+    "path": "public/assets/neon/ui/time-clock.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-time-clock.png",
+    "generator": "PixelLab create_image_pro (128x160 prop, candidate 3 of 4)",
+    "size": [
+      128,
+      160
+    ],
+    "sha256": "9befb6bcdd570a8342c0e0f0a8dc1bdf1717e51881420ca60adce6b5ae991918"
   }
 ]

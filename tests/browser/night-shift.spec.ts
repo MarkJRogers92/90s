@@ -229,6 +229,10 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   test.setTimeout(150_000);
   const errors = collectErrors(page);
   await launchRun(page, '/?seed=7');
+  // Measure the concourse itself, once the clock-in cold open has cleared.
+  await expect
+    .poll(() => runSnapshot(page).then((state) => (state as { cinematic?: boolean }).cinematic), { timeout: 10_000 })
+    .toBe(false);
   const first = await runSnapshot(page);
   expect(first.roomId).toBe('service_corridor');
   expect(first.enemies).toHaveLength(0);
@@ -640,10 +644,15 @@ test('the escalator ride holds the run still until it ends or is skipped', async
   }
   expect((await runSnapshot(page)).status).toBe('won');
 
-  // FLOOR CLEARED: Enter takes the escalator.
-  await page.waitForTimeout(3000);
-  await page.keyboard.press('Enter');
-  await expect.poll(() => runSnapshot(page).then((state) => `${state.status}:${state.roomId}`)).toBe('playing:service_corridor');
+  // FLOOR CLEARED (after the kill cam): Enter takes the escalator.
+  await expect
+    .poll(async () => {
+      // Press only while still downstairs, so no extra press can skip the ride.
+      const before = await runSnapshot(page);
+      if (before.status === 'won') await page.keyboard.press('Enter');
+      return runSnapshot(page).then((state) => `${state.status}:${state.roomId}`);
+    }, { timeout: 15_000, intervals: [400] })
+    .toBe('playing:service_corridor');
   const boarded = (await runSnapshot(page)).tick;
   await page.waitForTimeout(1000);
   // Mid-ride the run is upstairs but its clock has not moved.
@@ -651,6 +660,38 @@ test('the escalator ride holds the run still until it ends or is skipped', async
 
   await page.keyboard.press('Space');
   await expect.poll(() => runSnapshot(page).then((state) => state.tick), { timeout: 3000 }).toBeGreaterThan(boarded);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('beating the Mall Manager plays out to the CLOCKED OUT card, and a new shift starts from it', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-two-boss-win&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'manager'))).toBe(true);
+  const box = await page.locator('canvas').boundingBox();
+  if (!box) throw new Error('no canvas');
+  await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.5);
+  await page.keyboard.down('d');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('d');
+  for (let swing = 0; swing < 16 && (await runSnapshot(page)).status !== 'won'; swing += 1) {
+    await page.mouse.down();
+    await page.waitForTimeout(120);
+    await page.mouse.up();
+    await page.waitForTimeout(160);
+  }
+  expect((await runSnapshot(page)).status).toBe('won');
+
+  // Kill cam, the walk out at dawn, then the card: R starts a new shift.
+  await expect
+    .poll(async () => {
+      const before = await runSnapshot(page);
+      if (before.status === 'won') await page.keyboard.press('KeyR');
+      return runSnapshot(page).then((state) => `${state.status}:${state.roomIndex}`);
+    }, { timeout: 30_000, intervals: [700] })
+    .toBe('playing:0');
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

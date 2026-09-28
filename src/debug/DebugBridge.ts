@@ -353,6 +353,8 @@ export type MvpRunDebugSnapshot = {
   concourseAmbience: import('../game/view/ConcourseAmbience').ConcourseAmbienceSnapshot | null;
   /** Read-only renderer evidence available in every run room. */
   actorPresentation: import('../game/view/MvpRunView').ActorPresentationDebugSnapshot | null;
+  /** True while a cinematic overlay (clock-in, kill cam, ride, ending) is on screen. */
+  cinematic: boolean;
 };
 
 export function installMvpRunDebugBridge(
@@ -365,6 +367,7 @@ export function installMvpRunDebugBridge(
   getPresentation: () => MvpRunDebugSnapshot['presentation'] = () => null,
   getActorPresentation: () => MvpRunDebugSnapshot['actorPresentation'] = () => null,
   getConcourseAmbience: () => MvpRunDebugSnapshot['concourseAmbience'] = () => null,
+  getCinematic: () => boolean = () => false,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -435,6 +438,7 @@ export function installMvpRunDebugBridge(
           presentation: getPresentation(),
           concourseAmbience: getConcourseAmbience(),
           actorPresentation: getActorPresentation(),
+          cinematic: getCinematic(),
         };
       },
     },

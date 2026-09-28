@@ -28,6 +28,8 @@ export type AudioCue =
   | 'static_blink'
   | 'shopper_charge'
   | 'escalator'
+  | 'stamp'
+  | 'dawn'
   | 'shot'
   | 'splash'
   | 'hit'

@@ -101,6 +101,11 @@ export class GameHud {
     return hit ? hit.slot : null;
   }
 
+  /** Cinematic moments (the boss kill cam) clear the screen of HUD. */
+  public setHidden(hidden: boolean): void {
+    this.root.setVisible(!hidden);
+  }
+
   public sync(state: MvpRunState): void {
     const model = buildGameHudModel(state);
     if (this.shiftStartTick === null || state.tick < this.shiftStartTick) this.shiftStartTick = state.tick;
