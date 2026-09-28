@@ -93,3 +93,13 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
     ],
   };
 }
+
+/**
+ * How long the card waits before sliding in: long enough for the death fall
+ * or the boss's collapse on its own, but barely at all when a cinematic (the
+ * pink slip, the kill cam) has already given that moment its beat.
+ */
+export function shiftCardDelayMs(won: boolean, afterCinematic = false): number {
+  if (afterCinematic) return 150;
+  return won ? 900 : 1300;
+}

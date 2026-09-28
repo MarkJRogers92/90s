@@ -697,6 +697,24 @@ test('beating the Mall Manager plays out to the CLOCKED OUT card, and a new shif
   expect(errors.consoleErrors).toEqual([]);
 });
 
+test('dying hands over a pink slip, then the SHIFT OVER card retries the same mall', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-last-heart&seed=7');
+  // One point of health in the food court fight: standing still ends the shift.
+  await expect.poll(() => runSnapshot(page).then((state) => state.status), { timeout: 30_000 }).toBe('dead');
+  await expect
+    .poll(async () => {
+      const before = await runSnapshot(page);
+      if (before.status === 'dead') await page.keyboard.press('KeyR');
+      return runSnapshot(page).then((state) => `${state.status}:${state.roomIndex}:${state.seed}`);
+    }, { timeout: 20_000, intervals: [600] })
+    .toBe('playing:0:7');
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
 test('winning the boss run publishes the summary and clears the checkpoint', async ({ page }) => {
   test.setTimeout(120_000);
   const errors = collectErrors(page);

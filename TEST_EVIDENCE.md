@@ -1,5 +1,21 @@
 # Test evidence
 
+## 2026-09-28 — round 20: the pink slip and the mall PA
+
+- `pink-slip.test.ts` (4) and `pa-announcer.test.ts` (9) failed first on their
+  missing modules; the end-card delay test failed first (`shiftCardDelayMs is
+  not a function`). The PA start-grace test first passed falsely (an
+  undefined constant made the tick NaN, which slipped past the cooldown); it
+  was tightened to pin the grace below half the cooldown, failed, then passed.
+- Real browser: a death on `?fixture=mvp-last-heart&seed=7` shows the slip
+  (reason INSUBORDINATION TOWARD A DISPLAY — a mannequin), then the card at
+  once (`audit/slip-*.png`); a theft on `?fixture=mvp-storefront&seed=0`
+  after the 3 s grace plays the ticker (`audit/pa-2.png`). An earlier theft
+  inside the grace stayed silent, as designed. No page errors.
+- New browser test: death, pink slip, SHIFT OVER, R retries the same mall.
+- `npx vitest run` — PASS: 66 files, 717 tests. `PW_PORT=4193 npx playwright
+  test --workers=2` — PASS: 62/62 (3.0 min).
+
 ## 2026-09-28 — round 19: cinematic bookends
 
 - Model tests: `dawn-ending.test.ts` (5) and `clock-in.test.ts` (5) failed first

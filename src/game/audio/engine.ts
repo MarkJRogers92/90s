@@ -62,6 +62,24 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 120, gain: 0.1, cutoff: 3200, cutoffTo: 1200 }],
     minGapMs: 350,
   },
+  pa_voice: {
+    // A garbled PA syllable: a nasal, band-limited blip through a bad speaker.
+    tones: [
+      { wave: 'square', from: 310, to: 250, ms: 55, gain: 0.035 },
+      { wave: 'sawtooth', from: 620, to: 540, ms: 45, gain: 0.018 },
+    ],
+    noise: [{ ms: 50, gain: 0.02, cutoff: 1800, cutoffTo: 900 }],
+    minGapMs: 55,
+  },
+  paper: {
+    // A sheet of paper sliding off a desk: two soft swishes.
+    tones: [],
+    noise: [
+      { ms: 260, gain: 0.12, cutoff: 3500, cutoffTo: 1200 },
+      { ms: 220, gain: 0.08, cutoff: 3000, cutoffTo: 900, atMs: 300 },
+    ],
+    minGapMs: 800,
+  },
   dawn: {
     // Morning: a slow, bright major arpeggio on bells over a warm swell.
     tones: [

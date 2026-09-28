@@ -473,6 +473,24 @@ drawn by a small Phaser class; all presentation only.
   `mvp-floor-two-boss-win`. The debug snapshot reports `cinematic` so
   presentation-stability tests measure the concourse, not the cold open.
 
+## Round 20 — the pink slip and the mall PA
+
+- **Pink slip** (`PinkSlip.ts`, `pinkSlipModel.ts`): when Alex dies, a Notice
+  of Termination flutters down (paper swish) with a reason fitting what landed
+  the last blow — the playtest recorder's `lastDamageSource` (SLIPPED ON AN
+  UNREPORTED SPILL, INSUBORDINATION TOWARD A DISPLAY, DISAGREEING WITH
+  MANAGEMENT...) — takes a red FIRED stamp, then drops away. After a pink slip
+  or kill cam the end card opens almost at once (`shiftCardDelayMs`, now in
+  the pure model). Dev fixture `mvp-last-heart`.
+- **Mall PA** (`paModel.ts`, `PaTicker.ts`): `PaDirector` watches run state and
+  speaks on the boss room, the upper level, blackouts, Blue Light Specials,
+  a first drop to the last heart in a room, rising heat, big combos, some
+  room entries, and long quiet stretches — with a 12 s cooldown (boss,
+  upstairs and room events cut in), a 3 s quiet start for the cold open, and
+  seed-picked lines. The ticker: a ding-dong, then an amber LED line typed
+  out (a cropped monospace label) over a garbled `pa_voice` babble; it waits
+  out cinematics and clears when the shift ends.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's
