@@ -983,7 +983,9 @@ export class MvpRunView {
       // Kept fully on screen even when the janitor hugs a wall.
       const half = this.dashHint.width / 2 + 6;
       const hx = Math.max(half, Math.min(960 - half, player.x));
-      this.dashHint.setVisible(true).setPosition(Math.round(hx), Math.round(Math.max(24, player.y - 78) + bob)).setScale(1 + Math.max(0, 0.15 * Math.sin(fxTick / 3)));
+      // Under the feet, by the dash ring it refers to: damage numbers and
+      // OUCH! float up from the head, so the two never stack.
+      this.dashHint.setVisible(true).setPosition(Math.round(hx), Math.round(Math.min(466, player.y + 40) + bob)).setScale(1 + Math.max(0, 0.15 * Math.sin(fxTick / 3)));
     } else {
       this.dashHint?.setVisible(false);
     }
