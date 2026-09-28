@@ -1,5 +1,15 @@
 # Test evidence
 
+## 2026-09-28 — round 14: the soundtrack, rebuilt
+
+- `npx vitest run` — PASS: 55 files, 648 tests (new reactive-music tests: combat
+  intensity, Lights Out in blackouts, mannequin tension, boss phase intensity,
+  sixteen-bar arrangements; they failed first on the old cue and 4-bar tracks).
+- Offline renders in Chromium (`scripts/render-music.mjs`), RMS / peak: muzak
+  0.113/0.48, combat low 0.090/0.64, combat full 0.097/0.65, boss 0.121/0.66,
+  boss phase 3 0.123/0.68, blackout 0.062/0.62; no page errors, no clipping.
+- `PW_PORT=4193 npx playwright test --workers=2` — PASS: 57/57 (2.4 min).
+
 ## 2026-09-28 — round 13: the Mannequin
 
 - `npx vitest run` — PASS: 55 files, 643 tests. New `mannequin.test.ts` (5) and

@@ -344,6 +344,29 @@ the room title; a plastic creak when one starts moving; beige plastic chips and
 broken-plastic decals instead of blood; its own playtest damage source.
 `?fixture=mvp-back-hall` skips straight to them (dev only).
 
+## Round 14 — the soundtrack, rebuilt
+
+`src/game/audio/music.ts`: four sixteen-bar tracks and a tension layer, all
+synthesized. New engine: a shared reverb on a generated impulse, a
+tempo-synced echo, kick-driven sidechain ducking, a limiter, and new voices
+(supersaw, pluck, FM bell, choir, drive bass, tremolo strings, drone, clap,
+tom, crash, open hat). Voices carry `minIntensity`, so the arrangement builds
+with the game's intensity (`musicState.ts`: enemies alive, last heart, boss
+phase).
+
+- "Attention Shoppers" (muzak, 92, swung): Rhodes comping, walking bass,
+  vibraphone melody over C-major jazz changes.
+- "Food Court Frenzy" (combat, 124, A minor): kick and pumping bass first;
+  hats, claps, plucked arpeggio, pad, then a supersaw hook as the room fills.
+- "Loss Prevention" (boss, 138, D minor Phrygian): drive bass, alarm stabs
+  and a siren, choir; supersaw theme and tom fills in later phases; faster
+  per phase.
+- "Lights Out" (blackout, 76, E minor): heartbeat kick, drone, distant bells.
+- Tension layer: tremolo strings while an unwatched mannequin moves.
+
+`node scripts/render-music.mjs` renders each loop offline to WAV with RMS and
+peak; MP3 previews are in `artifacts/neon-overhaul/music/`.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's
