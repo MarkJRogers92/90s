@@ -43,6 +43,8 @@ const BOSS_ROOM_ID = 'security_office';
 export type MvpCheckpoint = {
   readonly version: 1;
   readonly seed: number;
+  /** Present only on the upper level; older saves are floor 1. */
+  readonly floor?: 2;
   readonly roomIndex: number;
   readonly tick: number;
   readonly cash: number;
@@ -104,6 +106,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
   return {
     version: MVP_CHECKPOINT_VERSION,
     seed: state.seed,
+    ...(state.wing.floor === 2 ? { floor: 2 as const } : {}),
     roomIndex: state.roomIndex,
     tick: state.tick,
     cash: state.cash,
@@ -217,9 +220,13 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   if (typeof seed !== 'number' || !Number.isFinite(seed)) {
     return fail('Checkpoint seed must be a finite number.');
   }
+  const floor = value.floor === 2 ? 2 : 1;
+  if (value.floor !== undefined && value.floor !== 2) {
+    return fail('Checkpoint floor must be 2 when present.');
+  }
   let wing: GeneratedWing;
   try {
-    wing = generateWing(seed);
+    wing = generateWing(seed, floor);
   } catch {
     return fail(`Seed ${String(seed)} does not generate a valid wing.`);
   }
@@ -340,6 +347,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     checkpoint: {
       version: MVP_CHECKPOINT_VERSION,
       seed,
+      ...(floor === 2 ? { floor: 2 as const } : {}),
       roomIndex,
       tick,
       cash,
@@ -361,7 +369,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
  * never restored; only run-level state comes out of the checkpoint.
  */
 export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
-  const wing = generateWing(checkpoint.seed);
+  const wing = generateWing(checkpoint.seed, checkpoint.floor === 2 ? 2 : 1);
   const room = wing.rooms[checkpoint.roomIndex];
   if (!room) {
     throw new Error(`Checkpoint room index ${String(checkpoint.roomIndex)} is out of range.`);

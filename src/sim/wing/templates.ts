@@ -83,6 +83,16 @@ export const ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
   security_office: 'Security Office',
 };
 
+/** The upper level reuses the wing's shape under new names. */
+export const FLOOR_TWO_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
+  service_corridor: 'Escalator Landing',
+  storefront_a: 'Upper West Shops',
+  food_court: 'Cinema Lobby',
+  storefront_b: 'Upper East Shops',
+  back_hall: 'Parking Stairwell',
+  security_office: 'Management Suite',
+};
+
 export const ROOM_VARIANTS: Readonly<
   Record<CombatRoomRole, readonly [AuthoredRoomVariant, AuthoredRoomVariant]>
 > = {

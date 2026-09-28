@@ -8,6 +8,8 @@
  * between rooms.
  */
 import {
+  BOSS_CONFIGS,
+  type BossKind,
   BOSS_MAX_HEALTH,
   BOSS_PURSUE_TICKS,
   BOSS_RADIUS,
@@ -25,6 +27,8 @@ import { runCompilerInstances } from './loadout';
 import type { MvpRoomEntryFrom } from './types';
 import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
 import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
+import { STATIC_DRIFT_TICKS, STATIC_HEALTH, STATIC_RADIUS } from '../combat/staticEnemy';
+import { SHOPPER_HEALTH, SHOPPER_RADIUS } from '../combat/shopper';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -45,9 +49,16 @@ const HANGER_RADIUS = 14;
 const SPITTER_HEALTH = 12;
 const SPITTER_RADIUS = 16;
 
+const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; radius: number; phase: EnemyState['phase']; phaseTicks: number }>> = {
+  hanger: { health: HANGER_HEALTH, radius: HANGER_RADIUS, phase: 'pursue', phaseTicks: 0 },
+  spitter: { health: SPITTER_HEALTH, radius: SPITTER_RADIUS, phase: 'recover', phaseTicks: 45 },
+  static: { health: STATIC_HEALTH, radius: STATIC_RADIUS, phase: 'pursue', phaseTicks: STATIC_DRIFT_TICKS },
+  shopper: { health: SHOPPER_HEALTH, radius: SHOPPER_RADIUS, phase: 'pursue', phaseTicks: 0 },
+};
+
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemyState {
-  const isSpitter = spawn.kind === 'spitter';
-  const health = (isSpitter ? SPITTER_HEALTH : HANGER_HEALTH) * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
+  const stats = SPAWN_STATS[spawn.kind];
+  const health = stats.health * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
   return {
     ...(elite ? { elite: true } : {}),
     id,
@@ -55,9 +66,9 @@ function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemySta
     x: spawn.x,
     y: spawn.y,
     health,
-    radius: isSpitter ? SPITTER_RADIUS : HANGER_RADIUS,
-    phase: isSpitter ? 'recover' : 'pursue',
-    phaseTicks: isSpitter ? 45 : 0,
+    radius: stats.radius,
+    phase: stats.phase,
+    phaseTicks: stats.phaseTicks,
     cooldownTicks: 0,
     telegraphAimX: 0,
     telegraphAimY: 0,
@@ -65,14 +76,15 @@ function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemySta
   };
 }
 
-function spawnBoss(id: number, x: number, y: number): EnemyState {
+function spawnBoss(id: number, x: number, y: number, kind: BossKind = 'lp_manager'): EnemyState {
+  const config = BOSS_CONFIGS[kind];
   return {
     id,
-    kind: 'lp_manager',
+    kind,
     x,
     y,
-    health: BOSS_MAX_HEALTH,
-    radius: BOSS_RADIUS,
+    health: config.maxHealth,
+    radius: config.radius,
     phase: 'pursue',
     phaseTicks: BOSS_PURSUE_TICKS,
     cooldownTicks: BOSS_VOLLEY_CADENCE_PHASE2,
@@ -174,7 +186,8 @@ export function buildRoomCombatState(
     spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE),
   );
   if (room.bossAnchor) {
-    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y));
+    // Loss Prevention downstairs; the Mall Manager runs the upper level.
+    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, wing.floor === 2 ? 'manager' : 'lp_manager'));
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
     enemies.push({
