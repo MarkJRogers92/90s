@@ -3,6 +3,7 @@ import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import type { EnemyState } from '../../src/sim/model';
 import { musicCue } from '../../src/game/audio/musicState';
 import { TRACKS, stepTimes } from '../../src/game/audio/music';
+import { roomEventFor } from '../../src/sim/run/roomEvents';
 
 function boss(overrides: Partial<EnemyState> = {}): EnemyState {
   return {
@@ -40,7 +41,58 @@ describe('which music plays', () => {
   });
 });
 
+describe('reactive music', () => {
+  const hanger = (id: number): EnemyState => ({ ...boss(), id, kind: 'hanger', health: 12 } as EnemyState);
+
+  it('builds combat intensity with the enemies alive and at the last heart', () => {
+    const state = createMvpRun(7);
+    state.room.combat.enemies = [hanger(1)];
+    const one = musicCue(state).intensity;
+    state.room.combat.enemies = [hanger(1), hanger(2), hanger(3), hanger(4)];
+    const four = musicCue(state).intensity;
+    expect(four).toBeGreaterThan(one);
+    state.room.combat.player.health = 2;
+    expect(musicCue(state).intensity).toBeGreaterThanOrEqual(four);
+    expect(musicCue(state).intensity).toBeLessThanOrEqual(1);
+  });
+
+  it('plays Lights Out in a blacked-out fight', () => {
+    for (let seed = 1; seed <= 40; seed += 1) {
+      const state = createMvpRun(seed);
+      const index = state.wing.rooms.findIndex((_, i) => roomEventFor(state, i) === 'blackout');
+      if (index < 0) continue;
+      state.roomIndex = index;
+      state.room.combat.enemies = [hanger(1)];
+      expect(musicCue(state).track).toBe('blackout');
+      return;
+    }
+    throw new Error('no blackout seed');
+  });
+
+  it('raises the tension layer while an unwatched mannequin moves', () => {
+    const state = createMvpRun(7);
+    state.room.combat.enemies = [{ ...hanger(1), kind: 'mannequin', phase: 'recover' } as EnemyState];
+    expect(musicCue(state).tension).toBe(false);
+    state.room.combat.enemies[0]!.phase = 'pursue';
+    expect(musicCue(state).tension).toBe(true);
+  });
+
+  it('turns the boss up with his phase', () => {
+    const state = createMvpRun(7);
+    state.room.combat.enemies = [boss({ bossPhase: 1 })];
+    const calm = musicCue(state).intensity;
+    state.room.combat.enemies = [boss({ bossPhase: 3 })];
+    expect(musicCue(state).intensity).toBeGreaterThan(calm);
+  });
+});
+
 describe('tracks', () => {
+  it('has a full sixteen-bar arrangement for every track, including Lights Out', () => {
+    for (const id of ['muzak', 'combat', 'boss', 'blackout'] as const) {
+      expect(TRACKS[id].bars).toBeGreaterThanOrEqual(16);
+    }
+  });
+
   it('keeps every note inside its bar and in a playable range', () => {
     for (const track of Object.values(TRACKS)) {
       for (const voice of track.voices) {
