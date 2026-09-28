@@ -313,6 +313,17 @@ additive, seeded and rule-owned by `src/sim`.
   with a NEW BEST stamp; best shift shown on the title (this browser only).
 - **Boss intro**: LOSS PREVENTION card with letterbox bars and a door slam.
 
+## Round 12 — controller support
+
+`src/game/input/gamepad.ts` maps the browser's standard gamepad layout to the
+same intents as keyboard and mouse: left stick / d-pad move, right stick aims
+(and fires when pushed all the way), RT attacks, A or LT dashes, X buys/uses,
+Y steals, B recalls, LB/RB switch weapons, Start pauses. Radial deadzones,
+press-edge one-shots, and the last-used device owns the aim (moving the mouse
+takes it back). The scene reads the pad once per frame, so the pause, Bench
+Warrant (A fuse / B cancel) and end-of-shift (A retry / B title) cards work
+from the pad too; the pause card lists the pad layout when one is connected.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

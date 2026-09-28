@@ -49,7 +49,7 @@ export class PauseCard {
     return image.setOrigin(originX, 0.5).setPosition(Math.round(x), Math.round(y)).setVisible(true).setAlpha(1).setBlendMode(Phaser.BlendModes.NORMAL);
   }
 
-  public sync(paused: boolean): void {
+  public sync(paused: boolean, controller = false): void {
     if (!paused) {
       this.openedAt = null;
       this.root.setVisible(false);
@@ -76,8 +76,12 @@ export class PauseCard {
       this.image(slot++, ensurePixelLabel(this.scene, key, '#ffd84a', 2).key, W / 2 - 16, y, 1).setAlpha(ease);
       this.image(slot++, ensurePixelLabel(this.scene, action, '#f4ecff', 2).key, W / 2 + 8, y, 0).setAlpha(ease);
     });
+    if (controller) {
+      // A pad is plugged in: its layout, in one line under the keys.
+      this.image(slot++, ensurePixelLabel(this.scene, 'PAD: RT ATTACK  A DASH  X BUY  Y STEAL  LB/RB WEAPON', '#9a8fb4', 1).key, W / 2, CARD_Y + CARD_H - 58).setAlpha(ease);
+    }
     const blink = Math.floor(now / 500) % 2 === 0 ? 1 : 0.55;
-    this.image(slot++, ensurePixelLabel(this.scene, 'ESC  TO RESUME', '#3ff0ff', 2).key, W / 2, CARD_Y + CARD_H - 34).setAlpha(ease * blink);
+    this.image(slot++, ensurePixelLabel(this.scene, controller ? 'ESC / START TO RESUME' : 'ESC  TO RESUME', '#3ff0ff', 2).key, W / 2, CARD_Y + CARD_H - 34).setAlpha(ease * blink);
     for (let i = slot; i < this.images.length; i += 1) this.images[i]!.setVisible(false);
   }
 
