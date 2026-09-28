@@ -1,5 +1,15 @@
 # Test evidence
 
+## 2026-09-28 — round 12: controller support
+
+- `npx vitest run` — PASS: 53 files, 634 tests (new `gamepad.test.ts`, 6 tests:
+  deadzone, d-pad, aim memory, trigger and full-stick fire, press edges,
+  missing pad; failed first on the missing module).
+- Real-browser check with a stubbed `navigator.getGamepads`: left stick moved
+  the janitor 105 px, A dashed exactly 126 px, Start paused, B resumed, no errors.
+  (No physical controller was available to test.)
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.8 min).
+
 ## 2026-09-28 — round 11: playtest tuning, readability, combo, elites, events, score
 
 - `npx vitest run` — PASS: 52 files, 628 tests. New: `difficulty-tuning` (4),

@@ -16,6 +16,7 @@ import { PauseCard } from '../ui/PauseCard';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
+import { GamepadReader, firstGamepad, type PadFrame } from '../input/gamepad';
 import { PlaytestRecorder } from '../playtest/recorder';
 import { PlaytestLog } from '../playtest/log';
 
@@ -113,6 +114,11 @@ class MvpRunInputAdapter {
   private pendingSlot = 0;
   private pendingCycle = 0;
   private pendingDash = false;
+  /** The controller's reading for this frame, set by the scene before ticking. */
+  private pad: PadFrame | null = null;
+  private padEdgesUsed = false;
+  /** Whichever the player touched last aims: the mouse or the right stick. */
+  private aimSource: 'mouse' | 'pad' = 'mouse';
   /** Returns a weapon slot when a click lands on the HUD hotbar, else null. */
   public hudSlotAt: ((x: number, y: number) => number | null) | null = null;
   /** The Bench Warrant card, when a fusion preview is open. */
@@ -149,6 +155,17 @@ class MvpRunInputAdapter {
     }
     this.pointerHeld = true;
   };
+
+  private readonly handlePointerMove = (): void => {
+    this.aimSource = 'mouse';
+  };
+
+  /** Called once per rendered frame with the controller's state. */
+  public setPad(frame: PadFrame): void {
+    this.pad = frame;
+    this.padEdgesUsed = false;
+    if (frame.aiming) this.aimSource = 'pad';
+  }
 
   private readonly handleWheel = (_pointer: unknown, _objects: unknown, _dx: number, dy: number): void => {
     if (dy !== 0) this.pendingCycle = dy > 0 ? 1 : -1;
@@ -242,6 +259,7 @@ class MvpRunInputAdapter {
     };
 
     scene.input.on('pointerdown', this.handlePointerDown);
+    scene.input.on('pointermove', this.handlePointerMove);
     scene.input.on('wheel', this.handleWheel);
     scene.input.on('pointerup', this.handlePointerUp);
     scene.input.on('pointerupoutside', this.handlePointerUp);
@@ -254,18 +272,25 @@ class MvpRunInputAdapter {
   public readFrame(): MvpInputFrame {
     const pointer = this.scene.input.activePointer;
     const worldPosition = pointerToWorld(this.scene, pointer);
+    const pad = this.pad;
+    // Pad presses are one-shot: they count on the first tick of the frame only.
+    const edges = pad !== null && !this.padEdgesUsed;
+    this.padEdgesUsed = true;
+    const keyX = Number(this.keys.right.isDown) - Number(this.keys.left.isDown);
+    const keyY = Number(this.keys.down.isDown) - Number(this.keys.up.isDown);
+    const padAim = this.aimSource === 'pad' ? pad?.aim ?? null : null;
     const frame: MvpInputFrame = {
-      moveX: Number(this.keys.right.isDown) - Number(this.keys.left.isDown),
-      moveY: Number(this.keys.down.isDown) - Number(this.keys.up.isDown),
-      aimX: worldPosition.x,
-      aimY: worldPosition.y,
-      fire: this.pointerHeld,
-      interact: this.keys.interact.isDown || this.pendingInteract,
-      steal: this.keys.steal.isDown || this.pendingSteal,
-      recall: this.keys.recall.isDown || this.pendingRecall,
+      moveX: keyX !== 0 || keyY !== 0 ? keyX : pad?.moveX ?? 0,
+      moveY: keyX !== 0 || keyY !== 0 ? keyY : pad?.moveY ?? 0,
+      aimX: padAim?.x ?? worldPosition.x,
+      aimY: padAim?.y ?? worldPosition.y,
+      fire: this.pointerHeld || pad?.fire === true,
+      interact: this.keys.interact.isDown || this.pendingInteract || (edges && pad.interact),
+      steal: this.keys.steal.isDown || this.pendingSteal || (edges && pad.steal),
+      recall: this.keys.recall.isDown || this.pendingRecall || (edges && pad.recall),
       selectSlot: this.pendingSlot,
-      cycleWeapon: this.pendingCycle,
-      dash: this.pendingDash,
+      cycleWeapon: this.pendingCycle || (edges ? pad.cycle : 0),
+      dash: this.pendingDash || (edges && pad.dash),
     };
     this.pendingDash = false;
     this.pendingSlot = 0;
@@ -295,6 +320,7 @@ class MvpRunInputAdapter {
 
   public destroy(): void {
     this.scene.input.off('pointerdown', this.handlePointerDown);
+    this.scene.input.off('pointermove', this.handlePointerMove);
     this.scene.input.off('wheel', this.handleWheel);
     this.scene.input.off('pointerup', this.handlePointerUp);
     this.scene.input.off('pointerupoutside', this.handlePointerUp);
@@ -316,6 +342,7 @@ export class MvpRunScene extends Phaser.Scene {
   private accumulator = 0;
   private hitStopMs = 0;
   private lastHeartbeat = -Infinity;
+  private readonly gamepad = new GamepadReader();
   /** Local, opt-in playtest log (off until switched on from the title). */
   private readonly playtestLog = new PlaytestLog(playtestStorage());
   private playtest = new PlaytestRecorder();
@@ -435,7 +462,30 @@ export class MvpRunScene extends Phaser.Scene {
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroyRun, this);
   }
 
+  /**
+   * Reads the controller once per frame: feeds the input adapter, and drives
+   * the cards (pause, bench, end of shift) that hold the sim clock.
+   */
+  private pollGamepad(): void {
+    if (!this.inputAdapter) return;
+    const pad = this.gamepad.read(firstGamepad(), this.run.room.combat.player);
+    this.inputAdapter.setPad(pad);
+    if (!pad.active || settingsDialogOpen()) return;
+    if (this.benchCard?.open) {
+      if (pad.confirm) this.confirmFusion();
+      else if (pad.cancel) this.cancelFusion();
+      return;
+    }
+    if (this.shiftCard?.open) {
+      if (pad.confirm) this.restartRun();
+      else if (pad.cancel) this.returnToTitle();
+      return;
+    }
+    if (pad.pause || (this.run.paused && pad.cancel)) this.setPaused(!this.run.paused);
+  }
+
   public update(_time: number, elapsedMs: number): void {
+    this.pollGamepad();
     if (!this.inputAdapter || this.run.paused || this.run.status !== 'playing') {
       this.accumulator = 0;
       this.syncCheckpoint();
@@ -611,7 +661,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.benchCard?.sync(this.run);
     this.shiftCard?.sync(this.run);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
-    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null);
+    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
