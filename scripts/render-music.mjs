@@ -4,13 +4,13 @@
  * the dev server's modules) to WAV, and reports loudness and peak so a track
  * that clips or goes silent is caught. Development-only.
  *
- *   node scripts/render-music.mjs <baseUrl> <outDir>
+ *   node scripts/render-music.mjs <baseUrl> <outDir> [track...]
  */
 import { chromium } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const [baseUrl = 'http://127.0.0.1:4180', outDir = 'artifacts/neon-overhaul/music'] = process.argv.slice(2);
+const [baseUrl = 'http://127.0.0.1:4180', outDir = 'artifacts/neon-overhaul/music', ...only] = process.argv.slice(2);
 mkdirSync(outDir, { recursive: true });
 const browser = await chromium.launch();
 const page = await browser.newPage();
@@ -24,8 +24,12 @@ const renders = [
   ['boss', 1, 1, false],
   ['boss', 1.12, 1, false],
   ['blackout', 1, 1, true],
+  ['upstairs', 1, 0.3, false],
+  ['upstairs', 1, 1, false],
+  ['manager', 1, 0.4, false],
+  ['manager', 1.12, 1, false],
 ];
-for (const [track, tempoScale, intensity, tension] of renders) {
+for (const [track, tempoScale, intensity, tension] of renders.filter(([track]) => only.length === 0 || only.includes(track))) {
   const result = await page.evaluate(async ([track, tempoScale, intensity, tension]) => {
     const { MusicPlayer, TRACKS } = await import('/src/game/audio/music.ts');
     const t = TRACKS[track];

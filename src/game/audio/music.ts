@@ -142,6 +142,16 @@ const BOSS_ROOTS = [26, 26, 27, 27, 26, 26, 34, 33, 26, 26, 27, 27, 31, 31, 33, 
 const Em = [52, 55, 59], Cm7 = [48, 52, 55, 59], Ams = [45, 52, 57], B7 = [47, 51, 54, 57];
 const DARK_CHANGES = [Em, Em, Em, Em, Cm7, Cm7, Cm7, Cm7, Ams, Ams, Ams, Ams, B7, B7, B7, B7];
 
+// Escalator Rush (upstairs fights): F sharp minor, i–VI–III–VII then i–VI–iv–V.
+const FSm = [54, 57, 61], UD = [54, 57, 62], UA = [57, 61, 64], UE = [56, 59, 64], UBm = [54, 59, 62], UCs = [56, 61, 65];
+const UP_CHANGES = [FSm, FSm, UD, UD, UA, UA, UE, UE, FSm, FSm, UD, UD, UBm, UBm, UCs, UCs];
+const UP_ROOTS = [30, 30, 26, 26, 33, 33, 28, 28, 30, 30, 26, 26, 35, 35, 37, 37];
+
+// Performance Review (the Mall Manager): C minor, with a Neapolitan D flat.
+const MCm = [60, 63, 67], MAb = [56, 60, 63], MFm = [56, 60, 65], MG = [55, 59, 62], MBb = [58, 62, 65], MDb = [56, 61, 65];
+const MANAGER_CHANGES = [MCm, MCm, MAb, MAb, MFm, MFm, MG, MG, MCm, MCm, MAb, MBb, MFm, MDb, MG, MG];
+const MANAGER_ROOTS = [36, 36, 32, 32, 29, 29, 31, 31, 36, 36, 32, 34, 29, 37, 31, 31];
+
 const ALL16 = range(0, 16);
 
 export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
@@ -280,6 +290,95 @@ export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
       { kind: 'hat', minIntensity: 0.4, notes: drums('..o...o...o...o.', ALL16, 0.3) },
       { kind: 'pluck', minIntensity: 0.55, echo: 0.6, notes: melody(ALL16.flatMap((bar) => [[bar, 0, 64, 2], [bar, 6, 67, 2], [bar, 10, 71, 2]] as Array<[number, number, number, number]>), 0.3) },
       { kind: 'snare', minIntensity: 0.7, reverb: 0.8, notes: drums('........x.......', ALL16, 0.5) },
+    ],
+  },
+
+  /* "Escalator Rush" (Floor 2 fights) ------------------------------------- */
+  upstairs: {
+    bpm: 128,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x...x...x...x...', ALL16) },
+      { kind: 'drivebass', duck: true, notes: bassLine(UP_ROOTS, [0, 0, 0, 12, 0, 0, 0, 12, 0, 0, 0, 12, 0, 0, 7, 12], 1, 0.7) },
+      { kind: 'snare', minIntensity: 0.2, reverb: 0.45, notes: drums('....x.......x...', ALL16, 0.85) },
+      { kind: 'hat', minIntensity: 0.3, notes: drums('..x...x...x...x.', ALL16, 0.75) },
+      // Cinema-organ stabs on the offbeats.
+      { kind: 'epiano', minIntensity: 0.35, reverb: 0.35, duck: true, notes: chordsPerBar(UP_CHANGES, 16, 0.45, [2, 6, 10, 14]) },
+      { kind: 'bell', minIntensity: 0.45, echo: 0.45, reverb: 0.3, notes: arpeggio(UP_CHANGES, 0.3, range(8, 16)) },
+      {
+        kind: 'supersaw',
+        minIntensity: 0.6,
+        echo: 0.35,
+        reverb: 0.3,
+        notes: melody([
+          [8, 0, 73, 4], [8, 4, 76, 2], [8, 6, 78, 2], [8, 8, 76, 4], [8, 12, 73, 4],
+          [9, 0, 74, 8], [9, 8, 73, 4], [9, 12, 69, 4],
+          [10, 0, 76, 4], [10, 4, 73, 4], [10, 8, 69, 4], [10, 12, 73, 4],
+          [11, 0, 71, 12], [11, 12, 68, 4],
+          [12, 0, 69, 4], [12, 4, 73, 4], [12, 8, 78, 6], [12, 14, 76, 2],
+          [13, 0, 74, 8], [13, 8, 71, 8],
+          [14, 0, 73, 4], [14, 4, 77, 4], [14, 8, 80, 6], [14, 14, 77, 2],
+          [15, 0, 73, 16],
+        ], 0.6),
+      },
+      { kind: 'hat', minIntensity: 0.85, notes: drums('oooooooooooooooo', ALL16, 0.3) },
+      { kind: 'crash', minIntensity: 0.3, reverb: 0.4, notes: drums('x...............', [0, 8]) },
+      { kind: 'tom', minIntensity: 0.5, reverb: 0.3, notes: [10, 12, 13, 14, 15].map((s, i) => ({ step: 15 * 16 + s, midi: 52 - i * 4, vel: 0.9 })) },
+    ],
+  },
+
+  /* "Performance Review" (the Mall Manager) ------------------------------- */
+  manager: {
+    bpm: 146,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x...x..xx...x...', ALL16) },
+      { kind: 'drivebass', duck: true, notes: bassLine(MANAGER_ROOTS, [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 1, 12], 1, 0.75) },
+      { kind: 'snare', reverb: 0.5, notes: drums('....x.......x...', ALL16, 0.95) },
+      // A march roll under the second phase.
+      { kind: 'snare', minIntensity: 0.6, notes: drums('o.oo....o.oo....', ALL16, 0.4) },
+      { kind: 'choir', minIntensity: 0.3, reverb: 0.6, notes: chordsPerBar(MANAGER_CHANGES, 16, 0.45) },
+      {
+        // Brass-like fanfare: the Manager's entrance, every shift.
+        kind: 'supersaw',
+        echo: 0.2,
+        reverb: 0.35,
+        notes: melody([
+          [0, 0, 67, 2], [0, 2, 67, 1], [0, 3, 67, 1], [0, 4, 72, 4], [0, 8, 75, 4], [0, 12, 74, 4],
+          [1, 0, 72, 16],
+          [2, 0, 68, 2], [2, 2, 68, 1], [2, 3, 68, 1], [2, 4, 72, 4], [2, 8, 75, 4], [2, 12, 77, 4],
+          [3, 0, 75, 16],
+          [4, 0, 65, 2], [4, 2, 65, 1], [4, 3, 65, 1], [4, 4, 68, 4], [4, 8, 72, 4], [4, 12, 77, 4],
+          [5, 0, 75, 8], [5, 8, 72, 8],
+          [6, 0, 74, 4], [6, 4, 71, 4], [6, 8, 67, 4], [6, 12, 71, 4],
+          [7, 0, 74, 16],
+        ], 0.55),
+      },
+      {
+        kind: 'lead',
+        minIntensity: 0.7,
+        echo: 0.3,
+        notes: melody([
+          [8, 0, 79, 4], [8, 4, 84, 4], [8, 8, 82, 4], [8, 12, 79, 4],
+          [9, 0, 80, 8], [9, 8, 79, 8],
+          [10, 0, 80, 4], [10, 4, 77, 4], [10, 8, 75, 4], [10, 12, 72, 4],
+          [11, 0, 74, 8], [11, 8, 77, 8],
+          [12, 0, 77, 4], [12, 4, 80, 4], [12, 8, 84, 8],
+          [13, 0, 85, 8], [13, 8, 80, 8],
+          [14, 0, 79, 4], [14, 4, 83, 4], [14, 8, 86, 8],
+          [15, 0, 84, 16],
+        ], 0.5),
+      },
+      // The register: ding-ding at the end of every phrase.
+      { kind: 'bell', minIntensity: 0.5, reverb: 0.5, echo: 0.3, notes: [3, 7, 11, 15].flatMap((bar) => [
+        { step: bar * 16 + 12, midi: 84, len: 2, vel: 0.45 },
+        { step: bar * 16 + 14, midi: 91, len: 2, vel: 0.5 },
+      ]) },
+      { kind: 'hat', minIntensity: 0.6, notes: drums('xoxoxoxoxoxoxoxo', ALL16, 0.4) },
+      { kind: 'crash', minIntensity: 0.3, reverb: 0.5, notes: drums('x...............', [0, 8]) },
+      { kind: 'tom', minIntensity: 0.6, reverb: 0.3, notes: [7, 15].flatMap((bar) => [8, 10, 12, 14].map((s, i) => ({ step: bar * 16 + s, midi: 50 - i * 4, vel: 0.9 }))) },
     ],
   },
 

@@ -8,12 +8,13 @@
  * Lights Out, the Loss Prevention Manager has his own theme that speeds up
  * and thickens with his phase, an unwatched mannequin raises a tension
  * layer, and the end of a shift goes quiet so the sting and end card own it.
+ * Upstairs, fights play Escalator Rush and the Mall Manager has his own theme.
  */
 import { roomEventFor } from '../../sim/run/roomEvents';
 import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
 
-export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout';
+export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout' | 'upstairs' | 'manager';
 
 export type MusicCue = {
   readonly track: MusicTrackId | 'silent';
@@ -35,11 +36,12 @@ export function musicCue(state: MvpRunState): MusicCue {
   const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
   const tension = living.some((enemy) => enemy.kind === 'mannequin' && enemy.phase === 'pursue');
   const danger = state.room.combat.player.health <= LAST_HEART ? 0.3 : 0;
+  const upstairs = state.wing.floor === 2;
   const boss = living.find((enemy) => isBossKind(enemy.kind));
   if (boss) {
     const phase = boss.bossPhase ?? 1;
     return {
-      track: 'boss',
+      track: boss.kind === 'manager' ? 'manager' : 'boss',
       tempoScale: phase === 3 ? 1.12 : phase === 2 ? 1.05 : 1,
       volume,
       intensity: Math.min(1, (phase === 3 ? 1 : phase === 2 ? 0.7 : 0.4) + danger),
@@ -48,7 +50,7 @@ export function musicCue(state: MvpRunState): MusicCue {
   }
   if (living.length > 0) {
     const intensity = Math.min(1, 0.25 + living.length * 0.18 + danger);
-    const track = roomEventFor(state, state.roomIndex) === 'blackout' ? 'blackout' : 'combat';
+    const track = roomEventFor(state, state.roomIndex) === 'blackout' ? 'blackout' : upstairs ? 'upstairs' : 'combat';
     return { track, tempoScale: 1, volume, intensity, tension };
   }
   return { track: 'muzak', tempoScale: 1, volume, intensity: 0.5, tension: false };
