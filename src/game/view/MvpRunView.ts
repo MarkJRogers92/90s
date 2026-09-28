@@ -7,10 +7,10 @@
  * state and never mutates it; damage, movement, economy, and transitions
  * stay in `src/sim`.
  */
+import { runMaxHealth } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH, isBossKind } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
-import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
@@ -1509,7 +1509,7 @@ export class MvpRunView {
       if (snack) {
         // A pretzel sits still and glows warm; it pulses when the janitor is hurt.
         const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 18 : 0;
-        const hurt = state.room.combat.player.health < PLAYER_MAX_HEALTH;
+        const hurt = state.room.combat.player.health < runMaxHealth(state);
         const pulse = hurt ? 1 + 0.12 * Math.sin(state.tick / 6) : 1;
         sprite.setPosition(Math.round(token.x), Math.round(token.y - 8 - hop)).setScale(2 * pulse);
         this.contactShadow(`token:${token.id}`, token.x, token.y, 0.45);

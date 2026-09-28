@@ -15,6 +15,8 @@ import { PlaytestLog } from './game/playtest/log';
 import { PlaytestPanel } from './game/ui/PlaytestPanel';
 import { OPEN_SETTINGS_EVENT, SettingsPanel } from './game/ui/SettingsPanel';
 import { browserBestRuns } from './game/score/score';
+import { BreakRoomPanel } from './game/ui/BreakRoomPanel';
+import { browserCareer } from './game/career/career';
 
 export const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
 
@@ -61,8 +63,11 @@ const mvpHud = requireElement<HTMLElement>('#mvp-run-hud');
 const startScreen = requireElement<HTMLElement>('#start-screen');
 const bestRunLine = requireElement<HTMLElement>('#best-run');
 
-/** The title's best-run line, refreshed whenever the title is shown. */
+const breakRoom = new BreakRoomPanel(browserCareer(), (selector) => requireElement(selector));
+
+/** The title's best-run line and Break Room balance, refreshed whenever the title is shown. */
 function showBestRun(): void {
+  breakRoom.refreshButton();
   const best = browserBestRuns().best();
   bestRunLine.hidden = best === null;
   if (best) {

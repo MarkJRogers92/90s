@@ -13,6 +13,8 @@ import { syncRunCarrier } from './carrier';
 import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
 import { createRunStats, type RunStats } from './combo';
+import { LOCKER_INSTANCE_ID, LOCKER_SOURCE_LOCATION, runMaxHealth, sanitizePerks, type ShiftPerks } from './perks';
+import { refreshRunLoadout } from './loadout';
 
 /** The Associate-Issue Mop every shift starts with, owned and selected. */
 export const ASSOCIATE_MOP_DEFINITION_ID = 'janitor_mop';
@@ -25,13 +27,14 @@ export type FloorCarry = {
   readonly stats: RunStats;
 };
 
-export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; readonly carry?: FloorCarry } = {}): MvpRunState {
+export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
   // The wing RNG requires an integer, so a non-integer finite seed is
   // truncated and anything else becomes 0, exactly as the title screen already
   // sanitizes the URL seed.
   const runSeed = Number.isFinite(seed) ? Math.trunc(seed) : 0;
   const floor = options.floor ?? 1;
   const wing = generateWing(runSeed, floor);
+  const perks = sanitizePerks(options.perks);
 
   const mop: InventoryLeaf = {
     kind: 'leaf',
@@ -42,18 +45,28 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; re
     sourceStockId: 'associate-issue-mop',
     acquisitionTick: 0,
   };
+  // The locker item comes out of the janitor's own locker, already in hand.
+  const locker: InventoryLeaf | null = perks.lockerItemId === null ? null : {
+    kind: 'leaf',
+    instanceId: LOCKER_INSTANCE_ID,
+    itemDefinitionId: perks.lockerItemId,
+    acquisitionKind: 'purchased',
+    sourceLocationId: LOCKER_SOURCE_LOCATION,
+    sourceStockId: 'employee-locker',
+    acquisitionTick: 0,
+  };
+  const cash = options.carry?.cash ?? wing.startingCash + perks.bonusCash;
   const inventory: FusionInventoryState = options.carry
     ? { ...options.carry.inventory, cash: options.carry.cash, revision: options.carry.inventory.revision + 1 }
     : {
-    inventory: [mop],
-    cash: wing.startingCash,
+    inventory: locker ? [mop, locker] : [mop],
+    cash,
     revision: 0,
-    selectedPrimaryInstanceId: ASSOCIATE_MOP_INSTANCE_ID,
+    selectedPrimaryInstanceId: locker ? LOCKER_INSTANCE_ID : ASSOCIATE_MOP_INSTANCE_ID,
     serviceAvailable: true,
     nextCompositeId: 1,
     committedTransactions: [],
   };
-  const cash = options.carry?.cash ?? wing.startingCash;
 
   const combat = buildRoomCombatState(wing, 0, 'west', inventory, runSeed);
 
@@ -93,13 +106,17 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; re
     heldActions: { interact: false, steal: false, recall: false },
     recentChange: floor === 2
       ? `Up the escalator: the ${startRoom.name}, with $${cash}.`
-      : `Night shift begins in the ${startRoom.name} with $${wing.startingCash}.`,
+      : `Night shift begins in the ${startRoom.name} with $${cash}.`,
     behaviorTrace: [],
     carrier: null,
     preview: null,
     stats: options.carry ? { ...options.carry.stats, combo: 0, lastHitTick: -Infinity } : createRunStats(),
+    perks,
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
+  // A fresh floor always opens at full health, under this run's own cap.
+  state.room.combat.player.health = runMaxHealth(state);
+  if (locker) refreshRunLoadout(state);
   // The shift starts with no emitter carrier, so this is a no-op today; going
   // through the same derivation keeps the one rule for carrier presence.
   syncRunCarrier(state);

@@ -2,6 +2,15 @@
 
 ## Claude neon overhaul — start here
 
+Latest (round 22): the Break Room. Career rules and storage are in
+`src/game/career/career.ts`, the run-side perks in `src/sim/run/perks.ts`, the
+panel in `src/game/ui/BreakRoomPanel.ts`, and the art in
+`public/assets/neon/ui/breakroom/`. To try it with money, set
+`localStorage['dead-mall:career:v1'] = '{"version":1,"stubs":200}'` and reload.
+Tuning knobs: stub pay in `stubsForShift`, prices in `PERKS` / `LOCKER_ITEMS`.
+Possible next steps: more perk lines (a dash upgrade, a
+starting token magnet), Floor 3, and seasonal wall resets.
+
 Branch `claude/neon-overhaul` in `.worktrees/neon-overhaul`. Read
 [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first.
 Round 4 added `src/game/view/combatBeats.ts` (pure rules) and reworked

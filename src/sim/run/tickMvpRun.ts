@@ -24,6 +24,8 @@ import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
 import { stepCombo } from './combo';
 import { freezeDeep } from '../items/types';
+import { LOCKER_SOURCE_LOCATION, roomClearHeal, runMaxHealth } from './perks';
+import { ASSOCIATE_MOP_INSTANCE_ID } from './createMvpRun';
 import type { Rect, Vec2 } from '../model';
 import { crossedStoreExit } from '../shop/tickWingRun';
 import { tickRun } from '../tickRun';
@@ -39,8 +41,6 @@ import {
   updateRunCarrier,
 } from './carrier';
 import {
-  PLAYER_MAX_HEALTH,
-  ROOM_CLEAR_HEAL,
   buildRoomCombatState,
   clearRoomEnemies,
   hasLivingEnemies,
@@ -320,11 +320,12 @@ function checkDoorwayCrossing(state: MvpRunState, input: MvpInputFrame): void {
 function healClearedRoom(state: MvpRunState): void {
   const player = state.room.combat.player;
   const before = player.health;
-  player.health = Math.min(PLAYER_MAX_HEALTH, player.health + ROOM_CLEAR_HEAL);
+  const cap = runMaxHealth(state);
+  player.health = Math.min(cap, player.health + roomClearHeal(state));
   const gained = player.health - before;
   const message =
     gained > 0
-      ? `Cleared the ${currentRoom(state).name}; patched up +${gained} health (${player.health}/${PLAYER_MAX_HEALTH}).`
+      ? `Cleared the ${currentRoom(state).name}; patched up +${gained} health (${player.health}/${cap}).`
       : `Cleared the ${currentRoom(state).name}; already at full health.`;
   publishRunFeedback(state, message);
 }
@@ -388,7 +389,8 @@ function publishSummary(state: MvpRunState, status: 'won' | 'dead'): void {
     roomIndex: state.roomIndex,
     roomsCleared: state.clearedRooms.length,
     purchasedInstanceIds: leaves
-      .filter((leaf) => leaf.acquisitionKind === 'purchased')
+      // The issued mop and the locker item were the janitor's own, not bought on shift.
+      .filter((leaf) => leaf.acquisitionKind === 'purchased' && leaf.sourceLocationId !== LOCKER_SOURCE_LOCATION && leaf.instanceId !== ASSOCIATE_MOP_INSTANCE_ID)
       .map((leaf) => leaf.instanceId),
     stolenInstanceIds: leaves
       .filter((leaf) => leaf.acquisitionKind === 'stolen')

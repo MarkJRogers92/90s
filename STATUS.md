@@ -7,6 +7,15 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 22 (2026-09-28): the Break Room — meta-progression between shifts. Every
+shift pays Pay Stubs (more for clearing Floor 1 and clocking out); the title's
+Break Room spends them on perks (Seniority +$5, Dental Plan +1 heart, Coffee
+Break +half a heart per cleared room) and locker weapons that start in hand.
+Cleared floors are pinned up as polaroids; the best is Employee of the Month.
+Perks are clamped sim data (`src/sim/run/perks.ts`) and checkpointed; the
+career lives in this browser (`src/game/career/career.ts`). 765 unit and 66
+browser tests pass.
+
 Round 17 (2026-09-28): polish pass — title key art and layout, a redesigned
 Mall Manager, sounds for the upstairs enemies, and five HUD overlap/clipping
 fixes found by auditing every screen. 681 unit and 59 browser tests pass.

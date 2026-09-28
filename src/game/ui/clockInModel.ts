@@ -7,6 +7,9 @@
  * keeps going underneath, and the first key both clears it and reaches the
  * game. It plays for a fresh shift only.
  */
+import { itemDefinitionName } from '../../sim/run/economy';
+import type { ShiftPerks } from '../../sim/run/perks';
+
 export const CLOCK_IN_MS = 3200;
 export const PUNCH_AT_MS = 1100;
 /** The time clock's card slot on the 600 px stage: the card shows only below it. */
@@ -58,4 +61,15 @@ export function clockInTime(seed: number): string {
 
 export function shouldClockIn(start: { readonly reason: ClockInReason; readonly fixture: string | null; readonly restored: boolean }): boolean {
   return start.reason !== 'retry' && start.fixture === null && !start.restored;
+}
+
+/** The Break Room benefits this shift clocked in with, for the line under the sign. */
+export function benefitsLine(perks: ShiftPerks): string | null {
+  const parts: string[] = [];
+  if (perks.bonusCash > 0) parts.push(`+$${perks.bonusCash} FLOAT`);
+  const hearts = perks.bonusHealth / 2;
+  if (hearts > 0) parts.push(`+${hearts} HEART${hearts === 1 ? '' : 'S'}`);
+  if (perks.clearHealBonus > 0) parts.push('COFFEE BREAK');
+  if (perks.lockerItemId) parts.push(itemDefinitionName(perks.lockerItemId).toUpperCase());
+  return parts.length === 0 ? null : `BENEFITS: ${parts.join(' - ')}`;
 }

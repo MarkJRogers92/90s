@@ -14,6 +14,7 @@ import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
 import type { MallTokenPickup } from './tokens';
 import type { RunStats } from './combo';
+import type { ShiftPerks } from './perks';
 
 export type MvpRunStatus = 'playing' | 'won' | 'dead';
 
@@ -126,4 +127,6 @@ export type MvpRunState = {
   preview: EmitterMountProposal | null;
   /** Cleanup Combo and kill count for this session (not checkpointed). */
   stats: RunStats;
+  /** What the janitor's career brought to this shift (checkpointed; rides the escalator). */
+  readonly perks: ShiftPerks;
 };

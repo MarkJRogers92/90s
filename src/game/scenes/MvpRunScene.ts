@@ -8,6 +8,7 @@
  * mirrors room-boundary checkpoints through the provided store. Damage,
  * movement, economy, and state transitions stay in `src/sim`.
  */
+import { browserCareer, perksFor } from '../career/career';
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
@@ -424,7 +425,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.run =
       launch?.checkpoint !== null && launch?.checkpoint !== undefined
         ? restoreMvpRun(launch.checkpoint)
-        : createMvpRun(this.seed);
+        : createMvpRun(this.seed, { perks: perksFor(browserCareer().load()) });
     this.run = this.applyDevFixture(this.run);
     this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
@@ -647,12 +648,14 @@ export class MvpRunScene extends Phaser.Scene {
     this.lastStatus = 'playing';
     const won = fromEndCard && this.run.status === 'won';
     this.seed = nextShiftSeed({ seed: this.seed, pinned: this.seedPinned }, won);
-    this.startClockIn(won ? 'new-shift' : 'retry', false);
     this.recordQuit();
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
     const cleared = this.store.clear();
-    this.run = createMvpRun(this.seed);
+    // Re-read the career: the Break Room is only open between shifts, but a
+    // retry should still start with everything the janitor owns.
+    this.run = createMvpRun(this.seed, { perks: perksFor(browserCareer().load()) });
+    this.startClockIn(won ? 'new-shift' : 'retry', false);
     // A fresh run has no previous tick to compare against, so the next sync
     // would read every field as a change and fire a burst of cues.
     this.audio?.resetBaseline();
@@ -714,6 +717,8 @@ export class MvpRunScene extends Phaser.Scene {
   };
 
   private readonly returnToTitle = (): void => {
+    // Clocking out after floor 1 (skipping the escalator) still ends the night's pay.
+    this.shiftCard?.settle();
     this.recordQuit();
     window.dispatchEvent(new CustomEvent(RETURN_TO_TITLE_EVENT));
   };
@@ -761,7 +766,7 @@ export class MvpRunScene extends Phaser.Scene {
   private startClockIn(reason: ClockInReason, restored: boolean): void {
     this.stopClockIn();
     if (!shouldClockIn({ reason, fixture: this.devFixture(), restored })) return;
-    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'));
+    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'), this.run.perks);
   }
 
   private stopClockIn(): void {

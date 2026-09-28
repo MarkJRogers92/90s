@@ -5,6 +5,7 @@
  * so every heart, checkbox and minimap cell is traceable to a simulation field
  * and the whole thing is unit-testable.
  */
+import { runMaxHealth } from '../../sim/run/perks';
 import { bossConfigFor, bossPhaseForHealth, isBossKind } from '../../sim/combat/boss';
 import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import type { MvpRunState } from '../../sim/run/types';
@@ -182,7 +183,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     equipped: equippedWeapon ? { name: equippedWeapon.name, blurb: itemBlurb(equippedWeapon.itemDefinitionId) } : null,
     prompt: promptFor(state),
     combo: comboFor(state),
-    hearts: heartsFor(state.room.combat.player.health),
+    hearts: heartsFor(state.room.combat.player.health, runMaxHealth(state)),
     cash: state.cash,
     heat: state.heat,
     objectives,

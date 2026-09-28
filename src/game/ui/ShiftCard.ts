@@ -12,13 +12,14 @@ import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildShiftCardModel, shiftCardDelayMs, type ShiftCardModel } from './shiftCardModel';
 import { browserBestRuns } from '../score/score';
+import { browserCareer, localDay, recordShift, type ShiftRecord } from '../career/career';
 import { flashAllowed, gameSettings } from '../settings/settings';
 
 const DEPTH = 20_600;
 const W = 960;
 const H = 600;
 const CARD_W = 540;
-const CARD_H = 470;
+const CARD_H = 540;
 const CARD_X = (W - CARD_W) / 2;
 const CARD_Y = (H - CARD_H) / 2;
 const ROW_MS = 120;
@@ -45,6 +46,11 @@ export class ShiftCard {
   private newBest = false;
   private submitted = false;
   private readonly bests = browserBestRuns();
+  private readonly career = browserCareer();
+  /** What this shift paid into the janitor's career, once it is settled. */
+  private record: ShiftRecord | null = null;
+  private lastState: MvpRunState | null = null;
+  private lastMallSeed = 0;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -82,6 +88,8 @@ export class ShiftCard {
       this.model = null;
       this.submitted = false;
       this.newBest = false;
+      this.record = null;
+      this.lastState = null;
       this.buttons = [];
       this.root.setVisible(false);
       return;
@@ -89,11 +97,10 @@ export class ShiftCard {
     const now = this.scene.time.now;
     if (this.endedAt === null || this.model?.won !== model.won) this.endedAt = now;
     this.model = model;
+    this.lastState = state;
+    this.lastMallSeed = mallSeed;
     // A floor-1 clear is not the end of the night: the best is judged at the finish.
-    if (!this.submitted && !model.ascend) {
-      this.submitted = true;
-      this.newBest = this.bests.submit({ score: model.score, won: model.won, seconds: model.seconds });
-    }
+    if (!model.ascend) this.settle();
     const age = now - this.endedAt - shiftCardDelayMs(model.won, this.afterCinematic);
     if (age < 0) {
       this.root.setVisible(false);
@@ -102,6 +109,30 @@ export class ShiftCard {
     }
     this.root.setVisible(true);
     this.draw(model, age);
+  }
+
+  /**
+   * Closes the books on this shift once: the local best and the career's Pay
+   * Stubs and polaroid. Called when the card shows a final result, and by the
+   * scene when a floor-1 clear clocks out instead of taking the escalator.
+   */
+  public settle(): void {
+    const model = this.model;
+    const state = this.lastState;
+    if (this.submitted || !model || !state) return;
+    this.submitted = true;
+    this.newBest = this.bests.submit({ score: model.score, won: model.won && !model.ascend, seconds: model.seconds });
+    const upstairs = state.wing.floor === 2;
+    this.record = recordShift(this.career.load(), {
+      score: model.score,
+      won: model.won && upstairs,
+      floorCleared: upstairs || model.ascend,
+      kills: state.stats.kills,
+      bestCombo: state.stats.bestCombo,
+      seconds: model.seconds,
+      mall: this.lastMallSeed,
+    }, localDay());
+    this.career.save(this.record.career);
   }
 
   private image(index: number, key: string, x: number, y: number): Phaser.GameObjects.Image {
@@ -164,7 +195,31 @@ export class ShiftCard {
       this.image(slot++, scoreLabel.key, W / 2, scoreY).setScale(pop);
       if (this.newBest) {
         const best = ensurePixelLabel(this.scene, 'NEW BEST!', '#ff3fc8', 2);
-        this.image(slot++, best.key, W / 2 + 190, scoreY - 4).setRotation(-0.12).setScale(Math.floor(age / 250) % 2 === 0 ? 1.1 : 1);
+        this.image(slot++, best.key, W / 2 + 176, scoreY - 4).setScale(Math.floor(age / 250) % 2 === 0 ? 1.1 : 1);
+      }
+    }
+    // Then the pay slip: Pay Stubs banked for the Break Room.
+    const payAge = scoreAge - 220;
+    if (this.record && payAge >= 0) {
+      const pop = payAge < 120 ? 1.3 - (payAge / 120) * 0.3 : 1;
+      const payY = rowTop + model.rows.length * 27 + 54;
+      const pay = ensurePixelLabel(this.scene, `+${this.record.earned} PAY STUBS`, '#6aff8a', 2);
+      this.image(slot++, pay.key, W / 2, payY).setScale(pop);
+      const note = this.record.employeeOfTheMonth
+        ? { text: 'EMPLOYEE OF THE MONTH!', color: '#ff3fc8' }
+        : this.record.polaroid
+          ? { text: 'PHOTO PINNED UP', color: '#ffd84a' }
+          : null;
+      if (note && payAge >= 260) {
+        // Straight, on a plate: pixel lettering breaks up when it is rotated.
+        const stamp = ensurePixelLabel(this.scene, note.text, note.color, 2);
+        const stampY = payY + 27;
+        const edge = Phaser.Display.Color.HexStringToColor(note.color).color;
+        const blink = this.record.employeeOfTheMonth && Math.floor(age / 300) % 2 === 0;
+        const plateW = stamp.width + 20;
+        g.fillStyle(0x05030a, 1).fillRect(W / 2 - plateW / 2, stampY - 11, plateW, 22);
+        g.lineStyle(2, edge, blink ? 1 : 0.6).strokeRect(W / 2 - plateW / 2, stampY - 11, plateW, 22);
+        this.image(slot++, stamp.key, W / 2, stampY);
       }
     }
     // Buttons appear once every row is in.
