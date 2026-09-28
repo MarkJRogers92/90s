@@ -14,6 +14,8 @@ import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide } from '../ui/EscalatorRide';
+import { KillCam } from '../ui/KillCam';
+import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
 import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
@@ -61,7 +63,7 @@ import { STAGE_HEIGHT, STAGE_TOP, STAGE_WIDTH, dressingTextureFiles } from '../p
 import { GameHud } from '../ui/GameHud';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
-import { isBossKind } from '../../sim/combat/boss';
+import { isBossKind, type BossKind } from '../../sim/combat/boss';
 import {
   centreCameraOn,
   pointerToWorld,
@@ -367,6 +369,11 @@ export class MvpRunScene extends Phaser.Scene {
   private shiftCard: ShiftCard | undefined;
   /** The ride up to Floor 2, while it plays (the run does not tick). */
   private ride: EscalatorRide | null = null;
+  /** The boss kill cam, while it plays; the end card waits for it. */
+  private killCam: KillCam | null = null;
+  /** The live boss last frame, so its fall can be framed once it is gone. */
+  private lastBoss: { kind: BossKind; x: number; y: number } | null = null;
+  private lastStatus: MvpRunState['status'] = 'playing';
   private pauseCard: PauseCard | undefined;
   private benchCard: BenchCard | undefined;
   private removeBloom: (() => void) | undefined;
@@ -516,6 +523,7 @@ export class MvpRunScene extends Phaser.Scene {
     }
     if (!this.inputAdapter || this.run.paused || this.run.status !== 'playing') {
       this.accumulator = 0;
+      if (this.killCam && this.killCam.update(elapsedMs)) this.endKillCam();
       this.syncCheckpoint();
       this.syncView();
       return;
@@ -602,6 +610,8 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** From the end card, a won shift clocks into a new mall; otherwise the same one. */
   private restartRun(fromEndCard = false): void {
+    this.endKillCam();
+    this.lastStatus = 'playing';
     const won = fromEndCard && this.run.status === 'won';
     this.seed = nextShiftSeed({ seed: this.seed, pinned: this.seedPinned }, won);
     this.recordQuit();
@@ -632,6 +642,8 @@ export class MvpRunScene extends Phaser.Scene {
    */
   private ascend(): void {
     if (!canAscend(this.run)) return;
+    this.endKillCam();
+    this.lastStatus = 'playing';
     this.run = ascendToFloorTwo(this.run);
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
@@ -709,7 +721,27 @@ export class MvpRunScene extends Phaser.Scene {
     return this.audio?.toggleMuted() ?? false;
   }
 
+  /** Frames a boss's fall: starts the kill cam on the frame the shift is won. */
+  private watchBossKill(): void {
+    if (this.run.status === 'playing') {
+      const boss = this.run.room.combat.enemies.find((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
+      this.lastBoss = boss && isBossKind(boss.kind) ? { kind: boss.kind, x: boss.x, y: boss.y } : null;
+    } else if (this.lastStatus === 'playing' && this.run.status === 'won' && this.lastBoss && !this.killCam) {
+      this.killCam = new KillCam(this, this.lastBoss.kind, this.lastBoss, () => this.audio?.play('stamp'));
+      this.runView?.setEffectsTimeWarp(slowMoMs);
+      this.gameHud?.setHidden(true);
+    }
+    this.lastStatus = this.run.status;
+  }
+
+  private endKillCam(): void {
+    this.killCam?.destroy();
+    this.killCam = null;
+    this.gameHud?.setHidden(false);
+  }
+
   private syncView(): void {
+    this.watchBossKill();
     this.runView?.sync(this.run);
     this.recordPlaytest();
     this.syncHeartbeat();
@@ -718,14 +750,15 @@ export class MvpRunScene extends Phaser.Scene {
     this.hitStopMs = Math.max(this.hitStopMs, hold);
     // Getting hurt (and the boss kill) ring the ears: the mix muffles while the frame holds.
     if (rawHold >= HIT_STOP_MS.playerHurt) this.audio?.muffle(Math.max(hold, 120));
-    centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
+    if (!this.killCam) centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);
     const pointer = this.input.activePointer;
     this.shiftCard?.hover(pointer.x, pointer.y);
     this.benchCard?.hover(pointer.x, pointer.y);
     this.benchCard?.sync(this.run);
-    this.shiftCard?.sync(this.run, this.seed);
+    // The end card waits for the kill cam to finish framing the fall.
+    if (!this.killCam) this.shiftCard?.sync(this.run, this.seed);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
     this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
@@ -893,6 +926,8 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private readonly destroyRun = (): void => {
+    this.killCam?.destroy();
+    this.killCam = null;
     this.ride?.destroy();
     this.ride = null;
     this.inputAdapter?.destroy();

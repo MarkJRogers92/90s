@@ -640,10 +640,15 @@ test('the escalator ride holds the run still until it ends or is skipped', async
   }
   expect((await runSnapshot(page)).status).toBe('won');
 
-  // FLOOR CLEARED: Enter takes the escalator.
-  await page.waitForTimeout(3000);
-  await page.keyboard.press('Enter');
-  await expect.poll(() => runSnapshot(page).then((state) => `${state.status}:${state.roomId}`)).toBe('playing:service_corridor');
+  // FLOOR CLEARED (after the kill cam): Enter takes the escalator.
+  await expect
+    .poll(async () => {
+      // Press only while still downstairs, so no extra press can skip the ride.
+      const before = await runSnapshot(page);
+      if (before.status === 'won') await page.keyboard.press('Enter');
+      return runSnapshot(page).then((state) => `${state.status}:${state.roomId}`);
+    }, { timeout: 15_000, intervals: [400] })
+    .toBe('playing:service_corridor');
   const boarded = (await runSnapshot(page)).tick;
   await page.waitForTimeout(1000);
   // Mid-ride the run is upstairs but its clock has not moved.

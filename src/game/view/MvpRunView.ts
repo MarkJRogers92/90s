@@ -96,6 +96,8 @@ export class MvpRunView {
   private deadSince: number | null = null;
   /** Real time the shift ended (won or dead), for the effects clock. */
   private endedAt: number | null = null;
+  /** Bends effect time after the shift ends (the boss kill cam's slow motion). */
+  private timeWarp: ((realMs: number) => number) | null = null;
   /** First effects tick each enemy was seen in this room, for its spawn-in. */
   private readonly enemyFirstSeen = new Map<string, number>();
   private enemyScope = '';
@@ -1034,7 +1036,13 @@ export class MvpRunView {
       return state.tick;
     }
     if (this.endedAt === null) this.endedAt = this.scene.time.now;
-    return state.tick + Math.floor((this.scene.time.now - this.endedAt) / (1000 / 60));
+    const since = this.scene.time.now - this.endedAt;
+    return state.tick + Math.floor((this.timeWarp ? this.timeWarp(since) : since) / (1000 / 60));
+  }
+
+  /** Slow motion for the effects that play out after the shift ends; null restores real time. */
+  public setEffectsTimeWarp(warp: ((realMs: number) => number) | null): void {
+    this.timeWarp = warp;
   }
 
   /**
@@ -1366,6 +1374,7 @@ export class MvpRunView {
   }
 
   public resetForRun(): void {
+    this.timeWarp = null;
     this.feedback.resetRoom('');
     this.weapon.reset();
     this.clearDashGhosts();
