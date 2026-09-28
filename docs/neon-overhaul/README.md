@@ -447,6 +447,32 @@ skips it after a 300 ms grace (so the press that chose the escalator does not
 also skip it), and Esc cannot pause underneath it. The start-of-shift
 controls card no longer repeats on Floor 2.
 
+## Round 19 — cinematic bookends
+
+Three set pieces, each timed by a pure, tested model in `src/game/ui/` and
+drawn by a small Phaser class; all presentation only.
+
+- **Clock-in cold open** (`ClockIn.ts`, `clockInModel.ts`): under a buzzing
+  fluorescent tube, Alex's time card slides into a PixelLab punch clock,
+  KA-CHUNK (stamp thud, jolt), and comes back out stamped a minute or two
+  before midnight (read off the mall seed); NIGHT SHIFT lights up. It plays
+  for a fresh shift (launch or NEW SHIFT), not for a retry, a continued run
+  or a dev fixture. It never holds the run or swallows input: the concourse is
+  calm, and the first key clears it and still reaches the game.
+- **Boss kill cam** (`KillCam.ts`, `killCamModel.ts`): a white flash, the camera
+  pushes in on the body with letterbox bars (the overlay is counter-scaled
+  against the zoom), the HUD clears, the death fall plays in slow motion
+  (`MvpRunView.setEffectsTimeWarp`), and a rubber stamp slams down —
+  LOSS PREVENTED / YOU'RE FIRED. The end card waits for it.
+- **Dawn ending** (`DawnEnding.ts`, `dawnEndingModel.ts`): after the Mall
+  Manager, sliding doors part on a PixelLab sunrise over the empty parking
+  lot; Alex walks out, shrinking to a silhouette; SHIFT COMPLETE / THANKS FOR
+  SHOPPING AT DEAD MALL / STORE HOURS: NEVER AGAIN; the last shot holds under
+  the CLOCKED OUT card.
+- New synthesized cues: `stamp`, `dawn`. New dev fixture
+  `mvp-floor-two-boss-win`. The debug snapshot reports `cinematic` so
+  presentation-stability tests measure the concourse, not the cold open.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

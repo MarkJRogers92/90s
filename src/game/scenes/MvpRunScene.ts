@@ -16,6 +16,8 @@ import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
 import { DawnEnding } from '../ui/DawnEnding';
+import { ClockIn } from '../ui/ClockIn';
+import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
 import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
@@ -374,6 +376,8 @@ export class MvpRunScene extends Phaser.Scene {
   private killCam: KillCam | null = null;
   /** The walk out at dawn after the Mall Manager; the end card waits for it. */
   private ending: DawnEnding | null = null;
+  /** The clock-in cold open over a fresh shift (it never holds the run). */
+  private clockIn: ClockIn | null = null;
   /** True once the ending has played out and holds its last shot under the card. */
   private endingHeld = false;
   /** The live boss last frame, so its fall can be framed once it is gone. */
@@ -411,6 +415,7 @@ export class MvpRunScene extends Phaser.Scene {
         ? restoreMvpRun(launch.checkpoint)
         : createMvpRun(this.seed);
     this.run = this.applyDevFixture(this.run);
+    this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
     this.accumulator = 0;
     this.lastRoomIndex = this.run.roomIndex;
@@ -478,6 +483,7 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.runView?.presentationSnapshot() ?? null,
         () => this.runView?.actorPresentationSnapshot() ?? null,
         () => this.runView?.concourseAmbienceSnapshot() ?? null,
+        () => this.clockIn !== null || this.killCam !== null || this.ride !== null || this.ending !== null,
       );
       const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
       this.removeDebugBridge = () => {
@@ -522,6 +528,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   public update(_time: number, elapsedMs: number): void {
     this.pollGamepad();
+    if (this.clockIn && this.clockIn.update(elapsedMs)) this.stopClockIn();
     if (this.ride) {
       this.accumulator = 0;
       if (this.ride.update(elapsedMs)) this.endRide();
@@ -621,6 +628,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.lastStatus = 'playing';
     const won = fromEndCard && this.run.status === 'won';
     this.seed = nextShiftSeed({ seed: this.seed, pinned: this.seedPinned }, won);
+    this.startClockIn(won ? 'new-shift' : 'retry', false);
     this.recordQuit();
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
@@ -649,6 +657,7 @@ export class MvpRunScene extends Phaser.Scene {
    */
   private ascend(): void {
     if (!canAscend(this.run)) return;
+    this.stopClockIn();
     this.endKillCam();
     this.lastStatus = 'playing';
     this.run = ascendToFloorTwo(this.run);
@@ -726,6 +735,23 @@ export class MvpRunScene extends Phaser.Scene {
   /** Toggles mute and returns the new state, so the HUD can label its button. */
   private toggleMuted(): boolean {
     return this.audio?.toggleMuted() ?? false;
+  }
+
+  /** The cold open for a fresh shift: not for a retry, a continued run or a dev fixture. */
+  private startClockIn(reason: ClockInReason, restored: boolean): void {
+    this.stopClockIn();
+    if (!shouldClockIn({ reason, fixture: this.devFixture(), restored })) return;
+    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'));
+  }
+
+  private stopClockIn(): void {
+    this.clockIn?.destroy();
+    this.clockIn = null;
+  }
+
+  private devFixture(): string | null {
+    if (!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true')) return null;
+    return new URLSearchParams(window.location.search).get('fixture');
   }
 
   /** Frames a boss's fall: starts the kill cam on the frame the shift is won. */
@@ -958,6 +984,7 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private readonly destroyRun = (): void => {
+    this.stopClockIn();
     this.killCam?.destroy();
     this.killCam = null;
     this.ending?.destroy();

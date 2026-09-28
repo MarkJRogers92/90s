@@ -229,6 +229,10 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   test.setTimeout(150_000);
   const errors = collectErrors(page);
   await launchRun(page, '/?seed=7');
+  // Measure the concourse itself, once the clock-in cold open has cleared.
+  await expect
+    .poll(() => runSnapshot(page).then((state) => (state as { cinematic?: boolean }).cinematic), { timeout: 10_000 })
+    .toBe(false);
   const first = await runSnapshot(page);
   expect(first.roomId).toBe('service_corridor');
   expect(first.enemies).toHaveLength(0);

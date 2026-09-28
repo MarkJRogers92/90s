@@ -68,6 +68,10 @@ async function launchRun(page: Page, viewport: { width: number; height: number }
   await expect(page.locator('#mvp-run-hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
+  // The evidence is the concourse itself: wait for the clock-in cold open to clear.
+  await expect
+    .poll(() => snapshot(page).then((state) => (state as { cinematic?: boolean }).cinematic), { timeout: 10_000 })
+    .toBe(false);
 }
 
 // Night Shift renders a fixed 960x600 stage (the whole room plus the
