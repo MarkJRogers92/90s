@@ -96,7 +96,8 @@ export class MallRoomView {
     this.lighting = new LightingLayer(scene, { x: 0, y: STAGE_TOP, width: STAGE_WIDTH, height: STAGE_HEIGHT });
     this.lighting.setAmbient(this.plan.ambient);
     this.lighting.setStaticLights(this.plan.lights);
-    this.ambience = this.plan.civilians ? new ConcourseAmbience(state.seed) : null;
+    // Civilians stroll around the opening room's own collision (planters, fountain).
+    this.ambience = this.plan.civilians ? new ConcourseAmbience(state.seed, state.wing.rooms[0]?.walls ?? []) : null;
     this.actorLayer.add(actors);
     this.build(state);
   }
@@ -446,32 +447,32 @@ export class MallRoomView {
     });
     const active = new Set<string>();
     let visibleCount = 0;
+    const poses = this.ambience.civilianPoses();
     for (const [index, lane] of this.ambience.debugLanes().entries()) {
-      const sprite = this.civilianSprite(lane, ambience.phase);
+      const pose = poses[index];
+      if (!pose) continue;
+      const walking = pose.walking;
+      const sprite = this.civilianSprite(lane, walking);
       if (!sprite) continue;
       active.add(lane.id);
-      const walking = ambience.phase === 'busy' || ambience.phase === 'evacuating';
-      const movingX = ambience.phase === 'evacuating'
-        ? lane.x + Math.sign(lane.exitX - lane.x) * Math.min(Math.abs(lane.exitX - lane.x), this.ambience.debugPhaseAnimationTick() * 1.2)
-        : lane.x + (walking ? Math.sin((this.ambience.debugAnimationTick() + index * 17) / 19) * 12 : 0);
-      const exitReached = ambience.phase === 'evacuating' && Math.abs(movingX - lane.exitX) < 1;
       const texture = civilianTexture(this.scene, lane.appearance, walking);
       if (sprite.texture.key !== texture) sprite.setTexture(texture);
-      sprite.setVisible(ambience.phase !== 'empty' && !exitReached)
-        .setPosition(movingX, lane.y)
-        .setDepth(presentationDepth('actor', lane.y));
-      const column = walking ? Math.floor(this.ambience.debugAnimationTick() / 5 + index) % 6 : (index + (ambience.phase === 'warning' ? 2 : 0)) % 8;
-      const row = walking ? (lane.exitX < lane.x ? 2 : 6) : 0;
-      // 64px neon shoppers are square frames sized from the sheet itself;
-      // the older 32x48 sheets remain the fallback.
+      sprite.setVisible(pose.visible)
+        .setPosition(Math.round(pose.x), Math.round(pose.y))
+        .setDepth(presentationDepth('actor', pose.y));
+      // 64px neon shoppers: the walk sheet has a row per facing and the idle
+      // strip a column per facing. The older 32x48 sheets only face west/east.
       const neonSheet = texture.startsWith('neon:civilian:');
       const frame = neonSheet
         ? { width: characterFrameSize(sprite.height, walking ? 8 : 1), height: characterFrameSize(sprite.height, walking ? 8 : 1) }
         : { width: 32, height: 48 };
-      const neonColumn = walking ? Math.floor(this.ambience.debugAnimationTick() / 6 + index) % Math.max(1, Math.floor(sprite.width / frame.width)) : column;
-      const useColumn = neonSheet ? neonColumn : column;
-      sprite.setCrop(useColumn * frame.width, row * frame.height, frame.width, frame.height);
-      const origin = croppedFrameOrigin({ row, column: useColumn }, { width: sprite.width, height: sprite.height }, frame);
+      const westish = pose.facing >= 1 && pose.facing <= 3;
+      const walkFrames = Math.max(1, Math.floor(sprite.width / frame.width));
+      const step = Math.floor(this.ambience.debugAnimationTick() / (this.ambience.snapshot().phase === 'evacuating' ? 4 : 7) + index);
+      const row = walking ? (neonSheet ? pose.facing : westish ? 2 : 6) : 0;
+      const column = walking ? step % (neonSheet ? walkFrames : 6) : neonSheet ? pose.facing : (index + (ambience.phase === 'warning' ? 2 : 0)) % 8;
+      sprite.setCrop(column * frame.width, row * frame.height, frame.width, frame.height);
+      const origin = croppedFrameOrigin({ row, column }, { width: sprite.width, height: sprite.height }, frame);
       sprite.setOrigin(origin.x, origin.y);
       if (sprite.visible) visibleCount += 1;
     }
@@ -487,8 +488,7 @@ export class MallRoomView {
     }
   }
 
-  private civilianSprite(lane: ConcourseCivilianLane, phase: ReturnType<ConcourseAmbience['snapshot']>['phase']): Phaser.GameObjects.Image | null {
-    const walking = phase === 'busy' || phase === 'evacuating';
+  private civilianSprite(lane: ConcourseCivilianLane, walking: boolean): Phaser.GameObjects.Image | null {
     const key = civilianTexture(this.scene, lane.appearance, walking);
     if (!usableTextureKey(this.scene.textures, key)) return null;
     let sprite = this.civilianSprites.get(lane.id);
