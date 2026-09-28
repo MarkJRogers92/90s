@@ -14,6 +14,16 @@ import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { PauseCard } from '../ui/PauseCard';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { heartbeatIntervalMs } from '../view/playerCues';
+import { PlaytestRecorder } from '../playtest/recorder';
+import { PlaytestLog } from '../playtest/log';
+
+function playtestStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
 import { installMvpRunDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
   InMemoryCheckpointStore,
@@ -300,6 +310,9 @@ export class MvpRunScene extends Phaser.Scene {
   private accumulator = 0;
   private hitStopMs = 0;
   private lastHeartbeat = -Infinity;
+  /** Local, opt-in playtest log (off until switched on from the title). */
+  private readonly playtestLog = new PlaytestLog(playtestStorage());
+  private playtest = new PlaytestRecorder();
   private lastRoomIndex = 0;
   private lastCheckpointKey: string | null = null;
   private checkpointStatus = 'none yet';
@@ -503,6 +516,8 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private restartRun(): void {
+    this.recordQuit();
+    this.playtest = new PlaytestRecorder();
     this.generation += 1;
     const cleared = this.store.clear();
     this.run = createMvpRun(this.seed);
@@ -523,6 +538,7 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private readonly returnToTitle = (): void => {
+    this.recordQuit();
     window.dispatchEvent(new CustomEvent(RETURN_TO_TITLE_EVENT));
   };
 
@@ -567,6 +583,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   private syncView(): void {
     this.runView?.sync(this.run);
+    this.recordPlaytest();
     this.syncHeartbeat();
     const hold = this.runView?.takeHitStop() ?? 0;
     this.hitStopMs = Math.max(this.hitStopMs, hold);
@@ -585,6 +602,18 @@ export class MvpRunScene extends Phaser.Scene {
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
+  }
+
+  private recordPlaytest(): void {
+    const record = this.playtest.observe(this.run);
+    if (record) this.playtestLog.append(record);
+  }
+
+  /** A shift abandoned mid-run still belongs in the playtest log. */
+  private recordQuit(): void {
+    if (this.run.status !== 'playing') return;
+    const record = this.playtest.finish(this.run, 'quit');
+    if (record) this.playtestLog.append(record);
   }
 
   /** At the last heart the janitor's pulse is audible and visible, on real time. */

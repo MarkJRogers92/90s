@@ -29,7 +29,25 @@
           <button id="continue-run" class="secondary-action" type="button" disabled>
             Continue run
           </button>
+          <button id="playtest-open" class="secondary-action" type="button">
+            Playtest stats
+          </button>
         </div>
+        <section id="playtest-panel" class="playtest-panel" aria-labelledby="playtest-title" hidden>
+          <h2 id="playtest-title">Playtest stats</h2>
+          <label class="playtest-toggle">
+            <input id="playtest-enabled" type="checkbox" />
+            Record my Night Shift runs (stays in this browser, never sent anywhere)
+          </label>
+          <div id="playtest-summary" class="playtest-summary"></div>
+          <ol id="playtest-runs" class="playtest-runs"></ol>
+          <div class="playtest-actions">
+            <button id="playtest-copy" class="secondary-action" type="button">Copy as JSON</button>
+            <button id="playtest-clear" class="secondary-action" type="button">Clear log</button>
+            <button id="playtest-close" type="button">Close</button>
+          </div>
+          <p id="playtest-status" class="playtest-status" role="status" aria-live="polite"></p>
+        </section>
         <p id="startup-status" role="status" aria-live="polite"></p>
       </section>
       <section id="run-shell" class="run-shell" aria-label="DEAD MALL game" hidden>

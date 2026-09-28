@@ -10,6 +10,8 @@ import {
 } from './game/persistence/LocalStorageCheckpointStore';
 import type { MvpCheckpoint } from './sim/run/checkpoint';
 import './styles.css';
+import { PlaytestLog } from './game/playtest/log';
+import { PlaytestPanel } from './game/ui/PlaytestPanel';
 
 export const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
 
@@ -45,6 +47,10 @@ const labButton = requireElement<HTMLButtonElement>('#interaction-lab-launch');
 const shopButton = requireElement<HTMLButtonElement>('#shoplifting-loop-launch');
 const benchButton = requireElement<HTMLButtonElement>('#void-warranty-launch');
 const nightShiftButton = requireElement<HTMLButtonElement>('#night-shift-launch');
+new PlaytestPanel(
+  new PlaytestLog((() => { try { return window.localStorage; } catch { return null; } })()),
+  (selector) => requireElement(selector),
+);
 const continueButton = requireElement<HTMLButtonElement>('#continue-run');
 const labSection = requireElement<HTMLElement>('#interaction-lab');
 const runHud = requireElement<HTMLElement>('#run-hud');

@@ -258,6 +258,20 @@ Pure rules in `src/game/view/playerCues.ts` (tests: `player-cues.test.ts`).
   only its two buttons in the top strip (text off-screen for assistive tech
   and the tests). The pause card no longer shows under an open preview.
 
+## Round 9 — playtest log
+
+- **Recorder** (`src/game/playtest/recorder.ts`): compares consecutive run
+  snapshots, like the audio cues, and builds one record per shift — time,
+  kills and damage by source per room (Hanger touch, Spitter glob, boss slam,
+  boss volley, other), dashes, bought/stolen, what landed the final blow, and
+  the outcome (won / dead / quit on restart or return to title).
+- **Log** (`src/game/playtest/log.ts`): this browser's localStorage only, off
+  until switched on, newest 50 runs, every storage call guarded. Nothing is
+  sent anywhere (the repo's no-telemetry rule).
+- **Title → Playtest stats**: the switch, a summary (win rate, where shifts
+  end, damage by source, average time per room, most bought), the last 10
+  runs, Copy as JSON (to paste back for tuning) and Clear.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

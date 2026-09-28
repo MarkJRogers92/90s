@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-09-27 — round 9: playtest log
+
+- `npx vitest run` — PASS: 46 files, 599 tests (new `playtest-recorder.test.ts`,
+  5 tests: damage by source and final blow, kills and quit, opt-in storage with
+  the 50-run cap, broken/garbage storage, summary). Failed first on the missing
+  module.
+- Real-browser check: switch on from the title, play, Return to title, reopen:
+  1 run logged as a quit with its room time and dash count; no page errors.
+- `PW_PORT=4193 npx playwright test` under a machine load average of ~47 (another
+  process): 56/57, then 53/57 on rerun. The four failures are the known
+  load-sensitive timing/movement cases (pause tick budget, civilian
+  evacuation, opening exit, integer-scale capture); all four PASS run alone
+  (4/4, one worker). No change in this round touches those paths.
+
 ## 2026-09-27 — round 8: soundtrack, store card, Bench Warrant card
 
 - `npx vitest run` — PASS: 45 files, 594 tests. New: `music.test.ts` (5),
