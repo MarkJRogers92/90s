@@ -22,6 +22,10 @@ const SHOTS = {
   bench: { fixture: 'mvp-bench', walk: [], wait: 1600 },
   foodcourt: { fixture: 'mvp-storefront', walk: [['s', 380], ['d', 2600]], wait: 1600, settle: 1400 },
   boss: { fixture: 'mvp-boss-entry', walk: [['d', 900]], wait: 2500 },
+  'floor2-landing': { fixture: 'mvp-floor-two', walk: [['s', 300], ['d', 700]], wait: 1600 },
+  'floor2-lobby': { fixture: 'mvp-floor-two-lobby', walk: [['d', 500]], wait: 1600, settle: 1800 },
+  'floor2-lobby-late': { fixture: 'mvp-floor-two-lobby', walk: [['d', 500]], wait: 1600, settle: 4200 },
+  'floor2-boss': { fixture: 'mvp-floor-two-boss', walk: [['d', 900]], wait: 2500 },
 };
 
 // Real GPU (Metal/ANGLE) so captures include the bloom a player sees; the

@@ -367,6 +367,28 @@ phase).
 `node scripts/render-music.mjs` renders each loop offline to WAV with RMS and
 peak; MP3 previews are in `artifacts/neon-overhaul/music/`.
 
+## Round 15 — Floor 2: the Upper Level
+
+Beating Loss Prevention no longer ends the run: the end card says FLOOR
+CLEARED and offers the ESCALATOR (R / Enter / pad A) or CLOCK OUT.
+
+- **Sim** (`src/sim/run/floors.ts`): `ascendToFloorTwo` builds a new wing from
+  `floorTwoSeed(seed)` with `generateWing(seed, 2)` — same six room ids and
+  graph, new names (Escalator Landing, Upper West Shops, Cinema Lobby, Upper
+  East Shops, Parking Stairwell, Management Suite), variant-max enemy counts —
+  and carries inventory, cash and stats, healed. Checkpoints save `floor: 2`.
+- **The Static** (`staticEnemy.ts`, 14 hp): drifts, locks onto where you
+  stand, then blinks there and shocks everything within 48 px. Dash or move.
+- **The Bargain Hunter** (`shopper.ts`, 18 hp): sees you from 320 px, winds up
+  a lane, then charges at 9 px/tick; only the charge hurts, and a wall stuns
+  it. Spawns with a 50-tick beat so one by the door can't hit you on entry.
+- **The Mall Manager** (`BOSS_CONFIGS.manager`, 150 hp): bigger slam, a
+  seven-shot volley, summons Bargain Hunters. Own intro card, boss bar name.
+- **Presentation**: upper-floor dressing (`upperFloor` in `roomDressing.ts`:
+  cinema, arcade, carpet, sodium-lit stairwell, gold MANAGEMENT suite),
+  cyan blink rings and charge lanes as wind-ups, PixelLab art for all three.
+- Dev fixtures: `mvp-floor-two`, `mvp-floor-two-lobby`, `mvp-floor-two-boss`.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

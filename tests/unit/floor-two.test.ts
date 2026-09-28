@@ -4,7 +4,7 @@ import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { ascendToFloorTwo, canAscend } from '../../src/sim/run/floors';
 import { parseCheckpoint, restoreMvpRun, serializeCheckpoint } from '../../src/sim/run/checkpoint';
 import { enterDoorway } from '../../src/sim/run/tickMvpRun';
-import { PLAYER_MAX_HEALTH } from '../../src/sim/run/rooms';
+import { PLAYER_MAX_HEALTH, buildRoomCombatState } from '../../src/sim/run/rooms';
 
 function wonFloorOne() {
   const state = createMvpRun(11);
@@ -71,5 +71,19 @@ describe('Floor 2: the Upper Level', () => {
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
     expect(restoreMvpRun(parsed.checkpoint).wing.floor).toBe(2);
+  });
+});
+
+describe('walking into an upstairs fight', () => {
+  it('gives a fresh Bargain Hunter a beat before it can wind up a charge', () => {
+    // Find an upstairs room with a Bargain Hunter parked beside the west door.
+    const wing = Array.from({ length: 40 }, (_, seed) => generateWing(seed + 1, 2))
+      .find((candidate) => candidate.rooms.some((room) => room.enemySpawns.some((spawn) => spawn.kind === 'shopper')))!;
+    const roomIndex = wing.rooms.findIndex((candidate) => candidate.enemySpawns.some((spawn) => spawn.kind === 'shopper'));
+    const run = createMvpRun(wing.seed, { floor: 2 });
+    const combat = buildRoomCombatState(wing, roomIndex, 'west', run.inventory, wing.seed);
+    const shopper = combat.enemies.find((enemy) => enemy.kind === 'shopper')!;
+    expect(shopper.phase).toBe('recover');
+    expect(shopper.phaseTicks).toBeGreaterThanOrEqual(45);
   });
 });

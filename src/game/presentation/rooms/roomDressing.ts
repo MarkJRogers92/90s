@@ -614,7 +614,7 @@ function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan 
         ambient: 0x3a2030,
         facades,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.red), ...ceilingGrid(0xffb090, 0.5, 160, [180, 380], [200, 480, 760], (i) => (i === 2 ? 'buzz' : undefined))],
-        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.red }],
+        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.yellow }],
       };
     }
     case 'back_hall': {

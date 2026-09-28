@@ -592,6 +592,23 @@ test('the security office spawns the Loss Prevention Manager', async ({ page }) 
   expect(errors.consoleErrors).toEqual([]);
 });
 
+test('up the escalator, the Management Suite spawns the Mall Manager', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-two-boss&seed=5150');
+
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 30_000 })
+    .toBe('security_office');
+  const state = await runSnapshot(page);
+  expect(state.enemies.some((enemy) => enemy.kind === 'manager')).toBe(true);
+  expect(state.enemies.some((enemy) => enemy.kind === 'lp_manager')).toBe(false);
+  await expect(page.locator('#mvp-run-boss')).toContainText('HP 150/150');
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
 test('winning the boss run publishes the summary and clears the checkpoint', async ({ page }) => {
   test.setTimeout(120_000);
   const errors = collectErrors(page);

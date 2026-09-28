@@ -53,7 +53,9 @@ const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; rad
   hanger: { health: HANGER_HEALTH, radius: HANGER_RADIUS, phase: 'pursue', phaseTicks: 0 },
   spitter: { health: SPITTER_HEALTH, radius: SPITTER_RADIUS, phase: 'recover', phaseTicks: 45 },
   static: { health: STATIC_HEALTH, radius: STATIC_RADIUS, phase: 'pursue', phaseTicks: STATIC_DRIFT_TICKS },
-  shopper: { health: SHOPPER_HEALTH, radius: SHOPPER_RADIUS, phase: 'pursue', phaseTicks: 0 },
+  // Like the spitter, a Bargain Hunter needs a beat before its first charge, so
+  // one parked by the door can't hit the janitor before the room has been read.
+  shopper: { health: SHOPPER_HEALTH, radius: SHOPPER_RADIUS, phase: 'recover', phaseTicks: 50 },
 };
 
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemyState {

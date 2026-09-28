@@ -1,5 +1,22 @@
 # Test evidence
 
+## 2026-09-28 — round 15: Floor 2, the Upper Level
+
+- `npx vitest run` — PASS: 58 files, 666 tests. New `manager-boss.test.ts`,
+  `floor-two-enemies.test.ts` and `floor-two.test.ts` failed first. The
+  Bargain Hunter spawn-grace test failed first (`expected 'pursue' to be
+  'recover'`), then passed with a 50-tick spawn recover.
+- `npx tsc --noEmit` and `npx vite build` — PASS.
+- `PW_PORT=4193 npx playwright test --workers=2` — PASS: 57/57 (2.7 min), then
+  the new "Management Suite spawns the Mall Manager" test — PASS (4.7 s).
+- Real-browser captures (`artifacts/neon-overhaul/floor2/`, fixtures
+  `mvp-floor-two`, `mvp-floor-two-lobby`, `mvp-floor-two-boss`): no page or
+  console errors. Findings acted on: Bargain Hunters by the west door charged
+  within ~0.6 s of entry (fixed, above); the Cinema Lobby's red mid-floor neon
+  strip read as a hazard (now gold). A suspected slow-movement bug on the
+  landing was the locker-aisles wall at x=180 (the player stopped at 170 =
+  wall minus radius), not a sim fault.
+
 ## 2026-09-28 — round 14: the soundtrack, rebuilt
 
 - `npx vitest run` — PASS: 55 files, 648 tests (new reactive-music tests: combat

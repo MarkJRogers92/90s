@@ -1108,5 +1108,35 @@
       768
     ],
     "sha256": "e2ff954dce441b91589597b7f2b16dbd60c56820be389cb59cee4376579d8506"
+  },
+  {
+    "path": "public/assets/neon/enemies/shopper-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-shopper-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      768,
+      96
+    ],
+    "sha256": "f6957e7a3c7b1ebfd1f4871fea46e8ca934f309274fef6a6386279532e0a0553"
+  },
+  {
+    "path": "public/assets/neon/enemies/shopper-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-shopper-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      576,
+      768
+    ],
+    "sha256": "a1df4442c53c3852273122bae8a3e824fef2fd1f7808bb8542b5522b615dfa34"
+  },
+  {
+    "path": "public/assets/neon/enemies/shopper-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-shopper-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      672,
+      768
+    ],
+    "sha256": "dca933447afe84a7b974e9479ed8b4faf219f55e08f92effe3e247172eb5c072"
   }
 ]

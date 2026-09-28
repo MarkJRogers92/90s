@@ -771,13 +771,14 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
-    if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-boss') {
-      // Straight up the escalator, optionally on to the Mall Manager.
+    if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-boss') {
+      // Straight up the escalator, optionally on to the Cinema Lobby fight or the Mall Manager.
       state.status = 'won';
       const upstairs = ascendToFloorTwo(state);
-      if (fixture === 'mvp-floor-two-boss') {
+      if (fixture !== 'mvp-floor-two') {
+        const stop = fixture === 'mvp-floor-two-lobby' ? 'food_court' : upstairs.wing.rooms.at(-1)?.id;
         let guard = 0;
-        while (upstairs.roomIndex < upstairs.wing.rooms.length - 1 && guard < 10) {
+        while (upstairs.wing.rooms[upstairs.roomIndex]?.id !== stop && guard < 10) {
           guard += 1;
           upstairs.room.combat.enemies = [];
           tickMvpRun(upstairs, { moveX: 0, moveY: 0, aimX: upstairs.room.combat.player.x, aimY: upstairs.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
