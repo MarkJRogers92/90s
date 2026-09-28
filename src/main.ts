@@ -16,7 +16,8 @@ import { PlaytestPanel } from './game/ui/PlaytestPanel';
 import { OPEN_SETTINGS_EVENT, SettingsPanel } from './game/ui/SettingsPanel';
 import { browserBestRuns } from './game/score/score';
 import { BreakRoomPanel } from './game/ui/BreakRoomPanel';
-import { browserCareer } from './game/career/career';
+import { browserCareer, localDay } from './game/career/career';
+import { browserDaily, dailySeed, formatDailyDate, summarizeDaily } from './game/run/dailyShift';
 
 export const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
 
@@ -48,6 +49,8 @@ const labButton = requireElement<HTMLButtonElement>('#interaction-lab-launch');
 const shopButton = requireElement<HTMLButtonElement>('#shoplifting-loop-launch');
 const benchButton = requireElement<HTMLButtonElement>('#void-warranty-launch');
 const nightShiftButton = requireElement<HTMLButtonElement>('#night-shift-launch');
+const dailyShiftButton = requireElement<HTMLButtonElement>('#daily-shift-launch');
+const dailyRunLine = requireElement<HTMLElement>('#daily-run');
 const settingsPanel = new SettingsPanel((selector) => requireElement(selector));
 window.addEventListener(OPEN_SETTINGS_EVENT, () => settingsPanel.open());
 new PlaytestPanel(
@@ -68,6 +71,9 @@ const breakRoom = new BreakRoomPanel(browserCareer(), (selector) => requireEleme
 /** The title's best-run line and Break Room balance, refreshed whenever the title is shown. */
 function showBestRun(): void {
   breakRoom.refreshButton();
+  const today = localDay();
+  dailyShiftButton.textContent = `Daily Shift · ${formatDailyDate(today)}`;
+  dailyRunLine.textContent = summarizeDaily(today, browserDaily().today(today));
   const best = browserBestRuns().best();
   bestRunLine.hidden = best === null;
   if (best) {
@@ -89,6 +95,7 @@ function setLaunchButtonsDisabled(disabled: boolean): void {
   shopButton.disabled = disabled;
   benchButton.disabled = disabled;
   nightShiftButton.disabled = disabled;
+  dailyShiftButton.disabled = disabled;
 }
 
 function refreshContinueAvailability(): void {
@@ -157,11 +164,11 @@ function launch(mode: RunMode): void {
   }
 }
 
-function launchRun(checkpoint: MvpCheckpoint | null, shift: ShiftSeed): void {
+function launchRun(checkpoint: MvpCheckpoint | null, shift: ShiftSeed, daily: string | null = null): void {
   if (game) {
     return;
   }
-  setMvpRunLaunch({ seed: shift.seed, seedPinned: shift.pinned, checkpoint, store: checkpointStore });
+  setMvpRunLaunch({ seed: shift.seed, seedPinned: shift.pinned, checkpoint, store: checkpointStore, ...(daily ? { mode: 'daily' as const, date: daily } : {}) });
   setLaunchButtonsDisabled(true);
   continueButton.disabled = true;
   startupStatus.textContent = 'Clocking in…';
@@ -240,6 +247,7 @@ function returnToTitle(): void {
   shopButton.disabled = false;
   benchButton.disabled = false;
   nightShiftButton.disabled = false;
+  dailyShiftButton.disabled = false;
   refreshContinueAvailability();
 }
 
@@ -261,6 +269,12 @@ benchButton.addEventListener('click', () => {
 
 nightShiftButton.addEventListener('click', () => {
   launchRun(null, seedFromUrl());
+});
+
+dailyShiftButton.addEventListener('click', () => {
+  // Today's mall, pinned: a retry keeps it, and everyone playing today gets the same one.
+  const today = localDay();
+  launchRun(null, { seed: dailySeed(today), pinned: true }, today);
 });
 
 continueButton.addEventListener('click', () => {

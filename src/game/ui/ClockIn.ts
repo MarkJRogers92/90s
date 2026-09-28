@@ -11,6 +11,7 @@ import Phaser from 'phaser';
 import { SCENE_TEXTURE_KEYS } from '../presentation/assets';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { PUNCH_AT_MS, SLOT_Y, benefitsLine, clockInFrame, clockInTime, type ClockInFrame } from './clockInModel';
+import { formatDailyDate } from '../run/dailyShift';
 import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 
 const DEPTH = 20_700;
@@ -35,7 +36,7 @@ export class ClockIn {
   private skip = false;
   private punched = false;
 
-  public constructor(private readonly scene: Phaser.Scene, seed: number, private readonly onPunch: () => void, perks: ShiftPerks = NO_PERKS) {
+  public constructor(private readonly scene: Phaser.Scene, seed: number, private readonly onPunch: () => void, perks: ShiftPerks = NO_PERKS, dailyDate: string | null = null) {
     this.wall = scene.add.graphics();
     this.clock = scene.textures.exists(SCENE_TEXTURE_KEYS.timeClock)
       ? scene.add.image(W / 2, 270, SCENE_TEXTURE_KEYS.timeClock).setScale(CLOCK_SCALE)
@@ -54,7 +55,7 @@ export class ClockIn {
       scene.add.image(W / 2, 522, sign.core),
     ];
     // What the Break Room bought, lit up under the sign with it.
-    const benefits = benefitsLine(perks);
+    const benefits = dailyDate ? `DAILY SHIFT - ${formatDailyDate(dailyDate)}` : benefitsLine(perks);
     if (benefits) this.title.push(scene.add.image(W / 2, 578, ensurePixelLabel(scene, benefits, '#6aff8a', 2, '#10141a').key));
     const notice = ensurePixelLabel(scene, 'ALL EMPLOYEES MUST CLOCK IN', '#c8b8e0', 1, '#10141a');
     const noticeImage = scene.add.image(W / 2, 46, notice.key);
