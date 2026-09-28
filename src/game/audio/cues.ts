@@ -31,6 +31,7 @@ export type AudioCue =
   | 'stamp'
   | 'dawn'
   | 'paper'
+  | 'pa_voice'
   | 'shot'
   | 'splash'
   | 'hit'

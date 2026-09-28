@@ -19,6 +19,8 @@ import { DawnEnding } from '../ui/DawnEnding';
 import { ClockIn } from '../ui/ClockIn';
 import { PinkSlip } from '../ui/PinkSlip';
 import { pinkSlipReason } from '../ui/pinkSlipModel';
+import { PaDirector } from '../ui/paModel';
+import { PaTicker } from '../ui/PaTicker';
 import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
@@ -382,6 +384,9 @@ export class MvpRunScene extends Phaser.Scene {
   private clockIn: ClockIn | null = null;
   /** The Notice of Termination after a death; the end card waits for it. */
   private pinkSlip: PinkSlip | null = null;
+  /** The mall PA: who decides what it says, and the ticker that says it. */
+  private readonly paDirector = new PaDirector();
+  private paTicker: PaTicker | undefined;
   /** True once a kill cam or pink slip has played this shift's final beat. */
   private endBeatPlayed = false;
   /** True once the ending has played out and holds its last shot under the card. */
@@ -462,6 +467,7 @@ export class MvpRunScene extends Phaser.Scene {
       buttonAt: (x, y) => bench.buttonAt(x, y),
       act: (action) => (action === 'fuse' ? this.confirmFusion() : this.cancelFusion()),
     };
+    this.paTicker = new PaTicker(this, (cue) => this.audio?.play(cue));
     const card = new ShiftCard(this);
     this.shiftCard = card;
     // Cinematic moments own every key and click while they play.
@@ -535,6 +541,9 @@ export class MvpRunScene extends Phaser.Scene {
   public update(_time: number, elapsedMs: number): void {
     this.pollGamepad();
     if (this.clockIn && this.clockIn.update(elapsedMs)) this.stopClockIn();
+    // The PA waits out any cinematic, and stops talking once the shift is over.
+    if (this.run.status !== 'playing') this.paTicker?.clear();
+    this.paTicker?.update(elapsedMs, this.clockIn !== null || this.ride !== null || this.killCam !== null || this.run.paused);
     if (this.ride) {
       this.accumulator = 0;
       if (this.ride.update(elapsedMs)) this.endRide();
@@ -632,6 +641,7 @@ export class MvpRunScene extends Phaser.Scene {
   /** From the end card, a won shift clocks into a new mall; otherwise the same one. */
   private restartRun(fromEndCard = false): void {
     this.endBeatPlayed = false;
+    this.paTicker?.clear();
     this.endKillCam();
     this.endPinkSlip();
     this.lastStatus = 'playing';
@@ -814,6 +824,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.recordPlaytest();
     // After the recorder has seen this frame, so a death knows what did it.
     this.watchBossKill();
+    const announcement = this.paDirector.observe(this.run);
+    if (announcement) this.paTicker?.announce(announcement);
     this.syncHeartbeat();
     const rawHold = this.runView?.takeHitStop() ?? 0;
     const hold = rawHold * hitStopScale(gameSettings().get());
@@ -1018,6 +1030,8 @@ export class MvpRunScene extends Phaser.Scene {
 
   private readonly destroyRun = (): void => {
     this.stopClockIn();
+    this.paTicker?.destroy();
+    this.paTicker = undefined;
     this.endPinkSlip();
     this.killCam?.destroy();
     this.killCam = null;
