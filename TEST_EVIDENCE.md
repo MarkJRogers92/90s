@@ -16,6 +16,15 @@
   strip read as a hazard (now gold). A suspected slow-movement bug on the
   landing was the locker-aisles wall at x=180 (the player stopped at 170 =
   wall minus radius), not a sim fault.
+- Floor 2 music: new `music.test.ts` cases (upstairs track, Manager theme by
+  phase, 16-bar arrangements) failed first. Offline renders in Chromium
+  (`node scripts/render-music.mjs <url> <dir> upstairs manager`), RMS / peak:
+  upstairs low 0.108/0.662, upstairs full 0.119/0.667, manager low
+  0.117/0.654, manager phase 3 0.125/0.686; no page errors, no clipping.
+- Playtest log: the upstairs-attackers/floor test failed first (`expected
+  undefined to be 2`), and the room-keying summary test failed first
+  (`{ food_court: 2 }`). `npx vitest run` — PASS: 58 files, 670 tests.
+- `PW_PORT=4193 npx playwright test --workers=2` — PASS: 58/58 (2.6 min).
 
 ## 2026-09-28 — round 14: the soundtrack, rebuilt
 

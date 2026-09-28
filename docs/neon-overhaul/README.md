@@ -388,6 +388,15 @@ CLEARED and offers the ESCALATOR (R / Enter / pad A) or CLOCK OUT.
   cinema, arcade, carpet, sodium-lit stairwell, gold MANAGEMENT suite),
   cyan blink rings and charge lanes as wind-ups, PixelLab art for all three.
 - Dev fixtures: `mvp-floor-two`, `mvp-floor-two-lobby`, `mvp-floor-two-boss`.
+- **Music** (`music.ts`, picked in `musicState.ts` by `wing.floor`): upstairs
+  fights play "Escalator Rush" (128, F sharp minor: chugging drive bass,
+  cinema-organ stabs, bell arpeggio, supersaw hook); the Mall Manager gets
+  "Performance Review" (146, C minor with a Neapolitan D flat: brass-like
+  fanfare, march roll in phase 2, a cash-register ding-ding, faster by phase).
+  Muzak between fights is shared. Previews in `artifacts/neon-overhaul/music/`.
+- **Playtest log**: records carry `floor: 2`; Static shocks and Bargain Hunter
+  charges are their own damage sources; the summary keys upstairs rooms as
+  `2:<roomId>` so the Cinema Lobby never merges with the Food Court.
 
 ## Known gaps / next steps
 

@@ -21,8 +21,8 @@ Statics, Bargain Hunters and the Mall Manager. Jump in with
 `?fixture=mvp-floor-two`, `mvp-floor-two-lobby` or `mvp-floor-two-boss`.
 Committed locally on `claude/neon-overhaul`; not pushed until the owner says so.
 
-Open follow-ups: a floor-2 music variant, a floor field in the playtest
-recorder, a purpose-made Alex portrait, folding the duplicate DOM
+Open follow-ups: a human playtest of Floor 2 difficulty (use the playtest
+log; it now separates upstairs rooms and attackers), a purpose-made Alex portrait, folding the duplicate DOM
 status bar into an off-canvas panel, and device/Safari performance checks.
 Nothing is pushed, merged or published.
 

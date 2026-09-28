@@ -9,7 +9,8 @@ playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
 Round 15 (2026-09-28): Floor 2 — a second six-room wing reached by the
 escalator after Loss Prevention, with two new enemies (the Static, the Bargain
-Hunter) and a new boss (the Mall Manager). 666 unit tests and 58 browser tests
+Hunter), a new boss (the Mall Manager) with his own theme, and upstairs fight
+music. 670 unit tests and 58 browser tests
 pass. Committed locally, not pushed. See the playbook's "Round 15" section.
 
 Round 4 (combat readability): enemy wind-ups drawn from the sim's telegraph
