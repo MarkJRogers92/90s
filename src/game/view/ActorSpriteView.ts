@@ -74,7 +74,7 @@ export function enemySpriteSheet(
     case 'shopper':
       return { idle: ENEMY_TEXTURE_KEYS.shopperIdle, walk: walking ? ENEMY_TEXTURE_KEYS.shopperWalk : null, attack: 'neon:enemy:shopper-attack', walkFrames: 6, ticksPerFrame: 4, displaySize: 76 };
     case 'manager':
-      return { idle: ENEMY_TEXTURE_KEYS.managerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.managerWalk : null, attack: 'neon:enemy:manager-attack', walkFrames: 6, ticksPerFrame: 5, displaySize: 128 };
+      return { idle: ENEMY_TEXTURE_KEYS.managerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.managerWalk : null, attack: 'neon:enemy:manager-attack', walkFrames: 8, ticksPerFrame: 6, displaySize: 128 };
     case 'mannequin':
       // A 96 px PixelLab canvas drawn at 72: a person-sized display dummy.
       return { idle: ENEMY_TEXTURE_KEYS.mannequinIdle, walk: walking ? ENEMY_TEXTURE_KEYS.mannequinWalk : null, attack: 'neon:enemy:mannequin-attack', walkFrames: 6, ticksPerFrame: 3, displaySize: 72 };
