@@ -175,6 +175,11 @@ export const PORTRAIT_TEXTURE_KEYS = {
   lpManager: 'neon:portrait:security-guard',
 } as const;
 
+/** Full-stage illustrations for cinematic moments. */
+export const SCENE_TEXTURE_KEYS = {
+  dawnExit: 'neon:scene:dawn-exit',
+} as const;
+
 export const DECAL_TEXTURE_KEYS = {
   bloodPool: 'neon:decal:blood-pool',
   bloodSplash: 'neon:decal:blood-splash',
@@ -220,6 +225,7 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.managerDeath, 'enemies/manager-death.png'),
   neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
+  neon(SCENE_TEXTURE_KEYS.dawnExit, 'ui/dawn-exit.png'),
   ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),
   ...Object.values(ITEM_ICON_FILES).map((file) => neon(`neon:item:${file}`, `items/${file}.png`)),
 ];

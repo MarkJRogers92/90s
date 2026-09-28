@@ -29,6 +29,7 @@ export type AudioCue =
   | 'shopper_charge'
   | 'escalator'
   | 'stamp'
+  | 'dawn'
   | 'shot'
   | 'splash'
   | 'hit'

@@ -661,6 +661,38 @@ test('the escalator ride holds the run still until it ends or is skipped', async
   expect(errors.consoleErrors).toEqual([]);
 });
 
+test('beating the Mall Manager plays out to the CLOCKED OUT card, and a new shift starts from it', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-two-boss-win&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'manager'))).toBe(true);
+  const box = await page.locator('canvas').boundingBox();
+  if (!box) throw new Error('no canvas');
+  await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.5);
+  await page.keyboard.down('d');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('d');
+  for (let swing = 0; swing < 16 && (await runSnapshot(page)).status !== 'won'; swing += 1) {
+    await page.mouse.down();
+    await page.waitForTimeout(120);
+    await page.mouse.up();
+    await page.waitForTimeout(160);
+  }
+  expect((await runSnapshot(page)).status).toBe('won');
+
+  // Kill cam, the walk out at dawn, then the card: R starts a new shift.
+  await expect
+    .poll(async () => {
+      const before = await runSnapshot(page);
+      if (before.status === 'won') await page.keyboard.press('KeyR');
+      return runSnapshot(page).then((state) => `${state.status}:${state.roomIndex}`);
+    }, { timeout: 30_000, intervals: [700] })
+    .toBe('playing:0');
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
 test('winning the boss run publishes the summary and clears the checkpoint', async ({ page }) => {
   test.setTimeout(120_000);
   const errors = collectErrors(page);
