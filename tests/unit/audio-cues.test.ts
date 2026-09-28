@@ -297,3 +297,14 @@ describe('combo cue', () => {
     expect(cuesBetween(going, (state) => { state.stats.combo = 7; })).not.toContain('combo');
   });
 });
+
+describe('boss intro cue', () => {
+  it('slams the door instead of chiming when the room has the boss', () => {
+    const cues = cuesAfter((state) => {
+      state.roomIndex += 1;
+      state.room.combat.enemies = [makeBoss()];
+    });
+    expect(cues).toContain('boss_intro');
+    expect(cues).not.toContain('pa_chime');
+  });
+});

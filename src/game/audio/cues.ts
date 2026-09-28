@@ -21,6 +21,7 @@ export type AudioCue =
   | 'dash'
   | 'heartbeat'
   | 'combo'
+  | 'boss_intro'
   | 'shot'
   | 'splash'
   | 'hit'
@@ -237,7 +238,8 @@ export function deriveAudioCues(
 
   // Entering a room announces itself the way a dying mall would.
   if (current.roomIndex !== previous.roomIndex) {
-    cues.push('pa_chime');
+    // Walking in on Loss Prevention is a door slam, not a PA chime.
+    cues.push(current.bossId !== null ? 'boss_intro' : 'pa_chime');
   }
 
   return cues;

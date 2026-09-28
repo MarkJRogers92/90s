@@ -57,6 +57,7 @@ export class GameHud {
   private toast: Toast | null = null;
   private titleCard: { images: Phaser.GameObjects.Image[]; startedTick: number } | null = null;
   private titleRoomKey = '';
+  private bossIntro = false;
   private shiftStartTick: number | null = null;
   /** Everything the HUD would draw this frame; unchanged means skip the redraw. */
   private lastSignature = '';
@@ -168,7 +169,7 @@ export class GameHud {
       model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, this.windupActive(state),
       state.room.combat.player.y > 200,
       state.room.combat.player.y > 380,
-      titleAge !== null && titleAge < 160 ? bucket(titleAge) : 'x',
+      titleAge !== null && titleAge < 200 ? bucket(titleAge) : 'x',
       toastAge !== null && toastAge < 280 ? bucket(toastAge) : 'x',
       cardAge !== null && cardAge < 560 ? bucket(cardAge) : 'x',
       this.log.map((entry) => entry.text).join('|'), logAges,
@@ -528,7 +529,12 @@ export class GameHud {
           ? 'BLUE LIGHT SPECIAL - ONE ITEM HALF PRICE'
           : `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`;
       const subtitleColor = event === 'blackout' ? '#ff5a6a' : event === 'blue_light' ? '#6a9aff' : '#3ff0ff';
-      const sign = ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });
+      // The boss room gets a boss card instead of a room name.
+      const bossRoom = (room?.bossAnchor ?? null) !== null;
+      const sign = bossRoom
+        ? ensureNeonSign(this.scene, { text: 'LOSS PREVENTION', color: '#ff2a3a', scale: 6, subtitle: 'NO REFUNDS. NO EXCHANGES. NO SURVIVORS.', subtitleColor: '#ffd84a' })
+        : ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });
+      this.bossIntro = bossRoom;
       const halo = this.scene.add.image(SCREEN_W / 2, 200, sign.halo).setBlendMode(Phaser.BlendModes.ADD);
       const core = this.scene.add.image(SCREEN_W / 2, 200, sign.core);
       this.root.add([halo, core]);
@@ -536,7 +542,14 @@ export class GameHud {
     }
     if (!this.titleCard) return;
     const age = state.tick - this.titleCard.startedTick;
-    const fade = age < 20 ? age / 20 : age < 110 ? 1 : Math.max(0, 1 - (age - 110) / 40);
+    const hold = this.bossIntro ? 150 : 110;
+    const fade = age < 20 ? age / 20 : age < hold ? 1 : Math.max(0, 1 - (age - hold) / 40);
+    if (this.bossIntro && fade > 0) {
+      // Letterbox bars slam in for the boss card.
+      const bar = Math.round(Math.min(1, age / 10) * 46 * fade);
+      this.frame.fillStyle(0x05030a, 0.92).fillRect(0, 0, SCREEN_W, bar).fillRect(0, SCREEN_H - bar, SCREEN_W, bar);
+      this.frame.fillStyle(0xff2a3a, fade).fillRect(0, bar, SCREEN_W, 2).fillRect(0, SCREEN_H - bar - 2, SCREEN_W, 2);
+    }
     // A wind-up must never hide behind the room title: it steps aside.
     const alpha = Math.min(fade, this.windupActive(state) ? 0.2 : 1);
     for (const image of this.titleCard.images) image.setAlpha(alpha).setVisible(alpha > 0);

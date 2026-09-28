@@ -1,3 +1,4 @@
+import { BOSS_MAX_HEALTH } from '../../sim/combat/boss';
 /**
  * DOM presentation for the M5 MVP run.
  *
@@ -56,7 +57,7 @@ function requireElement<T extends HTMLElement>(selector: string): T {
  */
 export function bossHudParts(boss: EnemyState): string[] {
   const bossPhase = boss.bossPhase ?? bossPhaseForHealth(boss.health);
-  const parts = [`BOSS: phase ${bossPhase} · HP ${boss.health}/60`];
+  const parts = [`BOSS: phase ${bossPhase} · HP ${boss.health}/${BOSS_MAX_HEALTH}`];
   if (boss.phase === 'telegraph') {
     parts.push('SLAM WIND-UP');
   }

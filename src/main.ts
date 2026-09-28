@@ -13,6 +13,7 @@ import './styles.css';
 import { PlaytestLog } from './game/playtest/log';
 import { PlaytestPanel } from './game/ui/PlaytestPanel';
 import { OPEN_SETTINGS_EVENT, SettingsPanel } from './game/ui/SettingsPanel';
+import { browserBestRuns } from './game/score/score';
 
 export const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
 
@@ -61,6 +62,18 @@ const wingHud = requireElement<HTMLElement>('#wing-hud');
 const benchHud = requireElement<HTMLElement>('#bench-hud');
 const mvpHud = requireElement<HTMLElement>('#mvp-run-hud');
 const startScreen = requireElement<HTMLElement>('#start-screen');
+const bestRunLine = requireElement<HTMLElement>('#best-run');
+
+/** The title's best-run line, refreshed whenever the title is shown. */
+function showBestRun(): void {
+  const best = browserBestRuns().best();
+  bestRunLine.hidden = best === null;
+  if (best) {
+    const time = `${Math.floor(best.seconds / 60)}:${String(best.seconds % 60).padStart(2, '0')}`;
+    bestRunLine.textContent = `BEST SHIFT: ${best.score.toLocaleString('en-US')} · ${best.won ? `CLOCKED OUT IN ${time}` : 'DID NOT CLOCK OUT'}`;
+  }
+}
+showBestRun();
 const runShell = requireElement<HTMLElement>('#run-shell');
 const startupStatus = requireElement<HTMLElement>('#startup-status');
 
@@ -126,6 +139,7 @@ function launch(mode: RunMode): void {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     startScreen.hidden = false;
+    showBestRun();
     runShell.hidden = true;
     runShell.dataset.mode = '';
     document.body.dataset.mode = '';
@@ -185,6 +199,7 @@ function launchRun(checkpoint: MvpCheckpoint | null, seed: number): void {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     startScreen.hidden = false;
+    showBestRun();
     runShell.hidden = true;
     runShell.dataset.mode = '';
     document.body.dataset.mode = '';
@@ -208,6 +223,7 @@ function returnToTitle(): void {
     delete window.__DEAD_MALL_DEBUG__;
   }
   startScreen.hidden = false;
+  showBestRun();
   runShell.hidden = true;
   runShell.dataset.mode = '';
   document.body.dataset.mode = '';
