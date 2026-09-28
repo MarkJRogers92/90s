@@ -62,6 +62,16 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 120, gain: 0.1, cutoff: 3200, cutoffTo: 1200 }],
     minGapMs: 350,
   },
+  escalator: {
+    // The escalator starting up: a motor hum winding up under the clack of steps.
+    tones: [
+      { wave: 'sawtooth', from: 42, to: 58, ms: 1800, gain: 0.1 },
+      { wave: 'triangle', from: 84, to: 116, ms: 1800, gain: 0.06 },
+      ...[0, 300, 600, 900, 1200, 1500].map((atMs) => ({ wave: 'square' as const, from: 260, to: 200, ms: 40, gain: 0.03, atMs })),
+    ],
+    noise: [{ ms: 1800, gain: 0.05, cutoff: 500, cutoffTo: 900 }],
+    minGapMs: 2000,
+  },
   static_lock: {
     // A dying TV warming up: a rising, wavering whine over hiss, as long as the lock-on.
     tones: [
