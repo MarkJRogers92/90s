@@ -1548,9 +1548,11 @@ body[data-mode='run'] .marquee {
 /* The in-canvas HUD and end-of-shift card now carry everything the DOM status
    bar and summary showed. Both stay in the page, off-screen at their natural
    size, so screen readers (and the browser tests) still read the live status
-   and the terminal summary; only the action row stays on screen. */
+   and the terminal summary; only the action row stays on screen. The boss
+   chip goes too: the in-canvas boss bar shows the same phase and health. */
 .run-shell[data-mode='run'] .mvp-run-status-bar,
-.run-shell[data-mode='run'] .mvp-run-summary {
+.run-shell[data-mode='run'] .mvp-run-summary,
+.run-shell[data-mode='run'] .mvp-run-boss {
   position: absolute !important;
   left: -10000px !important;
   top: 0 !important;
