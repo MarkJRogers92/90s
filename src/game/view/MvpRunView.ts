@@ -9,7 +9,8 @@
  */
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
-import { runOfferPriceLabel } from '../../sim/run/economy';
+import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
+import { ITEM_CATALOG } from '../../sim/items/catalog';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { securityFacingAtTick } from '../../sim/shop/security';
@@ -81,6 +82,7 @@ export class MvpRunView {
   private readonly feedback: CombatFeedback;
   private readonly weapon: WeaponView;
   private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
+  private readonly offerNames = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedOfferIcons = new Set<string>();
   private readonly storeGraphics: Phaser.GameObjects.Graphics;
   private readonly tokenSprites = new Map<string, Phaser.GameObjects.Image>();
@@ -429,16 +431,38 @@ export class MvpRunView {
 
     this.setLabel(`store:${templateId}`, store.name.toUpperCase(), store.bounds.x + 6, store.bounds.y - 16);
 
+    const player = state.room.combat.player;
+    // Only the nearest available item's name grows, so neighbours never collide.
+    let nearestId: string | null = null;
+    let nearestDistance = 150;
+    for (const offer of room?.offers ?? []) {
+      if ((state.offerStatus[offer.id] ?? 'available') !== 'available') continue;
+      const distance = Math.hypot(player.x - offer.position.x, player.y - offer.position.y);
+      if (distance < nearestDistance) {
+        nearestDistance = distance;
+        nearestId = offer.id;
+      }
+    }
     for (const offer of room?.offers ?? []) {
       const status = state.offerStatus[offer.id] ?? 'available';
+      const weapon = ITEM_CATALOG.find((definition) => definition.id === offer.itemDefinitionId)?.base !== undefined;
+      const kindColor = weapon ? 0x3ff0ff : 0x6aff8a;
       if (status === 'available') {
-        floor.lineStyle(2, 0x6aff8a, 0.8).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
+        // Readable from across the room: a coloured loot beam and pedestal,
+        // cyan for weapons and green for passives.
+        const pulse = 0.55 + 0.25 * Math.sin((state.tick + offer.position.x) / 18);
+        cues.fillStyle(kindColor, 0.1 * pulse).fillRect(offer.position.x - 9, offer.position.y - 58, 18, 58);
+        cues.fillStyle(kindColor, 0.22 * pulse).fillRect(offer.position.x - 3, offer.position.y - 58, 6, 58);
+        floor.fillStyle(kindColor, 0.18).fillEllipse(offer.position.x, offer.position.y, 40, 15);
+        floor.lineStyle(2, kindColor, 0.9).strokeEllipse(offer.position.x, offer.position.y, 40, 15);
+        this.offerName(offer.id, itemDefinitionName(offer.itemDefinitionId).toUpperCase(), weapon, offer.position.x, offer.position.y - 74, Math.hypot(player.x - offer.position.x, player.y - offer.position.y), offer.id === nearestId);
       } else if (status === 'carried') {
         floor.lineStyle(2, 0xffd84a, 1).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       } else {
         floor.lineStyle(1, 0x5a5e55, 0.8).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       }
-      this.offerIcon(offer.id, offer.itemDefinitionId, offer.position.x, offer.position.y, state.tick, status);
+      if (status !== 'available') this.offerNames.get(offer.id)?.setVisible(false);
+      this.offerIcon(offer.id, offer.itemDefinitionId, offer.position.x, offer.position.y, state.tick, status, kindColor);
       // The same run offer price the HUD card shows, so a world label can
       // never disagree with the discounted price the run actually charges.
       this.setLabel(
@@ -1088,7 +1112,19 @@ export class MvpRunView {
   }
 
   /** Store stock drawn as the actual item, bobbing on its shelf under a spotlight. */
-  private offerIcon(offerId: string, itemDefinitionId: string, x: number, y: number, tick: number, status: string): void {
+  /** The item's name over its pedestal: dim from afar, bright up close. */
+  private offerName(offerId: string, name: string, weapon: boolean, x: number, y: number, distance: number, featured: boolean): void {
+    const label = ensurePixelLabel(this.scene, name, weapon ? '#3ff0ff' : '#6aff8a', 1, '#05030a');
+    let image = this.offerNames.get(offerId);
+    if (!image) {
+      image = this.scene.add.image(0, 0, label.key).setDepth(presentationDepth('prompt', 4));
+      this.offerNames.set(offerId, image);
+    }
+    if (image.texture.key !== label.key) image.setTexture(label.key);
+    image.setVisible(true).setPosition(Math.round(x), Math.round(y)).setScale(featured ? 2 : 1).setAlpha(featured || distance < 320 ? 1 : 0.65);
+  }
+
+  private offerIcon(offerId: string, itemDefinitionId: string, x: number, y: number, tick: number, status: string, ring = 0x6aff8a): void {
     const key = itemIconKey(itemDefinitionId);
     const usable = key ? usableTextureKey(this.scene.textures, key) : null;
     if (!usable) return;
@@ -1098,9 +1134,15 @@ export class MvpRunView {
       icon = this.scene.add.image(x, y, usable);
       this.offerIcons.set(offerId, icon);
     }
-    const scale = Math.min(22 / icon.width, 22 / icon.height);
+    const scale = Math.min(36 / icon.width, 36 / icon.height);
     const bob = Math.sin((tick + x) / 14) * 2;
-    icon.setPosition(Math.round(x), Math.round(y - 30 + bob)).setScale(scale)
+    if (status === 'available') {
+      // A dark disc and a coloured ring behind the icon so it reads on any floor.
+      const iy = Math.round(y - 40 + bob);
+      this.effectGraphics.fillStyle(0x05030a, 0.85).fillCircle(Math.round(x), iy, 24);
+      this.effectGraphics.lineStyle(2, ring, 1).strokeCircle(Math.round(x), iy, 24);
+    }
+    icon.setPosition(Math.round(x), Math.round(y - 40 + bob)).setScale(scale)
       .setDepth(presentationDepth('effect', 5))
       .setAlpha(status === 'available' ? 1 : status === 'carried' ? 0.9 : 0.25)
       .setVisible(status !== 'purchased' && status !== 'secured');
@@ -1114,6 +1156,8 @@ export class MvpRunView {
       if (!this.usedOfferIcons.has(id)) {
         icon.destroy();
         this.offerIcons.delete(id);
+        this.offerNames.get(id)?.destroy();
+        this.offerNames.delete(id);
       }
     }
   }

@@ -38,9 +38,9 @@ export const PLAYER_MAX_HEALTH = 6;
  */
 export const ROOM_CLEAR_HEAL = 2;
 const PLAYER_RADIUS = 10;
-const HANGER_HEALTH = 8;
+const HANGER_HEALTH = 12;
 const HANGER_RADIUS = 14;
-const SPITTER_HEALTH = 8;
+const SPITTER_HEALTH = 12;
 const SPITTER_RADIUS = 16;
 
 function spawnEnemy(spawn: WingEnemySpawn, id: number): EnemyState {

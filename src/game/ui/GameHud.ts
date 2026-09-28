@@ -119,7 +119,7 @@ export class GameHud {
     this.drawVitals(model, state);
     this.drawHotbar(model);
     this.drawLog(state);
-    this.drawPrompt(model, state.room.combat.player.y > 260);
+    this.drawPrompt(model, state.room.combat.player.y > 200);
     this.drawToast(state);
     this.drawControlsCard(state);
     this.drawTitleCard(state);
@@ -164,7 +164,7 @@ export class GameHud {
     const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
     return JSON.stringify([
       model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, this.windupActive(state),
-      state.room.combat.player.y > 260,
+      state.room.combat.player.y > 200,
       state.room.combat.player.y > 380,
       titleAge !== null && titleAge < 160 ? bucket(titleAge) : 'x',
       toastAge !== null && toastAge < 280 ? bucket(toastAge) : 'x',
