@@ -24,6 +24,9 @@ export type AudioCue =
   | 'combo'
   | 'boss_intro'
   | 'mannequin'
+  | 'static_lock'
+  | 'static_blink'
+  | 'shopper_charge'
   | 'shot'
   | 'splash'
   | 'hit'
@@ -68,6 +71,9 @@ export type AudioSnapshot = {
   readonly enemyHealth: Readonly<Record<number, number>>;
   readonly bossId: number | null;
   readonly telegraphingSpitterIds: readonly number[];
+  /** Statics winding up a blink, and Bargain Hunters mid-charge. */
+  readonly telegraphingStaticIds: readonly number[];
+  readonly chargingShopperIds: readonly number[];
   readonly bossPhase: number | null;
   readonly bossTelegraphing: boolean;
   readonly bossVolleyTelegraphTicks: number;
@@ -103,6 +109,12 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     bossId: boss?.id ?? null,
     telegraphingSpitterIds: combat.enemies
       .filter((enemy) => enemy.kind === 'spitter' && enemy.health > 0 && enemy.phase === 'telegraph')
+      .map((enemy) => enemy.id),
+    telegraphingStaticIds: combat.enemies
+      .filter((enemy) => enemy.kind === 'static' && enemy.health > 0 && enemy.phase === 'telegraph')
+      .map((enemy) => enemy.id),
+    chargingShopperIds: combat.enemies
+      .filter((enemy) => enemy.kind === 'shopper' && enemy.health > 0 && (enemy.chargeTicks ?? 0) > 0)
       .map((enemy) => enemy.id),
     bossPhase: boss?.bossPhase ?? null,
     bossTelegraphing: boss?.phase === 'telegraph',
@@ -234,6 +246,16 @@ export function deriveAudioCues(
   // A creak and a clatter the moment a mannequin you stopped watching moves.
   if (current.mannequinsMoving > previous.mannequinsMoving) {
     cues.push('mannequin');
+  }
+  // The Static's lock-on whine, and the zap when it lands wherever it locked.
+  if (current.telegraphingStaticIds.some((id) => !previous.telegraphingStaticIds.includes(id))) {
+    cues.push('static_lock');
+  }
+  if (previous.telegraphingStaticIds.some((id) => current.livingEnemyIds.includes(id) && !current.telegraphingStaticIds.includes(id))) {
+    cues.push('static_blink');
+  }
+  if (current.chargingShopperIds.some((id) => !previous.chargingShopperIds.includes(id))) {
+    cues.push('shopper_charge');
   }
   if (current.comboTier > previous.comboTier) {
     cues.push('combo');

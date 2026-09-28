@@ -62,6 +62,33 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 120, gain: 0.1, cutoff: 3200, cutoffTo: 1200 }],
     minGapMs: 350,
   },
+  static_lock: {
+    // A dying TV warming up: a rising, wavering whine over hiss, as long as the lock-on.
+    tones: [
+      { wave: 'sawtooth', from: 220, to: 880, ms: 540, gain: 0.05 },
+      { wave: 'square', from: 227, to: 905, ms: 540, gain: 0.03 },
+    ],
+    noise: [{ ms: 540, gain: 0.05, cutoff: 5000, cutoffTo: 9000 }],
+    minGapMs: 250,
+  },
+  static_blink: {
+    // The channel snaps: a bright zap and a crackle where it lands.
+    tones: [
+      { wave: 'square', from: 1800, to: 120, ms: 90, gain: 0.12 },
+      { wave: 'sawtooth', from: 60, to: 40, ms: 180, gain: 0.14, atMs: 20 },
+    ],
+    noise: [{ ms: 200, gain: 0.22, cutoff: 9000, cutoffTo: 1500 }],
+    minGapMs: 120,
+  },
+  shopper_charge: {
+    // A runaway cart: rattling wheels under a rushing scrape.
+    tones: [
+      { wave: 'square', from: 95, to: 70, ms: 260, gain: 0.06 },
+      { wave: 'square', from: 190, to: 140, ms: 260, gain: 0.03, atMs: 30 },
+    ],
+    noise: [{ ms: 280, gain: 0.2, cutoff: 700, cutoffTo: 2600 }],
+    minGapMs: 200,
+  },
   boss_intro: {
     // The security office door slams: a sub boom, a metal clank, a low sting.
     tones: [
