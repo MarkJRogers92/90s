@@ -520,6 +520,18 @@ export class MvpRunView {
         offer.position.y - 12,
       );
     }
+    // The grown name is wider than the gap to its neighbours: any name it
+    // would run into steps aside (the store card names the item anyway).
+    const featured = nearestId ? this.offerNames.get(nearestId) : undefined;
+    if (featured?.visible) {
+      const bounds = featured.getBounds();
+      for (const [id, image] of this.offerNames) {
+        if (id === nearestId || !image.visible) continue;
+        const other = image.getBounds();
+        const overlaps = other.right + 6 > bounds.left && other.left - 6 < bounds.right && other.bottom > bounds.top && other.top < bounds.bottom;
+        if (overlaps) image.setVisible(false);
+      }
+    }
   }
 
   private drawEnemy(
@@ -971,7 +983,9 @@ export class MvpRunView {
       // Kept fully on screen even when the janitor hugs a wall.
       const half = this.dashHint.width / 2 + 6;
       const hx = Math.max(half, Math.min(960 - half, player.x));
-      this.dashHint.setVisible(true).setPosition(Math.round(hx), Math.round(Math.max(24, player.y - 78) + bob)).setScale(1 + Math.max(0, 0.15 * Math.sin(fxTick / 3)));
+      // Under the feet, by the dash ring it refers to: damage numbers and
+      // OUCH! float up from the head, so the two never stack.
+      this.dashHint.setVisible(true).setPosition(Math.round(hx), Math.round(Math.min(466, player.y + 40) + bob)).setScale(1 + Math.max(0, 0.15 * Math.sin(fxTick / 3)));
     } else {
       this.dashHint?.setVisible(false);
     }

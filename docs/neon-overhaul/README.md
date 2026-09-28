@@ -412,6 +412,26 @@ CLEARED and offers the ESCALATOR (R / Enter / pad A) or CLOCK OUT.
   24 ticks and walk 55 → 70 px/s. Wind-ups stay dodgeable on foot (asserted in
   `difficulty-tuning.test.ts`).
 
+## Round 17 — polish pass
+
+An audit of every screen (captures in `artifacts/neon-overhaul/audit/`), then:
+
+- **Title**: PixelLab key art (`public/assets/neon/ui/title-keyart.png`, the
+  janitor alone in a dead mall at night); Night Shift is one big pulsing
+  clock-in button (no pulse under reduced motion); the older modes sit in a
+  muted Prototypes row; two columns on wide screens, art hidden under 1100 px;
+  Settings and Playtest panels dim the page behind them.
+- **The Mall Manager, redesigned**: grey suit, blood-red tie, gold badge, red
+  eyes; an 8-frame stalking walk and a falling-back death.
+- **Sound**: the Static whines as it locks on and zaps when it blinks; a
+  Bargain Hunter's charge is a runaway cart.
+- **HUD fixes**: toasts (MANNEQUINS, new items) wait for the room title card
+  instead of drawing over it; the nearest offer's grown name hides the
+  neighbour names it would overlap; the Floor 2 map names its own rooms; the
+  pickup log wraps at a word onto two lines instead of cutting mid-word; the
+  dash hint sits under the janitor so it never stacks on damage numbers; the
+  DOM boss chip moved off-screen (the canvas boss bar shows it).
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

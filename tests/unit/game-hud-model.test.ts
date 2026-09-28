@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
-import { buildGameHudModel, heartsFor } from '../../src/game/ui/gameHudModel';
+import { buildGameHudModel, heartsFor, wrapLogText } from '../../src/game/ui/gameHudModel';
 import { enterDoorway } from '../../src/sim/run/tickMvpRun';
+import { ascendToFloorTwo } from '../../src/sim/run/floors';
 
 describe('HUD hearts', () => {
   it('shows two health per heart, Isaac style', () => {
@@ -72,5 +73,28 @@ describe('store offer prompt', () => {
     const prompt = buildGameHudModel(run).prompt!;
     expect(prompt.detail?.canBuy).toBe(false);
     expect(prompt.detail?.note).toMatch(/^NEED \$\d+ MORE/);
+  });
+});
+
+describe('the wing map upstairs', () => {
+  it('names the upper-floor rooms, not the downstairs ones they share ids with', () => {
+    const upstairs = ascendToFloorTwo(Object.assign(createMvpRun(7), { status: 'won' as const }));
+    const shorts = buildGameHudModel(upstairs).rooms.map((room) => room.short);
+    expect(shorts).toEqual(['LANDING', 'WEST WING', 'CINEMA', 'EAST WING', 'STAIRWELL', 'MANAGEMENT']);
+    expect(buildGameHudModel(createMvpRun(7)).rooms[0]!.short).toBe('CONCOURSE');
+  });
+});
+
+describe('the pickup log', () => {
+  it('wraps a long message at a word instead of cutting it mid-word', () => {
+    expect(wrapLogText('UP THE ESCALATOR: THE ESCALATOR LANDING, FLOOR 2.')).toEqual(['UP THE ESCALATOR: THE ESCALATOR', 'LANDING, FLOOR 2.']);
+    expect(wrapLogText('ENTERED THE FOOD COURT.')).toEqual(['ENTERED THE FOOD COURT.']);
+  });
+
+  it('keeps to two lines, ending a longer message on a whole word', () => {
+    const lines = wrapLogText('ONE TWO THREE FOUR FIVE SIX SEVEN EIGHT NINE TEN ELEVEN TWELVE THIRTEEN FOURTEEN FIFTEEN');
+    expect(lines).toHaveLength(2);
+    expect(lines.every((line) => line.length <= 34)).toBe(true);
+    expect(lines[1]).toMatch(/[A-Z]\.\.\.$/);
   });
 });

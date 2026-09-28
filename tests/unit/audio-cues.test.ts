@@ -316,3 +316,19 @@ describe('mannequin cue', () => {
     expect(cuesBetween(state, (current) => { current.room.combat.enemies[0]!.phase = 'pursue'; })).toContain('mannequin');
   });
 });
+
+describe('upstairs enemy cues', () => {
+  it('whines while a Static locks on, then zaps when it blinks', () => {
+    const state = createMvpRun(9);
+    state.room.combat.enemies = [{ ...makeHanger(7, 300, 200), kind: 'static', phase: 'pursue' }];
+    expect(cuesBetween(state, (current) => { current.room.combat.enemies[0]!.phase = 'telegraph'; })).toContain('static_lock');
+    state.room.combat.enemies = [{ ...makeHanger(7, 300, 200), kind: 'static', phase: 'telegraph' }];
+    expect(cuesBetween(state, (current) => { current.room.combat.enemies[0]!.phase = 'recover'; })).toContain('static_blink');
+  });
+
+  it('rattles a cart when a Bargain Hunter starts its charge', () => {
+    const state = createMvpRun(9);
+    state.room.combat.enemies = [{ ...makeHanger(7, 300, 200), kind: 'shopper', phase: 'telegraph' }];
+    expect(cuesBetween(state, (current) => { current.room.combat.enemies[0]!.chargeTicks = 16; })).toContain('shopper_charge');
+  });
+});

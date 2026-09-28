@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-09-28 — round 17: polish pass
+
+- Audit captures of every screen (`artifacts/neon-overhaul/audit/`) found: the
+  MANNEQUINS toast drawn over the Food Court title card (the hint was decided
+  before the new room's card existed), a store name collision ("BROOM
+  HANDLEBOX CUTTER"), Floor 1 names on the Floor 2 map, a log line cut
+  mid-word ("THE ESCALATOR L."), and the dash hint stacked on damage text.
+  Each was re-captured after the fix (`fc-seq.png`, `fixes.png`,
+  `dash-crop.png`).
+- New tests failed first: Floor 2 map names, log wrapping (2), Static and
+  Bargain Hunter audio cues (2). `npx vitest run` — PASS: 59 files, 681 tests.
+- `npx tsc --noEmit` and `npx vite build` — PASS.
+- `PW_PORT=4193 npx playwright test --workers=2` — PASS: 59/59 (2.4 min),
+  including the title-screen launch paths after the button regrouping.
+
 ## 2026-09-28 — round 16: a new mall every shift, sharper upstairs
 
 - New `shift-seed.test.ts` (3) failed first (missing module); the Floor 2

@@ -1080,36 +1080,6 @@
     "sha256": "52cd0e1adbcbfb77a937e49d659d6344adf3bd46f4f04f08e11f95bc1c4e744e"
   },
   {
-    "path": "public/assets/neon/enemies/manager-idle.png",
-    "source": "docs/art/neon-overhaul/pixellab/anim-manager-idle.png",
-    "generator": "PixelLab animate_character, packed by pack_character.py",
-    "size": [
-      768,
-      96
-    ],
-    "sha256": "041c85b18f9208fc414a6beb5f6781b67958bd72907be9d15b4913508377df5b"
-  },
-  {
-    "path": "public/assets/neon/enemies/manager-walk.png",
-    "source": "docs/art/neon-overhaul/pixellab/anim-manager-walk.png",
-    "generator": "PixelLab animate_character, packed by pack_character.py",
-    "size": [
-      576,
-      768
-    ],
-    "sha256": "afc7b173871757201ba11e0261a483d64ab4e6ca9617db46655749893878e9ac"
-  },
-  {
-    "path": "public/assets/neon/enemies/manager-death.png",
-    "source": "docs/art/neon-overhaul/pixellab/anim-manager-death.png",
-    "generator": "PixelLab animate_character, packed by pack_character.py",
-    "size": [
-      672,
-      768
-    ],
-    "sha256": "e2ff954dce441b91589597b7f2b16dbd60c56820be389cb59cee4376579d8506"
-  },
-  {
     "path": "public/assets/neon/enemies/shopper-idle.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-shopper-idle.png",
     "generator": "PixelLab animate_character, packed by pack_character.py",
@@ -1138,5 +1108,45 @@
       768
     ],
     "sha256": "dca933447afe84a7b974e9479ed8b4faf219f55e08f92effe3e247172eb5c072"
+  },
+  {
+    "path": "public/assets/neon/ui/title-keyart.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-title-keyart.png",
+    "generator": "PixelLab create_image_pro (688x384 scene)",
+    "size": [
+      688,
+      384
+    ],
+    "sha256": "dd77bed735f8be306490fef00970125b57ac3e22de350617beb44bca0f50ca8e"
+  },
+  {
+    "path": "public/assets/neon/enemies/manager-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-manager-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      768,
+      96
+    ],
+    "sha256": "329121c51abec0065c56ba81cb9b3d59ee8048edc5560c5b7a6f449ec626db18"
+  },
+  {
+    "path": "public/assets/neon/enemies/manager-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-manager-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      768,
+      768
+    ],
+    "sha256": "63f94d81b4471910e6ea9c552fabdd27ac8e5a23d24f2e4721d0c846d8a04a35"
+  },
+  {
+    "path": "public/assets/neon/enemies/manager-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-manager-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      672,
+      768
+    ],
+    "sha256": "d24cbb8710706b61c0f57396f9409692571b7b6106725fc7ac1c548adb5be526"
   }
 ]

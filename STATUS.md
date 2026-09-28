@@ -7,6 +7,11 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 17 (2026-09-28): polish pass — title key art and layout, a redesigned
+Mall Manager, sounds for the upstairs enemies, and five HUD overlap/clipping
+fixes found by auditing every screen. 681 unit and 59 browser tests pass.
+Committed locally, not pushed.
+
 Round 16 (2026-09-28): every shift without `?seed=` now rolls its own mall
 (the end card shows its number to share), and the upstairs enemies attack
 more often after the first Floor 2 playtest. 676 unit and 59 browser tests pass.
