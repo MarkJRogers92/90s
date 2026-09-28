@@ -13,6 +13,7 @@ import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { PauseCard } from '../ui/PauseCard';
+import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
@@ -58,6 +59,7 @@ import { STAGE_HEIGHT, STAGE_TOP, STAGE_WIDTH, dressingTextureFiles } from '../p
 import { GameHud } from '../ui/GameHud';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
+import { isBossKind } from '../../sim/combat/boss';
 import {
   centreCameraOn,
   pointerToWorld,
@@ -132,6 +134,7 @@ class MvpRunInputAdapter {
   /** The end-of-shift card, when it is open: its buttons and key actions. */
   public endCard: {
     readonly isOpen: () => boolean;
+    readonly ascends: () => boolean;
     readonly buttonAt: (x: number, y: number) => ShiftCardAction | null;
     readonly act: (action: ShiftCardAction) => void;
   } | null = null;
@@ -195,7 +198,7 @@ class MvpRunInputAdapter {
       }
     }
     if (this.endCard?.isOpen()) {
-      if (event.code === 'KeyR' || event.code === 'Enter') this.endCard.act('retry');
+      if (event.code === 'KeyR' || event.code === 'Enter') this.endCard.act(this.endCard.ascends() ? 'ascend' : 'retry');
       else if (event.code === 'KeyT') this.endCard.act('title');
       if (event.code !== 'KeyM') return;
     }
@@ -429,8 +432,9 @@ export class MvpRunScene extends Phaser.Scene {
     this.shiftCard = card;
     this.inputAdapter.endCard = {
       isOpen: () => card.open,
+      ascends: () => card.offersAscend,
       buttonAt: (x, y) => card.buttonAt(x, y),
-      act: (action) => (action === 'retry' ? this.restartRun() : this.returnToTitle()),
+      act: (action) => (action === 'ascend' ? this.ascend() : action === 'retry' ? this.restartRun() : this.returnToTitle()),
     };
     this.hud = new MvpRunHud(
       () => this.restartRun(),
@@ -477,7 +481,10 @@ export class MvpRunScene extends Phaser.Scene {
       return;
     }
     if (this.shiftCard?.open) {
-      if (pad.confirm) this.restartRun();
+      if (pad.confirm) {
+        if (this.shiftCard.offersAscend) this.ascend();
+        else this.restartRun();
+      }
       else if (pad.cancel) this.returnToTitle();
       return;
     }
@@ -590,6 +597,28 @@ export class MvpRunScene extends Phaser.Scene {
       : `clear unavailable: ${cleared.reason}`;
     this.inputAdapter?.clearHeld();
     this.runView?.resetForRun();
+    this.syncCheckpoint();
+    this.syncView();
+  }
+
+  /**
+   * Up the escalator: the won floor-1 run becomes a floor-2 run carrying the
+   * janitor's gear, cash and stats. The floor-1 record closes as a win; the
+   * upper level gets its own checkpoint so Continue resumes upstairs.
+   */
+  private ascend(): void {
+    if (!canAscend(this.run)) return;
+    this.run = ascendToFloorTwo(this.run);
+    this.playtest = new PlaytestRecorder();
+    this.generation += 1;
+    this.audio?.resetBaseline();
+    this.accumulator = 0;
+    this.hitStopMs = 0;
+    this.lastRoomIndex = this.run.roomIndex;
+    this.lastCheckpointKey = null;
+    this.inputAdapter?.clearHeld();
+    this.runView?.resetForRun();
+    this.cameras.main.fadeIn(900, 7, 5, 12);
     this.syncCheckpoint();
     this.syncView();
   }
@@ -742,6 +771,21 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-boss') {
+      // Straight up the escalator, optionally on to the Mall Manager.
+      state.status = 'won';
+      const upstairs = ascendToFloorTwo(state);
+      if (fixture === 'mvp-floor-two-boss') {
+        let guard = 0;
+        while (upstairs.roomIndex < upstairs.wing.rooms.length - 1 && guard < 10) {
+          guard += 1;
+          upstairs.room.combat.enemies = [];
+          tickMvpRun(upstairs, { moveX: 0, moveY: 0, aimX: upstairs.room.combat.player.x, aimY: upstairs.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(upstairs, 'east').accepted) break;
+        }
+      }
+      return upstairs;
+    }
     if (fixture === 'mvp-back-hall') {
       // Skips to the back hall, where the display mannequins always stand.
       let guard = 0;
@@ -798,7 +842,7 @@ export class MvpRunScene extends Phaser.Scene {
       // one mop swing away, so browser acceptance can prove the terminal
       // summary and the checkpoint clearing with honest input.
       if (state.wing.rooms[state.roomIndex]?.id === 'security_office') {
-        const boss = state.room.combat.enemies.find((enemy) => enemy.kind === 'lp_manager');
+        const boss = state.room.combat.enemies.find((enemy) => isBossKind(enemy.kind));
         if (boss) {
           boss.health = 1;
           state.room.combat.player.x = boss.x - 80;

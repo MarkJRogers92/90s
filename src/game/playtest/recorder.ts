@@ -10,6 +10,7 @@
 import type { FusionInventoryNode } from '../../sim/fusion/types';
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
+import { isBossKind } from '../../sim/combat/boss';
 
 export type DamageSource = 'hanger' | 'mannequin' | 'glob' | 'slam' | 'bossShot' | 'other';
 
@@ -71,7 +72,7 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
     (enemy) => enemy.kind === 'mannequin' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
   );
   if (mannequin) return 'mannequin';
-  const boss = combat.enemies.some((enemy) => enemy.kind === 'lp_manager' && enemy.health > 0);
+  const boss = combat.enemies.some((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
   if (boss && amount >= 2) return 'slam';
   const shots = combat.projectiles.filter((shot) => shot.faction === 'enemy').length;
   if (shots < previous.enemyShots || previous.enemyShots > 0) return boss ? 'bossShot' : 'glob';

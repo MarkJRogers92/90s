@@ -18,6 +18,7 @@ import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTe
 import type { PointLight } from '../presentation/lighting/LightingLayer';
 import { ACTOR_DIRECTION_ORDER, directionForVector } from './ActorSpriteView';
 import { flashAllowed, gameSettings, shakeScale, washScale } from '../settings/settings';
+import { isBossKind } from '../../sim/combat/boss';
 import {
   HEAVY_HIT_DAMAGE,
   HIT_REACTION_TICKS,
@@ -78,12 +79,15 @@ function deathSheet(kind: EnemyState['kind']): string {
   return kind === 'hanger' ? ENEMY_TEXTURE_KEYS.hangerDeath
     : kind === 'spitter' ? ENEMY_TEXTURE_KEYS.spitterDeath
       : kind === 'mannequin' ? ENEMY_TEXTURE_KEYS.mannequinDeath
-        : ENEMY_TEXTURE_KEYS.lpManagerDeath;
+        : kind === 'static' ? ENEMY_TEXTURE_KEYS.staticDeath
+          : kind === 'shopper' ? ENEMY_TEXTURE_KEYS.shopperDeath
+            : kind === 'manager' ? ENEMY_TEXTURE_KEYS.managerDeath
+              : ENEMY_TEXTURE_KEYS.lpManagerDeath;
 }
 
 /** What spills when this kind is hit: blood, green goo, or beige plastic chips. */
 function spillColor(kind: EnemyState['kind']): number {
-  return kind === 'spitter' ? 0x9aff6a : kind === 'mannequin' ? 0xf0d0a8 : 0xff3a4a;
+  return kind === 'spitter' ? 0x9aff6a : kind === 'mannequin' ? 0xf0d0a8 : kind === 'static' ? 0x40e0ff : 0xff3a4a;
 }
 
 const VIGNETTE_TEXTURE = 'fx:hurt-vignette';
@@ -291,7 +295,7 @@ export class CombatFeedback {
   }
 
   private onDeath(death: Tracked & { id: string }, player: { x: number; y: number }, tick: number): HitStopBeat {
-    const boss = death.kind === 'lp_manager';
+    const boss = isBossKind(death.kind);
     const blood = spillColor(death.kind);
     this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : death.kind === 'mannequin' ? DECAL_TEXTURE_KEYS.glass : DECAL_TEXTURE_KEYS.bloodPool, boss ? 3.6 : 2.6, death.kind);
     this.addDecal(death.x + 14, death.y + 8, DECAL_TEXTURE_KEYS.bloodDrag, 2, death.kind);
@@ -324,8 +328,11 @@ export class CombatFeedback {
     const row = ACTOR_DIRECTION_ORDER.indexOf(direction);
     // Death canvases are grown copies of the 64px idle canvas, centred on it,
     // so pixel scale and the feet row come from the idle frame.
-    const idleFrame = death.kind === 'mannequin' ? 96 : 64;
-    const scale = (death.kind === 'lp_manager' ? 128 : death.kind === 'mannequin' ? 72 : 64) / idleFrame;
+    // The mannequin and the upper-floor cast are 96 px PixelLab canvases.
+    const bigCanvas = death.kind === 'mannequin' || death.kind === 'static' || death.kind === 'shopper' || death.kind === 'manager';
+    const idleFrame = bigCanvas ? 96 : 64;
+    const shown = isBossKind(death.kind) ? 128 : death.kind === 'shopper' ? 76 : bigCanvas ? 72 : 64;
+    const scale = shown / idleFrame;
     const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
     const image = this.scene.add.image(death.x, death.y, key).setDepth(presentationDepth('actor', death.y - 1)).setScale(scale);
     this.corpses.push({ image, born: tick, frames, frameSize, row, scale, feetY });
@@ -417,7 +424,7 @@ export class CombatFeedback {
       .setRotation(this.random() * Math.PI * 2)
       .setAlpha(0.92);
     // Fresh blood reads bright under the mall lights, even on the red food-court tile.
-    decal.setTint(kind === 'spitter' ? 0xc8ff9a : kind === 'mannequin' ? 0xf0dcc0 : kind === 'lp_manager' && key === DECAL_TEXTURE_KEYS.scorch ? 0x9a8a70 : 0xff8a8a);
+    decal.setTint(kind === 'spitter' ? 0xc8ff9a : kind === 'mannequin' ? 0xf0dcc0 : isBossKind(kind) && key === DECAL_TEXTURE_KEYS.scorch ? 0x9a8a70 : 0xff8a8a);
     this.decals.push(decal);
     if (this.decals.length > MAX_DECALS) this.decals.shift()?.destroy();
   }

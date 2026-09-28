@@ -258,7 +258,7 @@ export class GameHud {
     const x = (SCREEN_W - width) / 2;
     const y = 60;
     this.panel(this.frame, x - 10, y - 6, width + 20, 44, 0xff3a4a);
-    this.text('boss-name', `LOSS PREVENTION  PHASE ${model.boss.phase}`, SCREEN_W / 2, y, '#ff6f7a', 2, false, 1, 'center');
+    this.text('boss-name', `${model.boss.name}  PHASE ${model.boss.phase}`, SCREEN_W / 2, y, '#ff6f7a', 2, false, 1, 'center');
     const fill = Math.round(width * Math.max(0, model.boss.health / model.boss.max));
     this.frame.fillStyle(0x2a0a12, 1).fillRect(x, y + 20, width, 10);
     this.frame.fillStyle(0xff3a4a, 1).fillRect(x, y + 20, fill, 10);
@@ -552,7 +552,9 @@ export class GameHud {
       // The boss room gets a boss card instead of a room name.
       const bossRoom = (room?.bossAnchor ?? null) !== null;
       const sign = bossRoom
-        ? ensureNeonSign(this.scene, { text: 'LOSS PREVENTION', color: '#ff2a3a', scale: 6, subtitle: 'NO REFUNDS. NO EXCHANGES. NO SURVIVORS.', subtitleColor: '#ffd84a' })
+        ? state.wing.floor === 2
+          ? ensureNeonSign(this.scene, { text: 'THE MALL MANAGER', color: '#ff2a3a', scale: 6, subtitle: 'THE CUSTOMER IS NEVER RIGHT.', subtitleColor: '#ffd84a' })
+          : ensureNeonSign(this.scene, { text: 'LOSS PREVENTION', color: '#ff2a3a', scale: 6, subtitle: 'NO REFUNDS. NO EXCHANGES. NO SURVIVORS.', subtitleColor: '#ffd84a' })
         : ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });
       this.bossIntro = bossRoom;
       const halo = this.scene.add.image(SCREEN_W / 2, 200, sign.halo).setBlendMode(Phaser.BlendModes.ADD);

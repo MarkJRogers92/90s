@@ -5,7 +5,7 @@
  * so every heart, checkbox and minimap cell is traceable to a simulation field
  * and the whole thing is unit-testable.
  */
-import { BOSS_MAX_HEALTH, bossPhaseForHealth } from '../../sim/combat/boss';
+import { bossConfigFor, bossPhaseForHealth, isBossKind } from '../../sim/combat/boss';
 import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import type { MvpRunState } from '../../sim/run/types';
 import type { WingRoomId } from '../../sim/wing/types';
@@ -79,7 +79,9 @@ export type GameHudModel = {
   readonly rooms: readonly HudRoomCell[];
   readonly hotbar: readonly HudSlot[];
   readonly carriedCount: number;
-  readonly boss: { readonly health: number; readonly max: number; readonly phase: number } | null;
+  readonly boss: { readonly health: number; readonly max: number; readonly phase: number; readonly name: string } | null;
+  /** 1 downstairs, 2 on the upper level. */
+  readonly floor: 1 | 2;
   readonly enemiesLeft: number;
   readonly weapons: readonly HudWeapon[];
   readonly passives: readonly HudPassive[];
@@ -110,17 +112,17 @@ export function heartsFor(health: number, maxHealth = PLAYER_MAX_HEALTH): HeartS
 export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const room = state.wing.rooms[state.roomIndex];
   const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
-  const boss = living.find((enemy) => enemy.kind === 'lp_manager') ?? null;
+  const boss = living.find((enemy) => isBossKind(enemy.kind)) ?? null;
   const fightHere = (room?.enemySpawns.length ?? 0) > 0 || room?.bossAnchor != null;
 
   const objectives: HudObjective[] = [
     {
-      text: `REACH SECURITY  ${state.roomIndex + 1}/${state.wing.rooms.length}`,
+      text: `${state.wing.floor === 2 ? 'REACH MANAGEMENT' : 'REACH SECURITY'}  ${state.roomIndex + 1}/${state.wing.rooms.length}`,
       done: state.status === 'won',
     },
   ];
   if (room?.id === 'security_office') {
-    objectives.push({ text: 'STOP LOSS PREVENTION', done: boss === null && state.room.cleared });
+    objectives.push({ text: state.wing.floor === 2 ? 'FIRE THE MANAGER' : 'STOP LOSS PREVENTION', done: boss === null && state.room.cleared });
   } else if (fightHere) {
     objectives.push({
       text: state.room.cleared ? 'AREA SECURED' : `CLEAR THE AREA  ${living.length} LEFT`,
@@ -178,7 +180,15 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     rooms,
     hotbar,
     carriedCount: state.carried.length,
-    boss: boss ? { health: boss.health, max: BOSS_MAX_HEALTH, phase: boss.bossPhase ?? bossPhaseForHealth(boss.health) } : null,
+    boss: boss
+      ? {
+        health: boss.health,
+        max: bossConfigFor(boss.kind).maxHealth,
+        phase: boss.bossPhase ?? bossPhaseForHealth(boss.health, bossConfigFor(boss.kind).maxHealth),
+        name: boss.kind === 'manager' ? 'MALL MANAGER' : 'LOSS PREVENTION',
+      }
+      : null,
+    floor: state.wing.floor === 2 ? 2 : 1,
     enemiesLeft: living.length,
   };
 }

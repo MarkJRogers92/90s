@@ -24,7 +24,7 @@ const CARD_Y = (H - CARD_H) / 2;
 const ROW_MS = 120;
 const MAX_VALUE_CHARS = 30;
 
-export type ShiftCardAction = 'retry' | 'title';
+export type ShiftCardAction = 'retry' | 'title' | 'ascend';
 
 type Rect = { x: number; y: number; w: number; h: number; action: ShiftCardAction };
 
@@ -67,6 +67,11 @@ export class ShiftCard {
     return this.root.visible && this.buttons.length > 0;
   }
 
+  /** True when the open card's main action is the escalator. */
+  public get offersAscend(): boolean {
+    return this.model?.ascend === true;
+  }
+
   public hover(x: number, y: number): void {
     this.hovered = this.buttonAt(x, y);
   }
@@ -85,7 +90,8 @@ export class ShiftCard {
     const now = this.scene.time.now;
     if (this.endedAt === null || this.model?.won !== model.won) this.endedAt = now;
     this.model = model;
-    if (!this.submitted) {
+    // A floor-1 clear is not the end of the night: the best is judged at the finish.
+    if (!this.submitted && !model.ascend) {
       this.submitted = true;
       this.newBest = this.bests.submit({ score: model.score, won: model.won, seconds: model.seconds });
     }
@@ -168,14 +174,16 @@ export class ShiftCard {
     if (buttonsAge >= 0) {
       const y = CARD_Y + oy + CARD_H - 64;
       const specs: Array<{ action: ShiftCardAction; key: string; text: string; x: number }> = [
-        { action: 'retry', key: 'R', text: model.won ? 'NEW SHIFT' : 'RETRY', x: W / 2 - 200 },
-        { action: 'title', key: 'T', text: 'TITLE', x: W / 2 + 20 },
+        model.ascend
+          ? { action: 'ascend', key: 'R', text: 'ESCALATOR', x: W / 2 - 200 }
+          : { action: 'retry', key: 'R', text: model.won ? 'NEW SHIFT' : 'RETRY', x: W / 2 - 200 },
+        { action: 'title', key: 'T', text: model.ascend ? 'CLOCK OUT' : 'TITLE', x: W / 2 + 20 },
       ];
       for (const spec of specs) {
         const w = 180;
         const h = 42;
         const hot = this.hovered === spec.action;
-        const color = spec.action === 'retry' ? edge : 0x9a8fb4;
+        const color = spec.action === 'title' ? 0x9a8fb4 : edge;
         g.fillStyle(hot ? color : 0x140d22, hot ? 0.35 : 1).fillRect(spec.x, y, w, h);
         g.lineStyle(2, color, 1).strokeRect(spec.x + 1, y + 1, w - 2, h - 2);
         // Key cap.

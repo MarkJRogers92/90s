@@ -15,6 +15,7 @@
 import type { MvpRunState } from '../../sim/run/types';
 import { HEAVY_HIT_DAMAGE } from '../view/combatBeats';
 import { COMBO_MILESTONE } from '../../sim/run/combo';
+import { isBossKind } from '../../sim/combat/boss';
 
 export type AudioCue =
   | 'swing'
@@ -84,7 +85,7 @@ export type AudioSnapshot = {
 
 export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
   const combat = state.room.combat;
-  const boss = combat.enemies.find((enemy) => enemy.kind === 'lp_manager');
+  const boss = combat.enemies.find((enemy) => isBossKind(enemy.kind));
   return {
     status: state.status,
     health: combat.player.health,

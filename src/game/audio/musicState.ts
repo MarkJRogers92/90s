@@ -11,6 +11,7 @@
  */
 import { roomEventFor } from '../../sim/run/roomEvents';
 import type { MvpRunState } from '../../sim/run/types';
+import { isBossKind } from '../../sim/combat/boss';
 
 export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout';
 
@@ -34,7 +35,7 @@ export function musicCue(state: MvpRunState): MusicCue {
   const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
   const tension = living.some((enemy) => enemy.kind === 'mannequin' && enemy.phase === 'pursue');
   const danger = state.room.combat.player.health <= LAST_HEART ? 0.3 : 0;
-  const boss = living.find((enemy) => enemy.kind === 'lp_manager');
+  const boss = living.find((enemy) => isBossKind(enemy.kind));
   if (boss) {
     const phase = boss.bossPhase ?? 1;
     return {

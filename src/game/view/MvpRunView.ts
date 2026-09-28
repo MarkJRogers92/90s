@@ -8,7 +8,7 @@
  * stay in `src/sim`.
  */
 import Phaser from 'phaser';
-import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
+import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH, isBossKind } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
 import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
@@ -207,7 +207,7 @@ export class MvpRunView {
       const charge = windups.find((windup) => windup.kind !== 'reach');
       const faced = charge ? { x: charge.aimX * 1e-3, y: charge.aimY * 1e-3 } : facing;
       const enemySnapshot: ActorSnapshot = {
-        id: `enemy:${enemy.id}`, kind: enemy.kind === 'lp_manager' ? 'lp_manager' : enemy.kind,
+        id: `enemy:${enemy.id}`, kind: enemy.kind,
         x: enemy.x, y: enemy.y, moveX: faced.x, moveY: faced.y,
         attackTicks: 0, damaged: false, phase: enemy.phase,
       };
@@ -219,7 +219,7 @@ export class MvpRunView {
       if (spawnAge >= 0 && spawnAge < SPAWN_IN_TICKS) {
         // A floor ring opens under each arrival, so no enemy simply pops in.
         const t = spawnAge / SPAWN_IN_TICKS;
-        const r = (enemy.kind === 'lp_manager' ? 70 : 34) * (0.4 + 0.6 * t);
+        const r = (isBossKind(enemy.kind) ? 70 : 34) * (0.4 + 0.6 * t);
         effects.lineStyle(4 * (1 - t) + 1, enemy.kind === 'spitter' ? 0x9aff6a : 0xff3a5a, 1 - t).strokeEllipse(enemy.x, enemy.y, r * 2, r);
       }
       this.threats.push({ enemy, windups });
@@ -249,12 +249,12 @@ export class MvpRunView {
       if (enemy.kind === 'hanger') {
         hangerEvidence.push({ id: `enemy:${enemy.id}`, ...sprite });
       }
-      this.contactShadow(`enemy:${enemy.id}`, enemy.x, enemy.y, enemy.kind === 'lp_manager' ? 2.2 : 1.2);
+      this.contactShadow(`enemy:${enemy.id}`, enemy.x, enemy.y, isBossKind(enemy.kind) ? 2.2 : 1.2);
       if (charge) {
         const color = charge.kind === 'spit' ? 0x9aff6a : charge.kind === 'volley' ? 0xff3fc8 : 0xffb040;
-        const size = enemy.kind === 'lp_manager' ? 200 : 90;
+        const size = isBossKind(enemy.kind) ? 200 : 90;
         this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 16, radius: size * (0.6 + 0.6 * charge.progress), color, intensity: 0.5 + 0.5 * charge.progress });
-      } else if (enemy.kind === 'lp_manager') {
+      } else if (isBossKind(enemy.kind)) {
         this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 110, color: 0xff3a4a, intensity: 0.45 });
       } else {
         // A faint sick underglow keeps every threat readable in the darker rooms.
@@ -266,7 +266,7 @@ export class MvpRunView {
         effectDepth: presentationDepth('effect', 1),
       });
       this.drawWindups(enemy, windups, effects, state.tick);
-      if (enemy.kind === 'lp_manager') {
+      if (isBossKind(enemy.kind)) {
         this.drawBoss(enemy, body, effects, !spriteActive);
       } else {
         this.drawEnemy(enemy, body, effects, !spriteActive);
@@ -313,7 +313,7 @@ export class MvpRunView {
       }
       // Eyes in the dark: every enemy shows where it is, not what it is doing.
       for (const enemy of state.room.combat.enemies) {
-        opening?.addLight({ x: enemy.x, y: enemy.y - (enemy.kind === 'lp_manager' ? 70 : 34), radius: 18, color: enemy.kind === 'spitter' ? 0x9aff6a : 0xff2a3a, intensity: 0.95 });
+        opening?.addLight({ x: enemy.x, y: enemy.y - (isBossKind(enemy.kind) ? 70 : 34), radius: 18, color: enemy.kind === 'spitter' ? 0x9aff6a : 0xff2a3a, intensity: 0.95 });
       }
     }
     if (player.attackActiveTicks > 0) {
@@ -596,6 +596,47 @@ export class MvpRunView {
         effects.lineStyle(blink ? 6 : 4, blink ? 0xffffff : color, 0.95).strokeCircle(enemy.x, enemy.y, reach);
         effects.lineStyle(2, color, 0.5).strokeCircle(enemy.x, enemy.y, reach + 6 + 4 * Math.sin(tick / 2));
         this.drawAlert(effects, enemy.x, enemy.y - 150 - 6 * p, p, color);
+      } else if (windup.kind === 'blink') {
+        // The Static's landing spot: a crackling ring at the real burst radius,
+        // with jagged static lines that grow as it charges.
+        const tx = windup.targetX ?? enemy.x;
+        const ty = windup.targetY ?? enemy.y;
+        const r = windup.reach ?? 48;
+        const color = blink ? 0xffffff : 0x40e0ff;
+        effects.fillStyle(0x40e0ff, 0.08 + 0.14 * p).fillEllipse(tx, ty, r * 2, r * 1.1);
+        effects.lineStyle(3, color, 0.6 + 0.4 * p).strokeEllipse(tx, ty, r * 2, r * 1.1);
+        for (let i = 0; i < 6; i += 1) {
+          const a = (i / 6) * Math.PI * 2 + tick * 0.3;
+          const len = r * (0.4 + 0.5 * p);
+          effects.lineStyle(2, color, 0.7).lineBetween(tx + Math.cos(a) * 6, ty + Math.sin(a) * 4, tx + Math.cos(a + 0.4) * len, ty + Math.sin(a + 0.4) * len * 0.55);
+        }
+        // A thin thread back to the Static so the player knows who is coming.
+        effects.lineStyle(1, 0x40e0ff, 0.35 * p).lineBetween(enemy.x, enemy.y - 30, tx, ty);
+        this.drawAlert(effects, tx, ty - 44, p, 0x40e0ff);
+      } else if (windup.kind === 'charge') {
+        // The Bargain Hunter's lane: as wide as its body, as long as the charge.
+        const length = windup.reach ?? 144;
+        const color = blink ? 0xffffff : p > 0.6 ? 0xff5a3a : 0xffc040;
+        const nx = -windup.aimY;
+        const ny = windup.aimX;
+        const w = enemy.radius + 6;
+        const ex = enemy.x + windup.aimX * length;
+        const ey = enemy.y + windup.aimY * length;
+        const lane = [
+          new Phaser.Math.Vector2(enemy.x + nx * w, enemy.y + ny * w),
+          new Phaser.Math.Vector2(ex + nx * w, ey + ny * w),
+          new Phaser.Math.Vector2(ex - nx * w, ey - ny * w),
+          new Phaser.Math.Vector2(enemy.x - nx * w, enemy.y - ny * w),
+        ];
+        effects.fillStyle(color, 0.08 + 0.16 * p).fillPoints(lane, true);
+        effects.lineStyle(2, color, 0.5 + 0.5 * p).strokePoints(lane, true);
+        // Chevrons marching down the lane.
+        for (let d = 24; d < length; d += 30) {
+          const cx = enemy.x + windup.aimX * d;
+          const cy = enemy.y + windup.aimY * d;
+          effects.lineStyle(3, color, p).lineBetween(cx + nx * 8 - windup.aimX * 8, cy + ny * 8 - windup.aimY * 8, cx, cy).lineBetween(cx - nx * 8 - windup.aimX * 8, cy - ny * 8 - windup.aimY * 8, cx, cy);
+        }
+        this.drawAlert(effects, enemy.x, enemy.y - 70, p, 0xffc040);
       } else if (windup.kind === 'volley') {
         const base = Math.atan2(windup.aimY, windup.aimX);
         const color = blink ? 0xffffff : 0xff3fc8;

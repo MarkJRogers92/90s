@@ -11,14 +11,18 @@
  */
 import type { EnemyState } from '../../sim/model';
 import {
-  BOSS_SLAM_REACH,
   BOSS_SLAM_RECOVER_TICKS,
   BOSS_SLAM_RECOVER_TICKS_PHASE3,
-  BOSS_SLAM_TELEGRAPH_TICKS,
   BOSS_VOLLEY_TELEGRAPH_TICKS,
-  VOLLEY_ANGLE_OFFSETS_DEGREES,
+  bossConfigFor,
+  isBossKind,
 } from '../../sim/combat/boss';
 import { SPITTER_RECOVER_TICKS, SPITTER_TELEGRAPH_TICKS } from '../../sim/combat/enemies';
+import { STATIC_BURST_RADIUS, STATIC_TELEGRAPH_TICKS } from '../../sim/combat/staticEnemy';
+import { SHOPPER_CHARGE_TICKS, SHOPPER_TELEGRAPH_TICKS } from '../../sim/combat/shopper';
+
+/** How far a Bargain Hunter's charge carries: the lane the renderer draws. */
+const SHOPPER_CHARGE_REACH = SHOPPER_CHARGE_TICKS * 9;
 
 /**
  * A blow this big gets the heavy treatment (bigger star, number, shake, hit
@@ -32,13 +36,16 @@ export const HEAVY_HIT_DAMAGE = 5;
 export const HANGER_WARN_DISTANCE = 72;
 
 export type Windup = {
-  readonly kind: 'spit' | 'slam' | 'volley' | 'reach';
+  readonly kind: 'spit' | 'slam' | 'volley' | 'reach' | 'blink' | 'charge';
   /** 0 when the wind-up starts, 1 the tick it goes off. */
   readonly progress: number;
   readonly aimX: number;
   readonly aimY: number;
   /** Slam only: the authored reach, so the ring is the real hitbox. */
   readonly reach?: number;
+  /** Blink only: where the Static will land. */
+  readonly targetX?: number;
+  readonly targetY?: number;
   /** Volley only: each shot's angle in radians relative to the aim. */
   readonly angles?: readonly number[];
 };
@@ -53,21 +60,33 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
       ? [{ kind: 'spit', progress: clamp01(1 - enemy.phaseTicks / SPITTER_TELEGRAPH_TICKS), ...aim }]
       : [];
   }
-  if (enemy.kind === 'lp_manager') {
+  if (isBossKind(enemy.kind)) {
+    const config = bossConfigFor(enemy.kind);
     const windups: Windup[] = [];
     if (enemy.phase === 'telegraph') {
-      windups.push({ kind: 'slam', progress: clamp01(1 - enemy.phaseTicks / BOSS_SLAM_TELEGRAPH_TICKS), reach: BOSS_SLAM_REACH, ...aim });
+      windups.push({ kind: 'slam', progress: clamp01(1 - enemy.phaseTicks / config.slamTelegraphTicks), reach: config.slamReach, ...aim });
     }
     const volley = enemy.bossVolleyTelegraphTicks ?? 0;
     if (volley > 0) {
       windups.push({
         kind: 'volley',
         progress: clamp01(1 - volley / BOSS_VOLLEY_TELEGRAPH_TICKS),
-        angles: VOLLEY_ANGLE_OFFSETS_DEGREES.map((degrees) => (degrees * Math.PI) / 180),
+        angles: config.volleyAngles.map((degrees) => (degrees * Math.PI) / 180),
         ...aim,
       });
     }
     return windups;
+  }
+  if (enemy.kind === 'static') {
+    // The crackling spot it will blink onto: the janitor's position when it locked on.
+    return enemy.phase === 'telegraph'
+      ? [{ kind: 'blink', progress: clamp01(1 - enemy.phaseTicks / STATIC_TELEGRAPH_TICKS), aimX: 0, aimY: 0, targetX: enemy.blinkX ?? enemy.x, targetY: enemy.blinkY ?? enemy.y, reach: STATIC_BURST_RADIUS }]
+      : [];
+  }
+  if (enemy.kind === 'shopper') {
+    return enemy.phase === 'telegraph'
+      ? [{ kind: 'charge', progress: clamp01(1 - enemy.phaseTicks / SHOPPER_TELEGRAPH_TICKS), reach: SHOPPER_CHARGE_REACH, ...aim }]
+      : [];
   }
   // A watched mannequin is frozen: nothing is coming.
   if (enemy.kind === 'mannequin' && enemy.phase !== 'pursue') return [];
@@ -100,9 +119,9 @@ export function diffEnemyAttacks(previous: ReadonlyMap<string, TrackedAttack>, c
     const at = { id, x: enemy.x, y: enemy.y, aimX: enemy.telegraphAimX, aimY: enemy.telegraphAimY };
     if (before.phase === 'telegraph' && enemy.phase !== 'telegraph') {
       if (enemy.kind === 'spitter') landed.push({ kind: 'spit', ...at });
-      if (enemy.kind === 'lp_manager') landed.push({ kind: 'slam', ...at });
+      if (isBossKind(enemy.kind)) landed.push({ kind: 'slam', ...at });
     }
-    if (enemy.kind === 'lp_manager' && (before.volley ?? 0) > 0 && (enemy.bossVolleyTelegraphTicks ?? 0) === 0) {
+    if (isBossKind(enemy.kind) && (before.volley ?? 0) > 0 && (enemy.bossVolleyTelegraphTicks ?? 0) === 0) {
       landed.push({ kind: 'volley', ...at });
     }
   }
@@ -200,6 +219,13 @@ export function windupPose(windups: readonly Windup[], tick: number): SpritePose
       next = { offsetX: tremble, offsetY: 0, scaleX: 1 + 0.3 * p, scaleY: 1 + 0.18 * p, flash: p > 0.92, tint: glow(0x50ff40, p * 0.7) };
     } else if (windup.kind === 'slam') {
       next = { offsetX: tremble, offsetY: -16 * p, scaleX: 1 + 0.1 * p, scaleY: 1 + 0.14 * p, flash: p > 0.94, tint: glow(0xffa030, p * 0.6) };
+    } else if (windup.kind === 'blink') {
+      // Static: the body flickers out of phase as the jump charges.
+      const flick = tick % 3 === 0 ? 0.25 * p : 0;
+      next = { offsetX: tremble * 2, offsetY: 0, scaleX: 1 + flick, scaleY: 1 - flick * 0.6, flash: p > 0.9, tint: glow(0x40e0ff, p * 0.8) };
+    } else if (windup.kind === 'charge') {
+      // Bargain Hunter: rears back against the lane before it goes.
+      next = { offsetX: -windup.aimX * 8 * p + tremble, offsetY: -windup.aimY * 6 * p, scaleX: 1 + 0.12 * p, scaleY: 1 - 0.08 * p, flash: p > 0.92, tint: glow(0xffc040, p * 0.6) };
     } else if (windup.kind === 'volley') {
       next = { offsetX: tremble * 0.5, offsetY: 0, scaleX: 1 + 0.06 * p, scaleY: 1 + 0.06 * p, flash: false, tint: glow(0xff3fc8, p * 0.55) };
     } else {

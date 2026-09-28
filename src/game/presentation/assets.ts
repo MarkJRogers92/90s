@@ -126,6 +126,15 @@ export const ENEMY_TEXTURE_KEYS = {
   mannequinIdle: 'neon:enemy:mannequin-idle',
   mannequinWalk: 'neon:enemy:mannequin-walk',
   mannequinDeath: 'neon:enemy:mannequin-death',
+  staticIdle: 'neon:enemy:static-idle',
+  staticWalk: 'neon:enemy:static-walk',
+  staticDeath: 'neon:enemy:static-death',
+  shopperIdle: 'neon:enemy:shopper-idle',
+  shopperWalk: 'neon:enemy:shopper-walk',
+  shopperDeath: 'neon:enemy:shopper-death',
+  managerIdle: 'neon:enemy:manager-idle',
+  managerWalk: 'neon:enemy:manager-walk',
+  managerDeath: 'neon:enemy:manager-death',
 } as const;
 
 /** Item icons keyed by the simulation's item definition id. */
@@ -200,6 +209,12 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.mannequinIdle, 'enemies/mannequin-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinWalk, 'enemies/mannequin-walk.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinDeath, 'enemies/mannequin-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.staticIdle, 'enemies/static-idle.png'),
+  neon(ENEMY_TEXTURE_KEYS.staticWalk, 'enemies/static-walk.png'),
+  neon(ENEMY_TEXTURE_KEYS.staticDeath, 'enemies/static-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.managerIdle, 'enemies/manager-idle.png'),
+  neon(ENEMY_TEXTURE_KEYS.managerWalk, 'enemies/manager-walk.png'),
+  neon(ENEMY_TEXTURE_KEYS.managerDeath, 'enemies/manager-death.png'),
   neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
   ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),
