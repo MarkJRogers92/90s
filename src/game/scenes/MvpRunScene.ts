@@ -13,6 +13,7 @@ import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { nextShiftSeed } from '../run/shiftSeed';
+import { EscalatorRide } from '../ui/EscalatorRide';
 import { PauseCard } from '../ui/PauseCard';
 import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
@@ -141,8 +142,11 @@ class MvpRunInputAdapter {
     readonly buttonAt: (x: number, y: number) => ShiftCardAction | null;
     readonly act: (action: ShiftCardAction) => void;
   } | null = null;
+  /** True while the escalator ride plays: it owns every key and click. */
+  public riding: () => boolean = () => false;
 
   private readonly handlePointerDown = (pointer: Phaser.Input.Pointer): void => {
+    if (this.riding()) return;
     const benchAction = this.benchCard?.buttonAt(pointer.x, pointer.y) ?? null;
     if (benchAction !== null) {
       this.benchCard?.act(benchAction);
@@ -182,7 +186,7 @@ class MvpRunInputAdapter {
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (event.repeat || settingsDialogOpen()) {
+    if (event.repeat || settingsDialogOpen() || this.riding()) {
       return;
     }
     if (event.code === 'KeyO') {
@@ -361,6 +365,8 @@ export class MvpRunScene extends Phaser.Scene {
   private hud: MvpRunHud | undefined;
   private gameHud: GameHud | undefined;
   private shiftCard: ShiftCard | undefined;
+  /** The ride up to Floor 2, while it plays (the run does not tick). */
+  private ride: EscalatorRide | null = null;
   private pauseCard: PauseCard | undefined;
   private benchCard: BenchCard | undefined;
   private removeBloom: (() => void) | undefined;
@@ -435,6 +441,7 @@ export class MvpRunScene extends Phaser.Scene {
     };
     const card = new ShiftCard(this);
     this.shiftCard = card;
+    this.inputAdapter.riding = () => this.ride !== null;
     this.inputAdapter.endCard = {
       isOpen: () => card.open,
       ascends: () => card.offersAscend,
@@ -480,6 +487,10 @@ export class MvpRunScene extends Phaser.Scene {
     const pad = this.gamepad.read(firstGamepad(), this.run.room.combat.player);
     this.inputAdapter.setPad(pad);
     if (!pad.active || settingsDialogOpen()) return;
+    if (this.ride) {
+      if (pad.confirm || pad.cancel || pad.pause) this.ride.requestSkip();
+      return;
+    }
     if (this.benchCard?.open) {
       if (pad.confirm) this.confirmFusion();
       else if (pad.cancel) this.cancelFusion();
@@ -498,6 +509,11 @@ export class MvpRunScene extends Phaser.Scene {
 
   public update(_time: number, elapsedMs: number): void {
     this.pollGamepad();
+    if (this.ride) {
+      this.accumulator = 0;
+      if (this.ride.update(elapsedMs)) this.endRide();
+      return;
+    }
     if (!this.inputAdapter || this.run.paused || this.run.status !== 'playing') {
       this.accumulator = 0;
       this.syncCheckpoint();
@@ -626,8 +642,21 @@ export class MvpRunScene extends Phaser.Scene {
     this.lastCheckpointKey = null;
     this.inputAdapter?.clearHeld();
     this.runView?.resetForRun();
-    this.cameras.main.fadeIn(900, 7, 5, 12);
     this.syncCheckpoint();
+    this.syncView();
+    // Ride up before the landing appears; the run waits underneath.
+    this.ride?.destroy();
+    this.ride = new EscalatorRide(this);
+    this.audio?.play('escalator');
+  }
+
+  private endRide(): void {
+    this.ride?.destroy();
+    this.ride = null;
+    this.inputAdapter?.clearHeld();
+    this.accumulator = 0;
+    this.cameras.main.fadeIn(700, 7, 5, 12);
+    this.audio?.play('pa_chime');
     this.syncView();
   }
 
@@ -864,6 +893,8 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private readonly destroyRun = (): void => {
+    this.ride?.destroy();
+    this.ride = null;
     this.inputAdapter?.destroy();
     this.inputAdapter = undefined;
     this.runView?.destroy();

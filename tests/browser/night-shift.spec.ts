@@ -621,6 +621,41 @@ test('up the escalator, the Management Suite spawns the Mall Manager', async ({ 
   expect(errors.consoleErrors).toEqual([]);
 });
 
+test('the escalator ride holds the run still until it ends or is skipped', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-boss-win&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.roomId)).toBe('security_office');
+  const box = await page.locator('canvas').boundingBox();
+  if (!box) throw new Error('no canvas');
+  await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.5);
+  await page.keyboard.down('d');
+  await page.waitForTimeout(250);
+  await page.keyboard.up('d');
+  for (let swing = 0; swing < 12 && (await runSnapshot(page)).status !== 'won'; swing += 1) {
+    await page.mouse.down();
+    await page.waitForTimeout(120);
+    await page.mouse.up();
+    await page.waitForTimeout(200);
+  }
+  expect((await runSnapshot(page)).status).toBe('won');
+
+  // FLOOR CLEARED: Enter takes the escalator.
+  await page.waitForTimeout(3000);
+  await page.keyboard.press('Enter');
+  await expect.poll(() => runSnapshot(page).then((state) => `${state.status}:${state.roomId}`)).toBe('playing:service_corridor');
+  const boarded = (await runSnapshot(page)).tick;
+  await page.waitForTimeout(1000);
+  // Mid-ride the run is upstairs but its clock has not moved.
+  expect((await runSnapshot(page)).tick).toBe(boarded);
+
+  await page.keyboard.press('Space');
+  await expect.poll(() => runSnapshot(page).then((state) => state.tick), { timeout: 3000 }).toBeGreaterThan(boarded);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
 test('winning the boss run publishes the summary and clears the checkpoint', async ({ page }) => {
   test.setTimeout(120_000);
   const errors = collectErrors(page);

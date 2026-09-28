@@ -1,5 +1,18 @@
 # Test evidence
 
+## 2026-09-28 — round 18: the escalator ride
+
+- New `escalator-ride.test.ts` (6) failed first on the missing model: rider
+  path end to end, never backwards, steps and shop rows moving, title timing,
+  end fade and done, skip grace.
+- New browser test "the escalator ride holds the run still until it ends or
+  is skipped": a real boss kill, Enter at FLOOR CLEARED, the run is upstairs
+  with its tick unchanged a second into the ride, then Space skips it and the
+  tick advances. It can only pass if the run is frozen during the ride.
+- Captures `artifacts/neon-overhaul/floor2/ride-{1,2,3}.png`; no page errors.
+- `npx vitest run` — PASS: 60 files, 687 tests. `PW_PORT=4193 npx playwright
+  test --workers=2` — PASS: 60/60 (2.6 min).
+
 ## 2026-09-28 — round 17: polish pass
 
 - Audit captures of every screen (`artifacts/neon-overhaul/audit/`) found: the

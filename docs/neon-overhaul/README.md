@@ -432,6 +432,21 @@ An audit of every screen (captures in `artifacts/neon-overhaul/audit/`), then:
   dash hint sits under the janitor so it never stacks on damage numbers; the
   DOM boss chip moved off-screen (the canvas boss bar shows it).
 
+## Round 18 — the escalator ride
+
+Taking the escalator now plays a 3.6 s ride instead of a fade
+(`src/game/ui/EscalatorRide.ts`, timing in the pure `escalatorRideModel.ts`).
+Alex rides a neon escalator (yellow-edged steps, a bolted side panel with a
+magenta underglow, glass and a moving handrail drawn in front of him) up the
+diagonal while the ground floor's shops drop away and the cinema and arcade
+fronts come down, under pendant lamps, downlights and skylight beams. UPPER
+LEVEL lights at the halfway mark, then it fades to the landing with the PA
+chime; a synthesized escalator hum plays on boarding. The simulation ascends
+instantly and does not tick during the ride; any key, click or pad button
+skips it after a 300 ms grace (so the press that chose the escalator does not
+also skip it), and Esc cannot pause underneath it. The start-of-shift
+controls card no longer repeats on Floor 2.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's
