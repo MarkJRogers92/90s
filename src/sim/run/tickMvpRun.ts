@@ -29,6 +29,7 @@ import { crossedStoreExit } from '../shop/tickWingRun';
 import { tickRun } from '../tickRun';
 import type { WingDoorSide, WingRoomDefinition, WingStoreInstance } from '../wing/types';
 import { openRunFusionPreview } from './bench';
+import { isBossKind } from '../combat/boss';
 import {
   carrierAttackContext,
   enforceRunCarrierLeash,
@@ -415,7 +416,7 @@ function bossDefeated(state: MvpRunState): boolean {
     return false;
   }
   return !state.room.combat.enemies.some(
-    (enemy) => enemy.kind === 'lp_manager' && enemy.health > 0,
+    (enemy) => isBossKind(enemy.kind) && enemy.health > 0,
   );
 }
 

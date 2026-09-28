@@ -367,6 +367,51 @@ phase).
 `node scripts/render-music.mjs` renders each loop offline to WAV with RMS and
 peak; MP3 previews are in `artifacts/neon-overhaul/music/`.
 
+## Round 15 — Floor 2: the Upper Level
+
+Beating Loss Prevention no longer ends the run: the end card says FLOOR
+CLEARED and offers the ESCALATOR (R / Enter / pad A) or CLOCK OUT.
+
+- **Sim** (`src/sim/run/floors.ts`): `ascendToFloorTwo` builds a new wing from
+  `floorTwoSeed(seed)` with `generateWing(seed, 2)` — same six room ids and
+  graph, new names (Escalator Landing, Upper West Shops, Cinema Lobby, Upper
+  East Shops, Parking Stairwell, Management Suite), variant-max enemy counts —
+  and carries inventory, cash and stats, healed. Checkpoints save `floor: 2`.
+- **The Static** (`staticEnemy.ts`, 14 hp): drifts, locks onto where you
+  stand, then blinks there and shocks everything within 48 px. Dash or move.
+- **The Bargain Hunter** (`shopper.ts`, 18 hp): sees you from 320 px, winds up
+  a lane, then charges at 9 px/tick; only the charge hurts, and a wall stuns
+  it. Spawns with a 50-tick beat so one by the door can't hit you on entry.
+- **The Mall Manager** (`BOSS_CONFIGS.manager`, 150 hp): bigger slam, a
+  seven-shot volley, summons Bargain Hunters. Own intro card, boss bar name.
+- **Presentation**: upper-floor dressing (`upperFloor` in `roomDressing.ts`:
+  cinema, arcade, carpet, sodium-lit stairwell, gold MANAGEMENT suite),
+  cyan blink rings and charge lanes as wind-ups, PixelLab art for all three.
+- Dev fixtures: `mvp-floor-two`, `mvp-floor-two-lobby`, `mvp-floor-two-boss`.
+- **Music** (`music.ts`, picked in `musicState.ts` by `wing.floor`): upstairs
+  fights play "Escalator Rush" (128, F sharp minor: chugging drive bass,
+  cinema-organ stabs, bell arpeggio, supersaw hook); the Mall Manager gets
+  "Performance Review" (146, C minor with a Neapolitan D flat: brass-like
+  fanfare, march roll in phase 2, a cash-register ding-ding, faster by phase).
+  Muzak between fights is shared. Previews in `artifacts/neon-overhaul/music/`.
+- **Playtest log**: records carry `floor: 2`; Static shocks and Bargain Hunter
+  charges are their own damage sources; the summary keys upstairs rooms as
+  `2:<roomId>` so the Cinema Lobby never merges with the Food Court.
+
+## Round 16 — a new mall every shift, sharper upstairs
+
+- **Seeds** (`src/game/run/shiftSeed.ts`): without `?seed=` every fresh shift
+  rolls a mall (1..999,999); RETRY after dying and Restart replay the same
+  one; NEW SHIFT after a win rolls again. `?seed=N` pins the mall for sharing
+  and for the browser tests (those that depend on a layout pin it). The end
+  card's MALL row shows the number to share (the floor-1 seed, upstairs too).
+  Before this, every shift without `?seed=` was mall 0.
+- **Tuning from the first Floor 2 playtest** (a win with 3 damage, all from the
+  Manager's volley; Statics and Bargain Hunters landed nothing in 10 kills):
+  Static lock-on 42 → 34 ticks and drift 80 → 64; Bargain Hunter recovery 40 →
+  24 ticks and walk 55 → 70 px/s. Wind-ups stay dodgeable on foot (asserted in
+  `difficulty-tuning.test.ts`).
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

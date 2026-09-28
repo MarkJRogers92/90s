@@ -576,7 +576,93 @@ export function isFountainFootprint(wall: Rect): boolean {
   return wall.width >= 90 && wall.width <= 130 && wall.height >= 40 && wall.height <= 70 && Math.abs(wall.x + wall.width / 2 - 480) < 2;
 }
 
-export function planRoomDressing(room: WingRoomDefinition): DressingPlan {
+/**
+ * The upper level restyles each downstairs room: same shape and prop cover
+ * (so every collision rectangle stays dressed), new facades, signs, floor,
+ * light and neon, so floor 2 reads as a different part of the mall.
+ */
+function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
+  switch (room.id) {
+    case 'service_corridor': {
+      const facades = facadeRow([
+        { facade: 'cinema', sign: sign('CINEPLEX 6', NEON.red, 'NOW SHOWING', NEON.yellow), spill: 0xffb070 },
+        { facade: 'arcade', sign: sign('LASER ZONE', NEON.magenta, 'TAG YOU ARE IT', NEON.cyan), spill: 0xc080ff },
+        { facade: 'video', sign: sign('PIXEL PALACE', NEON.cyan, 'HIGH SCORES DAILY', NEON.yellow), spill: 0x8ae0ff },
+      ]);
+      return {
+        ...plan,
+        areaName: 'UPPER CONCOURSE',
+        floor: 'carpet',
+        ambient: 0x3a3462,
+        facades,
+        lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.violet), ...ceilingGrid(0xc0a0ff, 0.5, 180, [150, 390], [140, 480, 820])],
+        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.violet }],
+        neonRings: plan.neonRings.map((ring, i) => ({ ...ring, color: i === 0 ? NEON.cyan : NEON.violet })),
+        civilians: false,
+      };
+    }
+    case 'food_court': {
+      const facades = facadeRow([
+        { facade: 'cinema', sign: sign('TICKETS', NEON.yellow, 'ALL SHOWS $3', NEON.red), spill: 0xffc070 },
+        { facade: 'cinema', sign: sign('CONCESSIONS', NEON.red, 'BUTTER ON EVERYTHING', NEON.yellow), spill: 0xffa060 },
+        { facade: 'cinema', sign: sign('THEATER 3', NEON.cyan, 'MIDNIGHT SHOW', NEON.magenta), spill: 0x90d0ff },
+      ]);
+      return {
+        ...plan,
+        areaName: 'CINEMA LOBBY',
+        floor: 'carpet',
+        ambient: 0x3a2030,
+        facades,
+        lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.red), ...ceilingGrid(0xffb090, 0.5, 160, [180, 380], [200, 480, 760], (i) => (i === 2 ? 'buzz' : undefined))],
+        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.yellow }],
+      };
+    }
+    case 'back_hall': {
+      const facades = facadeRow([
+        { facade: 'service', sign: sign('LEVEL P2', NEON.yellow, undefined, undefined, 2), spill: 0xffb050 },
+        { facade: 'service', sign: null, spill: 0xc08040 },
+        { facade: 'service', sign: sign('EXIT', NEON.green, undefined, undefined, 2), spill: 0x90ffb0 },
+      ]);
+      return {
+        ...plan,
+        areaName: 'PARKING STAIRWELL',
+        ambient: 0x16181f,
+        facades,
+        // Sodium lamps: orange, buzzing, too far apart.
+        lights: [...facadeSpillLights(facades).map((light) => ({ ...light, intensity: light.intensity * 0.5 })), ...doorwayLights(room, NEON.orange), ...ceilingGrid(0xffa040, 0.6, 140, [140, 360], [160, 800], () => 'buzz')],
+      };
+    }
+    case 'security_office': {
+      const facades = facadeRow([
+        { facade: 'security', sign: sign('MANAGEMENT', NEON.yellow, 'OFFICE OF THE GM', NEON.red), spill: 0xffd080 },
+        { facade: 'service', sign: sign('CUSTOMER SERVICE', NEON.pink, 'CLOSED', NEON.red, 2), spill: 0xd080a0 },
+        { facade: 'security', sign: sign('NO REFUNDS', NEON.red, undefined, undefined, 2), spill: 0xff9080 },
+      ]);
+      return {
+        ...plan,
+        areaName: 'MANAGEMENT SUITE',
+        floor: 'carpet',
+        ambient: 0x2a1622,
+        facades,
+        lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.red), ...ceilingGrid(0xffd0a0, 0.5, 150, [160, 380], [240, 560]), { x: 760, y: 240, radius: 200, color: NEON.red, intensity: 0.55, squash: 0.8, flicker: 'pulse' }],
+        neonStrips: [
+          { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow },
+          { x1: 580, y1: 110, x2: 940, y2: 110, color: NEON.red },
+          { x1: 580, y1: 370, x2: 940, y2: 370, color: NEON.red },
+        ],
+      };
+    }
+    default:
+      return plan;
+  }
+}
+
+export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 = 1): DressingPlan {
+  const plan = planFloorOneRoom(room);
+  return floor === 2 ? upperFloor(plan, room) : plan;
+}
+
+function planFloorOneRoom(room: WingRoomDefinition): DressingPlan {
   switch (room.id) {
     case 'service_corridor':
       return openingConcourse(room);

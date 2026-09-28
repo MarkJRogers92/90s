@@ -12,18 +12,26 @@ import { generateWing } from '../wing/generateWing';
 import { syncRunCarrier } from './carrier';
 import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
-import { createRunStats } from './combo';
+import { createRunStats, type RunStats } from './combo';
 
 /** The Associate-Issue Mop every shift starts with, owned and selected. */
 export const ASSOCIATE_MOP_DEFINITION_ID = 'janitor_mop';
 export const ASSOCIATE_MOP_INSTANCE_ID = 'mvp-associate-mop';
 
-export function createMvpRun(seed: number): MvpRunState {
+/** What a janitor brings up the escalator. */
+export type FloorCarry = {
+  readonly inventory: FusionInventoryState;
+  readonly cash: number;
+  readonly stats: RunStats;
+};
+
+export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; readonly carry?: FloorCarry } = {}): MvpRunState {
   // The wing RNG requires an integer, so a non-integer finite seed is
   // truncated and anything else becomes 0, exactly as the title screen already
   // sanitizes the URL seed.
   const runSeed = Number.isFinite(seed) ? Math.trunc(seed) : 0;
-  const wing = generateWing(runSeed);
+  const floor = options.floor ?? 1;
+  const wing = generateWing(runSeed, floor);
 
   const mop: InventoryLeaf = {
     kind: 'leaf',
@@ -34,7 +42,9 @@ export function createMvpRun(seed: number): MvpRunState {
     sourceStockId: 'associate-issue-mop',
     acquisitionTick: 0,
   };
-  const inventory: FusionInventoryState = {
+  const inventory: FusionInventoryState = options.carry
+    ? { ...options.carry.inventory, cash: options.carry.cash, revision: options.carry.inventory.revision + 1 }
+    : {
     inventory: [mop],
     cash: wing.startingCash,
     revision: 0,
@@ -43,6 +53,7 @@ export function createMvpRun(seed: number): MvpRunState {
     nextCompositeId: 1,
     committedTransactions: [],
   };
+  const cash = options.carry?.cash ?? wing.startingCash;
 
   const combat = buildRoomCombatState(wing, 0, 'west', inventory, runSeed);
 
@@ -72,7 +83,7 @@ export function createMvpRun(seed: number): MvpRunState {
     },
     clearedRooms: [],
     inventory,
-    cash: wing.startingCash,
+    cash,
     heat: 0,
     suspicion: 0,
     carried: [],
@@ -80,11 +91,13 @@ export function createMvpRun(seed: number): MvpRunState {
     checkpoint: { roomIndex: 0, tick: 0 },
     summary: null,
     heldActions: { interact: false, steal: false, recall: false },
-    recentChange: `Night shift begins in the ${startRoom.name} with $${wing.startingCash}.`,
+    recentChange: floor === 2
+      ? `Up the escalator: the ${startRoom.name}, with $${cash}.`
+      : `Night shift begins in the ${startRoom.name} with $${wing.startingCash}.`,
     behaviorTrace: [],
     carrier: null,
     preview: null,
-    stats: createRunStats(),
+    stats: options.carry ? { ...options.carry.stats, combo: 0, lastHitTick: -Infinity } : createRunStats(),
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   // The shift starts with no emitter carrier, so this is a no-op today; going

@@ -82,7 +82,7 @@ export class MallRoomView {
     this.actors = actors;
     ensureFxTextures(scene);
     const room = state.wing.rooms[state.roomIndex]!;
-    this.plan = planRoomDressing(room);
+    this.plan = planRoomDressing(room, state.wing.floor === 2 ? 2 : 1);
     this.themeId = this.plan.themeId;
     this.floor = this.layer('floor');
     this.decal = this.layer('decal');

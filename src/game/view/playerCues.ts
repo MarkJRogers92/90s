@@ -29,6 +29,13 @@ function threatens(enemy: Point, windup: Windup, player: Point): boolean {
   const dy = player.y - enemy.y;
   const distance = Math.hypot(dx, dy);
   if (windup.kind === 'slam') return distance <= (windup.reach ?? 0) + 12;
+  if (windup.kind === 'blink') {
+    return Math.hypot(player.x - (windup.targetX ?? enemy.x), player.y - (windup.targetY ?? enemy.y)) <= (windup.reach ?? 0) + 8;
+  }
+  if (windup.kind === 'charge') {
+    if (distance === 0 || distance > (windup.reach ?? 0) + 40) return false;
+    return (dx * windup.aimX + dy * windup.aimY) / distance > 0.9;
+  }
   if (windup.kind === 'spit' || windup.kind === 'volley') {
     if (distance === 0 || distance > 320) return false;
     const along = (dx * windup.aimX + dy * windup.aimY) / distance;

@@ -12,6 +12,8 @@ export type ShiftCardRow = { readonly label: string; readonly value: string };
 
 export type ShiftCardModel = {
   readonly won: boolean;
+  /** A won floor 1: the escalator is running, and RETRY becomes UP THE ESCALATOR. */
+  readonly ascend: boolean;
   readonly score: number;
   readonly seconds: number;
   readonly headline: string;
@@ -42,16 +44,23 @@ function namesFor(state: MvpRunState, instanceIds: readonly string[]): string {
   return names.join(', ').toUpperCase();
 }
 
-export function buildShiftCardModel(state: MvpRunState): ShiftCardModel | null {
+/**
+ * `mallSeed` is the seed the shift clocked in with (what `?seed=` replays);
+ * upstairs the run's own seed is the derived Floor 2 one, so the scene passes it.
+ */
+export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state.seed): ShiftCardModel | null {
   const summary = state.summary;
   if (state.status === 'playing' || !summary) return null;
   const won = summary.status === 'won';
+  const upstairs = state.wing.floor === 2;
+  const ascend = won && !upstairs;
   const room = state.wing.rooms[summary.roomIndex];
   const where = (room?.store?.name ?? room?.name ?? 'THE MALL').toUpperCase();
   const seconds = Math.floor(summary.tick / TICKS_PER_SECOND);
   const score = scoreFor({
-    won,
-    roomsReached: summary.roomIndex + 1,
+    // A clear on floor 1 is not yet the win: its bonus waits for the top floor.
+    won: won && upstairs,
+    roomsReached: summary.roomIndex + 1 + (upstairs ? state.wing.rooms.length : 0),
     kills: state.stats.kills,
     bestCombo: state.stats.bestCombo,
     cash: summary.cash,
@@ -60,21 +69,27 @@ export function buildShiftCardModel(state: MvpRunState): ShiftCardModel | null {
   });
   return {
     won,
+    ascend,
     score,
     seconds,
-    headline: won ? 'CLOCKED OUT' : 'SHIFT OVER',
-    subline: won ? 'LOSS PREVENTION HAS BEEN PREVENTED' : `FELL IN ${where}`,
+    headline: ascend ? 'FLOOR CLEARED' : won ? 'CLOCKED OUT' : 'SHIFT OVER',
+    subline: ascend
+      ? 'THE ESCALATOR IS RUNNING...'
+      : won
+        ? 'MANAGEMENT HAS BEEN TERMINATED'
+        : `FELL IN ${where}${upstairs ? ' - FLOOR 2' : ''}`,
     rows: [
       { label: 'TIME', value: formatShiftTime(summary.tick) },
       // How far into the wing the shift got. The cleared count lags on a win
       // (the boss room is not yet marked cleared), which read as 5/6.
-      { label: 'REACHED', value: `${summary.roomIndex + 1}/${state.wing.rooms.length}` },
+      { label: 'REACHED', value: `${upstairs ? 'FLOOR 2 - ' : ''}${summary.roomIndex + 1}/${state.wing.rooms.length}` },
       { label: 'KILLS', value: `${state.stats.kills}` },
       { label: 'BEST COMBO', value: `X${state.stats.bestCombo}` },
       { label: 'CASH', value: `$${summary.cash}` },
       { label: 'HEAT', value: `${summary.heat}` },
       { label: 'BOUGHT', value: namesFor(state, summary.purchasedInstanceIds) },
       { label: 'STOLEN', value: namesFor(state, summary.stolenInstanceIds) },
+      { label: 'MALL', value: `#${mallSeed}` },
     ],
   };
 }

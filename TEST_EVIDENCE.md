@@ -1,5 +1,46 @@
 # Test evidence
 
+## 2026-09-28 — round 16: a new mall every shift, sharper upstairs
+
+- New `shift-seed.test.ts` (3) failed first (missing module); the Floor 2
+  tuning tests failed first (`expected 42 to be 34`, `expected 40 to be 24`);
+  the end card's MALL row test failed first. `npx vitest run` — PASS: 59
+  files, 676 tests.
+- Browser suite with random seeds for seedless launches: 58/59 — "real
+  keyboard theft secures at the store exit" relied on mall 0's storefront
+  layout (walks straight down to the exit). Pinned both storefront tests to
+  `seed=0`; new "each shift clocks into its own mall" test added.
+  `PW_PORT=4193 npx playwright test --workers=2` — PASS: 59/59 (2.4 min).
+- Real browser: a real boss kill on `?fixture=mvp-boss-win&seed=4242` shows
+  the end card with `MALL #4242`, rows and buttons clear; no page errors
+  (`artifacts/neon-overhaul/floor2/endcard-mall.png`).
+
+## 2026-09-28 — round 15: Floor 2, the Upper Level
+
+- `npx vitest run` — PASS: 58 files, 666 tests. New `manager-boss.test.ts`,
+  `floor-two-enemies.test.ts` and `floor-two.test.ts` failed first. The
+  Bargain Hunter spawn-grace test failed first (`expected 'pursue' to be
+  'recover'`), then passed with a 50-tick spawn recover.
+- `npx tsc --noEmit` and `npx vite build` — PASS.
+- `PW_PORT=4193 npx playwright test --workers=2` — PASS: 57/57 (2.7 min), then
+  the new "Management Suite spawns the Mall Manager" test — PASS (4.7 s).
+- Real-browser captures (`artifacts/neon-overhaul/floor2/`, fixtures
+  `mvp-floor-two`, `mvp-floor-two-lobby`, `mvp-floor-two-boss`): no page or
+  console errors. Findings acted on: Bargain Hunters by the west door charged
+  within ~0.6 s of entry (fixed, above); the Cinema Lobby's red mid-floor neon
+  strip read as a hazard (now gold). A suspected slow-movement bug on the
+  landing was the locker-aisles wall at x=180 (the player stopped at 170 =
+  wall minus radius), not a sim fault.
+- Floor 2 music: new `music.test.ts` cases (upstairs track, Manager theme by
+  phase, 16-bar arrangements) failed first. Offline renders in Chromium
+  (`node scripts/render-music.mjs <url> <dir> upstairs manager`), RMS / peak:
+  upstairs low 0.108/0.662, upstairs full 0.119/0.667, manager low
+  0.117/0.654, manager phase 3 0.125/0.686; no page errors, no clipping.
+- Playtest log: the upstairs-attackers/floor test failed first (`expected
+  undefined to be 2`), and the room-keying summary test failed first
+  (`{ food_court: 2 }`). `npx vitest run` — PASS: 58 files, 670 tests.
+- `PW_PORT=4193 npx playwright test --workers=2` — PASS: 58/58 (2.6 min).
+
 ## 2026-09-28 — round 14: the soundtrack, rebuilt
 
 - `npx vitest run` — PASS: 55 files, 648 tests (new reactive-music tests: combat

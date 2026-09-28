@@ -4,6 +4,7 @@ import type { EnemyState } from '../../src/sim/model';
 import { musicCue } from '../../src/game/audio/musicState';
 import { TRACKS, stepTimes } from '../../src/game/audio/music';
 import { roomEventFor } from '../../src/sim/run/roomEvents';
+import { ascendToFloorTwo } from '../../src/sim/run/floors';
 
 function boss(overrides: Partial<EnemyState> = {}): EnemyState {
   return {
@@ -86,9 +87,32 @@ describe('reactive music', () => {
   });
 });
 
+describe('upstairs music', () => {
+  const upstairs = () => ascendToFloorTwo(Object.assign(createMvpRun(7), { status: 'won' as const }));
+
+  it('plays its own fight track on Floor 2, but the same muzak between fights', () => {
+    const state = upstairs();
+    state.room.combat.enemies = [];
+    expect(musicCue(state).track).toBe('muzak');
+    state.room.combat.enemies = [{ ...boss(), kind: 'shopper', health: 18 } as EnemyState];
+    expect(musicCue(state).track).toBe('upstairs');
+  });
+
+  it('gives the Mall Manager his own theme, still speeding up by phase', () => {
+    const state = upstairs();
+    state.room.combat.enemies = [boss({ kind: 'manager', health: 150, bossPhase: 1 })];
+    const one = musicCue(state);
+    state.room.combat.enemies = [boss({ kind: 'manager', health: 40, bossPhase: 3 })];
+    const three = musicCue(state);
+    expect(one.track).toBe('manager');
+    expect(three.track).toBe('manager');
+    expect(three.tempoScale).toBeGreaterThan(one.tempoScale);
+  });
+});
+
 describe('tracks', () => {
   it('has a full sixteen-bar arrangement for every track, including Lights Out', () => {
-    for (const id of ['muzak', 'combat', 'boss', 'blackout'] as const) {
+    for (const id of ['muzak', 'combat', 'boss', 'blackout', 'upstairs', 'manager'] as const) {
       expect(TRACKS[id].bars).toBeGreaterThanOrEqual(16);
     }
   });

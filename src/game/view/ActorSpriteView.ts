@@ -6,7 +6,7 @@ export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
 ] as const;
 export type ActorDirection = (typeof ACTOR_DIRECTION_ORDER)[number];
-export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin';
+export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper';
 
 export type ActorSnapshot = {
   readonly id: string;
@@ -49,7 +49,7 @@ export function shouldRenderActorSprite(key: string, available: ReadonlySet<stri
 
 export function actorTextureKey(kind: ActorKind, walking: boolean): ActorTextureKey {
   if (kind === 'hanger') return ACTOR_TEXTURE_KEYS.hangerIdle;
-  if (kind === 'spitter' || kind === 'lp_manager' || kind === 'mannequin') return ACTOR_TEXTURE_KEYS.hangerIdle;
+  if (kind !== 'alex') return ACTOR_TEXTURE_KEYS.hangerIdle;
   return walking ? ACTOR_TEXTURE_KEYS.alexWalk : ACTOR_TEXTURE_KEYS.alexIdle;
 }
 
@@ -69,9 +69,15 @@ export function enemySpriteSheet(
       return { idle: ENEMY_TEXTURE_KEYS.hangerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.hangerWalk : null, attack: ENEMY_TEXTURE_KEYS.hangerAttack, walkFrames: 6, ticksPerFrame: 4, displaySize: 64 };
     case 'spitter':
       return { idle: ENEMY_TEXTURE_KEYS.spitterIdle, walk: null, attack: ENEMY_TEXTURE_KEYS.spitterAttack, walkFrames: 1, ticksPerFrame: 5, displaySize: 64 };
+    case 'static':
+      return { idle: ENEMY_TEXTURE_KEYS.staticIdle, walk: walking ? ENEMY_TEXTURE_KEYS.staticWalk : null, attack: 'neon:enemy:static-attack', walkFrames: 8, ticksPerFrame: 4, displaySize: 72 };
+    case 'shopper':
+      return { idle: ENEMY_TEXTURE_KEYS.shopperIdle, walk: walking ? ENEMY_TEXTURE_KEYS.shopperWalk : null, attack: 'neon:enemy:shopper-attack', walkFrames: 6, ticksPerFrame: 4, displaySize: 76 };
+    case 'manager':
+      return { idle: ENEMY_TEXTURE_KEYS.managerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.managerWalk : null, attack: 'neon:enemy:manager-attack', walkFrames: 6, ticksPerFrame: 5, displaySize: 128 };
     case 'mannequin':
       // A 96 px PixelLab canvas drawn at 72: a person-sized display dummy.
-      return { idle: ENEMY_TEXTURE_KEYS.mannequinIdle, walk: walking ? ENEMY_TEXTURE_KEYS.mannequinWalk : null, attack: ENEMY_TEXTURE_KEYS.mannequinWalk, walkFrames: 6, ticksPerFrame: 3, displaySize: 72 };
+      return { idle: ENEMY_TEXTURE_KEYS.mannequinIdle, walk: walking ? ENEMY_TEXTURE_KEYS.mannequinWalk : null, attack: 'neon:enemy:mannequin-attack', walkFrames: 6, ticksPerFrame: 3, displaySize: 72 };
     case 'lp_manager':
       return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, attack: ENEMY_TEXTURE_KEYS.lpManagerAttack, walkFrames: 8, ticksPerFrame: 6, displaySize: 128 };
     default:

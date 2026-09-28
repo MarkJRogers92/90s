@@ -187,6 +187,18 @@ async function stableWorldToCanvas(
   return settled;
 }
 
+test('without a seed in the address bar each shift clocks into its own mall', async ({ page }) => {
+  const errors = collectErrors(page);
+  const seeds = new Set<number>();
+  for (let shift = 0; shift < 3; shift += 1) {
+    await launchRun(page);
+    seeds.add((await runSnapshot(page)).seed);
+  }
+  // Rolled from a million; three identical rolls would be the old fixed seed.
+  expect(seeds.size).toBeGreaterThan(1);
+  expect(errors.pageErrors).toEqual([]);
+});
+
 test('launches Night Shift with one canvas, one HUD, and the Opening Concourse', async ({
   page,
 }) => {
@@ -466,7 +478,7 @@ test('offers are identical for one seed and vary across seeds', async ({ page })
 
 test('real keyboard purchase spends cash and records purchased provenance', async ({ page }) => {
   const errors = collectErrors(page);
-  await launchRun(page, '/?fixture=mvp-storefront');
+  await launchRun(page, '/?fixture=mvp-storefront&seed=0');
 
   const before = await runSnapshot(page);
   const nearby = await page.locator('#mvp-run-nearby').innerText();
@@ -490,7 +502,7 @@ test('real keyboard purchase spends cash and records purchased provenance', asyn
 test('real keyboard theft secures at the store exit and raises Heat', async ({ page }) => {
   test.setTimeout(90_000);
   const errors = collectErrors(page);
-  await launchRun(page, '/?fixture=mvp-storefront');
+  await launchRun(page, '/?fixture=mvp-storefront&seed=0');
 
   await page.keyboard.press('f');
   await expect.poll(() => runSnapshot(page).then((state) => state.carried.length)).toBe(1);
@@ -587,6 +599,23 @@ test('the security office spawns the Loss Prevention Manager', async ({ page }) 
   expect(state.enemies.some((enemy) => enemy.kind === 'lp_manager')).toBe(true);
   await expect(page.locator('#mvp-run-boss')).toBeVisible();
   await expect(page.locator('#mvp-run-boss')).toContainText(/BOSS: phase [123]/);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('up the escalator, the Management Suite spawns the Mall Manager', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-two-boss&seed=5150');
+
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 30_000 })
+    .toBe('security_office');
+  const state = await runSnapshot(page);
+  expect(state.enemies.some((enemy) => enemy.kind === 'manager')).toBe(true);
+  expect(state.enemies.some((enemy) => enemy.kind === 'lp_manager')).toBe(false);
+  await expect(page.locator('#mvp-run-boss')).toContainText('HP 150/150');
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

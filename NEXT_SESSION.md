@@ -16,7 +16,13 @@ in `artifacts/neon-overhaul/` (`before/` holds the baseline's own evidence).
 If port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Open follow-ups: a purpose-made Alex portrait, folding the duplicate DOM
+Latest (round 15): Floor 2 — beat Loss Prevention, take the escalator, face
+Statics, Bargain Hunters and the Mall Manager. Jump in with
+`?fixture=mvp-floor-two`, `mvp-floor-two-lobby` or `mvp-floor-two-boss`.
+Committed locally on `claude/neon-overhaul`; not pushed until the owner says so.
+
+Open follow-ups: a human playtest of Floor 2 difficulty (use the playtest
+log; it now separates upstairs rooms and attackers), a purpose-made Alex portrait, folding the duplicate DOM
 status bar into an off-canvas panel, and device/Safari performance checks.
 Nothing is pushed, merged or published.
 

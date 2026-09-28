@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import type { MvpRunState } from '../../src/sim/run/types';
 import { buildShiftCardModel, formatShiftTime } from '../../src/game/ui/shiftCardModel';
+import { ascendToFloorTwo } from '../../src/sim/run/floors';
 
 function ended(status: 'won' | 'dead', mutate: (state: MvpRunState) => void = () => undefined): MvpRunState {
   const state = createMvpRun(7);
@@ -26,10 +27,23 @@ describe('shift card model', () => {
     expect(card.subline).toContain(createMvpRun(7).wing.rooms[0]!.name.toUpperCase());
   });
 
-  it('calls a win CLOCKED OUT', () => {
+  it('calls a floor-1 win FLOOR CLEARED and offers the escalator', () => {
     const card = buildShiftCardModel(ended('won'))!;
     expect(card.won).toBe(true);
+    expect(card.headline).toBe('FLOOR CLEARED');
+    expect(card.ascend).toBe(true);
+  });
+
+  it('saves CLOCKED OUT for beating the Mall Manager upstairs', () => {
+    const below = createMvpRun(7);
+    below.status = 'won';
+    const above = ascendToFloorTwo(below);
+    above.status = 'won';
+    above.summary = { seed: above.seed, status: 'won', roomIndex: 5, roomsCleared: 5, purchasedInstanceIds: [], stolenInstanceIds: [], cash: 10, heat: 0, tick: 100 };
+    const card = buildShiftCardModel(above)!;
     expect(card.headline).toBe('CLOCKED OUT');
+    expect(card.ascend).toBe(false);
+    expect(card.rows.find((row) => row.label === 'REACHED')?.value).toBe('FLOOR 2 - 6/6');
   });
 
   it('lists the run as label/value rows, time first', () => {
@@ -39,6 +53,16 @@ describe('shift card model', () => {
     expect(card.rows).toContainEqual({ label: 'HEAT', value: '2' });
     expect(card.rows.find((row) => row.label === 'REACHED')?.value).toMatch(/^1\/\d+$/);
     expect(card.rows).toContainEqual({ label: 'BOUGHT', value: 'NOTHING' });
+  });
+
+  it('names the mall so a good one can be shared with ?seed=, upstairs too', () => {
+    expect(buildShiftCardModel(ended('dead'))!.rows).toContainEqual({ label: 'MALL', value: '#7' });
+    const below = createMvpRun(7);
+    below.status = 'won';
+    const above = ascendToFloorTwo(below);
+    above.status = 'dead';
+    above.summary = { seed: above.seed, status: 'dead', roomIndex: 2, roomsCleared: 2, purchasedInstanceIds: [], stolenInstanceIds: [], cash: 10, heat: 0, tick: 100 };
+    expect(buildShiftCardModel(above, 7)!.rows).toContainEqual({ label: 'MALL', value: '#7' });
   });
 
   it('formats shift time from 60 Hz ticks', () => {

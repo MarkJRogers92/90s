@@ -1,4 +1,4 @@
-import { BOSS_MAX_HEALTH } from '../../sim/combat/boss';
+import { bossConfigFor, isBossKind } from '../../sim/combat/boss';
 /**
  * DOM presentation for the M5 MVP run.
  *
@@ -56,8 +56,8 @@ function requireElement<T extends HTMLElement>(selector: string): T {
  * health-derived phase is only a fallback for a boss that has not ticked yet.
  */
 export function bossHudParts(boss: EnemyState): string[] {
-  const bossPhase = boss.bossPhase ?? bossPhaseForHealth(boss.health);
-  const parts = [`BOSS: phase ${bossPhase} · HP ${boss.health}/${BOSS_MAX_HEALTH}`];
+  const bossPhase = boss.bossPhase ?? bossPhaseForHealth(boss.health, bossConfigFor(boss.kind).maxHealth);
+  const parts = [`BOSS: phase ${bossPhase} · HP ${boss.health}/${bossConfigFor(boss.kind).maxHealth}`];
   if (boss.phase === 'telegraph') {
     parts.push('SLAM WIND-UP');
   }
@@ -248,7 +248,7 @@ export class MvpRunHud {
       return '—';
     }
     const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
-    const boss = living.find((enemy) => enemy.kind === 'lp_manager');
+    const boss = living.find((enemy) => isBossKind(enemy.kind));
     if (boss) {
       return 'Defeat the Loss Prevention Manager.';
     }
@@ -268,7 +268,7 @@ export class MvpRunHud {
   }
 
   private syncBoss(state: MvpRunState): void {
-    const boss = state.room.combat.enemies.find((enemy) => enemy.kind === 'lp_manager');
+    const boss = state.room.combat.enemies.find((enemy) => isBossKind(enemy.kind));
     if (!boss || state.status !== 'playing') {
       this.boss.hidden = true;
       this.boss.textContent = '';
