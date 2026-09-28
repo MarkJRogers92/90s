@@ -9,7 +9,24 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import Phaser from 'phaser';
-import { installMvpRunDebugBridge } from '../../debug/DebugBridge';
+import { HIT_STOP_MS } from '../view/combatBeats';
+import { gameSettings, hitStopScale } from '../settings/settings';
+import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
+import { PauseCard } from '../ui/PauseCard';
+import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
+import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
+import { heartbeatIntervalMs } from '../view/playerCues';
+import { PlaytestRecorder } from '../playtest/recorder';
+import { PlaytestLog } from '../playtest/log';
+
+function playtestStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+import { installMvpRunDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
   InMemoryCheckpointStore,
   type CheckpointStore,
@@ -33,12 +50,29 @@ import {
 } from '../../sim/run/tickMvpRun';
 import type { MvpInputFrame, MvpRunState } from '../../sim/run/types';
 import { GameAudioEngine } from '../audio/engine';
+import { CHARACTER_ASSETS, NEON_ASSETS, PRESENTATION_ASSETS } from '../presentation/assets';
+import { installAdaptiveBloom } from '../presentation/lighting/LightingLayer';
+import { ensureFxTextures } from '../presentation/neon/proceduralTextures';
+import { STAGE_HEIGHT, STAGE_TOP, STAGE_WIDTH, dressingTextureFiles } from '../presentation/rooms/roomDressing';
+import { GameHud } from '../ui/GameHud';
 import { MvpRunHud } from '../ui/MvpRunHud';
 import { MvpRunView } from '../view/MvpRunView';
+import {
+  centreCameraOn,
+  pointerToWorld,
+  worldToCanvas,
+} from '../view/projection';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
 const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
+const RUN_ASSETS = [
+  ...PRESENTATION_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
+  ...NEON_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
+  ...CHARACTER_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
+  ...dressingTextureFiles(),
+];
+const PRESENTATION_ASSET_KEYS = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
 
 export type MvpRunLaunch = {
   readonly seed: number;
@@ -76,9 +110,48 @@ class MvpRunInputAdapter {
   private pendingInteract = false;
   private pendingSteal = false;
   private pendingRecall = false;
+  private pendingSlot = 0;
+  private pendingCycle = 0;
+  private pendingDash = false;
+  /** Returns a weapon slot when a click lands on the HUD hotbar, else null. */
+  public hudSlotAt: ((x: number, y: number) => number | null) | null = null;
+  /** The Bench Warrant card, when a fusion preview is open. */
+  public benchCard: {
+    readonly isOpen: () => boolean;
+    readonly buttonAt: (x: number, y: number) => BenchCardAction | null;
+    readonly act: (action: BenchCardAction) => void;
+  } | null = null;
+  /** N toggles the soundtrack on its own. */
+  public onToggleMusic: (() => void) | null = null;
+  /** The end-of-shift card, when it is open: its buttons and key actions. */
+  public endCard: {
+    readonly isOpen: () => boolean;
+    readonly buttonAt: (x: number, y: number) => ShiftCardAction | null;
+    readonly act: (action: ShiftCardAction) => void;
+  } | null = null;
 
-  private readonly handlePointerDown = (): void => {
+  private readonly handlePointerDown = (pointer: Phaser.Input.Pointer): void => {
+    const benchAction = this.benchCard?.buttonAt(pointer.x, pointer.y) ?? null;
+    if (benchAction !== null) {
+      this.benchCard?.act(benchAction);
+      return;
+    }
+    const endAction = this.endCard?.buttonAt(pointer.x, pointer.y) ?? null;
+    if (endAction !== null) {
+      this.endCard?.act(endAction);
+      return;
+    }
+    // A click on the hotbar equips that weapon instead of swinging it.
+    const slot = this.hudSlotAt?.(pointer.x, pointer.y) ?? null;
+    if (slot !== null) {
+      this.pendingSlot = slot;
+      return;
+    }
     this.pointerHeld = true;
+  };
+
+  private readonly handleWheel = (_pointer: unknown, _objects: unknown, _dx: number, dy: number): void => {
+    if (dy !== 0) this.pendingCycle = dy > 0 ? 1 : -1;
   };
 
   private readonly handlePointerUp = (): void => {
@@ -86,8 +159,28 @@ class MvpRunInputAdapter {
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (event.repeat) {
+    if (event.repeat || settingsDialogOpen()) {
       return;
+    }
+    if (event.code === 'KeyO') {
+      window.dispatchEvent(new CustomEvent(OPEN_SETTINGS_EVENT));
+      return;
+    }
+    if (this.benchCard?.isOpen()) {
+      if (event.code === 'Enter' || event.code === 'NumpadEnter') {
+        this.benchCard.act('fuse');
+        return;
+      }
+      if (event.code === 'Escape') {
+        event.preventDefault();
+        this.benchCard.act('cancel');
+        return;
+      }
+    }
+    if (this.endCard?.isOpen()) {
+      if (event.code === 'KeyR' || event.code === 'Enter') this.endCard.act('retry');
+      else if (event.code === 'KeyT') this.endCard.act('title');
+      if (event.code !== 'KeyM') return;
     }
     if (event.code === 'KeyE') {
       this.pendingInteract = true;
@@ -95,13 +188,27 @@ class MvpRunInputAdapter {
       this.pendingSteal = true;
     } else if (event.code === 'KeyR') {
       this.pendingRecall = true;
+    } else if (/^Digit[1-9]$/.test(event.code)) {
+      this.pendingSlot = Number(event.code.slice(5));
+    } else if (event.code === 'KeyQ') {
+      this.pendingCycle = event.shiftKey ? -1 : 1;
+    } else if (event.code === 'Space') {
+      // Space must never also scroll the page or press a focused DOM button.
+      event.preventDefault();
+      this.pendingDash = true;
     } else if (event.code === 'KeyM') {
       this.onToggleMute();
+    } else if (event.code === 'KeyN') {
+      this.onToggleMusic?.();
     } else if (event.code === 'Escape') {
       event.preventDefault();
       this.clearHeld();
       this.onEscape();
     }
+  };
+
+  private readonly handleKeyUp = (event: KeyboardEvent): void => {
+    if (event.code === 'Space') event.preventDefault();
   };
 
   private readonly handleBlur = (): void => {
@@ -135,16 +242,18 @@ class MvpRunInputAdapter {
     };
 
     scene.input.on('pointerdown', this.handlePointerDown);
+    scene.input.on('wheel', this.handleWheel);
     scene.input.on('pointerup', this.handlePointerUp);
     scene.input.on('pointerupoutside', this.handlePointerUp);
     scene.input.on('gameout', this.handlePointerUp);
     window.addEventListener('keydown', this.handleKeyDown);
+    window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);
   }
 
   public readFrame(): MvpInputFrame {
     const pointer = this.scene.input.activePointer;
-    const worldPosition = pointer.positionToCamera(this.scene.cameras.main) as Phaser.Math.Vector2;
+    const worldPosition = pointerToWorld(this.scene, pointer);
     const frame: MvpInputFrame = {
       moveX: Number(this.keys.right.isDown) - Number(this.keys.left.isDown),
       moveY: Number(this.keys.down.isDown) - Number(this.keys.up.isDown),
@@ -154,7 +263,13 @@ class MvpRunInputAdapter {
       interact: this.keys.interact.isDown || this.pendingInteract,
       steal: this.keys.steal.isDown || this.pendingSteal,
       recall: this.keys.recall.isDown || this.pendingRecall,
+      selectSlot: this.pendingSlot,
+      cycleWeapon: this.pendingCycle,
+      dash: this.pendingDash,
     };
+    this.pendingDash = false;
+    this.pendingSlot = 0;
+    this.pendingCycle = 0;
     this.pendingInteract = false;
     this.pendingSteal = false;
     this.pendingRecall = false;
@@ -163,6 +278,7 @@ class MvpRunInputAdapter {
 
   public clearHeld(): void {
     this.pointerHeld = false;
+    this.pendingDash = false;
     this.keys.up.reset();
     this.keys.left.reset();
     this.keys.down.reset();
@@ -173,14 +289,18 @@ class MvpRunInputAdapter {
     this.pendingInteract = false;
     this.pendingSteal = false;
     this.pendingRecall = false;
+    this.pendingSlot = 0;
+    this.pendingCycle = 0;
   }
 
   public destroy(): void {
     this.scene.input.off('pointerdown', this.handlePointerDown);
+    this.scene.input.off('wheel', this.handleWheel);
     this.scene.input.off('pointerup', this.handlePointerUp);
     this.scene.input.off('pointerupoutside', this.handlePointerUp);
     this.scene.input.off('gameout', this.handlePointerUp);
     window.removeEventListener('keydown', this.handleKeyDown);
+    window.removeEventListener('keyup', this.handleKeyUp);
     window.removeEventListener('blur', this.handleBlur);
     this.clearHeld();
   }
@@ -194,17 +314,39 @@ export class MvpRunScene extends Phaser.Scene {
   private store: CheckpointStore = new InMemoryCheckpointStore();
   private generation = 1;
   private accumulator = 0;
+  private hitStopMs = 0;
+  private lastHeartbeat = -Infinity;
+  /** Local, opt-in playtest log (off until switched on from the title). */
+  private readonly playtestLog = new PlaytestLog(playtestStorage());
+  private playtest = new PlaytestRecorder();
   private lastRoomIndex = 0;
   private lastCheckpointKey: string | null = null;
   private checkpointStatus = 'none yet';
   private inputAdapter: MvpRunInputAdapter | undefined;
   private runView: MvpRunView | undefined;
   private hud: MvpRunHud | undefined;
+  private gameHud: GameHud | undefined;
+  private shiftCard: ShiftCard | undefined;
+  private pauseCard: PauseCard | undefined;
+  private benchCard: BenchCard | undefined;
+  private removeBloom: (() => void) | undefined;
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
+  private presentationLoadFailures = 0;
 
   public constructor() {
     super(MvpRunScene.KEY);
+  }
+
+  public preload(): void {
+    this.presentationLoadFailures = 0;
+    this.load.on(Phaser.Loader.Events.FILE_LOAD_ERROR, this.countPresentationLoadFailure, this);
+    this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+      this.load.off(Phaser.Loader.Events.FILE_LOAD_ERROR, this.countPresentationLoadFailure, this);
+    });
+    for (const asset of RUN_ASSETS) {
+      this.load.image(asset.key, asset.url);
+    }
   }
 
   public create(): void {
@@ -234,7 +376,35 @@ export class MvpRunScene extends Phaser.Scene {
     // key press anywhere unlocks it; until then the engine is silent, not broken.
     window.addEventListener('pointerdown', this.unlockAudio);
     window.addEventListener('keydown', this.unlockAudio);
+    window.addEventListener(SETTINGS_OPENED_EVENT, this.pauseForSettings);
+    ensureFxTextures(this);
     this.runView = new MvpRunView(this);
+    // The whole room is always on screen, like an Isaac room: the camera is
+    // fixed on the stage (playfield plus the storefront band above it).
+    this.cameras.main.setBounds(0, STAGE_TOP, STAGE_WIDTH, STAGE_HEIGHT);
+    this.cameras.main.setBackgroundColor('#07050c');
+    this.removeBloom = installAdaptiveBloom(this);
+    this.gameHud = new GameHud(this);
+    const hud = this.gameHud;
+    this.inputAdapter.hudSlotAt = (x, y) => hud.weaponSlotAt(x, y);
+    this.inputAdapter.onToggleMusic = () => {
+      this.audio?.toggleMusic();
+    };
+    this.pauseCard = new PauseCard(this);
+    const bench = new BenchCard(this);
+    this.benchCard = bench;
+    this.inputAdapter.benchCard = {
+      isOpen: () => bench.open,
+      buttonAt: (x, y) => bench.buttonAt(x, y),
+      act: (action) => (action === 'fuse' ? this.confirmFusion() : this.cancelFusion()),
+    };
+    const card = new ShiftCard(this);
+    this.shiftCard = card;
+    this.inputAdapter.endCard = {
+      isOpen: () => card.open,
+      buttonAt: (x, y) => card.buttonAt(x, y),
+      act: (action) => (action === 'retry' ? this.restartRun() : this.returnToTitle()),
+    };
     this.hud = new MvpRunHud(
       () => this.restartRun(),
       () => this.returnToTitle(),
@@ -244,11 +414,20 @@ export class MvpRunScene extends Phaser.Scene {
     );
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
-      this.removeDebugBridge = installMvpRunDebugBridge(
+      const removeBridge = installMvpRunDebugBridge(
         () => this.run,
         () => this.generation,
         () => this.audio,
+        () => this.presentationLoadFailures,
+        () => this.runView?.presentationSnapshot() ?? null,
+        () => this.runView?.actorPresentationSnapshot() ?? null,
+        () => this.runView?.concourseAmbienceSnapshot() ?? null,
       );
+      const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
+      this.removeDebugBridge = () => {
+        removeProjection();
+        removeBridge();
+      };
     }
 
     this.syncCheckpoint();
@@ -260,6 +439,16 @@ export class MvpRunScene extends Phaser.Scene {
     if (!this.inputAdapter || this.run.paused || this.run.status !== 'playing') {
       this.accumulator = 0;
       this.syncCheckpoint();
+      this.syncView();
+      return;
+    }
+
+    // Hit stop: after a big hit lands the fixed-step clock holds for a few
+    // frames, exactly like a very short pause. Held input stays held, queued
+    // presses wait, and no simulation rule changes.
+    if (this.hitStopMs > 0) {
+      this.hitStopMs -= Math.max(elapsedMs, 0);
+      this.accumulator = 0;
       this.syncView();
       return;
     }
@@ -283,6 +472,8 @@ export class MvpRunScene extends Phaser.Scene {
     }
     if (this.run.roomIndex !== this.lastRoomIndex) {
       this.lastRoomIndex = this.run.roomIndex;
+      // A quick fade from the mall's own dark, so a door reads as a door.
+      this.cameras.main.fadeIn(240, 7, 5, 12);
       this.inputAdapter.clearHeld();
       clearMvpHeldActions(this.run);
     }
@@ -332,6 +523,8 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private restartRun(): void {
+    this.recordQuit();
+    this.playtest = new PlaytestRecorder();
     this.generation += 1;
     const cleared = this.store.clear();
     this.run = createMvpRun(this.seed);
@@ -339,17 +532,25 @@ export class MvpRunScene extends Phaser.Scene {
     // would read every field as a change and fire a burst of cues.
     this.audio?.resetBaseline();
     this.accumulator = 0;
+    this.hitStopMs = 0;
     this.lastRoomIndex = this.run.roomIndex;
     this.lastCheckpointKey = null;
     this.checkpointStatus = cleared.ok
       ? 'none yet'
       : `clear unavailable: ${cleared.reason}`;
     this.inputAdapter?.clearHeld();
+    this.runView?.resetForRun();
     this.syncCheckpoint();
     this.syncView();
   }
 
+  /** Opening settings mid-shift pauses it, like Esc. */
+  private readonly pauseForSettings = (): void => {
+    if (this.run.status === 'playing' && !this.run.paused && this.run.preview === null) this.setPaused(true);
+  };
+
   private readonly returnToTitle = (): void => {
+    this.recordQuit();
     window.dispatchEvent(new CustomEvent(RETURN_TO_TITLE_EVENT));
   };
 
@@ -381,6 +582,12 @@ export class MvpRunScene extends Phaser.Scene {
     this.audio?.resume();
   };
 
+  private readonly countPresentationLoadFailure = (file: Phaser.Loader.File): void => {
+    if (file.type === 'image' && PRESENTATION_ASSET_KEYS.has(file.key)) {
+      this.presentationLoadFailures += 1;
+    }
+  };
+
   /** Toggles mute and returns the new state, so the HUD can label its button. */
   private toggleMuted(): boolean {
     return this.audio?.toggleMuted() ?? false;
@@ -388,10 +595,51 @@ export class MvpRunScene extends Phaser.Scene {
 
   private syncView(): void {
     this.runView?.sync(this.run);
+    this.recordPlaytest();
+    this.syncHeartbeat();
+    const rawHold = this.runView?.takeHitStop() ?? 0;
+    const hold = rawHold * hitStopScale(gameSettings().get());
+    this.hitStopMs = Math.max(this.hitStopMs, hold);
+    // Getting hurt (and the boss kill) ring the ears: the mix muffles while the frame holds.
+    if (rawHold >= HIT_STOP_MS.playerHurt) this.audio?.muffle(Math.max(hold, 120));
+    centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
+    this.gameHud?.sync(this.run);
+    const pointer = this.input.activePointer;
+    this.shiftCard?.hover(pointer.x, pointer.y);
+    this.benchCard?.hover(pointer.x, pointer.y);
+    this.benchCard?.sync(this.run);
+    this.shiftCard?.sync(this.run);
+    // A fusion preview also holds the clock; it has its own panel, not the pause card.
+    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
+  }
+
+  private recordPlaytest(): void {
+    const record = this.playtest.observe(this.run);
+    if (record) this.playtestLog.append(record);
+  }
+
+  /** A shift abandoned mid-run still belongs in the playtest log. */
+  private recordQuit(): void {
+    if (this.run.status !== 'playing') return;
+    const record = this.playtest.finish(this.run, 'quit');
+    if (record) this.playtestLog.append(record);
+  }
+
+  /** At the last heart the janitor's pulse is audible and visible, on real time. */
+  private syncHeartbeat(): void {
+    const interval = this.run.status === 'playing' && !this.run.paused
+      ? heartbeatIntervalMs(this.run.room.combat.player.health)
+      : null;
+    const now = this.time.now;
+    if (interval !== null && now - this.lastHeartbeat >= interval) {
+      this.lastHeartbeat = now;
+      this.audio?.play('heartbeat');
+    }
+    this.runView?.heartbeat(interval !== null, now - this.lastHeartbeat);
   }
 
   private applyDevFixture(state: MvpRunState): MvpRunState {
@@ -508,8 +756,19 @@ export class MvpRunScene extends Phaser.Scene {
     this.runView = undefined;
     this.hud?.destroy();
     this.hud = undefined;
+    this.gameHud?.destroy();
+    this.gameHud = undefined;
+    this.shiftCard?.destroy();
+    this.shiftCard = undefined;
+    this.pauseCard?.destroy();
+    this.pauseCard = undefined;
+    this.benchCard?.destroy();
+    this.benchCard = undefined;
+    this.removeBloom?.();
+    this.removeBloom = undefined;
     window.removeEventListener('pointerdown', this.unlockAudio);
     window.removeEventListener('keydown', this.unlockAudio);
+    window.removeEventListener(SETTINGS_OPENED_EVENT, this.pauseForSettings);
     this.audio?.destroy();
     this.audio = undefined;
     this.removeDebugBridge?.();

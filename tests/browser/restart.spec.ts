@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { worldToCanvas } from './projection';
 
 type LifecycleSnapshot = {
   generation: number;
@@ -42,10 +43,8 @@ async function defeatEnemy(page: Page, kind: 'hanger' | 'spitter'): Promise<void
     return;
   }
 
-  await page.mouse.move(
-    box.x + (target.x / 960) * box.width,
-    box.y + (target.y / 480) * box.height,
-  );
+  const point = await worldToCanvas(page, target.x, target.y);
+  await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.mouse.down();
   await expect
     .poll(() => snapshot(page).then((state) => state.enemies.some((enemy) => enemy.id === target.id)))

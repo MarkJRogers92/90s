@@ -20,6 +20,8 @@
  * from the seed whenever the room changes and never carry across a doorway.
  */
 import { circleIntersectsRect } from '../core/geometry';
+import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
+import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
 import { freezeDeep } from '../items/types';
 import type { Rect, Vec2 } from '../model';
 import { crossedStoreExit } from '../shop/tickWingRun';
@@ -271,6 +273,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
     combat,
     cleared: !hasLivingEnemies(combat),
     enteredFrom: enteringFrom,
+    tokens: [],
   };
   state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
   clearMvpHeldActions(state);
@@ -489,6 +492,13 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   } else if (recallPressed) {
     recallRunCarrier(state);
   }
+  // Weapon switching is a discrete event from the adapter (a number key, Q or
+  // the wheel), so it needs no held-state edge detection.
+  if (input.selectSlot !== undefined && input.selectSlot > 0) {
+    selectRunWeaponSlot(state, input.selectSlot);
+  } else if (input.cycleWeapon !== undefined && input.cycleWeapon !== 0) {
+    cycleRunWeapon(state, input.cycleWeapon);
+  }
 
   // 3. Carrier presence follows the inventory, so a purchase in stage 2 brings
   //    the car into the run on the same tick it is bought.
@@ -505,6 +515,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     x: state.room.combat.player.x,
     y: state.room.combat.player.y,
   };
+  const livingBeforeCombat = markLivingEnemies(state);
   tickRun(
     state.room.combat,
     {
@@ -513,10 +524,15 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
       aimX: input.aimX,
       aimY: input.aimY,
       fire: input.fire,
+      dash: input.dash === true,
     },
     carrierAttackContext(state),
   );
   enforceRunCarrierLeash(state);
+
+  // 6b. Mall Tokens: fallen monsters drop change; the janitor sweeps it up.
+  dropTokensForDeaths(state, livingBeforeCombat);
+  collectTokens(state);
 
   // 7. Store boundary evaluation.
   const confiscated = evaluateStoreBoundary(state, previousPosition, preserveActionFeedback);

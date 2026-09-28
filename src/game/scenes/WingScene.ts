@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { installWingDebugBridge } from '../../debug/DebugBridge';
+import { installWingDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import { createWingRun } from '../../sim/shop/createWingRun';
 import {
   clearWingHeldActions,
@@ -10,6 +10,7 @@ import { itemDefinitionName, type WingState } from '../../sim/shop/types';
 import { WingInputAdapter } from '../input/WingInputAdapter';
 import { WingHud } from '../ui/WingHud';
 import { WingView } from '../view/WingView';
+import { boundCameraToPlayfield, centreCameraOn, worldToCanvas } from '../view/projection';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -41,13 +42,19 @@ export class WingScene extends Phaser.Scene {
       () => this.setPaused(true),
     );
     this.wingView = new WingView(this);
+    boundCameraToPlayfield(this);
     this.hud = new WingHud(this.restartLoop, this.returnToTitle);
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
-      this.removeDebugBridge = installWingDebugBridge(
+      const removeBridge = installWingDebugBridge(
         () => this.wing,
         () => this.generation,
       );
+      const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
+      this.removeDebugBridge = () => {
+        removeProjection();
+        removeBridge();
+      };
     }
 
     this.syncView();
@@ -169,6 +176,7 @@ export class WingScene extends Phaser.Scene {
   private syncView(): void {
     this.wingView?.sync(this.wing);
     this.hud?.sync(this.wing);
+    centreCameraOn(this, this.wing.player.x, this.wing.player.y);
   }
 
   private readonly destroyWing = (): void => {

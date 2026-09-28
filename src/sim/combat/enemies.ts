@@ -3,6 +3,7 @@ import { updateLpManager } from './boss';
 import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
 import { effectiveSpeedMultiplier } from '../effects/statuses';
 import { moveCircle, scaleMovementDelta } from './movement';
+import { playerDashing } from './dash';
 import {
   circlesOverlap,
   sweptCircleIntersectsCircle,
@@ -11,8 +12,8 @@ import {
 
 const TICKS_PER_SECOND = 60;
 const HANGER_SPEED_PER_TICK = 95 / TICKS_PER_SECOND;
-const SPITTER_TELEGRAPH_TICKS = 36;
-const SPITTER_RECOVER_TICKS = 90;
+export const SPITTER_TELEGRAPH_TICKS = 36;
+export const SPITTER_RECOVER_TICKS = 90;
 const SPITTER_PROJECTILE_SPEED_PER_TICK = 150 / TICKS_PER_SECOND;
 const SPITTER_PROJECTILE_LIFETIME_TICKS = 240;
 const PLAYER_INVULNERABILITY_TICKS = 60;
@@ -81,7 +82,7 @@ export function updateEnemies(state: RunState): void {
 }
 
 export function resolveEnemyDamage(state: RunState): void {
-  if (state.player.invulnerableTicks > 0) {
+  if (state.player.invulnerableTicks > 0 || playerDashing(state)) {
     return;
   }
   const touchingHanger = state.enemies.some(
@@ -136,6 +137,8 @@ export function updateProjectiles(state: RunState): void {
 
     if (
       projectile.faction === 'enemy' &&
+      // A dashing janitor slips through: the glob keeps flying.
+      !playerDashing(state) &&
       sweptCircleIntersectsCircle(
         projectile.previousX,
         projectile.previousY,

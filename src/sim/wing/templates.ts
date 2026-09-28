@@ -22,6 +22,15 @@ export const ROOM_BOUNDS: Rect = {
   height: ROOM_HEIGHT,
 };
 
+/**
+ * The Opening Concourse's atrium fountain basin. It is authored collision so
+ * the room's centrepiece is solid: shoppers, and the player, walk around it.
+ * It sits south of the west-east door lane (y 192-288), so the straight walk
+ * through the first room stays open. The opening room spawns no enemies, so
+ * this changes no fight.
+ */
+export const OPENING_FOUNTAIN: Rect = { x: 425, y: 316, width: 110, height: 52 };
+
 export type AuthoredEnemyKind = 'hanger' | 'spitter';
 
 export type AuthoredSpawnSlot = {
@@ -66,7 +75,7 @@ export const STOREFRONT_ROLES: readonly WingRoomRole[] = [
 ];
 
 export const ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
-  service_corridor: 'Service Corridor',
+  service_corridor: 'Opening Concourse',
   storefront_a: 'West Storefront',
   food_court: 'Food Court',
   storefront_b: 'East Storefront',
@@ -83,6 +92,7 @@ export const ROOM_VARIANTS: Readonly<
       interiorWalls: [
         { x: 260, y: 70, width: 140, height: 30 },
         { x: 560, y: 380, width: 140, height: 30 },
+        OPENING_FOUNTAIN,
       ],
       playerEntry: { x: 110, y: 240 },
       bossAnchor: null,
@@ -100,6 +110,7 @@ export const ROOM_VARIANTS: Readonly<
       interiorWalls: [
         { x: 180, y: 110, width: 30, height: 260 },
         { x: 750, y: 110, width: 30, height: 260 },
+        OPENING_FOUNTAIN,
       ],
       playerEntry: { x: 110, y: 240 },
       bossAnchor: null,

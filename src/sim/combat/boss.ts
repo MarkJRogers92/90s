@@ -6,6 +6,7 @@ import {
   PLAYFIELD_WIDTH,
 } from '../core/geometry';
 import { moveCircle } from './movement';
+import { playerDashing } from './dash';
 
 export const BOSS_MAX_HEALTH = 60;
 export const BOSS_RADIUS = 22;
@@ -34,7 +35,7 @@ export const BOSS_SUMMONED_HEALTH = 8;
 export const BOSS_SUMMONED_RADIUS = 14;
 
 /** Offsets in degrees, ascending, for the five-projectile volley fan. */
-const VOLLEY_ANGLE_OFFSETS_DEGREES = [-30, -15, 0, 15, 30] as const;
+export const VOLLEY_ANGLE_OFFSETS_DEGREES = [-30, -15, 0, 15, 30] as const;
 
 /**
  * The same player invulnerability window the existing enemy stage applies
@@ -267,7 +268,7 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
   } else if (boss.phase === 'telegraph') {
     boss.phaseTicks -= 1;
     if (boss.phaseTicks <= 0) {
-      if (state.player.invulnerableTicks <= 0) {
+      if (state.player.invulnerableTicks <= 0 && !playerDashing(state)) {
         const distance = Math.hypot(state.player.x - boss.x, state.player.y - boss.y);
         if (distance <= BOSS_SLAM_REACH) {
           state.player.health -= BOSS_SLAM_DAMAGE;

@@ -1,61 +1,88 @@
 # Next session
 
-M5 is implemented on codex/m5-mvp in the linked worktree `.worktrees/m5-mvp`,
-started from the M4 tip `ff2dcf5`, with the in-run Bench Warrant fusion repaired
-on 2026-09-19. Verify the actual branch and working tree before trusting this
-note.
+## Claude neon overhaul — start here
 
-Run it locally:
+Branch `claude/neon-overhaul` in `.worktrees/neon-overhaul`. Read
+[`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first.
+Round 4 added `src/game/view/combatBeats.ts` (pure rules) and reworked
+`CombatFeedback.ts`. Hit stop lives in `MvpRunScene.update`. New enemy
+animations are promoted with `docs/art/neon-overhaul/promote_anim.py`.
 
     npm install
-    npm run dev
+    VITE_ENABLE_DEBUG_BRIDGE=true npx vite --host 127.0.0.1 --port 4180 --strictPort
 
-Open http://127.0.0.1:5173 and choose **Night Shift**. Move with WASD, aim with
-the pointer, attack with the primary mouse button, press E to buy, use a door,
-or open the Bench Warrant kiosk, press F to steal, press R to recall a fused
-carrier, and press Escape to pause. **Continue run** on the title screen resumes
-the last room boundary, and `?seed=12345` replays a specific wing.
+Open http://127.0.0.1:4180, choose **Night Shift**. Before/after captures are
+in `artifacts/neon-overhaul/` (`before/` holds the baseline's own evidence).
+If port 5173 is taken by another worktree, run the browser gate with
+`PW_PORT=4191 npx playwright test`.
 
-To reach the repaired fusion loop quickly, buy the Remote-Control Car at the
-first storefront (Mall Mart sells it for $20), then walk back to the Bench
-Warrant kiosk in the service corridor and press E. Alternatively,
-`http://127.0.0.1:5173/?fixture=mvp-bench` starts a shift at the kiosk already
-owning the car and a projectile primary; that fixture exists only in Vite
-development mode.
+Open follow-ups: a purpose-made Alex portrait, folding the duplicate DOM
+status bar into an off-canvas panel, and device/Safari performance checks.
+Nothing is pushed, merged or published.
 
-The M5 fun gate is awaiting user playtest: wing pacing, store placement, boss
-difficulty, whether the checkpoint cadence feels right, and whether the car
-feels good to steer — its leash, its recall trip, and whether the fusion fee
-reads as a real trade rather than a free upgrade.
+The Opening Concourse production-presentation vertical slice is implemented on
+`codex/presentation-3quarter` in `.worktrees/presentation-3quarter`. Verify the
+actual branch and working tree before trusting this note.
 
-After M6 authorization, the next milestone per ROADMAP.md is M6 depth work.
-Preserve `src/sim` as the authority and keep branches out of the central tick.
+The user has paused local iteration and requested a GitHub handoff for Claude
+Opus 5.5. Read [`CLAUDE_HANDOFF.md`](CLAUDE_HANDOFF.md) first. Resume only when
+the user asks. Claude is invited to review the whole project and change any
+parts needed to achieve the original 80s/90s mall roguelike vision; this
+worktree remains the untouched comparison baseline. Claude's work belongs on a
+separate branch/worktree and must remain unmerged, unpublished, undeployed, and
+unreleased unless separately approved. The handoff branch is
+`origin/codex/presentation-3quarter`.
 
-Last full gate from this working tree on 2026-09-19:
+For a later visual review, open the local game, choose **Night Shift**, and
+compare the playable calm, evacuation, and first-combat transition with:
 
-    npm run typecheck
-    npm test
-    npm run test:browser
-    npm run build
+- `artifacts/presentation-vertical-slice/opening-busy.png`
+- `artifacts/presentation-vertical-slice/opening-evacuation.png`
+- `artifacts/presentation-vertical-slice/first-combat.png`
+- `artifacts/presentation-vertical-slice/compact-800x600.png`
 
-Result: typecheck and build passed; 27 unit/integration files and 469 tests
-passed; 45 Chromium tests passed; the production scan was clean and the
-production preview at 1440x900 was smoke-inspected. No 800x600 production
-screenshot was retaken for this change.
+Port 5173 was occupied by another worktree during Task 8. A safe local launch is:
 
-Notes for the next session:
+    npx vite --host 127.0.0.1 --port 4176 --strictPort
 
-- Night Shift has sound, wired into the M5 run only. **Start shift** (M1),
-  **Interaction Lab** (M2), **Shoplifting Loop** (M3), and **Void the Warranty**
-  (M4) are still silent. `deriveAudioCues` reads run state and is mode-agnostic,
-  so wiring them is follow-up work. Mute with the HUD button or the M key.
+Then open `http://127.0.0.1:4176`, choose **Night Shift**, move with WASD, aim
+with the pointer, attack with the primary mouse button, and press Escape to
+pause. The branch is pushed to GitHub for handoff, but is not merged, published,
+deployed, released, or approved for broader art rollout.
 
-- The Vite dev server can take longer than Playwright's default 60-second
-  `webServer` timeout to bind here; start Vite yourself and reuse it.
-- Chromium cannot launch inside the sandboxed shell; run browser tests with the
-  approved escalation.
-- Run vitest serially here (`--no-file-parallelism`); parallel workers can time
-  out while starting on this filesystem.
-- No code blocker. On 2026-09-19 the user authorized one push, so `main` and
-  `codex/m5-mvp` are now current on `origin`. Deploy, release, tagging, and
-  publishing remain separate authorization gates, as does beginning M6.
+The correction pass resolved the previous framing and HUD blockers: native-scale
+captures show four distinct civilians inside the initial camera; the HUD is
+entirely above the canvas at 1440x900 and 800x600; and the full room identity,
+critical values, objective/context, actions, and controls remain visible. Cyan
+and magenta signage, light bands, and floor borders are also materially stronger.
+
+Review these remaining concrete concerns before approval:
+
+- beige terrazzo is still the dominant surface, so the opening is not uniformly
+  neon-heavy even with stronger cyan/magenta accents;
+- evacuation warning/flicker remains subtle in a single still;
+- the existing Food Court remains gray/olive vector graybox. Converting it was
+  outside the original Codex slice, but Claude may change it on the separate
+  experiment branch if that helps realize the whole-game vision.
+
+The first-combat capture concern is resolved in the evidence packet: the harness
+now waits for an authoritative on-screen Spitter telegraph matched to the
+renderer, and the native 1440x900 still shows two large yellow windup rings with
+long aim lines. Hanger movement streaks no longer satisfy that capture test.
+
+This baseline records an opening-only Codex slice. The user has since authorized
+Claude to review and change other rooms or systems as needed within the original
+vision; see `CLAUDE_HANDOFF.md`. Keep Claude's experiment separate until the
+user reviews and chooses what to adopt.
+
+The automated gate is clean for this scope: asset validation, typecheck, 513
+unit/integration tests, the 4-case evidence harness, 10 lifecycle cycles, local-
+request assertions, the complete 57-case Chromium suite, and the production
+build passed. The former seed test now reads the actual hidden offer text rather
+than empty `innerText`, and the resized-aim test waits for the camera projection
+to consume the resize while keeping its strict direction-cosine threshold. A
+parallel M4 origin check now samples the carrier immediately before firing and
+tightens its origin allowance rather than comparing with a later moving target.
+
+WebKit, Safari, Windows, physical devices, physical-device performance, and
+human feel remain untested. Broader room rollout remains explicitly unstarted.

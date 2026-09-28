@@ -1,5 +1,89 @@
 # Status
 
+## 2026-09-27 — Claude neon overhaul (branch `claude/neon-overhaul`)
+
+Night Shift now renders every room as a lit, dressed 90s mall instead of the
+opening-only slice plus gray vector rooms. Baseline for comparison:
+`codex/presentation-3quarter` (unchanged). Full write-up and the extension
+playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
+
+Round 4 (combat readability): enemy wind-ups drawn from the sim's telegraph
+state, exaggerated hit/kill/hurt feedback, a short hit stop, and PixelLab
+attack + death animations for the Spitter, Hanger and boss. See the playbook's
+"Round 4" section.
+
+- All six room roles are themed by a pure dressing planner (storefront wall,
+  props on every collision rectangle, lights, neon) with a multiply lightmap,
+  additive glow and adaptive bloom.
+- Whole-room fixed 960x600 stage (Isaac framing) with a 3/4 storefront band.
+- PixelLab art: 11 storefront/counter panels, 8 props, animated Hanger and Loss
+  Prevention Manager sheets, plus the earlier pass's enemies, items, portraits
+  and decals (manifest: `public/assets/neon/manifest.json`).
+- In-canvas HUD (portrait, hearts, hotbar, minimap, objectives, pickup log,
+  boss bar, area title) derived from state by a pure model.
+- Combat feedback: damage numbers, blood decals, sparks, shake, hurt flash.
+- Gameplay: **Mall Tokens** drop from defeated monsters and pay into cash.
+- The opening fountain is authored collision south of the door lane.
+
+Verification is recorded in TEST_EVIDENCE.md. Not merged, pushed or approved;
+awaiting the user's review against the baseline.
+
+## 2026-09-27 — Opening presentation vertical slice: correction complete, visual approval pending
+
+The production-presentation work is integrated on `codex/presentation-3quarter`
+for one bounded slice: the stable `service_corridor` room is publicly presented
+as **Opening Concourse**, with the approved local environment kit, Janitor,
+Hanger, four-role civilian group, shallow three-quarter storefront treatment,
+effects/depth/occlusion handling, and compact Night Shift HUD. The simulation,
+six-room order, checkpoint schema, collision, economy, and combat rules remain
+the M5 authority.
+
+**Gate status: DONE_WITH_CONCERNS, not visually approved.** The correction pass
+keeps the simulation unchanged while reserving a shallow HUD strip above the
+canvas, keeping the full room identity and critical controls visible at both
+1440x900 and 800x600, strengthening the opening's cyan/magenta signage and floor
+inlay, and placing four approved civilians fully inside the initial camera.
+The evidence bridge now reports their four distinct rendered IDs from actual
+cropped-frame bounds rather than merely counting the ambience model.
+
+The 27 runtime PNGs pass the shared-palette/alpha validator; typecheck, 43
+focused presentation/HUD tests, 151 affected simulation/integration tests, all
+513 unit/integration tests, the four-case evidence browser harness, the complete
+57-case Chromium suite, and the production build pass. Ten restart cycles held
+the opening at 31 static objects, 13 textures, 3 dynamic objects, 16 scene
+display-list objects, one four-civilian in-frame ambience group, and identical
+window/document/canvas listener signatures. Browser request capture reported
+zero external HTTP(S) requests.
+
+The two previously red Chromium cases were test-observation defects, not seeded
+simulation or aim-threshold failures. Seeded offers had different live DOM data,
+but `innerText` returned empty strings from the intentionally collapsed offer
+disclosure; the test now reads trimmed text content. After a viewport resize,
+Chromium exposed the resized canvas box one frame before Phaser updated its
+camera projection; the test now waits for consecutive stable projection and
+canvas dimensions while retaining the strict `> 0.85` direction cosine. A
+separate parallel M4 origin check was also measuring a still-moving carrier
+after its projectile poll; it now parks and samples the carrier immediately
+before the real pointer press and tightens the allowed origin distance from 48
+to 12 units. No gameplay assertion was lowered.
+
+The four required browser captures are in
+`artifacts/presentation-vertical-slice/`. Native-scale inspection confirms four
+distinct civilians plus the Janitor in the busy and compact opening captures;
+the HUD ends above the canvas and preserves the complete room title at both
+sizes. Cyan/magenta storefront signage, light bands, and floor borders now read
+clearly. These improvements still do **not** justify broad rollout: beige
+terrazzo remains the largest visual field, so the room is not uniformly
+neon-heavy; evacuation urgency remains subtle in a still; and the existing Food
+Court remains gray/olive vector graybox outside this opening-only art scope.
+The corrected first-combat evidence no longer accepts ordinary Hanger pursuit
+streaks as a telegraph: it requires an authoritative Spitter windup, the matching
+renderer cue, and a 48-pixel in-canvas margin. Native inspection now shows two
+large bright-yellow rings with long aim lines around visible Spitters. Direct
+user review is still required before integrating changes into this baseline.
+The user has since authorized Claude to explore broader changes on a separate
+branch within the original game vision; see `CLAUDE_HANDOFF.md`.
+
 **Current milestone:** M5 MVP run implemented, with in-run Bench Warrant fusion repaired and verified locally on 2026-09-19; ready for user playtest.
 
 **2026-09-19 repair:** M5's acceptance list claimed in-run bench fusion and

@@ -9,6 +9,28 @@
 
 import type { AttackDelivery } from '../../sim/items/types';
 
+/** Pure renderer projection: authoritative movement/attack/damage/phase only. */
+export function actorVisualState(input: {
+  readonly moving: boolean;
+  readonly attackTicks: number;
+  readonly invulnerableTicks: number;
+  readonly phase: string;
+  readonly isHanger: boolean;
+  readonly tick: number;
+}): { walking: boolean; attackLean: number; damageFlicker: boolean; damageFeedback: boolean; bobY: number; lunge: number; mopArc: boolean } {
+  return {
+    walking: input.moving,
+    attackLean: input.attackTicks > 0 ? 3 : 0,
+    damageFlicker: input.invulnerableTicks > 0 && Math.floor(input.tick / 4) % 2 === 1,
+    damageFeedback: input.invulnerableTicks > 0,
+    bobY: input.isHanger ? Math.sin(input.tick / 5) * 2 : 0,
+    // Hangers have no authored telegraph phase. Their economical lunge is a
+    // renderer-only offset gated by real pursuit movement, not invented AI.
+    lunge: input.isHanger && input.moving ? 2 + Math.sin(input.tick / 3) : 0,
+    mopArc: input.attackTicks > 0,
+  };
+}
+
 /**
  * One conductive feedback identity read from the behaviour trace.
  *

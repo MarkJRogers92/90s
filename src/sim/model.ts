@@ -19,6 +19,8 @@ export type InputFrame = {
   aimX: number;
   aimY: number;
   fire: boolean;
+  /** One-shot dash press. Optional so hand-authored frames stay valid. */
+  dash?: boolean;
 };
 
 export type PlayerState = Vec2 & {
@@ -28,6 +30,11 @@ export type PlayerState = Vec2 & {
   attackCooldownTicks: number;
   attackActiveTicks: number;
   invulnerableTicks: number;
+  /** Remaining dash ticks; enemy hits cannot land while positive. */
+  dashTicks?: number;
+  dashCooldownTicks?: number;
+  dashX?: number;
+  dashY?: number;
 };
 
 /**

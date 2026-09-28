@@ -1,5 +1,55 @@
 # Decisions
 
+## 2026-09-27 — GitHub handoff for Claude review
+
+- The user paused this slice and asked for the current work plus explanatory
+  handoff notes to be pushed to GitHub so they can give it to Claude Opus 5.5.
+  Push only `codex/presentation-3quarter`; keep it unmerged, unpublished,
+  undeployed, and unreleased.
+- Include the active editable Aseprite masters and cited civilian candidate
+  exports under `docs/art/presentation-vertical-slice/sources/` so the handoff
+  is self-contained. They are documentation/source files only; runtime assets
+  remain the approved PNG exports under `public/assets/presentation/`. Omit
+  unrelated scratch iterations and do not start any paid generation.
+- Keep Claude's experiment separate from this pushed baseline. Claude may
+  review and change any rooms, art, UI, gameplay/simulation systems, architecture,
+  or engine choices when genuinely needed to achieve the original vision; do
+  not constrain the work to the opening-room vertical slice. Keep the core
+  vision—top-down roguelike action in a distinctive 80s/90s mall, bright and
+  neon-heavy at the start, with a few people present—as the guardrail. Preserve
+  this branch for comparison, and require separate approval before push, merge,
+  PR, publication, deployment, release, or paid asset generation.
+
+## 2026-09-27 — presentation vertical slice boundary
+
+- Keep opening-concourse civilians presentation-only: their lanes, animation,
+  warning, evacuation, and visibility are derived from authoritative run state,
+  but they have no collision, health, inventory, checkpoint, combat, or
+  persistence role. Room exit, restart, and shutdown dispose/reset the view.
+- Preserve `service_corridor` as the stable simulation/checkpoint/room-order ID
+  while presenting its player-facing name as **Opening Concourse**. No save
+  schema or transition key is renamed for presentation.
+- Keep every runtime presentation asset local and source-preserving. Only
+  reviewed PNG exports live under `public/assets/presentation`; editable source
+  remains outside the runtime bundle, and no PixelLab/Aseprite service or remote
+  URL becomes a production dependency.
+- Preserve vector rendering as the deterministic fallback when an optional
+  presentation texture is unavailable. Missing art must not hide the player,
+  enemy, pickup, door, prompt, or telegraph or change authoritative behavior;
+  required slice assets still fail validation/build review before release.
+- Treat the four screenshots and automated results as a user-review packet, not
+  visual approval. Reserve HUD space above the canvas at both review sizes and
+  require evidence to name four unique rendered civilian sprites fully contained
+  by the initial camera, not merely report a model count. The corrected opening
+  uses stronger cyan/magenta accents, but beige terrazzo remains dominant and the
+  Food Court remains graybox on this baseline. The later Claude-handoff decision
+  above supersedes this original room-conversion limit for a separate experiment;
+  it does not approve integrating those changes into this baseline.
+- Do not treat a Hanger's ordinary pursuit/lunge streak as an attack telegraph.
+  First-combat screenshot evidence must match the same Spitter by authoritative
+  `phase === 'telegraph'` and renderer telegraph ID, then prove its world point
+  projects at least 48 CSS pixels inside every canvas edge before capture.
+
 ## 2026-09-13
 
 - Use the empty MarkJRogers92/90s remote as the dedicated DEAD MALL repository, with local work on codex/m0-m1-combat-room.

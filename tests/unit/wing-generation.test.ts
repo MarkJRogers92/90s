@@ -5,6 +5,7 @@ import {
   AUTHORED_OFFER_BANDS,
   DOORWAY_WIDTH,
   ROOM_VARIANTS,
+  ROOM_NAMES,
   STORE_TEMPLATES,
   WALL_THICKNESS,
 } from '../../src/sim/wing/templates';
@@ -126,6 +127,13 @@ describe('seeded wing generation', () => {
     expect(wing.rooms.map((room) => room.id)).toEqual([...WING_ROOM_ORDER]);
     expect(wing.startingCash).toBe(30);
     expect(() => validateWingGraph(wing)).not.toThrow();
+  });
+
+  it('presents the safe entry room as the Opening Concourse without changing its identity', () => {
+    const first = generateWing(7).rooms[0]!;
+    expect(first.id).toBe('service_corridor');
+    expect(first.name).toBe('Opening Concourse');
+    expect(ROOM_NAMES.service_corridor).toBe('Opening Concourse');
   });
 
   it('lines up the fixed doorway topology without walls or other doors overlapping', () => {
@@ -303,7 +311,8 @@ describe('wing graph validation', () => {
     const corrupted = replaceRoom(baseWing, 'service_corridor', (room) => ({
       ...room,
       enemySpawns: [
-        { slotId: 'corridor-utility-hanger-west', kind: 'hanger' as const, x: 480, y: 240 },
+        // Open floor north of the atrium fountain, so only the safe-room rule can fire.
+        { slotId: 'corridor-utility-hanger-west', kind: 'hanger' as const, x: 480, y: 150 },
       ],
     }));
     expect(() => validateWingGraph(corrupted)).toThrow(/safe room/i);

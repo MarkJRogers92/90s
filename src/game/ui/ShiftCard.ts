@@ -1,0 +1,174 @@
+/**
+ * The in-canvas end-of-shift card: SHIFT OVER on a death, CLOCKED OUT on a
+ * win, the run's numbers revealed row by row, and RETRY / TITLE buttons.
+ *
+ * The simulation clock stops at game over, so this card runs on real time
+ * (`scene.time.now`). It waits for the janitor's death fall to play before it
+ * slides in. It draws `buildShiftCardModel` and nothing else; the DOM summary
+ * stays in the page (off-screen) for assistive tech and the browser tests.
+ */
+import Phaser from 'phaser';
+import type { MvpRunState } from '../../sim/run/types';
+import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
+import { buildShiftCardModel, type ShiftCardModel } from './shiftCardModel';
+import { flashAllowed, gameSettings } from '../settings/settings';
+
+const DEPTH = 20_600;
+const W = 960;
+const H = 600;
+const CARD_W = 540;
+const CARD_H = 380;
+const CARD_X = (W - CARD_W) / 2;
+const CARD_Y = (H - CARD_H) / 2;
+const ROW_MS = 150;
+const MAX_VALUE_CHARS = 30;
+
+export type ShiftCardAction = 'retry' | 'title';
+
+type Rect = { x: number; y: number; w: number; h: number; action: ShiftCardAction };
+
+/** How long the card waits after the shift ends, so the death fall reads first. */
+export function shiftCardDelayMs(won: boolean): number {
+  return won ? 900 : 1300;
+}
+
+function clip(value: string): string {
+  return value.length <= MAX_VALUE_CHARS ? value : `${value.slice(0, MAX_VALUE_CHARS - 3)}...`;
+}
+
+export class ShiftCard {
+  private readonly scene: Phaser.Scene;
+  private readonly root: Phaser.GameObjects.Container;
+  private readonly g: Phaser.GameObjects.Graphics;
+  private readonly images: Phaser.GameObjects.Image[] = [];
+  private endedAt: number | null = null;
+  private model: ShiftCardModel | null = null;
+  private buttons: Rect[] = [];
+  private hovered: ShiftCardAction | null = null;
+
+  public constructor(scene: Phaser.Scene) {
+    this.scene = scene;
+    this.g = scene.add.graphics();
+    this.root = scene.add.container(0, 0, [this.g]).setScrollFactor(0).setDepth(DEPTH).setVisible(false);
+  }
+
+  /** Which card button is under a click in game coordinates, if the card is up. */
+  public buttonAt(x: number, y: number): ShiftCardAction | null {
+    if (!this.root.visible) return null;
+    return this.buttons.find((b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h)?.action ?? null;
+  }
+
+  /** True once the card is on screen and taking input. */
+  public get open(): boolean {
+    return this.root.visible && this.buttons.length > 0;
+  }
+
+  public hover(x: number, y: number): void {
+    this.hovered = this.buttonAt(x, y);
+  }
+
+  public sync(state: MvpRunState): void {
+    const model = buildShiftCardModel(state);
+    if (!model) {
+      this.endedAt = null;
+      this.model = null;
+      this.buttons = [];
+      this.root.setVisible(false);
+      return;
+    }
+    const now = this.scene.time.now;
+    if (this.endedAt === null || this.model?.won !== model.won) this.endedAt = now;
+    this.model = model;
+    const age = now - this.endedAt - shiftCardDelayMs(model.won);
+    if (age < 0) {
+      this.root.setVisible(false);
+      this.buttons = [];
+      return;
+    }
+    this.root.setVisible(true);
+    this.draw(model, age);
+  }
+
+  private image(index: number, key: string, x: number, y: number): Phaser.GameObjects.Image {
+    let image = this.images[index];
+    if (!image) {
+      image = this.scene.add.image(0, 0, key);
+      this.images[index] = image;
+      this.root.add(image);
+    }
+    if (image.texture.key !== key) image.setTexture(key);
+    return image.setOrigin(0.5, 0.5).setPosition(Math.round(x), Math.round(y)).setVisible(true).setAlpha(1).setScale(1).setBlendMode(Phaser.BlendModes.NORMAL);
+  }
+
+  private draw(model: ShiftCardModel, age: number): void {
+    const g = this.g;
+    g.clear();
+    for (const image of this.images) image.setVisible(false);
+    const edge = model.won ? 0x3ff0ff : 0xff3a5a;
+    const enter = Math.min(1, age / 260);
+    const ease = 1 - (1 - enter) * (1 - enter) * (1 - enter);
+    const oy = Math.round((1 - ease) * 40);
+
+    // Backdrop: the mall dims behind the card.
+    g.fillStyle(0x05030a, 0.68 * ease).fillRect(0, 0, W, H);
+    g.fillStyle(0x0b0714, 0.95 * ease).fillRect(CARD_X, CARD_Y + oy, CARD_W, CARD_H);
+    g.lineStyle(3, edge, ease).strokeRect(CARD_X + 1, CARD_Y + oy + 1, CARD_W - 2, CARD_H - 2);
+    g.lineStyle(1, edge, 0.4 * ease).strokeRect(CARD_X + 7, CARD_Y + oy + 7, CARD_W - 14, CARD_H - 14);
+    g.fillStyle(edge, ease).fillRect(CARD_X, CARD_Y + oy, 18, 3).fillRect(CARD_X, CARD_Y + oy, 3, 18);
+    g.fillRect(CARD_X + CARD_W - 18, CARD_Y + oy + CARD_H - 3, 18, 3).fillRect(CARD_X + CARD_W - 3, CARD_Y + oy + CARD_H - 18, 3, 18);
+
+    let slot = 0;
+    const sign = ensureNeonSign(this.scene, { text: model.headline, color: model.won ? '#3ff0ff' : '#ff3a5a', scale: 5 });
+    // The sign buzzes on like a real neon tube before it holds steady.
+    const flicker = age < 420 && flashAllowed(gameSettings().get()) ? (Math.floor(age / 60) % 3 === 1 ? 0.25 : 1) : 1;
+    this.image(slot++, sign.halo, W / 2, CARD_Y + oy + 58).setBlendMode(Phaser.BlendModes.ADD).setAlpha(ease * flicker);
+    this.image(slot++, sign.core, W / 2, CARD_Y + oy + 58).setAlpha(ease * flicker);
+    const sub = ensurePixelLabel(this.scene, model.subline, model.won ? '#6aff8a' : '#ffd84a', 2);
+    this.image(slot++, sub.key, W / 2, CARD_Y + oy + 104).setAlpha(ease);
+
+    // Rows land one at a time, each with a little pop.
+    const rowTop = CARD_Y + oy + 134;
+    model.rows.forEach((row, index) => {
+      const rowAge = age - 300 - index * ROW_MS;
+      if (rowAge < 0) return;
+      const pop = rowAge < 90 ? 1.25 - (rowAge / 90) * 0.25 : 1;
+      const y = rowTop + index * 30;
+      g.fillStyle(0xffffff, index % 2 === 0 ? 0.04 : 0).fillRect(CARD_X + 24, y - 4, CARD_W - 48, 28);
+      const label = ensurePixelLabel(this.scene, row.label, '#9a8fb4', 2);
+      this.image(slot++, label.key, CARD_X + 40, y + 10).setOrigin(0, 0.5);
+      const value = ensurePixelLabel(this.scene, clip(row.value), '#f4ecff', 2);
+      this.image(slot++, value.key, CARD_X + CARD_W - 40, y + 10).setOrigin(1, 0.5).setScale(pop);
+    });
+
+    // Buttons appear once every row is in.
+    const buttonsAge = age - 300 - model.rows.length * ROW_MS;
+    this.buttons = [];
+    if (buttonsAge >= 0) {
+      const y = CARD_Y + oy + CARD_H - 64;
+      const specs: Array<{ action: ShiftCardAction; key: string; text: string; x: number }> = [
+        { action: 'retry', key: 'R', text: model.won ? 'NEW SHIFT' : 'RETRY', x: W / 2 - 200 },
+        { action: 'title', key: 'T', text: 'TITLE', x: W / 2 + 20 },
+      ];
+      for (const spec of specs) {
+        const w = 180;
+        const h = 42;
+        const hot = this.hovered === spec.action;
+        const color = spec.action === 'retry' ? edge : 0x9a8fb4;
+        g.fillStyle(hot ? color : 0x140d22, hot ? 0.35 : 1).fillRect(spec.x, y, w, h);
+        g.lineStyle(2, color, 1).strokeRect(spec.x + 1, y + 1, w - 2, h - 2);
+        // Key cap.
+        g.fillStyle(0xf4ecff, 1).fillRect(spec.x + 10, y + 9, 24, 24);
+        g.fillStyle(0x8a7fa8, 1).fillRect(spec.x + 10, y + 31, 24, 2);
+        const cap = ensurePixelLabel(this.scene, spec.key, '#0b0714', 2, '#f4ecff');
+        this.image(slot++, cap.key, spec.x + 22, y + 21).setOrigin(0.5, 0.5);
+        const label = ensurePixelLabel(this.scene, spec.text, '#f4ecff', 2);
+        this.image(slot++, label.key, spec.x + 46, y + 21).setOrigin(0, 0.5);
+        this.buttons.push({ x: spec.x, y, w, h, action: spec.action });
+      }
+    }
+  }
+
+  public destroy(): void {
+    this.root.destroy(true);
+  }
+}

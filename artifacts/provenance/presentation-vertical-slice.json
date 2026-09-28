@@ -1,0 +1,302 @@
+{
+  "schemaVersion": 1,
+  "approvalDate": "2026-09-26",
+  "palettePath": "docs/art/palettes/deadmall-global.json",
+  "assets": [
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/floor-terrazzo-32.png",
+      "originalCandidatePath": "public/assets/tiles/floor-terrazzo-32.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/floor-terrazzo-32.aseprite",
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [32, 32],
+      "sha256": "68264b49bb3ad5343c8a2a8d13dc4ce4c32e7409de5af7f13e5933d2ecf653c4",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/wall-face-32x64.png",
+      "originalCandidatePath": "public/assets/walls/wall-face-32x64.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/wall-face-32x64.aseprite",
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [32, 64],
+      "sha256": "08d1633f73dcbad3a87ac9db5572c2f6a4510d994bc803eb46067e403dafc66d",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/wall-top-32.png",
+      "originalCandidatePath": "public/assets/walls/wall-top-32.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/wall-top-32.aseprite",
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [32, 32],
+      "sha256": "ea84df0d0a7de14a9ca6664e506d326a5e172322a217232425de36c9d6713a20",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/wall-corner-32x64.png",
+      "originalCandidatePath": "public/assets/walls/wall-corner-32x64.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/wall-corner-32x64.aseprite",
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [32, 64],
+      "sha256": "180c43b2966d2fa97acf3a4147202b75a4e24bb3a793223dbb9a3ef0d5b389d4",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/railing-glass-32.png",
+      "originalCandidatePath": "public/assets/walls/railing-glass-32.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/railing-glass-32.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [32, 32],
+      "sha256": "98eba0e3c2c1ae2bddd3f9dd669874defa3237fb889db259520657e474f0aeca",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/security-gate-32.png",
+      "originalCandidatePath": "public/assets/walls/security-gate-32.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/security-gate-32.aseprite",
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [32, 32],
+      "sha256": "ae49f73f8483602df3a6a00dd6a51f2a981408c1aeeb85eabbfebd67f872a323",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/storefront-fascia-64x32.png",
+      "originalCandidatePath": "public/assets/storefront/storefront-fascia-64x32.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/storefront-fascia-64x32.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [64, 32],
+      "sha256": "28486f985be799fc30f101184cb44076d419ef3ae7134f264924105690db9957",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/sign-cool-96x24.png",
+      "originalCandidatePath": "public/assets/storefront/sign-cool-96x24.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/sign-cool-96x24.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [96, 24],
+      "sha256": "f8eb6c19c89281a012be48ff56979411c49568dfb33d6d10054a0352fc1a44b0",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/mall-bench.png",
+      "originalCandidatePath": "public/assets/props/mall-bench.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/mall-bench.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [56, 30],
+      "sha256": "ed54d703cabebd5eeef730d400928b352da7e427af7123442b0548696101b279",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/mall-directory.png",
+      "originalCandidatePath": "public/assets/props/mall-directory.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/mall-directory.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [17, 54],
+      "sha256": "28e2b3c5738a3192241a8bf6642da97d1520efb9aecf96fb15db54f4e6474b7e",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/planter.png",
+      "originalCandidatePath": "public/assets/props/planter.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/planter.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [25, 25],
+      "sha256": "ba693c3ccc1602581590be9cf318667de4018f8cae84b7b4d1fd9cf533493275",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/potted-palm.png",
+      "originalCandidatePath": "public/assets/props/potted-palm.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/potted-palm.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [38, 58],
+      "sha256": "d4f5f6d6b63450a22e344864d612b052c01a7f05771e44f89be7b0c8cc0cb278",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/rubbish-bin.png",
+      "originalCandidatePath": "public/assets/props/rubbish-bin.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/rubbish-bin.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [20, 25],
+      "sha256": "cd1f5505fbe6d7ec8114f9fb7f1bc291f9178f040feb0a25076e6db5aa47e2ec",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/poster-stand.png",
+      "originalCandidatePath": "public/assets/props/poster-stand.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/poster-stand.aseprite",
+      "sourceCleanupReview": "docs/art/presentation-vertical-slice/source-cleanup-review.md",
+      "pixelsChangedAfterApproval": false,
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [38, 53],
+      "sha256": "ce6120092b9377c1520655ab68ed3e920ee624f1a51f1f3390a008588c53251d",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/bench-warrant-kiosk.png",
+      "originalCandidatePath": "public/assets/props/bench-warrant-kiosk.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/environment/bench-warrant-kiosk.aseprite",
+      "sourceBranch": "codex/pixellab-aseprite-proof",
+      "pinnedCommit": "3a70214",
+      "dimensions": [64, 64],
+      "sha256": "27c8cb2fb20bb26a14e8477af162d88212cbc82ced70a2f2d11f1387b070a6be",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/environment/atrium-fountain-96x64.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/atrium-fountain.aseprite",
+      "buildMethod": "Aseprite 1.3.18.5-arm64 ran a local builder to author this editable source. A portable copy with a repository-relative output path is now stored at docs/art/presentation-vertical-slice/sources/build_atrium_fountain.lua; the approved runtime PNG is tracked separately.",
+      "dimensions": [96, 64],
+      "sha256": "afe090a978f5f404635740cb811aed00c7e59e3a05ac1de30aa9b490d489a5b6",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "status": "newly-authored"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/actors/alex-idle.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/actors/alex-janitor-idle.aseprite",
+      "originalCandidatePath": "public/assets/characters/alex-idle.png",
+      "pinnedCommit": "3a70214",
+      "dimensions": [256, 48],
+      "layout": "eight horizontal 32x48 direction frames: south, southwest, west, northwest, north, northeast, east, southeast",
+      "sha256": "2f6d7f11748ec655eb9f940b91ab7a1b463a489cdd86bd1bb086eff1acb26130",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "cleanupReview": "Task 5 Janitor redraw correction 1; original anatomy/folds retained, backpack reconstructed as work shirt.",
+      "status": "locally-redrawn"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/actors/alex-walk.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/actors/alex-janitor-walk.aseprite",
+      "originalCandidatePath": "public/assets/characters/alex-walk.png",
+      "pinnedCommit": "3a70214",
+      "dimensions": [192, 384],
+      "layout": "six 32x48 columns by eight direction rows: south, southwest, west, northwest, north, northeast, east, southeast",
+      "sha256": "dc4097bbf62891dd929173abcf15903444e6d015a5514086cece9202bccac789",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "cleanupReview": "Task 5 Janitor redraw correction 1; original walk timing and foot poses retained.",
+      "status": "locally-redrawn"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/actors/hanger-idle.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/actors/hanger-idle.aseprite",
+      "originalCandidatePath": "public/assets/enemies/hanger-idle.png",
+      "pinnedCommit": "3a70214",
+      "dimensions": [384, 48],
+      "layout": "eight horizontal 48x48 direction frames: south, southwest, west, northwest, north, northeast, east, southeast",
+      "sha256": "38975f1a45f533bee53a97f58db3dea513b4293a6a8b382b92f16b0db55382a4",
+      "palettePath": "docs/art/palettes/deadmall-global.json",
+      "approvalDate": "2026-09-26",
+      "cleanupReview": "Native Aseprite import reviewed at 48x48: binary alpha, one-pixel outline, palette, and frame alignment retained; pixels unchanged from approved source.",
+      "status": "reused"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-a-idle.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/shopper-a-idle.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/shopper-a-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "da0d970bf7c0ea2fcc48202a474c95d48c93a6067208dded473b7fc6942be4c9", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-a-walk.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/shopper-a-walk.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/shopper-a-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "a8ee3b83f6b69a7be5f506413cfd6c3a2a8e826b39522184bf6f59d1d0eaffc3", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-b-idle.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/shopper-b-idle.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/shopper-b-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "d134858ba522be31740e8edd9c854046b7e87d86927131dc1b968229f83a79bb", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/shopper-b-walk.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/shopper-b-walk.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/shopper-b-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "8829a9edfe36ba04bb7ea48662933d59e065bc76c38406814b5a50f423e5dd66", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/clerk-idle.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/clerk-idle.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/clerk-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "ef75223e06acb0ceed7adbf791c60e847e5f2757e1c921d075456e5780bcb746", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/clerk-walk.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/clerk-walk.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/clerk-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "df79038ce8285c4418418b4069bb3014e3b06e43ce2331713d737e5e215d7eb4", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/security-idle.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/security-idle.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/security-idle-candidate.png",
+      "dimensions": [256, 48], "layout": "eight horizontal 32x48 direction frames", "sha256": "b42706af93ab40709542b4dc92e7f32db759c612dfb1fd83152860d070b95bfc", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    },
+    {
+      "runtimeExportPath": "public/assets/presentation/civilians/security-walk.png",
+      "editableSourcePath": "docs/art/presentation-vertical-slice/sources/civilians/security-walk.aseprite",
+      "originalCandidatePath": "docs/art/presentation-vertical-slice/sources/civilians/candidates/security-walk-candidate.png",
+      "dimensions": [192, 384], "layout": "six 32x48 columns by eight direction rows", "sha256": "77c7800a58631467597d7fa037c85c001145cedfc65eefad0506d434ed9d6f87", "palettePath": "docs/art/palettes/deadmall-global.json", "approvalDate": "2026-09-26", "status": "approved-local-export"
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import type {
   ItemEffectSpec,
   StatusModifierEffect,
 } from '../items/types';
+import { moveCircle } from '../combat/movement';
 import { inAttackCone } from '../combat/attack';
 import { hasLineOfSight } from '../combat/collision';
 import type {
@@ -112,6 +113,29 @@ function applyStatusModifierEffects(
  * every reaction can branch on an already-Wet target with its statuses already
  * in place.
  */
+/**
+ * How far a melee hit shoves a Hanger, straight away from the janitor.
+ * Without it a Hanger closed the whole gap during one mop cooldown (95 px/s
+ * for 27 ticks, about 43 px) and touched the player before the second swing,
+ * so every Hanger kill cost a heart however well it was played.
+ *
+ * Only pursuers are shoved. Knocking a stationary Spitter out of reach made
+ * the player chase it through its own fire (measured: more glob damage and
+ * fewer won runs), and the boss is too heavy to move.
+ */
+export const MELEE_KNOCKBACK = 48;
+
+function knockBack(state: RunState, target: EnemyState): void {
+  if (target.kind !== 'hanger') return;
+  const dx = target.x - state.player.x;
+  const dy = target.y - state.player.y;
+  const distance = Math.hypot(dx, dy);
+  if (distance === 0) return;
+  const next = moveCircle(target, target.radius, (dx / distance) * MELEE_KNOCKBACK, (dy / distance) * MELEE_KNOCKBACK, state.walls);
+  target.x = next.x;
+  target.y = next.y;
+}
+
 function resolveDirectHit(
   state: RunState,
   root: GameplayEvent,
@@ -120,6 +144,7 @@ function resolveDirectHit(
   statusEffects: readonly StatusModifierEffect[],
 ): void {
   target.health -= descriptor.damage;
+  knockBack(state, target);
   applyWet(target, DIRECT_HIT_WET_TICKS);
   applyStatusModifierEffects(target, statusEffects);
   const statuses = ensureEnemyStatuses(target);

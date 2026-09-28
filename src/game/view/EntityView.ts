@@ -7,6 +7,7 @@ import type {
   RunState,
   SurfacePatchState,
 } from '../../sim/model';
+import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../../sim/core/geometry';
 import { latestConductiveFeedback, shouldDrawDirectAttackArc } from './visualState';
 
 /** Cosmetic duration of the conductive feedback flash, in rendered frames. */
@@ -26,20 +27,24 @@ export class EntityView {
     const graphics = this.graphics;
     graphics.clear();
 
+    // The room, in WORLD units -- deliberately not the viewport size. These were
+    // the literals 960/480/924/444/942/462/934/454, which read like viewport
+    // constants but were always the playfield's dimensions. BenchView already
+    // took them from the sim; this view was the only one that did not.
     graphics.fillStyle(0x242823, 1);
-    graphics.fillRect(0, 0, 960, 480);
+    graphics.fillRect(0, 0, PLAYFIELD_WIDTH, PLAYFIELD_HEIGHT);
     graphics.fillStyle(0x8c8873, 1);
-    graphics.fillRect(18, 18, 924, 444);
+    graphics.fillRect(18, 18, PLAYFIELD_WIDTH - 36, PLAYFIELD_HEIGHT - 36);
     graphics.lineStyle(1, 0x74705f, 0.7);
-    for (let x = 18; x <= 942; x += 32) {
-      graphics.lineBetween(x, 18, x, 462);
+    for (let x = 18; x <= PLAYFIELD_WIDTH - 18; x += 32) {
+      graphics.lineBetween(x, 18, x, PLAYFIELD_HEIGHT - 18);
     }
-    for (let y = 18; y <= 462; y += 32) {
-      graphics.lineBetween(18, y, 942, y);
+    for (let y = 18; y <= PLAYFIELD_HEIGHT - 18; y += 32) {
+      graphics.lineBetween(18, y, PLAYFIELD_WIDTH - 18, y);
     }
 
     graphics.lineStyle(10, 0x3b3f39, 1);
-    graphics.strokeRect(13, 13, 934, 454);
+    graphics.strokeRect(13, 13, PLAYFIELD_WIDTH - 26, PLAYFIELD_HEIGHT - 26);
     graphics.fillStyle(0x41453f, 1);
     for (const wall of state.walls) {
       graphics.fillRect(wall.x, wall.y, wall.width, wall.height);

@@ -1,5 +1,220 @@
 # Test evidence
 
+## 2026-09-27 — round 10: settings
+
+- `npx vitest run` — PASS: 47 files, 604 tests (new `settings.test.ts`, 5 tests;
+  failed first on the missing module).
+- Real-browser flow: change settings on the title (saved JSON checked), start a
+  shift, O opens the dialog and pauses, shows the saved values; Esc closes it
+  and stays paused; Esc again resumes. No page or console errors.
+- Browser suite NOT cleanly re-verified this round: the host was saturated by
+  unrelated processes (three ffmpeg jobs, fileproviderd, iCloud bird; load
+  average 59-94). At that load a single headless page ran 16 fps / 17 sim
+  ticks per second, and the known timing-based cases failed (53-56/57),
+  including with music scheduling disabled as an experiment (reverted).
+- Follow-up on `2004976` once the host calmed (load ~9): `PW_PORT=4193 npx
+  playwright test` — PASS: 57/57 (2.9 min). The earlier failures were host load.
+
+## 2026-09-27 — round 9: playtest log
+
+- `npx vitest run` — PASS: 46 files, 599 tests (new `playtest-recorder.test.ts`,
+  5 tests: damage by source and final blow, kills and quit, opt-in storage with
+  the 50-run cap, broken/garbage storage, summary). Failed first on the missing
+  module.
+- Real-browser check: switch on from the title, play, Return to title, reopen:
+  1 run logged as a quit with its room time and dash count; no page errors.
+- `PW_PORT=4193 npx playwright test` under a machine load average of ~47 (another
+  process): 56/57, then 53/57 on rerun. The four failures are the known
+  load-sensitive timing/movement cases (pause tick budget, civilian
+  evacuation, opening exit, integer-scale capture); all four PASS run alone
+  (4/4, one worker). No change in this round touches those paths.
+
+## 2026-09-27 — round 8: soundtrack, store card, Bench Warrant card
+
+- `npx vitest run` — PASS: 45 files, 594 tests. New: `music.test.ts` (5),
+  `bench-card-model.test.ts` (4), store offer prompt (2). Each failed first.
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.6 min).
+- Music rendered offline per track in Chromium (RMS / peak): muzak
+  0.014/0.18 (then given a higher bus gain), combat 0.040/0.39, boss
+  0.056/0.43, boss phase 3 0.060/0.42; no page errors.
+- Real-input check of the Bench Warrant card: Esc closes the preview and
+  resumes; Enter commits the Emitter Mount (composite in inventory, cash
+  $30 -> $26). Captures `artifacts/neon-overhaul/{shop,bench}-after.png`.
+- Found and fixed: the new pause card was drawing under the fusion preview
+  (the preview holds the sim clock too).
+
+## 2026-09-27 — round 7: dash readiness/hint, last heart, arrivals, pause card
+
+- `npx vitest run` — PASS: 43 files, 583 tests (new `player-cues.test.ts`, 7
+  tests; failed first on the missing module).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.6 min) with the room
+  fade-in and pause card on.
+- Captures `artifacts/neon-overhaul/cues/` (spawn-in, dash recharge, dash hint,
+  pause). The first pass showed the hint clipped at the left wall and still
+  visible under the pause card; both fixed.
+
+## 2026-09-27 — round 6: end card, fairness, dash, performance
+
+- `npx vitest run` — PASS: 42 files, 576 tests. New: `shift-card-model` (5),
+  `melee-knockback` (4), `dash` (6), dash cue (1); heavy-hit cue updated. Each
+  new block failed first (missing module / wrong behaviour).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.3 min) after moving the
+  DOM status bar and summary off-screen.
+- Fairness harness (sim-level scripted brawler, 150 seeds, not committed):
+  original rules won 39 / died 80 / stalled 31, Hanger contact damage 375;
+  Hanger knockback won 29 / died 93 / stalled 28, Hanger damage 214; all-enemy
+  knockback raised glob damage 503 -> 728 and was narrowed to Hangers; a
+  Spitter opener stagger raised room-entry 2+-damage rooms 12% -> 20% and was
+  reverted. The bot's outcome swings with its own logic, so difficulty is
+  left to a human playtest.
+- `node scripts/perf-fight.mjs` — GPU (Apple M2, ANGLE Metal) 60 median / 60
+  p10 fps in a Food Court fight; SwiftShader 30 / 29 fps (storefront).
+
+## 2026-09-27 — round 5: Alex swing, flinch, death
+
+- `npx vitest run` — PASS: 39 files, 560 tests (new `player body action` block,
+  4 tests, failed first on the missing function).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.4 min).
+- Captures `artifacts/neon-overhaul/beats/*-swing.png`, `*-dead.png`. The first
+  death capture showed the killing blow's star and a Spitter wind-up frozen on
+  top of the body (the sim clock stops at game over); fixed by the real-time
+  effects clock and verified in the recapture.
+
+## 2026-09-27 — round 4b: combat sound
+
+- `npx vitest run` — PASS: 39 files, 556 tests. New `combat beat cues` block in
+  `tests/unit/audio-cues.test.ts` (hit vs heavy hit, no hit on the killing blow,
+  boss kill sting, spitter charge then spit, slam on leaving telegraph); four
+  failed first for the missing cues.
+- Real fight with autoplay allowed: the engine scheduled 29 voices across the
+  Food Court fight with no page or audio errors (only headless GL perf notes).
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.2 min).
+
+## 2026-09-27 — round 4: combat readability (wind-ups, exaggerated hits, hit stop)
+
+- `npx vitest run` — PASS: 39 files, 551 tests (new `tests/unit/combat-beats.test.ts`,
+  12 tests: wind-ups from authoritative telegraph fields, landed-attack diffing,
+  hit-stop ordering and non-stacking, hit-reaction spring, wind-up poses,
+  attack-sheet frame scrubbing). Observed failing first (module missing, then
+  `windupPose is not a function`) before implementation.
+- `PW_PORT=4193 npx playwright test` — PASS: 57/57 (2.2 min) with hit stop on and
+  all six new attack/death sheets loaded. `npm run build` PASS.
+- Simulation change is export-only: `SPITTER_TELEGRAPH_TICKS`,
+  `SPITTER_RECOVER_TICKS`, `VOLLEY_ANGLE_OFFSETS_DEGREES`.
+- Captures: `node scripts/capture-beats.mjs` → `artifacts/neon-overhaul/beats/`
+  (spitter/boss wind-up, hit, kill, corpse, hurt).
+- Fixed during the round: a full-screen red hurt flash held by hit stop hid the
+  field (now an edge vignette); the room title covered the first wind-up (it
+  now dims while any enemy charges); a PixelLab-baked impact star in the
+  Hanger's south strike frame (replaced with the previous pose).
+
+## 2026-09-27 — round 2: UI, weapon switching, swing, 64px characters
+
+- `npx tsc --noEmit` — exit 0. `npx vitest run` — 38 files, **539 passed**
+  (new `run-weapons.test.ts`, 6, written first and observed failing).
+- `PW_PORT=4193 npx playwright test` — **57/57 passed**. Player texture
+  assertions now name the 64px `neon:player:alex-*` sheets.
+- `npm run build` — exit 0.
+- Fixed during the round: a CSS margin collapse that pushed the status row
+  down over the canvas once the marquee was hidden; the room name clipping at
+  800x600 (status row now a flex column sized to its text).
+
+## 2026-09-27 — Claude neon overhaul (`claude/neon-overhaul`)
+
+Environment: macOS (Apple M2), Node 24, Playwright 1.63 Chromium.
+
+- `npx tsc --noEmit` — exit 0.
+- `npx vitest run` — 37 files, **533 tests passed** (was 513). New:
+  `room-dressing.test.ts` (11: every room dressed, facades in bounds and
+  non-overlapping, every interior collision rect covered, no decor in door
+  lanes, registered textures only, mood darkens through the shift, shoppers
+  only in the opening, signs name the rolled store, fountain collision valid
+  and clear of the door lane), `game-hud-model.test.ts` (4), and
+  `mall-tokens.test.ts` (5: empty on entry, drop on death by kind, collect
+  into cash with inventory cash in step, left behind on room change,
+  deterministic). The token tests were written first and observed failing.
+- `PW_PORT=4193 npx playwright test` — **57/57 Chromium tests passed** on a
+  clean run (2.4 min). Two earlier full runs lost 1–3 tests to movement
+  overshoot while GPU capture scripts shared the machine; the evidence route
+  and two night-shift routes now use the existing bounded-tap `nudgePlayerY`
+  before the east door, and the clean run passed.
+- `npm run build` — exit 0; the built JavaScript contains no debug bridge or
+  fixture names (grep of `dist/assets/*.js`).
+- Frame rate, headless SwiftShader: ~17 fps with bloom, ~50 fps without;
+  bloom is therefore skipped on software renderers and dropped at runtime
+  below 45 fps. Captures use Chromium on Metal (ANGLE, Apple M2) with bloom.
+- Scripted Food Court fight (`scripts/playtest-fight.mjs`): cleared the room
+  at 5/6 HP with cash $30 → $36 from Mall Tokens in one run; the bot is crude
+  and also lost a run, which is not a balance signal.
+
+Tests changed on purpose (the old assertions described the replaced camera
+and view, not gameplay): the scroll test now asserts the fixed-stage contract
+(camera holds still while the janitor moves; aim stays correct after resize);
+"presentation is null outside the opening" now asserts the opening view was
+replaced; evidence captures pin the new 960x600 stage; the civilian-lane unit
+test uses whole-room bounds; the wing-validation fixture point moved off the
+new fountain collision.
+
+Captures: `artifacts/neon-overhaul/` (1440x900 and 800x600 after-shots,
+`before/` = the baseline's own evidence, `comparison.png` side by side).
+
+## 2026-09-27 — production presentation vertical slice proof
+
+Environment: macOS, Node 24.20.0, Playwright 1.63 Chromium desktop profile.
+Port 5173 was already owned by another worktree, so initial browser verification
+used `127.0.0.1:4176` and the correction pass used an isolated temporary
+Playwright/Vite config on `127.0.0.1:4187`; the temporary config was removed
+afterward. Screenshot tests use an author-level `!important` rule so Phaser's
+delayed resize cannot replace the requested integer canvas size: 1280x720 (2x)
+inside a 1440x900 viewport and 640x360 (1x) inside the 800x600 viewport.
+
+### Automated results
+
+- `python3 docs/art/tools/validate_runtime_tree.py public/assets/presentation --palette docs/art/palettes/deadmall-global.json` — PASS: 27 PNGs, binary alpha, all pixels within the 105-swatch shared palette.
+- `npm run typecheck` — PASS after the correction pass. The original evidence harness had first exposed an optional CDP `objectId`; its explicit runtime guard remains in place.
+- `npx vitest run tests/unit/projection.test.ts tests/unit/presentation-assets.test.ts tests/unit/presentation-depth.test.ts tests/unit/presentation-occlusion.test.ts tests/unit/presentation-actors.test.ts tests/unit/concourse-ambience.test.ts tests/unit/mvp-run-hud.test.ts` — PASS: 7 files, 43 tests. New coverage fixes the approved neon palette, cropped-frame foot origin, and all six potential civilian lanes inside the initial camera-safe region.
+- `npx vitest run tests/unit/combat.test.ts tests/unit/movement.test.ts tests/unit/checkpoint.test.ts tests/unit/checkpoint-store.test.ts tests/unit/wing-generation.test.ts tests/unit/mvp-economy.test.ts tests/unit/boss.test.ts tests/integration/mvp-run.test.ts tests/integration/run-lifecycle.test.ts tests/integration/loadout-combat.test.ts` — PASS: 10 files, 151 tests. Seeded generation, stable `service_corridor` identity/order, checkpoint behavior, collision/movement, combat/boss rules, lifecycle, and loadout integration stayed green; only the already-approved room display name differs.
+- `npm test` — PASS: 34 files, 513 tests.
+- `npx playwright test --config=playwright.task8.config.ts tests/browser/presentation-evidence.spec.ts --workers=1` — PASS: 4/4. The busy capture proves exactly four unique rendered civilian IDs whose actual 32x48 cropped-frame bounds are fully contained in the current camera; it does not rely on total ambience count. The compact capture proves the HUD bottom is at or above the canvas top and the full room identity is unclipped.
+- Ten restart/lifecycle cycles — PASS: one canvas, one HUD, one busy ambience group with 4 visible and 4 in-frame civilian sprites (`north-window`, `directory`, `fountain-west`, `fountain-east`), and exact repeated presentation counts: 31 static display objects, 13 static textures, 3 dynamic display objects, 16 scene display-list objects, 4 occluders, 0 fallbacks. Window, document, and canvas listener signatures were captured through Chromium CDP and remained byte-for-byte equal after leaving the concourse, returning through the supported restart flow, and completing ten restarts. The run is forward-only, so restart is the supported return to the opening flow.
+- External-request assertion — PASS in all four evidence browser cases: every HTTP(S) request remained on `127.0.0.1`; zero external URLs were observed.
+- `npx playwright test --config=playwright.task8.config.ts` — PASS: 57/57 with 4 workers in 1.9 minutes after focused correction. The former seed failure was a DOM-observation error: `.allInnerTexts()` returned four empty strings because the authored offers sit inside a collapsed `<details>`, while direct inspection proved the seed-specific text content differed. The test now reads trimmed `.allTextContents()`. The former resized-aim failure was one-frame projection skew: immediately after resize the canvas box had changed while `worldToCanvas` still reported `(622.5, 75)`, then stabilized at `(871.5, 105)`. The test waits for two consecutive stable projection/canvas samples and retains the strict normalized direction-cosine assertion `> 0.85`.
+- Parallel stabilization also exposed `void-the-warranty.spec.ts › fused car is the sampled projectile origin`: the old test compared a shot's immutable origin with a later carrier position after the carrier continued steering during the projectile poll, so the `originToCarrier <= 48` check could fail under load even though the origin was correct. The correction moves the real pointer back to the carrier to stop that steering, samples carrier and player immediately before `mouse.down`, compares the shot to that pre-fire sample, tightens the allowance from 48 to 12 units, and retains `originToCarrier < originToPlayer`. The focused M4 spec and the final 57-case parallel suite pass; no fixture shortcut or simulation change was made.
+- Round-2 first-combat diagnosis — the prior screenshot harness accepted either a Hanger `lungeCueVisible` or a renderer telegraph. Hangers deliberately have no authored telegraph phase, so the always-available pursuit streak won the poll before a Spitter reached its 36-tick windup. The old image therefore proved motion, not readable warning. The corrected test requires `kind === 'spitter'`, authoritative `phase === 'telegraph'`, a visible renderer telegraph with the same `enemy:<id>`, and a projected enemy center at least 48 CSS pixels inside every canvas edge before capture. The existing effect-band renderer then produced two large bright-yellow rings with long aim lines; no effect shape, AI, timing, radius, damage, collision, or simulation code changed.
+- Round-2 verification — `npm run typecheck` PASS; focused `presentation-actors` plus `presentation-depth` PASS (2 files / 17 tests); the complete evidence harness PASS (4/4). The first four-worker full rerun passed 56/57 because `Opening Concourse civilians evacuate monotonically from real input and restart fresh` timed out on its east-door route under load; that unchanged case immediately passed in isolation. One idle-machine final rerun then passed 57/57 in 1.9 minutes. Both results are recorded because the transient full-run failure was real but unrelated to this screenshot-only correction.
+- `npm run build` — PASS: 86 modules transformed; `dist/index.html` 13.71 kB (2.97 kB gzip), CSS 14.47 kB (3.36 kB gzip), JavaScript 1,604.47 kB (421.15 kB gzip), source map 11,792.28 kB. Vite retains the known warning that the JavaScript chunk exceeds 1,500 kB.
+
+Production executable scan covered `dist/index.html`, `dist/assets/*.js`, and
+`dist/assets/*.css`:
+
+- `/Users/markrogers` — 0 hits.
+- `__DEAD_MALL_DEBUG__` and `VITE_ENABLE_DEBUG_BRIDGE` — 0 hits.
+- Exact quoted fixture literals `mvp-storefront`, `mvp-bench`,
+  `mvp-boss-entry`, `mvp-boss-win`, `restart-proof`, and `death-proof` — 0 hits.
+- `.aseprite`, `deadmall-art`, `docs/art`, and `artifacts/provenance` — 0 hits.
+- Unexpected `.aseprite`, `.psd`, `.kra`, contact-sheet, or provenance files in
+  `dist/` — 0 files.
+- `http://` / `https://` — 4 strings, inspected as Phaser's attribution/default
+  metadata and W3 SVG/XHTML namespace literals. They are not application request
+  targets; the live request assertion above observed zero external requests.
+
+### Screenshot evidence and native-scale visual review
+
+- `artifacts/presentation-vertical-slice/opening-busy.png` — actual 1440x900 browser, canvas 1280x720 (2x), SHA-256 `83f0d1d88d96981b691fbfe0872d87fc4040e5bab8da096fdc682beac4227bba`. Native inspection shows the Janitor plus four distinct civilians (blue shopper, magenta clerk, security employee, orange shopper). The HUD is entirely above the canvas with the full room title. Cyan Video World signage, magenta Music Mart treatment, and paired cyan/magenta inlay borders are materially stronger; beige terrazzo is still the largest field, so the overall room is not uniformly neon-heavy.
+- `artifacts/presentation-vertical-slice/opening-evacuation.png` — actual 1440x900 browser, canvas 1280x720 (2x), SHA-256 `7375e76208c4f53e9853d7526864797f7660454da12d1bcedcca5908614f26f8`, captured while authoritative presentation phase was `evacuating` and at least one unique cropped sprite remained fully in frame. The shifted camera shows civilians moving out through the authored scene. Warning/flicker treatment remains subtle in a still and does not by itself strongly communicate panic.
+- `artifacts/presentation-vertical-slice/first-combat.png` — actual 1440x900 browser, canvas 1280x720 (2x), SHA-256 `b9896e450bd8a821e999b0b2b9ca81fa847dbc1f0684a90077d82ee3dc606160`. The harness captured only after finding an authoritative Spitter windup whose matching renderer cue projected with a 48-pixel in-canvas margin. Native inspection shows two large bright-yellow rings and long aim lines around the visible purple Spitters, clearly distinct from red projectile/damage squares and short Hanger movement streaks. The existing gray/olive Food Court background remains a vector graybox outside this opening-only art scope.
+- `artifacts/presentation-vertical-slice/compact-800x600.png` — actual 800x600 browser, canvas 640x360 (1x), SHA-256 `52f812208fab618dc75caf8810ae3db4b625af6a12e83dc566287444623e9f22`. The HUD is entirely above the canvas, preserves the complete Opening Concourse identity, critical values, objective/context, actions and controls, and has no horizontal overflow. Native inspection shows the same four civilians plus the Janitor. The remaining black margin follows the requested native 1x canvas and beige terrazzo remains dominant.
+
+### Acceptance status
+
+This packet proves the local asset gate, M5 simulation preservation, disposable
+opening presentation lifecycle, integer scaling, local-only requests, a clean
+57-case Chromium gate, and a reproducible set of native-scale review images. It
+does not constitute visual approval. Beige dominance, subtle evacuation warning
+in a still, and the out-of-scope Food Court graybox remain visible.
+WebKit, Safari, Windows, physical devices, physical-device performance, and
+human feel remain untested. Broader room rollout is still closed.
+
 ## 2026-09-13 — M0 foundation
 
 Environment: macOS, Node 24.20.0, npm 11.19.0, Playwright Chromium desktop profile.
@@ -502,7 +717,9 @@ Observed intermittent failure, recorded rather than hidden: one full
 `void-the-warranty.spec.ts:139 › fused car is the sampled projectile origin`,
 which is an M4 test unrelated to this change. It passes 7/7 when that spec is run
 alone and the full suite passed 45/45 on the next run. Nothing in the sound layer
-runs in the M4 bench scene, and the M4 debug bridge was not modified, so this is
-recorded as an existing timing-sensitive flake rather than a regression — and it
-is worth a proper look, because a flaky test is a test that will eventually be
-ignored.
+runs in the M4 bench scene, and the M4 debug bridge was not modified, so it was
+correctly recorded rather than attributed to sound. Task 8 later diagnosed the
+test defect: it compared an immutable projectile origin with a carrier position
+sampled after the carrier had kept moving. The current proof samples immediately
+before firing, tightens the allowance from 48 to 12 units, and passes in the
+57-case parallel gate; see the 2026-09-27 section above.

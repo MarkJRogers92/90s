@@ -31,7 +31,7 @@ const PREVIEW_PROMPT = 'FUSION PREVIEW OPEN — CONFIRM OR CANCEL';
  * car is doing instead of promising a key that would do nothing.
  */
 function movementControls(state: MvpRunState): string {
-  const parts = ['WASD MOVE', 'POINTER AIM', 'CLICK ATTACK', 'E INTERACT', 'F STEAL'];
+  const parts = ['WASD MOVE', 'POINTER AIM', 'CLICK ATTACK', 'SPACE DASH', 'E INTERACT', 'F STEAL', '1-9/Q WEAPON'];
   if (state.carrier !== null) {
     parts.push(state.carrier.mode === 'emitter' ? 'R RECALL' : 'CAR FOLLOWS');
   }
@@ -98,6 +98,10 @@ export class MvpRunHud {
   private readonly recent: HTMLElement;
   private readonly summary: HTMLElement;
   private readonly controls: HTMLElement;
+  private readonly offersWrap: HTMLDetailsElement;
+  private readonly offersSummary: HTMLElement;
+  private readonly inspection: HTMLDetailsElement;
+  private readonly inspectionSummary: HTMLElement;
   private readonly restartButton: HTMLButtonElement;
   private readonly returnButton: HTMLButtonElement;
   private readonly confirmFusionButton: HTMLButtonElement;
@@ -144,6 +148,10 @@ export class MvpRunHud {
     this.recent = requireElement<HTMLElement>('#mvp-run-recent');
     this.summary = requireElement<HTMLElement>('#mvp-run-summary');
     this.controls = requireElement<HTMLElement>('#mvp-run-controls');
+    this.offersWrap = requireElement<HTMLDetailsElement>('#mvp-run-offers-wrap');
+    this.offersSummary = requireElement<HTMLElement>('#mvp-run-offers-wrap summary');
+    this.inspection = requireElement<HTMLDetailsElement>('#mvp-run-inspection');
+    this.inspectionSummary = requireElement<HTMLElement>('#mvp-run-inspection summary');
     this.restartButton = requireElement<HTMLButtonElement>('#mvp-restart-run');
     this.returnButton = requireElement<HTMLButtonElement>('#mvp-return');
     this.confirmFusionButton = requireElement<HTMLButtonElement>('#mvp-bench-confirm');
@@ -159,6 +167,8 @@ export class MvpRunHud {
     this.confirmFusionButton.addEventListener('click', this.onConfirmFusion);
     this.cancelFusionButton.addEventListener('click', this.onCancelFusion);
     this.muteButton.addEventListener('click', this.handleToggleMute);
+    this.inspection.addEventListener('toggle', this.handleInspectionToggle);
+    this.offersWrap.addEventListener('toggle', this.handleOffersToggle);
     this.syncMuteLabel(false);
   }
 
@@ -174,6 +184,19 @@ export class MvpRunHud {
 
   private readonly handleToggleMute = (): void => {
     this.toggleMute();
+  };
+
+  /** Native disclosure is keyboard-accessible; return to its invoker on close. */
+  private readonly handleInspectionToggle = (): void => {
+    if (!this.inspection.open && document.activeElement !== this.inspectionSummary) {
+      this.inspectionSummary.focus();
+    }
+  };
+
+  private readonly handleOffersToggle = (): void => {
+    if (!this.offersWrap.open && document.activeElement !== this.offersSummary) {
+      this.offersSummary.focus();
+    }
   };
 
   /** The button states what the sound is doing, not what clicking would do. */
@@ -384,6 +407,10 @@ export class MvpRunHud {
   private syncOffers(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
     const seen = new Set<string>();
+    this.offersWrap.hidden = !room?.store;
+    if (!room?.store) {
+      this.offersWrap.open = false;
+    }
     if (room?.store) {
       const carryLimit = runCarryLimit(state);
       for (const offer of room.offers) {
@@ -499,6 +526,8 @@ export class MvpRunHud {
     this.confirmFusionButton.removeEventListener('click', this.onConfirmFusion);
     this.cancelFusionButton.removeEventListener('click', this.onCancelFusion);
     this.muteButton.removeEventListener('click', this.handleToggleMute);
+    this.inspection.removeEventListener('toggle', this.handleInspectionToggle);
+    this.offersWrap.removeEventListener('toggle', this.handleOffersToggle);
     this.offerCards.clear();
     this.offers.textContent = '';
     this.bench.hidden = true;

@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import { installBenchDebugBridge } from '../../debug/DebugBridge';
+import { installBenchDebugBridge, installWorldToCanvas } from '../../debug/DebugBridge';
 import {
   acquireLateModifier,
   cancelFusion,
@@ -11,6 +11,7 @@ import type { BenchInputFrame, BenchRunState, BenchScenarioId } from '../../sim/
 import { BenchInputAdapter } from '../input/BenchInputAdapter';
 import { BenchHud } from '../ui/BenchHud';
 import { BenchView } from '../view/BenchView';
+import { boundCameraToPlayfield, centreCameraOn, worldToCanvas } from '../view/projection';
 
 const STEP_MS = 1000 / 60;
 const MAX_STEPS = 5;
@@ -42,6 +43,7 @@ export class BenchScene extends Phaser.Scene {
       () => this.setPaused(true),
     );
     this.benchView = new BenchView(this);
+    boundCameraToPlayfield(this);
     this.hud = new BenchHud({
       onConfirm: () => {
         confirmFusion(this.bench);
@@ -63,10 +65,15 @@ export class BenchScene extends Phaser.Scene {
     });
 
     if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
-      this.removeDebugBridge = installBenchDebugBridge(
+      const removeBridge = installBenchDebugBridge(
         () => this.bench,
         () => this.generation,
       );
+      const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
+      this.removeDebugBridge = () => {
+        removeProjection();
+        removeBridge();
+      };
     }
 
     this.syncView();
@@ -161,6 +168,7 @@ export class BenchScene extends Phaser.Scene {
   private syncView(): void {
     this.benchView?.sync(this.bench);
     this.hud?.sync(this.bench);
+    centreCameraOn(this, this.bench.combat.player.x, this.bench.combat.player.y);
   }
 
   private readonly destroyBench = (): void => {

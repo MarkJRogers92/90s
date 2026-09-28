@@ -10,6 +10,9 @@ import {
 } from './game/persistence/LocalStorageCheckpointStore';
 import type { MvpCheckpoint } from './sim/run/checkpoint';
 import './styles.css';
+import { PlaytestLog } from './game/playtest/log';
+import { PlaytestPanel } from './game/ui/PlaytestPanel';
+import { OPEN_SETTINGS_EVENT, SettingsPanel } from './game/ui/SettingsPanel';
 
 export const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
 
@@ -45,6 +48,12 @@ const labButton = requireElement<HTMLButtonElement>('#interaction-lab-launch');
 const shopButton = requireElement<HTMLButtonElement>('#shoplifting-loop-launch');
 const benchButton = requireElement<HTMLButtonElement>('#void-warranty-launch');
 const nightShiftButton = requireElement<HTMLButtonElement>('#night-shift-launch');
+const settingsPanel = new SettingsPanel((selector) => requireElement(selector));
+window.addEventListener(OPEN_SETTINGS_EVENT, () => settingsPanel.open());
+new PlaytestPanel(
+  new PlaytestLog((() => { try { return window.localStorage; } catch { return null; } })()),
+  (selector) => requireElement(selector),
+);
 const continueButton = requireElement<HTMLButtonElement>('#continue-run');
 const labSection = requireElement<HTMLElement>('#interaction-lab');
 const runHud = requireElement<HTMLElement>('#run-hud');
@@ -93,8 +102,13 @@ function launch(mode: RunMode): void {
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: 'game-host',
-      width: 960,
-      height: 480,
+      // 640x360, not the playfield's 960x480: the playfield is the room the
+      // simulation is authored against, this is the window onto it. 640x360
+      // integer-scales to 1920x1080 exactly, which 960x480 cannot (x2 leaves a
+      // 120px letterbox, x2.25 is uneven). The camera in each scene follows the
+      // player, so a viewport smaller than the room is the intended arrangement.
+      width: 640,
+      height: 360,
       backgroundColor: '#252926',
       render: {
         antialias: false,
@@ -149,9 +163,12 @@ function launchRun(checkpoint: MvpCheckpoint | null, seed: number): void {
     game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: 'game-host',
+      // Night Shift frames each whole room at once, Isaac-style: the 960x480
+      // playfield plus a 120px band above it where the back wall's storefronts
+      // stand in 3/4 view. 960x600 scales to 1920x1200 at exactly x2.
       width: 960,
-      height: 480,
-      backgroundColor: '#252926',
+      height: 600,
+      backgroundColor: '#07050c',
       render: {
         antialias: false,
         pixelArt: true,

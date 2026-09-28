@@ -899,5 +899,743 @@ body[data-mode='run'] {
 }
 
 .run-shell[data-mode='run'] #game-host {
-  height: calc(100vh - 32px);
+  height: calc(100vh - 152px);
+  margin-top: 120px;
+}
+
+/* Night Shift reserves a shallow strip above the canvas. The mall and player
+   never sit underneath the HUD, while optional detail panels still open on
+   demand as focused overlays. */
+.mvp-run-hud {
+  display: grid;
+  grid-template-columns: minmax(390px, 1.15fr) minmax(280px, 1fr) max-content;
+  grid-template-rows: 1fr auto;
+  gap: 5px 10px;
+  top: 32px;
+  left: 0;
+  width: 100%;
+  height: 120px;
+  max-height: 120px;
+  overflow: visible;
+  padding: 6px 10px;
+  border: 0;
+  border-bottom: 2px solid rgb(125 232 255 / 72%);
+  background: linear-gradient(90deg, #091117 0%, #111020 55%, #170b17 100%);
+  box-shadow: 0 4px 0 rgb(208 64 168 / 38%);
+}
+
+.mvp-run-status-bar {
+  display: grid;
+  grid-column: 1;
+  grid-row: 1 / 3;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  gap: 4px 12px;
+  min-width: 0;
+  padding: 5px 8px;
+  border-left: 3px solid #7de8ff;
+  background: linear-gradient(90deg, rgb(16 73 110 / 56%), rgb(9 11 13 / 22%));
+}
+
+.mvp-run-identity,
+.mvp-run-vitals {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+}
+
+.mvp-run-identity strong {
+  min-width: 0;
+  color: #f4edd8;
+  font-size: 0.7rem;
+  text-align: right;
+  white-space: normal;
+}
+
+.mvp-run-brand {
+  flex: none;
+  color: #7de8ff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.mvp-run-vitals {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  color: #cfd6c9;
+  font-size: 0.64rem;
+  letter-spacing: 0.06em;
+}
+
+.mvp-run-vitals span {
+  white-space: nowrap;
+}
+
+.mvp-run-vitals strong {
+  color: #f4edd8;
+}
+
+.mvp-run-objective,
+.mvp-run-nearby {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.22;
+}
+
+.mvp-run-nearby {
+  color: #7de8ff;
+}
+
+.mvp-run-suspicion,
+.mvp-run-boss {
+  margin: 0;
+  font-size: 0.62rem;
+}
+
+.mvp-run-suspicion {
+  color: #ff78dc;
+}
+
+.mvp-run-controls {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  margin: 0;
+  color: #daeec7;
+  font-size: 0.62rem;
+  line-height: 1.35;
+}
+
+.mvp-run-boss,
+.mvp-run-offers-wrap,
+.mvp-run-bench,
+.mvp-run-summary {
+  position: absolute;
+  z-index: 4;
+  top: 122px;
+  left: 10px;
+  width: min(440px, calc(100vw - 20px));
+  padding: 8px;
+  border: 1px solid rgb(255 120 220 / 74%);
+  background: rgb(9 11 13 / 97%);
+  pointer-events: auto;
+}
+
+.mvp-run-offers-wrap,
+.mvp-run-bench,
+.mvp-run-summary {
+  max-height: min(42vh, 270px);
+  overflow-y: auto;
+}
+
+.mvp-run-offers-wrap {
+  margin-top: 0;
+  pointer-events: auto;
+}
+
+/* The neon overhaul draws the boss bar and store stock inside the canvas, so
+   the DOM copies shrink to compact chips tucked into the stage's top corner,
+   and the bench/summary dialogs open as centred modals over the room. */
+.mvp-run-boss,
+.mvp-run-offers-wrap {
+  width: fit-content;
+  max-width: min(440px, calc(100vw - 20px));
+  padding: 3px 8px;
+  border-color: rgb(255 63 200 / 60%);
+  background: rgb(11 7 20 / 88%);
+  font-size: 0.6rem;
+}
+
+.mvp-run-offers-wrap[open] {
+  padding: 8px;
+}
+
+.mvp-run-bench,
+.mvp-run-summary {
+  top: 30vh;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 2px solid #3ff0ff;
+  box-shadow: 0 0 0 2px rgb(255 63 200 / 55%), 0 0 24px rgb(63 240 255 / 35%);
+  background: rgb(11 7 20 / 96%);
+}
+
+.mvp-run-offers-wrap summary {
+  cursor: pointer;
+}
+
+.mvp-run-offer-list {
+  gap: 0.25rem;
+}
+
+.mvp-run-offer {
+  padding: 0.3rem 0.4rem;
+}
+
+.mvp-run-inspection {
+  position: relative;
+  z-index: 1;
+  grid-column: 2;
+  grid-row: 2;
+  align-self: end;
+  margin: 0;
+  pointer-events: auto;
+}
+
+.mvp-run-inspection summary {
+  width: fit-content;
+  cursor: pointer;
+  color: #f6d365;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+}
+
+.mvp-run-inspection summary:focus-visible,
+.mvp-run-actions button:focus-visible,
+.mvp-run-bench-actions button:focus-visible {
+  outline: 2px solid #8bc9b8;
+  outline-offset: 2px;
+}
+
+.mvp-run-inspection-content {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 9px);
+  left: 0;
+  width: min(420px, calc(100vw - 20px));
+  max-height: min(40vh, 250px);
+  overflow-y: auto;
+  margin-top: 5px;
+  padding: 6px 7px;
+  border: 1px solid rgb(139 201 184 / 48%);
+  background: rgb(9 11 13 / 96%);
+}
+
+.mvp-run-inspection-content > p {
+  margin: 4px 0 0;
+  font-size: 0.66rem;
+  line-height: 1.3;
+}
+
+.mvp-run-actions {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  display: grid;
+  grid-template-columns: repeat(2, max-content);
+  align-content: center;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.mvp-run-actions button,
+.mvp-run-bench-actions button {
+  padding: 0.42rem 0.48rem;
+  font-size: 0.58rem;
+  box-shadow: 2px 2px 0 #7a3c4a;
+}
+
+@media (max-width: 960px) {
+  .mvp-run-hud {
+    grid-template-columns: minmax(0, 1fr) 252px;
+    gap: 4px 8px;
+    padding: 5px 8px;
+  }
+
+  .mvp-run-status-bar {
+    grid-column: 1;
+    grid-row: 1;
+    padding: 4px 6px;
+  }
+
+  .mvp-run-controls {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    overflow: hidden;
+    line-height: 1.2;
+    max-height: 2.4em;
+  }
+
+  .mvp-run-inspection {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .mvp-run-actions {
+    grid-column: 2;
+    grid-row: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mvp-run-actions button {
+    padding: 0.38rem 0.34rem;
+    font-size: 0.54rem;
+  }
+
+  .mvp-run-inspection-content,
+  .mvp-run-offers-wrap,
+  .mvp-run-bench,
+  .mvp-run-summary {
+    max-height: 30vh;
+  }
+}
+
+
+/* ------------------------------------------------------------------------ */
+/* Neon overhaul: title screen and Night Shift stage                          */
+/* ------------------------------------------------------------------------ */
+
+/* A synthwave concourse behind the title: violet dusk, a neon horizon and a
+   receding floor grid, all CSS so the title needs no extra asset. */
+body:not([data-mode]) ,
+body[data-mode=''] {
+  background:
+    linear-gradient(180deg, rgb(7 5 12 / 0%) 55%, rgb(7 5 12 / 90%) 100%),
+    radial-gradient(ellipse at 50% 58%, rgb(255 63 200 / 28%), transparent 42%),
+    linear-gradient(180deg, #07050c 0%, #1a0b2e 45%, #3a0f3f 58%, #07050c 58.2%, #07050c 100%);
+}
+
+.start-screen {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.start-screen::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: -50%;
+  right: -50%;
+  bottom: -10%;
+  height: 48%;
+  background:
+    repeating-linear-gradient(90deg, rgb(63 240 255 / 55%) 0 2px, transparent 2px 80px),
+    repeating-linear-gradient(0deg, rgb(255 63 200 / 55%) 0 2px, transparent 2px 60px);
+  transform: perspective(420px) rotateX(62deg);
+  transform-origin: 50% 0;
+  mask-image: linear-gradient(180deg, transparent, #000 45%);
+  opacity: 0.55;
+}
+
+.start-screen::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 22%) 0 1px, transparent 1px 3px);
+}
+
+h1#game-title {
+  font-style: italic;
+  letter-spacing: -0.04em;
+  text-shadow: none;
+  transform: skewX(-8deg);
+}
+
+.title-dead {
+  color: #ff3fc8;
+  text-shadow:
+    0 0 6px rgb(255 63 200 / 90%),
+    0 0 22px rgb(255 63 200 / 70%),
+    5px 5px 0 #3a0a30;
+}
+
+.title-mall {
+  color: #3ff0ff;
+  text-shadow:
+    0 0 6px rgb(63 240 255 / 90%),
+    0 0 22px rgb(63 240 255 / 70%),
+    5px 5px 0 #062a33;
+}
+
+.title-script {
+  margin: 0.4rem 0 0 1.2rem;
+  color: #fff4d6;
+  font: italic 400 clamp(1.4rem, 3.2vw, 2.4rem) / 1 "Brush Script MT", "Segoe Script", cursive;
+  text-shadow: 0 0 10px rgb(255 216 74 / 80%), 0 0 24px rgb(255 63 200 / 50%);
+  transform: rotate(-4deg);
+}
+
+.start-screen .eyebrow {
+  color: #3ff0ff;
+  text-shadow: 0 0 8px rgb(63 240 255 / 60%);
+}
+
+.start-screen .tagline {
+  color: #d8c8f0;
+}
+
+.start-actions button {
+  border-color: #ff3fc8;
+  color: #fff;
+  background: rgb(26 11 46 / 88%);
+  box-shadow: 0 0 0 1px rgb(255 63 200 / 40%), 0 0 16px rgb(255 63 200 / 35%), 4px 4px 0 #3a0a30;
+}
+
+.start-actions button:hover:not(:disabled) {
+  background: #ff3fc8;
+  color: #07050c;
+}
+
+.start-actions #night-shift-launch {
+  border-color: #3ff0ff;
+  color: #07050c;
+  background: #3ff0ff;
+  box-shadow: 0 0 0 1px rgb(63 240 255 / 60%), 0 0 22px rgb(63 240 255 / 55%), 4px 4px 0 #062a33;
+}
+
+.start-actions button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Night Shift: a faint CRT scanline over the stage, off for reduced motion. */
+.run-shell[data-mode='run'] #game-host {
+  position: relative;
+}
+
+.run-shell[data-mode='run'] #game-host::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgb(0 0 0 / 12%) 0 1px, transparent 1px 3px);
+}
+
+.run-shell[data-mode='run'] #game-host canvas {
+  box-shadow: 0 0 0 2px #2a1a3a, 0 0 40px rgb(255 63 200 / 18%), 0 20px 80px rgb(0 0 0 / 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .run-shell[data-mode='run'] #game-host::after {
+    display: none;
+  }
+}
+
+/* The marquee above Night Shift joins the neon palette. */
+body[data-mode='run'] .marquee {
+  border-bottom: 2px solid #ff3fc8;
+  color: #3ff0ff;
+  background: linear-gradient(90deg, #0b0714, #1a0b2e 50%, #0b0714);
+  text-shadow: 0 0 6px rgb(63 240 255 / 60%);
+}
+
+/* UI overhaul: the DOM status bar becomes one readable row, the marquee goes,
+   and the canvas takes the height back. The in-canvas HUD is the main UI; this
+   row keeps the room, objective, nearby prompt and controls in real text. */
+body[data-mode='run'] .marquee {
+  display: none;
+}
+
+.run-shell[data-mode='run'] .mvp-run-hud {
+  top: 0;
+  height: 64px;
+  max-height: 64px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) max-content;
+  grid-template-rows: 1fr 1fr;
+  align-items: center;
+  padding: 4px 12px;
+  gap: 2px 14px;
+  font-size: 0.8rem;
+}
+
+.run-shell[data-mode='run'] #game-host {
+  height: calc(100vh - 66px);
+  margin-top: 66px;
+}
+
+.run-shell[data-mode='run'] .mvp-run-status-bar {
+  grid-row: 1 / 3;
+  padding: 2px 8px;
+  gap: 2px 12px;
+}
+
+.run-shell[data-mode='run'] .mvp-run-identity strong,
+.run-shell[data-mode='run'] .mvp-run-vitals,
+.run-shell[data-mode='run'] .mvp-run-objective,
+.run-shell[data-mode='run'] .mvp-run-nearby,
+.run-shell[data-mode='run'] .mvp-run-controls {
+  font-size: 0.78rem;
+}
+
+.run-shell[data-mode='run'] .mvp-run-controls {
+  grid-row: 1;
+  color: #ffd84a;
+}
+
+.run-shell[data-mode='run'] .mvp-run-inspection {
+  grid-row: 2;
+  align-self: center;
+}
+
+.run-shell[data-mode='run'] .mvp-run-actions {
+  grid-row: 1 / 3;
+  gap: 4px;
+}
+
+.run-shell[data-mode='run'] .mvp-run-actions button {
+  padding: 0.35rem 0.6rem;
+  font-size: 0.7rem;
+}
+
+.run-shell[data-mode='run'] .mvp-run-boss,
+.run-shell[data-mode='run'] .mvp-run-offers-wrap {
+  top: 66px;
+}
+
+/* With the marquee hidden, #game-host is the shell's first in-flow child and
+   its top margin would collapse through the shell, pushing the bar down. */
+.run-shell[data-mode='run'] {
+  display: flow-root;
+}
+
+/* Column layout: the status row takes the height its text needs (it can wrap
+   on narrow windows without clipping the room name), and the stage fills the
+   rest. Replaces the fixed pixel offsets above. */
+.run-shell[data-mode='run'] {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 0;
+}
+
+.run-shell[data-mode='run'] .mvp-run-hud {
+  position: relative;
+  flex: none;
+  height: auto;
+  min-height: 56px;
+  max-height: none;
+}
+
+.run-shell[data-mode='run'] #game-host {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: auto;
+  margin-top: 0;
+}
+
+.run-shell[data-mode='run'] .mvp-run-boss,
+.run-shell[data-mode='run'] .mvp-run-offers-wrap {
+  top: calc(100% + 4px);
+}
+
+@media (max-width: 1000px) {
+  .run-shell[data-mode='run'] .mvp-run-hud {
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+
+  .run-shell[data-mode='run'] .mvp-run-controls,
+  .run-shell[data-mode='run'] .mvp-run-inspection {
+    grid-column: 1 / 3;
+  }
+}
+
+/* The room name is the one thing that must never clip: give it its natural
+   width and let the vitals wrap beside it instead. */
+.run-shell[data-mode='run'] .mvp-run-status-bar {
+  grid-template-columns: max-content minmax(0, 1fr);
+}
+
+.run-shell[data-mode='run'] .mvp-run-identity strong {
+  white-space: nowrap;
+}
+
+/* The in-canvas HUD and end-of-shift card now carry everything the DOM status
+   bar and summary showed. Both stay in the page, off-screen at their natural
+   size, so screen readers (and the browser tests) still read the live status
+   and the terminal summary; only the action row stays on screen. */
+.run-shell[data-mode='run'] .mvp-run-status-bar,
+.run-shell[data-mode='run'] .mvp-run-summary {
+  position: absolute !important;
+  left: -10000px !important;
+  top: 0 !important;
+  width: max-content !important;
+  max-width: none !important;
+}
+
+/* The store list and the Bench Warrant now live in the canvas (the offer card
+   and the Bench Warrant card). Their DOM copies move into the top strip, off
+   the play area: the store list becomes a small chip there, and the bench
+   keeps only its two buttons on screen; its text stays in the page for
+   assistive tech and the browser tests. */
+.run-shell[data-mode='run'] .mvp-run-offers-wrap {
+  top: 8px !important;
+  left: 10px !important;
+}
+
+.run-shell[data-mode='run'] .mvp-run-bench {
+  top: 6px !important;
+  left: 12px !important;
+  transform: none !important;
+  width: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding: 0 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.run-shell[data-mode='run'] .mvp-run-bench-title,
+.run-shell[data-mode='run'] .mvp-run-bench-line {
+  position: absolute !important;
+  left: -10000px !important;
+  width: max-content !important;
+}
+
+.run-shell[data-mode='run'] .mvp-run-bench-actions {
+  margin: 0 !important;
+}
+
+/* Title-screen playtest stats: a neon panel over the title. */
+.playtest-panel {
+  position: fixed;
+  z-index: 30;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(640px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+  padding: 20px 22px;
+  border: 2px solid #6aff8a;
+  box-shadow: 0 0 0 2px rgb(255 63 200 / 45%), 0 0 30px rgb(106 255 138 / 25%);
+  background: rgb(11 7 20 / 97%);
+  color: #f4ecff;
+  text-align: left;
+}
+
+.playtest-panel h2 {
+  margin: 0 0 12px;
+  color: #6aff8a;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.playtest-toggle {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+  color: #ffd84a;
+  font-size: 0.8rem;
+}
+
+.playtest-summary p {
+  margin: 4px 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.playtest-summary strong {
+  color: #3ff0ff;
+}
+
+.playtest-runs {
+  margin: 12px 0;
+  padding-left: 20px;
+  color: #9a8fb4;
+  font-size: 0.72rem;
+  line-height: 1.5;
+}
+
+.playtest-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.playtest-status {
+  min-height: 1.2em;
+  margin: 10px 0 0;
+  color: #6aff8a;
+  font-size: 0.72rem;
+}
+
+/* Settings: one neon dialog for the title and the game. */
+.settings-panel {
+  position: fixed;
+  z-index: 40;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 20px 22px;
+  border: 2px solid #3ff0ff;
+  box-shadow: 0 0 0 2px rgb(255 63 200 / 45%), 0 0 30px rgb(63 240 255 / 25%);
+  background: rgb(11 7 20 / 97%);
+  color: #f4ecff;
+  text-align: left;
+}
+
+.settings-panel h2 {
+  margin: 0 0 12px;
+  color: #3ff0ff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid rgb(255 63 200 / 45%);
+  font-size: 0.8rem;
+}
+
+.settings-group legend {
+  padding: 0 6px;
+  color: #ffd84a;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.settings-group label,
+.settings-slider {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-slider {
+  margin: 10px 0;
+  color: #ffd84a;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.settings-slider input {
+  flex: 1;
+  accent-color: #ff3fc8;
+}
+
+.settings-slider output {
+  min-width: 3.5ch;
+  color: #f4ecff;
+}
+
+.settings-note {
+  margin: 8px 0 14px;
+  color: #9a8fb4;
+  font-size: 0.72rem;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }

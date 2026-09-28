@@ -1,6 +1,7 @@
 import type { RunState } from '../sim/model';
 import type { CompiledPrimary } from '../sim/items/types';
 import type { WingState } from '../sim/shop/types';
+import type { Point2D } from '../game/view/projection';
 
 export type DebugMode = 'shift' | 'lab' | 'shop' | 'bench';
 
@@ -52,8 +53,39 @@ declare global {
   interface Window {
     __DEAD_MALL_DEBUG__?: {
       snapshot(): DebugSnapshot | WingDebugSnapshot | BenchDebugSnapshot | MvpRunDebugSnapshot;
+      /**
+       * World point -> canvas-relative CSS pixels.
+       *
+       * Browser tests used to compute this themselves as `(worldX / 960) *
+       * canvasWidth`, which hardcoded the playfield size, assumed no camera
+       * scroll, and ignored the scale manager's letterboxing. Every one of those
+       * assumptions was true only while the viewport matched the room exactly.
+       */
+      worldToCanvas?(x: number, y: number): Point2D;
     };
   }
+}
+
+/**
+ * Attach the world->canvas projection to whatever debug bridge the current
+ * scene installed.
+ *
+ * Kept separate from the four `install*DebugBridge` functions so their
+ * signatures stay stable: only scenes that own a camera need to supply a
+ * projection, and a scene without one is simply not projectable rather than
+ * silently wrong.
+ */
+export function installWorldToCanvas(
+  project: (x: number, y: number) => Point2D,
+): () => void {
+  const bridge = window.__DEAD_MALL_DEBUG__;
+  if (!bridge) {
+    return () => {};
+  }
+  bridge.worldToCanvas = project;
+  return () => {
+    delete bridge.worldToCanvas;
+  };
 }
 
 export function installDebugBridge(
@@ -273,6 +305,11 @@ export type MvpRunDebugSnapshot = {
     radius: number;
     /** Who fired it, so acceptance can tell a volley from the player's fire. */
     faction: 'enemy' | 'player';
+    /** Player shots may replay back toward their origin after an outbound pass. */
+    phase: import('../sim/model').ProjectileState['phase'];
+    /** Authoritative trajectory, exposed read-only for real-input assertions. */
+    velocityX: number;
+    velocityY: number;
     /**
      * Where the shot began, sampled from its recorded path when the tick kept
      * one. Origin is the honest way to prove a firing source; a shot's current
@@ -296,6 +333,26 @@ export type MvpRunDebugSnapshot = {
     /** Cues actually scheduled as voices, not merely decided. */
     played: number;
   } | null;
+  /** Failed optional presentation assets; gameplay remains on vector fallback. */
+  presentationLoadFailures: number;
+  /** Renderer-owned, read-only status. Null outside the entry concourse. */
+  presentation: null | {
+    themeId: string;
+    fallbackCount: number;
+    occluderCount: number;
+    staticDisplayObjectCount: number;
+    staticTextureCount: number;
+    dynamicDisplayObjectCount: number;
+    sceneDisplayObjectCount: number;
+    actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
+    effectDepths: Array<{ id: string; renderDepth: number }>;
+    promptDepths: Array<{ id: string; renderDepth: number }>;
+    depthBands: { tallForeground: number; effect: number; prompt: number };
+  };
+  /** Last read-only concourse ambience state, retained through disposal. */
+  concourseAmbience: import('../game/view/ConcourseAmbience').ConcourseAmbienceSnapshot | null;
+  /** Read-only renderer evidence available in every run room. */
+  actorPresentation: import('../game/view/MvpRunView').ActorPresentationDebugSnapshot | null;
 };
 
 export function installMvpRunDebugBridge(
@@ -304,6 +361,10 @@ export function installMvpRunDebugBridge(
   getAudio?: () =>
     | { created: boolean; running: boolean; isMuted: boolean; played: number }
     | undefined,
+  getPresentationLoadFailures: () => number = () => 0,
+  getPresentation: () => MvpRunDebugSnapshot['presentation'] = () => null,
+  getActorPresentation: () => MvpRunDebugSnapshot['actorPresentation'] = () => null,
+  getConcourseAmbience: () => MvpRunDebugSnapshot['concourseAmbience'] = () => null,
 ): () => void {
   Object.defineProperty(window, '__DEAD_MALL_DEBUG__', {
     configurable: true,
@@ -351,6 +412,9 @@ export function installMvpRunDebugBridge(
               y: shot.y,
               radius: shot.radius,
               faction: shot.faction,
+              phase: shot.phase,
+              velocityX: shot.velocityX,
+              velocityY: shot.velocityY,
               originX: sampled?.x ?? shot.x,
               originY: sampled?.y ?? shot.y,
             };
@@ -367,6 +431,10 @@ export function installMvpRunDebugBridge(
                 }
               : null;
           })(),
+          presentationLoadFailures: getPresentationLoadFailures(),
+          presentation: getPresentation(),
+          concourseAmbience: getConcourseAmbience(),
+          actorPresentation: getActorPresentation(),
         };
       },
     },
