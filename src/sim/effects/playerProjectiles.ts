@@ -61,10 +61,13 @@ export function isPlayerProjectile(
  */
 export function buildPlayerProjectileSpec(
   effects: readonly ItemEffectSpec[],
+  primaryDefinitionId?: string,
 ): PlayerProjectileSpec | null {
-  const payload = effects.find(
+  // The equipped weapon's own shot; any owned payload only when it authors none.
+  const payloads = effects.filter(
     (effect): effect is ProjectilePayloadEffect => effect.kind === 'projectile_payload',
   );
+  const payload = payloads.find((effect) => effect.sourceItemId === primaryDefinitionId) ?? payloads[0];
   if (!payload) {
     return null;
   }
@@ -218,7 +221,7 @@ export function spawnPlayerProjectiles(
   state: RunState,
   request: PlayerProjectileSpawnRequest,
 ): PlayerProjectileState[] {
-  const spec = buildPlayerProjectileSpec(state.compiledLoadout.effects);
+  const spec = buildPlayerProjectileSpec(state.compiledLoadout.effects, state.compiledLoadout.primary.definitionId);
   if (!spec) {
     recordBehaviorTrace(
       state,

@@ -1168,5 +1168,15 @@
       160
     ],
     "sha256": "9befb6bcdd570a8342c0e0f0a8dc1bdf1717e51881420ca60adce6b5ae991918"
+  },
+  {
+    "path": "public/assets/neon/props/rc-car.png",
+    "source": "docs/art/neon-overhaul/pixellab/prop-rc-car.png",
+    "generator": "PixelLab create_image_pro (64x64 prop, candidate 1 of 16, cropped)",
+    "size": [
+      58,
+      54
+    ],
+    "sha256": "13546aab0e0b22fc6605e3ca2126e3423fdacbf25e1ed428478ffda02ef0b58e"
   }
 ]

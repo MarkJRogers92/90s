@@ -491,6 +491,33 @@ drawn by a small Phaser class; all presentation only.
   out (a cropped monospace label) over a garbled `pa_voice` babble; it waits
   out cinematics and clears when the shift ends.
 
+## Round 21 — the top HUD steps aside; weapons you can tell apart
+
+- **Top HUD** (`hudExpanded`, `collapsedObjective` in `gameHudModel.ts`): the
+  objectives and wing map show in full for 5 s on entering a room and 4 s
+  after an objective appears or completes (ticking counts don't reopen it),
+  and whenever paused, holding Tab, or the shift is over; otherwise they
+  collapse to two slim corner chips (the current objective, and a row of room
+  pips), so the storefront art stays visible.
+- **Bug fixed** (`buildPlayerProjectileSpec`): every projectile weapon fired
+  the first-owned weapon's shot (buy a Bottle Rocket Pack first and the
+  Soaker fired rockets). It now fires the equipped weapon's own payload.
+- **Every weapon reads differently** (`projectileStyle.ts`, drawn by
+  `MvpRunView.drawShot`, at well above hitbox size with its own light):
+  Soaker droplet, Party Popper confetti, Bottle Rockets with a flame trail,
+  Extinguisher cloud, Paint Marker dart, Foam balls, Slushie. Bubbles are
+  iridescent; sticky shots drip; rewinding shots get a VHS-blue ghost;
+  conductive shots crackle.
+- **Chains are lightning**: the sim records each conductive chain's path
+  (`RunState.chainArcs`, kept 18 ticks, never read by a rule) and the view
+  draws a jagged three-layer bolt between the enemies with a flash at each.
+- **Statuses**: Wet enemies tint blue, drip and stand in a puddle; Sticky
+  ones tint amber with goo strands.
+- **RC car**: a PixelLab red racer that faces its direction of travel,
+  bounces and kicks up dust, idles with a rattle, has a mode-coloured floor
+  ring and blinking antenna, a radio link of dots back to Alex, and sparks
+  when it bumps an enemy. Dev fixture `mvp-arsenal` holds every weapon.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

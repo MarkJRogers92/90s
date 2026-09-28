@@ -17,7 +17,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
-import { buildGameHudModel, wrapLogText, type GameHudModel, type HudOfferDetail } from './gameHudModel';
+import { buildGameHudModel, collapsedObjective, hudExpanded, wrapLogText, type GameHudModel, type HudOfferDetail } from './gameHudModel';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { itemBlurb } from './itemBlurbs';
 
@@ -56,6 +56,13 @@ export class GameHud {
   private knownItems: Set<string> | null = null;
   private toast: Toast | null = null;
   private titleCard: { images: Phaser.GameObjects.Image[]; startedTick: number } | null = null;
+  /** The top HUD collapses to corner chips once a room settles; Tab peeks. */
+  private hudRoomKey = '';
+  private roomEnteredTick = 0;
+  private objectivesKey = '';
+  private objectivesChangedTick = 0;
+  private expanded = true;
+  private readonly peekKey: Phaser.Input.Keyboard.Key | undefined;
   private titleRoomKey = '';
   private bossIntro = false;
   private shiftStartTick: number | null = null;
@@ -68,6 +75,7 @@ export class GameHud {
     this.scene = scene;
     ensureHeartTextures(scene);
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(HUD_DEPTH);
+    this.peekKey = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.TAB);
     this.frame = scene.add.graphics();
     this.bottom = scene.add.container(0, 0);
     this.bottomFrame = scene.add.graphics();
@@ -112,6 +120,7 @@ export class GameHud {
     this.trackNewItems(state, model);
     this.trackMannequins(state);
     this.joltHearts(state);
+    this.trackDisclosure(state, model);
     if (state.recentChange && state.recentChange !== this.lastRecent) this.pushLog(state);
     // Rebuilding vector panels every frame is expensive on software renderers,
     // and most frames change nothing, so redraw only when the picture changes.
@@ -179,6 +188,7 @@ export class GameHud {
       toastAge !== null && toastAge < 280 ? bucket(toastAge) : 'x',
       cardAge !== null && cardAge < 560 ? bucket(cardAge) : 'x',
       this.log.map((entry) => entry.text).join('|'), logAges,
+      this.expanded,
     ]);
   }
 
@@ -216,7 +226,40 @@ export class GameHud {
 
   /* ---------------------------------------------------------------------- */
 
+  /** Opens the full top HUD on a new room or a changed objective, then lets it collapse. */
+  private trackDisclosure(state: MvpRunState, model: GameHudModel): void {
+    const roomKey = this.roomKey(state);
+    if (roomKey !== this.hudRoomKey || state.tick < this.roomEnteredTick) {
+      this.hudRoomKey = roomKey;
+      this.roomEnteredTick = state.tick;
+    }
+    // Counts ("4 LEFT", "$12") tick constantly in a fight; only a new, gone or
+    // finished objective counts as a change worth reopening for.
+    const key = model.objectives.map((objective) => `${objective.text.replace(/[\d$/]+/g, '').trim()}:${objective.done}`).join('|');
+    if (key !== this.objectivesKey) {
+      if (this.objectivesKey !== '') this.objectivesChangedTick = state.tick;
+      this.objectivesKey = key;
+    }
+    this.expanded = hudExpanded({
+      tick: state.tick,
+      roomEnteredTick: this.roomEnteredTick,
+      objectivesChangedTick: this.objectivesChangedTick,
+      peek: this.peekKey?.isDown ?? false,
+      paused: state.paused,
+      playing: state.status === 'playing',
+    });
+  }
+
   private drawObjectives(model: GameHudModel): void {
+    if (!this.expanded) {
+      // Collapsed: one chip in the corner with the objective that matters now.
+      const text = `> ${collapsedObjective(model) ?? 'ALL CLEAR'}`;
+      const width = text.length * 6 + 52;
+      this.panel(this.frame, 8, 6, width, 20, MAGENTA, 0.78);
+      this.text('obj-chip', text, 16, 13, TEXT, 1);
+      this.text('obj-tab', 'TAB', 8 + width - 26, 13, MUTED, 1);
+      return;
+    }
     const x = 10;
     const y = 58;
     const lineH = 20;
@@ -234,6 +277,28 @@ export class GameHud {
   }
 
   private drawMinimap(model: GameHudModel, state: MvpRunState): void {
+    if (!this.expanded) {
+      // Collapsed: a strip of small room chips in the corner, and where you are.
+      const chipW = 14;
+      const chipH = 10;
+      const gap = 4;
+      const current = model.rooms.findIndex((room) => room.state === 'current');
+      const count = `${current + 1}/${model.rooms.length}`;
+      const chipsW = model.rooms.length * (chipW + gap) - gap;
+      const width = chipsW + count.length * 6 + 26;
+      const x = SCREEN_W - width - 8;
+      this.panel(this.frame, x, 6, width, 20, CYAN, 0.78);
+      this.text('map-count', count, x + 8, 13, MUTED, 1);
+      model.rooms.forEach((room, index) => {
+        const cx = x + 16 + count.length * 6 + index * (chipW + gap);
+        const cy = 11;
+        const fill = room.state === 'current' ? CYAN : room.state === 'cleared' ? 0x3a3052 : 0x1c1628;
+        this.frame.fillStyle(fill, 1).fillRect(cx, cy, chipW, chipH);
+        this.frame.lineStyle(1, room.boss ? 0xff3a4a : 0x8a7fa8, 1).strokeRect(cx + 0.5, cy + 0.5, chipW - 1, chipH - 1);
+        if (room.store && room.state !== 'current') this.frame.fillStyle(0xffd84a, 1).fillRect(cx + chipW / 2 - 1, cy + chipH / 2 - 1, 3, 3);
+      });
+      return;
+    }
     const cellW = 32;
     const cellH = 20;
     const gap = 8;

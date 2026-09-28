@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
-import { buildGameHudModel, heartsFor, wrapLogText } from '../../src/game/ui/gameHudModel';
+import { HUD_CHANGE_OPEN_TICKS, HUD_ROOM_OPEN_TICKS, buildGameHudModel, collapsedObjective, heartsFor, hudExpanded, wrapLogText } from '../../src/game/ui/gameHudModel';
 import { enterDoorway } from '../../src/sim/run/tickMvpRun';
 import { ascendToFloorTwo } from '../../src/sim/run/floors';
 
@@ -96,5 +96,30 @@ describe('the pickup log', () => {
     expect(lines).toHaveLength(2);
     expect(lines.every((line) => line.length <= 34)).toBe(true);
     expect(lines[1]).toMatch(/[A-Z]\.\.\.$/);
+  });
+});
+
+describe('the top HUD gets out of the way of the shop art', () => {
+  const base = { tick: 1000, roomEnteredTick: 0, objectivesChangedTick: 0, peek: false, paused: false, playing: true };
+
+  it('collapses to corner chips once a room has settled', () => {
+    expect(hudExpanded(base)).toBe(false);
+  });
+
+  it('opens on entering a room, and when an objective changes, for a few seconds', () => {
+    expect(hudExpanded({ ...base, roomEnteredTick: 1000 - HUD_ROOM_OPEN_TICKS + 1 })).toBe(true);
+    expect(hudExpanded({ ...base, roomEnteredTick: 1000 - HUD_ROOM_OPEN_TICKS })).toBe(false);
+    expect(hudExpanded({ ...base, objectivesChangedTick: 1000 - HUD_CHANGE_OPEN_TICKS + 1 })).toBe(true);
+  });
+
+  it('opens while Tab is held, while paused, and once the shift is over', () => {
+    expect(hudExpanded({ ...base, peek: true })).toBe(true);
+    expect(hudExpanded({ ...base, paused: true })).toBe(true);
+    expect(hudExpanded({ ...base, playing: false })).toBe(true);
+  });
+
+  it('keeps the current objective in the collapsed chip', () => {
+    const model = buildGameHudModel(createMvpRun(7));
+    expect(collapsedObjective(model)).toBe(model.objectives.find((objective) => !objective.done)?.text);
   });
 });

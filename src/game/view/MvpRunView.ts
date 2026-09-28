@@ -37,12 +37,13 @@ import { WATCH_HALF_ANGLE } from '../../sim/combat/mannequin';
 import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
 import { flashAllowed, gameSettings } from '../settings/settings';
 import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
-import { attackFrameFor, combinePoses, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
+import { attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { WeaponView } from './WeaponView';
 import { enemySpriteSheet } from './ActorSpriteView';
-import { PLAYER_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
+import { PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
+import { projectileStyle, type ProjectileStyle } from './projectileStyle';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
 import { shouldDrawDirectAttackArc } from './visualState';
@@ -96,6 +97,12 @@ export class MvpRunView {
   private deadSince: number | null = null;
   /** Real time the shift ended (won or dead), for the effects clock. */
   private endedAt: number | null = null;
+  /** The RC car's sprite and its presentation memory (facing, dust, bump sparks). */
+  private carSprite: Phaser.GameObjects.Image | null = null;
+  private carLast: { x: number; y: number; bump: number } | null = null;
+  private carFacing: 1 | -1 = 1;
+  private carDust: Array<{ x: number; y: number; born: number }> = [];
+  private carSparks: { x: number; y: number; born: number } | null = null;
   /** Bends effect time after the shift ends (the boss kill cam's slow motion). */
   private timeWarp: ((realMs: number) => number) | null = null;
   /** First effects tick each enemy was seen in this room, for its spawn-in. */
@@ -241,6 +248,13 @@ export class MvpRunView {
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
       const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
       let shown = enemy.elite ? combinePoses(pose, { offsetX: 0, offsetY: 0, scaleX: 1.18, scaleY: 1.18, flash: false, tint: 0x302000 }) : pose;
+      // Soaked enemies glow blue and gummed-up ones amber, so a status reads at a glance.
+      const wet = (enemy.statuses?.wetTicks ?? 0) > 0;
+      const sticky = (enemy.statuses?.stickyTicks ?? 0) > 0;
+      if (wet || sticky) {
+        const pulse = 0.75 + 0.25 * Math.sin(state.tick / 8 + enemy.id);
+        shown = combinePoses(shown, { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1, flash: false, tint: wet ? glow(0x2a90ff, 0.55 * pulse) : glow(0xd08a20, 0.5 * pulse) });
+      }
       if (enemy.kind === 'mannequin' && enemy.phase === 'pursue') {
         // A moving mannequin jitters, like a bad stop-motion frame.
         shown = combinePoses(shown, { offsetX: ((state.tick * 7) % 3) - 1, offsetY: ((state.tick * 5) % 3) - 1, scaleX: 1, scaleY: 1, flash: false });
@@ -280,6 +294,7 @@ export class MvpRunView {
     for (const projectile of state.room.combat.projectiles) {
       this.drawProjectile(projectile, opening?.effectGraphics(`projectile:${projectile.id}`) ?? this.effectGraphics);
     }
+    this.drawChainArcs(state);
 
     this.drawCarrier(
       state,
@@ -372,11 +387,11 @@ export class MvpRunView {
   }
 
   /**
-   * The Remote-Control Car, drawn only while the shift owns one.
-   *
-   * A fused car is the firing origin, so it is drawn with the same tether cue
-   * the player needs to judge leash range, plus a distinct fill for the two
-   * modes: an independent companion versus the steered emitter mount.
+   * The Remote-Control Car, drawn only while the shift owns one: the PixelLab
+   * car, facing the way it drives, bouncing and kicking up dust, its antenna
+   * LED blinking amber on its own and cyan with a weapon mounted, a radio link
+   * of moving dots back to the janitor (the leash), and sparks when it bumps
+   * an enemy. Only RECALLING is spelled out.
    */
   private drawCarrier(
     state: MvpRunState,
@@ -386,36 +401,79 @@ export class MvpRunView {
     const carrier = state.carrier;
     if (carrier === null) {
       this.clearLabel('carrier');
+      this.carSprite?.setVisible(false);
+      this.carLast = null;
       return;
     }
     const player = state.room.combat.player;
     const fused = carrier.mode === 'emitter';
+    const tint = fused ? 0x3ff0ff : 0xffb040;
+    const moveX = this.carLast ? carrier.x - this.carLast.x : 0;
+    const moveY = this.carLast ? carrier.y - this.carLast.y : 0;
+    const speed = Math.hypot(moveX, moveY);
+    if (Math.abs(moveX) > 0.2) this.carFacing = moveX > 0 ? 1 : -1;
+    // A bump resets the cooldown upward: that frame the car hit something.
+    const bumped = this.carLast !== null && carrier.bumpCooldownTicks > this.carLast.bump;
+    this.carLast = { x: carrier.x, y: carrier.y, bump: carrier.bumpCooldownTicks };
 
-    // The leash, so the player can read why the car stops following.
-    effects.lineStyle(1, fused ? 0x8bc9b8 : 0xc4b878, 0.28);
-    effects.lineBetween(player.x, player.y, carrier.x, carrier.y);
+    // Radio link: dots running from the janitor out to the car.
+    const dx = carrier.x - player.x;
+    const dy = carrier.y - player.y;
+    const length = Math.hypot(dx, dy) || 1;
+    for (let d = (state.tick * 2) % 18; d < length; d += 18) {
+      effects.fillStyle(tint, 0.55).fillCircle(player.x + (dx / length) * d, player.y - 10 + (dy / length) * d, 1.5);
+    }
 
-    graphics.fillStyle(fused ? 0x8bc9b8 : 0xd7a45c, 1);
-    graphics.fillRect(
-      carrier.x - carrier.radius,
-      carrier.y - carrier.radius,
-      carrier.radius * 2,
-      carrier.radius * 2,
-    );
-    graphics.lineStyle(2, 0x12130f, 0.9);
-    graphics.strokeRect(
-      carrier.x - carrier.radius - 1,
-      carrier.y - carrier.radius - 1,
-      carrier.radius * 2 + 2,
-      carrier.radius * 2 + 2,
-    );
+    // Dust behind the wheels while it drives.
+    if (speed > 0.6 && state.tick % 3 === 0) this.carDust.push({ x: carrier.x - this.carFacing * 12, y: carrier.y + 4, born: state.tick });
+    this.carDust = this.carDust.filter((puff) => state.tick - puff.born < 18);
+    for (const puff of this.carDust) {
+      const age = (state.tick - puff.born) / 18;
+      effects.fillStyle(0xc8b8a0, 0.35 * (1 - age)).fillCircle(puff.x - this.carFacing * age * 6, puff.y - age * 6, 3 + age * 6);
+    }
 
-    this.setLabel(
-      'carrier',
-      fused ? (carrier.recalling ? 'CAR · RECALL' : 'CAR · EMITTER') : 'CAR · INDEPENDENT',
-      carrier.x,
-      carrier.y - carrier.radius - 14,
-    );
+    // Driving it bounces; parked it idles, the motor rattling the body.
+    const bob = speed > 0.6 ? Math.abs(Math.sin(state.tick / 2.5)) * 2 : (state.tick % 4 < 2 ? 0.8 : 0);
+    // A glowing floor ring in the car's colour, so it reads on any floor.
+    effects.lineStyle(2, tint, 0.8).strokeEllipse(carrier.x, carrier.y + 2, 46, 16);
+    effects.fillStyle(tint, 0.12).fillEllipse(carrier.x, carrier.y + 2, 46, 16);
+    const key = usableTextureKey(this.scene.textures, SCENE_TEXTURE_KEYS.rcCar);
+    if (key) {
+      if (!this.carSprite) this.carSprite = this.scene.add.image(0, 0, key).setOrigin(0.5, 0.8);
+      this.carSprite
+        .setVisible(true)
+        .setPosition(Math.round(carrier.x), Math.round(carrier.y - bob))
+        .setScale(1.0 * this.carFacing, 1.0)
+        .setDepth(presentationDepth('actor', carrier.y));
+      this.contactShadow('carrier', carrier.x, carrier.y + 2, 0.5);
+    } else {
+      graphics.fillStyle(0xd0182a, 1).fillRoundedRect(carrier.x - 14, carrier.y - 10, 28, 14, 4);
+    }
+    // The antenna LED, and a mounted-weapon ring when the car carries one.
+    const antenna = { x: carrier.x - this.carFacing * 21, y: carrier.y - 44 - bob };
+    if (Math.floor(state.tick / 12) % 2 === 0) {
+      effects.fillStyle(tint, 1).fillCircle(antenna.x, antenna.y, 2);
+      effects.fillStyle(tint, 0.25).fillCircle(antenna.x, antenna.y, 6);
+    }
+    if (fused) {
+      const pulse = 0.5 + 0.5 * Math.sin(state.tick / 5);
+      effects.lineStyle(2, 0x3ff0ff, 0.5 + 0.4 * pulse).strokeEllipse(carrier.x, carrier.y - 14 - bob, 18 + pulse * 4, 8 + pulse * 2);
+    }
+    this.openingConcourse?.addLight({ x: carrier.x, y: carrier.y - 8, radius: 44, color: tint, intensity: 0.5 });
+    if (bumped) this.carSparks = { x: carrier.x + this.carFacing * 16, y: carrier.y - 6, born: state.tick };
+    if (this.carSparks && state.tick - this.carSparks.born < 10) {
+      const age = (state.tick - this.carSparks.born) / 10;
+      for (let i = 0; i < 8; i += 1) {
+        const a = (i / 8) * Math.PI * 2;
+        const r1 = 6 + age * 14;
+        const r2 = r1 + 8 * (1 - age);
+        effects.lineStyle(2, 0xffd84a, 1 - age).lineBetween(this.carSparks.x + Math.cos(a) * r1, this.carSparks.y + Math.sin(a) * r1, this.carSparks.x + Math.cos(a) * r2, this.carSparks.y + Math.sin(a) * r2);
+      }
+      this.openingConcourse?.addLight({ x: this.carSparks.x, y: this.carSparks.y, radius: 70, color: 0xffd84a, intensity: 0.9 * (1 - age) });
+    }
+
+    if (carrier.recalling) this.setLabel('carrier', 'RECALLING', carrier.x, carrier.y - 56);
+    else this.clearLabel('carrier');
   }
 
   private drawStore(state: MvpRunState, templateId: string): void {
@@ -727,15 +785,199 @@ export class MvpRunView {
       graphics.fillStyle(0xffd0f4, 1).fillCircle(projectile.x - 1.5, projectile.y - 1.5, projectile.radius * 0.5);
       return;
     }
-    const water = projectile.payload?.payloadKind === 'water';
-    if (projectile.hasBurst === true) {
-      graphics.fillStyle(water ? 0x6fb7e8 : 0xe8dcc4, 0.28);
-      graphics.fillCircle(projectile.x, projectile.y, projectile.radius + 5);
+    const payload = projectile.payload;
+    const style = projectileStyle({
+      sourceItemId: payload?.payloadEffect.sourceItemId ?? '',
+      delivery: payload?.delivery ?? '',
+      sticky: (payload?.statusEffects.length ?? 0) > 0,
+      returning: projectile.phase === 'return',
+      conductive: (payload?.reactionEffects.length ?? 0) > 0,
+    });
+    this.drawShot(projectile, style, graphics);
+  }
+
+  /**
+   * Conductive chains as lightning: a jagged bolt from each enemy to the next,
+   * re-jittered every couple of ticks, fading over the record's short life,
+   * with a flash at every enemy it passes through. A single discharge (the
+   * Extension Cord with no globe) is a crackle on the one target.
+   */
+  private drawChainArcs(state: MvpRunState): void {
+    const g = this.effectGraphics;
+    for (const arc of state.room.combat.chainArcs ?? []) {
+      const age = state.tick - arc.tick;
+      const life = 1 - age / 18;
+      if (life <= 0) continue;
+      const jitterSeed = Math.floor(state.tick / 2) + arc.tick;
+      const noise = (n: number) => (Math.sin(n * 12.9898 + jitterSeed * 78.233) * 43758.5453) % 1;
+      for (const point of arc.points) {
+        g.fillStyle(0xfff27a, 0.35 * life).fillCircle(point.x, point.y - 12, 22);
+        this.openingConcourse?.addLight({ x: point.x, y: point.y - 12, radius: 90, color: 0x9ad8ff, intensity: life });
+      }
+      if (arc.points.length === 1) {
+        const p = arc.points[0]!;
+        for (let i = 0; i < 5; i += 1) {
+          const a = noise(i) * Math.PI * 2;
+          g.lineStyle(2, 0xfff27a, life).lineBetween(p.x, p.y - 12, p.x + Math.cos(a) * 20, p.y - 12 + Math.sin(a) * 20);
+        }
+        continue;
+      }
+      for (let i = 1; i < arc.points.length; i += 1) {
+        const from = arc.points[i - 1]!;
+        const to = arc.points[i]!;
+        const segments = 7;
+        const nx = -(to.y - from.y);
+        const ny = to.x - from.x;
+        const nl = Math.hypot(nx, ny) || 1;
+        const path: Array<{ x: number; y: number }> = [];
+        for (let k = 0; k <= segments; k += 1) {
+          const t = k / segments;
+          const offset = k === 0 || k === segments ? 0 : noise(i * 10 + k) * 18;
+          path.push({ x: from.x + (to.x - from.x) * t + (nx / nl) * offset, y: from.y - 12 + (to.y - from.y) * t + (ny / nl) * offset });
+        }
+        for (const [width, color, alpha] of [[7, 0x6a9aff, 0.35], [3, 0x9ad8ff, 0.9], [1, 0xffffff, 1]] as const) {
+          g.lineStyle(width, color, alpha * life).beginPath();
+          path.forEach((p, k) => (k === 0 ? g.moveTo(p.x, p.y) : g.lineTo(p.x, p.y)));
+          g.strokePath();
+        }
+      }
     }
-    graphics.fillStyle(water ? 0x6fb7e8 : 0xf0e6d2, 1);
-    graphics.fillCircle(projectile.x, projectile.y, projectile.radius);
-    graphics.lineStyle(2, 0x2b3a44, 0.9);
-    graphics.strokeCircle(projectile.x, projectile.y, projectile.radius + 2);
+  }
+
+  /** One player shot in its weapon's look: a trail, the body, then its modifiers. */
+  private drawShot(projectile: ProjectileState, style: ProjectileStyle, g: Phaser.GameObjects.Graphics): void {
+    const { x, y } = projectile;
+    const speed = Math.hypot(projectile.velocityX, projectile.velocityY) || 1;
+    const ux = projectile.velocityX / speed;
+    const uy = projectile.velocityY / speed;
+    const angle = Math.atan2(uy, ux);
+    // Drawn well above hitbox size: a 3 px bolt is invisible in a fight.
+    const r = Math.max(6, projectile.radius * style.scale * 1.8);
+    const t = projectile.remainingTicks + projectile.id * 7;
+    this.openingConcourse?.addLight({ x, y, radius: 40 + r * 2, color: style.color, intensity: 0.8 });
+    // Trails first, streaming back along the flight line.
+    for (let i = 1; i <= 5; i += 1) {
+      const bx = x - ux * i * (r * 0.9);
+      const by = y - uy * i * (r * 0.9);
+      const fade = 1 - i / 6;
+      switch (style.trail) {
+        case 'flame':
+          g.fillStyle(i < 3 ? 0xffd84a : 0xff5a3a, 0.8 * fade).fillCircle(bx + Math.sin(t + i) * 1.5, by + Math.cos(t + i) * 1.5, r * (0.9 - i * 0.12));
+          if (i > 3) g.fillStyle(0x5a5060, 0.3 * fade).fillCircle(bx - ux * 6, by - uy * 6, r * 0.8);
+          break;
+        case 'droplets':
+          if (i % 2 === 0) g.fillStyle(0x9ae0ff, 0.7 * fade).fillCircle(bx + Math.sin(t * 0.7 + i) * 2, by + Math.cos(t * 0.7 + i) * 2, 1.8);
+          break;
+        case 'mist':
+          g.fillStyle(0xe8f0ff, 0.18 * fade).fillCircle(bx, by, r * (0.5 + i * 0.1));
+          break;
+        case 'streamers':
+          g.fillStyle(i % 2 === 0 ? 0xffd84a : 0x3ff0ff, 0.9 * fade).fillRect(bx + Math.sin(t + i * 2) * 4, by + Math.cos(t + i * 2) * 4, 3, 3);
+          break;
+        case 'ink':
+          g.lineStyle(3, style.color, 0.6 * fade).lineBetween(bx, by, bx + ux * 6, by + uy * 6);
+          break;
+        case 'ice':
+          if (i % 2 === 1) g.fillStyle(0xe0f0ff, 0.8 * fade).fillRect(bx - 1, by - 1, 2, 2);
+          break;
+        default:
+          break;
+      }
+    }
+    const perp = { x: -uy, y: ux };
+    const tri = (a: number, b: number, c: number, d: number, e: number, f: number) => g.fillTriangle(a, b, c, d, e, f);
+    switch (style.shape) {
+      case 'droplet': {
+        g.fillStyle(0x0a2a44, 0.9).fillCircle(x, y, r + 2);
+        g.fillStyle(style.color, 1).fillCircle(x, y, r);
+        tri(x + ux * r * 2, y + uy * r * 2, x + perp.x * r, y + perp.y * r, x - perp.x * r, y - perp.y * r);
+        g.fillStyle(style.accent, 1).fillCircle(x - ux * r * 0.3 - perp.x * r * 0.3, y - uy * r * 0.3 - perp.y * r * 0.3, r * 0.35);
+        break;
+      }
+      case 'rocket': {
+        const nose = { x: x + ux * r * 1.6, y: y + uy * r * 1.6 };
+        const tail = { x: x - ux * r * 1.4, y: y - uy * r * 1.4 };
+        g.lineStyle(r * 1.1, style.color, 1).lineBetween(tail.x, tail.y, nose.x, nose.y);
+        g.fillStyle(0xffffff, 1);
+        tri(nose.x + ux * r, nose.y + uy * r, nose.x + perp.x * r * 0.6, nose.y + perp.y * r * 0.6, nose.x - perp.x * r * 0.6, nose.y - perp.y * r * 0.6);
+        g.fillStyle(style.accent, 1);
+        tri(tail.x, tail.y, tail.x - ux * r + perp.x * r, tail.y - uy * r + perp.y * r, tail.x + perp.x * r * 0.3, tail.y + perp.y * r * 0.3);
+        tri(tail.x, tail.y, tail.x - ux * r - perp.x * r, tail.y - uy * r - perp.y * r, tail.x - perp.x * r * 0.3, tail.y - perp.y * r * 0.3);
+        break;
+      }
+      case 'confetti': {
+        g.fillStyle(0x1a0a2a, 0.8).fillCircle(x, y, r + 2);
+        const colors = [0xff3fc8, 0xffd84a, 0x3ff0ff, 0x6aff8a];
+        for (let i = 0; i < 6; i += 1) {
+          const a = t * 0.4 + i * (Math.PI / 3);
+          g.fillStyle(colors[i % 4]!, 1).fillRect(x + Math.cos(a) * r * 0.8 - 1.5, y + Math.sin(a) * r * 0.8 - 1.5, 3, 3);
+        }
+        g.fillStyle(style.color, 1).fillCircle(x, y, r * 0.5);
+        break;
+      }
+      case 'cloud': {
+        for (let i = 0; i < 4; i += 1) {
+          const a = t * 0.2 + i * (Math.PI / 2);
+          g.fillStyle(i % 2 === 0 ? style.color : style.accent, 0.75).fillCircle(x + Math.cos(a) * r * 0.4, y + Math.sin(a) * r * 0.4, r * 0.6);
+        }
+        break;
+      }
+      case 'dart': {
+        const head = { x: x + ux * r * 1.8, y: y + uy * r * 1.8 };
+        g.lineStyle(4, 0x05030a, 1).lineBetween(x - ux * r * 1.5, y - uy * r * 1.5, head.x, head.y);
+        g.lineStyle(2, style.color, 1).lineBetween(x - ux * r * 1.5, y - uy * r * 1.5, head.x, head.y);
+        g.fillStyle(style.color, 1);
+        tri(head.x + ux * 5, head.y + uy * 5, head.x + perp.x * 3, head.y + perp.y * 3, head.x - perp.x * 3, head.y - perp.y * 3);
+        break;
+      }
+      case 'ball': {
+        g.fillStyle(0x05030a, 0.9).fillCircle(x, y, r + 2);
+        g.fillStyle(style.color, 1).fillCircle(x, y, r);
+        // Foam seams spinning as it flies.
+        g.lineStyle(2, style.accent, 1).beginPath().arc(x, y, r * 0.7, t * 0.5, t * 0.5 + Math.PI * 0.8).strokePath();
+        g.fillStyle(0xffffff, 0.8).fillCircle(x - r * 0.35, y - r * 0.35, r * 0.25);
+        break;
+      }
+      case 'slush': {
+        g.fillStyle(0x1a0a2a, 0.9).fillCircle(x, y, r + 2);
+        g.fillStyle(style.color, 1).fillCircle(x, y, r);
+        g.fillStyle(style.accent, 1).fillCircle(x + perp.x * r * 0.3, y + perp.y * r * 0.3, r * 0.55);
+        for (let i = 0; i < 3; i += 1) g.fillStyle(0xffffff, 0.9).fillRect(x + Math.cos(t + i * 2) * r * 0.5, y + Math.sin(t + i * 2) * r * 0.5, 2, 2);
+        break;
+      }
+      case 'bubble': {
+        const wob = Math.sin(t / 3) * 1.5;
+        g.fillStyle(0xb8f0ff, 0.18).fillEllipse(x, y, (r + wob) * 2, (r - wob) * 2);
+        g.lineStyle(2, [0xff9af0, 0x9af0ff, 0xf0ff9a][Math.floor(t / 6) % 3]!, 0.9).strokeEllipse(x, y, (r + wob) * 2, (r - wob) * 2);
+        g.fillStyle(0xffffff, 0.9).fillEllipse(x - r * 0.4, y - r * 0.45, r * 0.5, r * 0.3);
+        break;
+      }
+      default: {
+        g.fillStyle(style.color, 1).fillCircle(x, y, r);
+        g.lineStyle(2, 0x2b3a44, 0.9).strokeCircle(x, y, r + 2);
+      }
+    }
+    if (projectile.hasBurst === true) g.lineStyle(2, style.accent, 0.5).strokeCircle(x, y, r + 7);
+    // Modifiers ride on top of the base look.
+    if (style.drip) {
+      g.fillStyle(0xd7a45c, 0.95).fillCircle(x, y + r + 2, 2.5);
+      g.fillStyle(0xd7a45c, 0.7).fillCircle(x - ux * 8, y - uy * 8 + r + 4 + (t % 6), 2);
+    }
+    if (style.rewind) {
+      // Rewinding: a VHS-blue ghost of the shot, doubled back along its path.
+      g.lineStyle(2, 0x6a9aff, 0.9).strokeCircle(x, y, r + 5);
+      g.fillStyle(0x6a9aff, 0.35).fillCircle(x + ux * 8, y + uy * 8, r);
+      tri(x - ux * (r + 10), y - uy * (r + 10), x - ux * (r + 4) + perp.x * 4, y - uy * (r + 4) + perp.y * 4, x - ux * (r + 4) - perp.x * 4, y - uy * (r + 4) - perp.y * 4);
+    }
+    if (style.sparks) {
+      for (let i = 0; i < 3; i += 1) {
+        const a = (t * 1.7 + i * 2.1) % (Math.PI * 2);
+        const sx = x + Math.cos(a) * (r + 3);
+        const sy = y + Math.sin(a) * (r + 3);
+        g.lineStyle(2, 0xfff27a, 0.95).lineBetween(sx, sy, sx + Math.cos(a + 1) * 5, sy + Math.sin(a + 1) * 5);
+      }
+    }
+    void angle;
   }
 
   /**
@@ -750,15 +992,26 @@ export class MvpRunView {
     if (!statuses) {
       return;
     }
+    const t = this.scene.time.now / 1000;
     if (statuses.wetTicks > 0) {
-      graphics.lineStyle(2, 0x6fb7e8, 0.95);
-      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 4);
-      graphics.fillStyle(0x6fb7e8, 0.9);
-      graphics.fillCircle(enemy.x, enemy.y - enemy.radius - 2, 3);
+      // Soaked: a blue sheen, a puddle underfoot, and drops falling off.
+      graphics.fillStyle(0x4ac8ff, 0.22).fillEllipse(enemy.x, enemy.y + enemy.radius * 0.6, enemy.radius * 3.2, enemy.radius * 1.1);
+      graphics.lineStyle(2, 0x6fd0ff, 0.9).strokeEllipse(enemy.x, enemy.y + enemy.radius * 0.6, enemy.radius * 3.2, enemy.radius * 1.1);
+      for (let i = 0; i < 3; i += 1) {
+        const fall = ((t * 1.6 + i / 3 + enemy.id * 0.13) % 1);
+        const dx = (i - 1) * enemy.radius * 0.7;
+        graphics.fillStyle(0x9ae0ff, 1 - fall * 0.7).fillEllipse(enemy.x + dx, enemy.y - enemy.radius * 2.4 + fall * enemy.radius * 3, 4, 7);
+      }
     }
     if (statuses.stickyTicks > 0) {
-      graphics.lineStyle(2, 0xd7a45c, 0.95);
-      graphics.strokeCircle(enemy.x, enemy.y, enemy.radius + 7);
+      // Gummed up: amber goo strands hanging off it, and a sticky smear.
+      graphics.fillStyle(0xd7a45c, 0.35).fillEllipse(enemy.x, enemy.y + enemy.radius * 0.7, enemy.radius * 2.6, enemy.radius * 0.9);
+      for (let i = 0; i < 4; i += 1) {
+        const sx = enemy.x + (i - 1.5) * enemy.radius * 0.55;
+        const stretch = 6 + Math.sin(t * 3 + i + enemy.id) * 4;
+        graphics.lineStyle(3, 0xe0a040, 0.95).lineBetween(sx, enemy.y - enemy.radius, sx + Math.sin(t + i) * 2, enemy.y + stretch);
+        graphics.fillStyle(0xffd070, 1).fillCircle(sx + Math.sin(t + i) * 2, enemy.y + stretch, 3);
+      }
     }
   }
 
@@ -1346,6 +1599,8 @@ export class MvpRunView {
 
   public destroy(): void {
     this.clearDashGhosts();
+    this.carSprite?.destroy();
+    this.carSprite = null;
     this.dashHint?.destroy();
     this.dashHint = null;
     for (const shadow of this.shadows.values()) shadow.destroy();

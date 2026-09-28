@@ -1,3 +1,4 @@
+import { pruneChainArcs } from './effects/conduction';
 import type { InputFrame, PrimaryAttackContext, RunState } from './model';
 import { updatePlayerFacing } from './combat/attack';
 import { resolveEnemyDamage, updateEnemies, updateProjectiles } from './combat/enemies';
@@ -33,6 +34,7 @@ export function tickRun(
   }
 
   state.tick += 1;
+  pruneChainArcs(state);
   state.player.attackCooldownTicks = Math.max(0, state.player.attackCooldownTicks - 1);
   state.player.attackActiveTicks = Math.max(0, state.player.attackActiveTicks - 1);
   state.player.invulnerableTicks = Math.max(0, state.player.invulnerableTicks - 1);

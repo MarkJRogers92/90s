@@ -179,6 +179,7 @@ export const PORTRAIT_TEXTURE_KEYS = {
 export const SCENE_TEXTURE_KEYS = {
   dawnExit: 'neon:scene:dawn-exit',
   timeClock: 'neon:scene:time-clock',
+  rcCar: 'neon:prop:rc-car',
 } as const;
 
 export const DECAL_TEXTURE_KEYS = {
@@ -228,6 +229,7 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
   neon(SCENE_TEXTURE_KEYS.dawnExit, 'ui/dawn-exit.png'),
   neon(SCENE_TEXTURE_KEYS.timeClock, 'ui/time-clock.png'),
+  neon(SCENE_TEXTURE_KEYS.rcCar, 'props/rc-car.png'),
   ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),
   ...Object.values(ITEM_ICON_FILES).map((file) => neon(`neon:item:${file}`, `items/${file}.png`)),
 ];

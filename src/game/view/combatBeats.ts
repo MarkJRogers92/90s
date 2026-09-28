@@ -196,7 +196,7 @@ export function hitReaction(age: number, dirX: number, dirY: number, heavy: bool
 }
 
 /** An additive tint: `color` scaled by `amount` per channel. */
-function glow(color: number, amount: number): number {
+export function glow(color: number, amount: number): number {
   const a = clamp01(amount);
   const r = Math.round(((color >> 16) & 0xff) * a);
   const g = Math.round(((color >> 8) & 0xff) * a);

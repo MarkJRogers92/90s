@@ -14,6 +14,23 @@ import {
 import { queueChildEvent, recordBehaviorTrace, setRecentChange } from './events';
 import { applyWet } from './statuses';
 
+/** How long a chain's record is kept for the view to draw its lightning. */
+export const CHAIN_ARC_TICKS = 18;
+
+/** Notes the enemies a chain (or a single discharge) arced through, for the view. */
+function recordChainArc(state: RunState, ids: readonly number[]): void {
+  const points = ids
+    .map((id) => state.enemies.find((enemy) => enemy.id === id))
+    .filter((enemy): enemy is EnemyState => enemy !== undefined)
+    .map((enemy) => ({ id: enemy.id, x: enemy.x, y: enemy.y }));
+  (state.chainArcs ??= []).push({ tick: state.tick, points });
+}
+
+/** Drops chain records older than CHAIN_ARC_TICKS; called once per tick. */
+export function pruneChainArcs(state: RunState): void {
+  if (state.chainArcs) state.chainArcs = state.chainArcs.filter((arc) => state.tick - arc.tick < CHAIN_ARC_TICKS);
+}
+
 /** The reaction capabilities of one compiled loadout, in compiled order. */
 export function reactionEffectsOf(effects: readonly ItemEffectSpec[]): ReactionEffectSpec[] {
   return effects.filter(
@@ -294,6 +311,7 @@ export function resolveConductiveReaction(
     );
     if (visited.length > 1) {
       setRecentChange(state, `conductive chain reached ${visited.length - 1} more Wet target(s)`);
+      recordChainArc(state, visited);
     }
     return {
       visitedTargetIds: visited,
@@ -304,6 +322,7 @@ export function resolveConductiveReaction(
 
   if (cord && cord.weakDischarge) {
     request.target.health -= CONDUCTIVE_WEAK_DISCHARGE_DAMAGE;
+    recordChainArc(state, [request.target.id]);
     const cordParent = request.capabilityEvents?.[cord.sourceItemId] ?? null;
     queueChildEvent(state, {
       rootActionId: request.rootActionId,
