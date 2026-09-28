@@ -27,6 +27,7 @@ export function ascendToFloorTwo(state: MvpRunState): MvpRunState {
   const next = createMvpRun(floorTwoSeed(state.seed), {
     floor: 2,
     carry: { inventory: cloneFusionInventory(state.inventory), cash: state.cash, stats: { ...state.stats } },
+    perks: state.perks,
   });
   refreshRunLoadout(next);
   syncRunCarrier(next);

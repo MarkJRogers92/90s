@@ -13,7 +13,7 @@
 import type { EnemyKind } from '../model';
 import { publishRunFeedback } from './economy';
 import { ELITE_SNACK_CHANCE, ELITE_TOKEN_MULTIPLIER, SNACK_CHANCE, luck } from './luck';
-import { PLAYER_MAX_HEALTH } from './rooms';
+import { runMaxHealth } from './perks';
 import type { MvpRunState } from './types';
 
 export type MallTokenPickup = {
@@ -81,7 +81,7 @@ export function collectTokens(state: MvpRunState): void {
     if (Math.hypot(token.x - player.x, token.y - player.y) > TOKEN_PICKUP_RADIUS) return true;
     if (token.kind === 'snack') {
       // A pretzel waits on the floor until the janitor actually needs it.
-      if (player.health >= PLAYER_MAX_HEALTH) return true;
+      if (player.health >= runMaxHealth(state)) return true;
       player.health += 1;
       healed += 1;
       return false;

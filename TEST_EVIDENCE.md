@@ -1,5 +1,24 @@
 # Test evidence
 
+## 2026-09-28 — round 22: the Break Room (meta-progression)
+
+- Red first: `shiftPerks.test.ts` and `career.test.ts` failed on the missing
+  `perks` / `career` modules; the clock-in benefits line (`benefitsLine is not
+  a function`); the BOUGHT row (`expected [] got ['mvp-associate-mop']` — the
+  issued mop was listed as bought). The first browser run caught a real bug:
+  Escape stopped closing the Break Room after a purchase redrew the cards.
+- Real browser (`tests/browser/break-room.spec.ts`, 4 tests): stubs buy
+  Seniority and the Pump-Action Soaker and the next shift starts with +$5 and
+  the soaker in hand; the Dental Plan makes the run 8 health; a death pays
+  stubs with no photo; beating the Mall Manager pays 38 stubs and pins up the
+  first Employee of the Month. Captures: `break-room.png`,
+  `break-room-card.png`. No page or console errors.
+- `npx vitest run` — PASS: 765 tests. `npm run build` — PASS.
+  `PW_PORT=4193 npx playwright test --workers=2` — PASS: 66/66 (3.4 min); one
+  earlier full run had two timing flakes under load (break-room purchase,
+  combat keyboard) that passed in isolation, under `--repeat-each=6`, and on
+  the full rerun.
+
 ## 2026-09-28 — round 21: collapsible HUD, weapon effects, payload bug
 
 - Red first: HUD disclosure (4), equipped payload (2 — `expected

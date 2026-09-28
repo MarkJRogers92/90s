@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CLOCK_IN_MS, PUNCH_AT_MS, clockInFrame, clockInTime, shouldClockIn } from '../../src/game/ui/clockInModel';
+import { benefitsLine } from '../../src/game/ui/clockInModel';
+import { NO_PERKS } from '../../src/sim/run/perks';
 
 describe('clocking in', () => {
   it('slides the card up into the slot, punches it, and lifts it back out stamped', () => {
@@ -35,5 +37,17 @@ describe('clocking in', () => {
     expect(shouldClockIn({ reason: 'retry', fixture: null, restored: false })).toBe(false);
     expect(shouldClockIn({ reason: 'launch', fixture: null, restored: true })).toBe(false);
     expect(shouldClockIn({ reason: 'launch', fixture: 'mvp-storefront', restored: false })).toBe(false);
+  });
+});
+
+describe('clock-in benefits line', () => {
+  it('says nothing for a janitor with no benefits', () => {
+    expect(benefitsLine(NO_PERKS)).toBeNull();
+  });
+
+  it('lists what the Break Room bought, in plain words', () => {
+    expect(benefitsLine({ bonusCash: 10, bonusHealth: 4, clearHealBonus: 1, lockerItemId: 'pump_soaker' }))
+      .toBe('BENEFITS: +$10 FLOAT - +2 HEARTS - COFFEE BREAK - PUMP-ACTION SOAKER');
+    expect(benefitsLine({ ...NO_PERKS, bonusHealth: 2 })).toBe('BENEFITS: +1 HEART');
   });
 });

@@ -20,6 +20,7 @@
             <button id="continue-run" class="secondary-action" type="button" disabled>
               Continue run
             </button>
+            <button id="break-room-open" class="secondary-action break-room-open" type="button">Break Room</button>
           </div>
           <div class="start-utility">
             <button id="playtest-open" class="secondary-action" type="button">
@@ -57,6 +58,15 @@
             <button id="playtest-close" type="button">Close</button>
           </div>
           <p id="playtest-status" class="playtest-status" role="status" aria-live="polite"></p>
+        </section>
+        <section id="break-room" class="break-room" role="dialog" aria-modal="true" aria-labelledby="break-room-title" hidden>
+          <header class="br-header">
+            <h2 id="break-room-title">Break Room</h2>
+            <p id="break-room-balance" class="br-balance"></p>
+            <button id="break-room-close" type="button">Back to work (Esc)</button>
+          </header>
+          <div id="break-room-body" class="br-body"></div>
+          <p id="break-room-status" class="br-status" role="status" aria-live="polite"></p>
         </section>
         <p id="startup-status" role="status" aria-live="polite"></p>
       </section>

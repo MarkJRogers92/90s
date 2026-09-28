@@ -8,6 +8,7 @@ import { bossConfigFor, isBossKind } from '../../sim/combat/boss';
  * interaction, boss state, checkpoint status, and the terminal summary. It
  * never infers success; command outcomes arrive as sim feedback text.
  */
+import { runMaxHealth } from '../../sim/run/perks';
 import { bossPhaseForHealth } from '../../sim/combat/boss';
 import {
   itemDefinitionName,
@@ -216,7 +217,7 @@ export class MvpRunHud {
     this.objective.textContent = `OBJECTIVE: ${this.objectiveText(state)}`;
 
     const health = state.room.combat.player.health;
-    this.health.textContent = `${health} / 6`;
+    this.health.textContent = `${health} / ${runMaxHealth(state)}`;
     this.cash.textContent = `$${state.cash}`;
     this.heat.textContent = `HEAT ${state.heat}`;
     this.suspicion.textContent = `SUSPICION ${Math.floor(state.suspicion)}`;

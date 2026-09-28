@@ -1178,5 +1178,125 @@
       54
     ],
     "sha256": "13546aab0e0b22fc6605e3ca2126e3423fdacbf25e1ed428478ffda02ef0b58e"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/corkboard.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-corkboard.png",
+    "generator": "Procedural Pillow (seeded random speckle, seamless 128x128 tile)",
+    "size": [
+      128,
+      128
+    ],
+    "sha256": "225db0df29488bbc46885ca0211c17ab8347f166787a8ed3353a8e7a81279063"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/pushpin.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-pushpin.png",
+    "generator": "Procedural Pillow pixel-drawn 14x14 thumbtack",
+    "size": [
+      14,
+      14
+    ],
+    "sha256": "e5f6e55a2e3374c038d919091c9b34164b5a9c4d323315477c88f4db06fed22e"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/stub.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-stub.png",
+    "generator": "Procedural Pillow pixel-drawn 24x24 pay-stub icon",
+    "size": [
+      24,
+      24
+    ],
+    "sha256": "53ed762877e46fcd330b6e118c7638fb6db47c0d4506771d4874f34f5da5cb6f"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-locker.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-perk-locker.png",
+    "generator": "Procedural Pillow pixel-drawn 48x48 locker icon (PixelLab attempts read as PC tower)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "e44fba1b21a3c7794a6d501f33588e19311f87199619ecf13f0ffbfc89c4301c"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-dental.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-perk-dental.png",
+    "generator": "PixelLab create_image_pixflux (48x48 tooth) + Pillow pixel-drawn heart overlay",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "786652cc1788c4d5c723b55466e850de5198d8098cee515df5fa8510aff2123f"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-seniority.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-perk-seniority.png",
+    "generator": "PixelLab create_image_pixflux (48x48 icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "0f8d59e823e3ca51431401550e32c7b066c69e6d95ad8602a4c554b967065d30"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-coffee.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-perk-coffee.png",
+    "generator": "PixelLab create_image_pixflux (48x48 icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "d6c677256c9e77d6686e3a0f4c46b651d30eef06af8d66c8fa5427bd4c160474"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/eotm-plaque.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-eotm-plaque.png",
+    "generator": "PixelLab create_image_pixflux (176x56 plaque, transparent)",
+    "size": [
+      176,
+      56
+    ],
+    "sha256": "035921d7c47fb814720856a8db95d60d0b52edd515b2d9ae127339c4e3f3889b"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/polaroid-dawn.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-polaroid-dawn.png",
+    "generator": "PixelLab create_image_pixflux (112x88 scene)",
+    "size": [
+      112,
+      88
+    ],
+    "sha256": "8dc44ba4c19c61e8d0970f73f17a97adf16d3c47e668f0b7def8119b9bdb2b3a"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/polaroid-boss.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-polaroid-boss.png",
+    "generator": "PixelLab create_image_pixflux (112x88 scene)",
+    "size": [
+      112,
+      88
+    ],
+    "sha256": "508da2323b8f69ba1e1af00e0c9810f3764e82277f49b2986252fe0cb14927e2"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/polaroid-escalator.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-polaroid-escalator.png",
+    "generator": "PixelLab create_image_pixflux (112x88 scene)",
+    "size": [
+      112,
+      88
+    ],
+    "sha256": "580d6dcedc2502bcf20ed222cfab8c07fa16330369ef9855c58f6c945df214a4"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/polaroid-foodcourt.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-polaroid-foodcourt.png",
+    "generator": "PixelLab create_image_pixflux (112x88 scene)",
+    "size": [
+      112,
+      88
+    ],
+    "sha256": "73b7ec91143807bd0668612250b7327d91284a6a3927767cc24706e187005f9c"
   }
 ]

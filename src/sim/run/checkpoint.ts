@@ -34,6 +34,7 @@ import {
 } from './rooms';
 import type { MvpRoomEntryFrom, MvpRunState } from './types';
 import { createRunStats } from './combo';
+import { NO_PERKS, hasPerks, sanitizePerks, type ShiftPerks } from './perks';
 
 export const MVP_CHECKPOINT_VERSION = 1;
 
@@ -57,6 +58,8 @@ export type MvpCheckpoint = {
   readonly inventory: FusionInventoryState;
   readonly offerStatus: Record<string, ShopOfferRuntimeStatus>;
   readonly carried: CarriedTheft[];
+  /** Break Room perks; absent means none (and on every older save). */
+  readonly perks?: ShiftPerks;
 };
 
 export type CheckpointParseResult =
@@ -118,6 +121,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
     inventory: cloneFusionInventory(state.inventory),
     offerStatus: { ...state.offerStatus },
     carried: state.carried.map((theft) => ({ ...theft })),
+    ...(hasPerks(state.perks) ? { perks: { ...state.perks } } : {}),
   };
 }
 
@@ -261,12 +265,22 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   ) {
     return fail('Checkpoint suspicion is out of range.');
   }
+  let perks: ShiftPerks = NO_PERKS;
+  if (value.perks !== undefined) {
+    if (!isRecord(value.perks)) return fail('Checkpoint perks must be an object.');
+    const raw = value.perks;
+    perks = sanitizePerks(raw as Partial<ShiftPerks>);
+    // A save that needed clamping was not written by this game.
+    if (perks.bonusCash !== raw.bonusCash || perks.bonusHealth !== raw.bonusHealth || perks.clearHealBonus !== raw.clearHealBonus || perks.lockerItemId !== raw.lockerItemId) {
+      return fail('Checkpoint perks are out of range.');
+    }
+  }
   const playerHealth = value.playerHealth;
   if (
     typeof playerHealth !== 'number' ||
     !Number.isInteger(playerHealth) ||
     playerHealth < 1 ||
-    playerHealth > PLAYER_MAX_HEALTH
+    playerHealth > PLAYER_MAX_HEALTH + perks.bonusHealth
   ) {
     return fail('Checkpoint player health is out of range.');
   }
@@ -359,6 +373,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
       inventory,
       offerStatus: offerStatusResult.offerStatus,
       carried: carriedResult.carried,
+      ...(hasPerks(perks) ? { perks } : {}),
     },
   };
 }
@@ -420,6 +435,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     carrier: null,
     preview: null,
     stats: createRunStats(),
+    perks: sanitizePerks(checkpoint.perks),
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   refreshRunLoadout(state);
