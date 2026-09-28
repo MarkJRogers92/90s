@@ -11,8 +11,9 @@
   unrelated processes (three ffmpeg jobs, fileproviderd, iCloud bird; load
   average 59-94). At that load a single headless page ran 16 fps / 17 sim
   ticks per second, and the known timing-based cases failed (53-56/57),
-  including with music scheduling disabled as an experiment (reverted). A
-  full 57/57 rerun on an idle machine is still owed.
+  including with music scheduling disabled as an experiment (reverted).
+- Follow-up on `2004976` once the host calmed (load ~9): `PW_PORT=4193 npx
+  playwright test` — PASS: 57/57 (2.9 min). The earlier failures were host load.
 
 ## 2026-09-27 — round 9: playtest log
 
