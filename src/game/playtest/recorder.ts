@@ -11,7 +11,7 @@ import type { FusionInventoryNode } from '../../sim/fusion/types';
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
 
-export type DamageSource = 'hanger' | 'glob' | 'slam' | 'bossShot' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'glob' | 'slam' | 'bossShot' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -45,7 +45,7 @@ type Snapshot = {
   readonly dashTicks: number;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, glob: 0, slam: 0, bossShot: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, glob: 0, slam: 0, bossShot: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -67,6 +67,10 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
     (enemy) => enemy.kind === 'hanger' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
   );
   if (touching) return 'hanger';
+  const mannequin = combat.enemies.some(
+    (enemy) => enemy.kind === 'mannequin' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
+  );
+  if (mannequin) return 'mannequin';
   const boss = combat.enemies.some((enemy) => enemy.kind === 'lp_manager' && enemy.health > 0);
   if (boss && amount >= 2) return 'slam';
   const shots = combat.projectiles.filter((shot) => shot.faction === 'enemy').length;

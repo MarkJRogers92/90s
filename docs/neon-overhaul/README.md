@@ -324,6 +324,26 @@ takes it back). The scene reads the pad once per frame, so the pause, Bench
 Warrant (A fuse / B cancel) and end-of-shift (A retry / B title) cards work
 from the pad too; the pause card lists the pad layout when one is connected.
 
+## Round 13 — the Mannequin
+
+A new enemy with a signature rule (`src/sim/combat/mannequin.ts`): it only
+moves when you are not looking. While the janitor's aim is within 35 degrees
+of it with a clear line of sight it is frozen and harmless even at arm's
+length; the moment you aim elsewhere it rushes at 160 px/s (faster than a
+Hanger) and hurts on touch. 20 health, knocked back by the mop like a Hanger,
+drops $3. The back hall always has two display mannequins; the food court has
+one in ~40% of shifts (seeded open-grid spots clear of walls, doors and other
+enemies; `rooms.ts`). Rooms now hold their authored enemies first, then only
+mannequins.
+
+Presentation: PixelLab "mannequin posed" (96 px, drawn at 72) with its stiff
+8-direction walk and a template death fall; moving mannequins jitter like bad
+stop-motion with red eyes in the blank face; a faint gaze cone (cyan while any
+is frozen, red when none is) teaches the rule; a one-time MANNEQUINS hint after
+the room title; a plastic creak when one starts moving; beige plastic chips and
+broken-plastic decals instead of blood; its own playtest damage source.
+`?fixture=mvp-back-hall` skips straight to them (dev only).
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

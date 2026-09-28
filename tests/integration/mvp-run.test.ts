@@ -156,13 +156,12 @@ describe('deterministic room rebuild', () => {
     expect(first.player.x).toBe(room.playerEntry.x);
     expect(first.player.y).toBe(room.playerEntry.y);
     expect(first.player.health).toBe(6);
-    expect(first.enemies.map((enemy) => enemy.kind)).toEqual(
-      room.enemySpawns.map((spawn) => spawn.kind),
-    );
-    expect(first.enemies.map((enemy) => enemy.id)).toEqual(
-      room.enemySpawns.map((_, index) => index + 1),
-    );
-    expect(first.nextEntityId).toBe(room.enemySpawns.length + 1);
+    // Authored enemies come first, in order; only display mannequins follow.
+    const authored = first.enemies.slice(0, room.enemySpawns.length);
+    expect(authored.map((enemy) => enemy.kind)).toEqual(room.enemySpawns.map((spawn) => spawn.kind));
+    expect(first.enemies.slice(room.enemySpawns.length).every((enemy) => enemy.kind === 'mannequin')).toBe(true);
+    expect(first.enemies.map((enemy) => enemy.id)).toEqual(first.enemies.map((_, index) => index + 1));
+    expect(first.nextEntityId).toBe(first.enemies.length + 1);
 
     const mirrored = buildRoomCombatState(state.wing, 2, 'east', state.inventory, state.seed);
     expect(mirrored.player.x).toBe(PLAYFIELD_WIDTH - room.playerEntry.x);
@@ -193,7 +192,7 @@ describe('deterministic room rebuild', () => {
     }
   });
 
-  it('always returns a combat room with only its authored enemies, no projectiles, and no surfaces', () => {
+  it('always returns a combat room with only its authored enemies (plus seeded display mannequins), no projectiles, and no surfaces', () => {
     const state = createMvpRun(7);
     state.room.combat.projectiles.push({
       id: 99,
@@ -234,12 +233,13 @@ describe('deterministic room rebuild', () => {
     expect(rebuilt.projectiles).toEqual([]);
     expect(rebuilt.surfaces).toEqual([]);
     expect(rebuilt.enemies.length).toBeGreaterThan(0);
-    expect(rebuilt.enemies.map((enemy) => enemy.kind)).toEqual(
-      combatRoom.enemySpawns.map((spawn) => spawn.kind),
-    );
-    expect(rebuilt.enemies.map((enemy) => ({ x: enemy.x, y: enemy.y }))).toEqual(
+    const authored = rebuilt.enemies.slice(0, combatRoom.enemySpawns.length);
+    expect(authored.map((enemy) => enemy.kind)).toEqual(combatRoom.enemySpawns.map((spawn) => spawn.kind));
+    expect(authored.map((enemy) => ({ x: enemy.x, y: enemy.y }))).toEqual(
       combatRoom.enemySpawns.map((spawn) => ({ x: spawn.x, y: spawn.y })),
     );
+    // Anything beyond the authored list is a seeded display mannequin.
+    expect(rebuilt.enemies.slice(combatRoom.enemySpawns.length).every((enemy) => enemy.kind === 'mannequin')).toBe(true);
   });
 });
 

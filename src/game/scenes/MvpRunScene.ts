@@ -742,6 +742,17 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-back-hall') {
+      // Skips to the back hall, where the display mannequins always stand.
+      let guard = 0;
+      while (state.wing.rooms[state.roomIndex]?.id !== 'back_hall' && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      return state;
+    }
     if (fixture === 'mvp-boss-entry') {
       let guard = 0;
       while (state.wing.rooms[state.roomIndex]?.id !== 'security_office' && guard < 10) {
