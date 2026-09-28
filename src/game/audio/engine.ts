@@ -53,6 +53,15 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 130, gain: 0.12, cutoff: 1800 }],
     minGapMs: 120,
   },
+  combo: {
+    // A bright three-note climb: the register changes, and so does the payout.
+    tones: [
+      { wave: 'square', from: 988, to: 988, ms: 70, gain: 0.08 },
+      { wave: 'square', from: 1319, to: 1319, ms: 70, gain: 0.08, atMs: 70 },
+      { wave: 'triangle', from: 1976, to: 1976, ms: 200, gain: 0.1, atMs: 140 },
+    ],
+    minGapMs: 200,
+  },
   heartbeat: {
     // Lub-dub, low and dull: played by the scene on a timer at the last heart.
     tones: [

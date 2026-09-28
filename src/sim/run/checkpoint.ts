@@ -33,6 +33,7 @@ import {
   hasLivingEnemies,
 } from './rooms';
 import type { MvpRoomEntryFrom, MvpRunState } from './types';
+import { createRunStats } from './combo';
 
 export const MVP_CHECKPOINT_VERSION = 1;
 
@@ -410,6 +411,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     behaviorTrace: [],
     carrier: null,
     preview: null,
+    stats: createRunStats(),
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   refreshRunLoadout(state);

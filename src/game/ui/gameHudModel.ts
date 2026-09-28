@@ -18,6 +18,7 @@ import {
   runOwnsCapability,
 } from '../../sim/run/economy';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
+import { COMBO_MILESTONE, COMBO_WINDOW_TICKS, comboBonusFor } from '../../sim/run/combo';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
@@ -83,6 +84,8 @@ export type GameHudModel = {
   readonly passives: readonly HudPassive[];
   readonly equipped: { readonly name: string; readonly blurb: string } | null;
   readonly prompt: HudPrompt;
+  /** The live Cleanup Combo, once it is worth showing (2+). */
+  readonly combo: { readonly count: number; readonly remaining: number; readonly nextBonusAt: number; readonly nextBonus: number } | null;
 };
 
 const SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
@@ -166,6 +169,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     passives: runPassiveItems(state).map((item) => ({ ...item, name: itemDefinitionName(item.itemDefinitionId).toUpperCase() })),
     equipped: equippedWeapon ? { name: equippedWeapon.name, blurb: itemBlurb(equippedWeapon.itemDefinitionId) } : null,
     prompt: promptFor(state),
+    combo: comboFor(state),
     hearts: heartsFor(state.room.combat.player.health),
     cash: state.cash,
     heat: state.heat,
@@ -176,6 +180,15 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     boss: boss ? { health: boss.health, max: BOSS_MAX_HEALTH, phase: boss.bossPhase ?? bossPhaseForHealth(boss.health) } : null,
     enemiesLeft: living.length,
   };
+}
+
+function comboFor(state: MvpRunState): GameHudModel['combo'] {
+  const { combo, lastHitTick } = state.stats;
+  if (combo < 2 || state.status !== 'playing') return null;
+  // Quantised so the HUD redraws ten times across the window, not sixty.
+  const remaining = Math.round(Math.max(0, 1 - (state.tick - lastHitTick) / COMBO_WINDOW_TICKS) * 10) / 10;
+  const nextBonusAt = (Math.floor(combo / COMBO_MILESTONE) + 1) * COMBO_MILESTONE;
+  return { count: combo, remaining, nextBonusAt, nextBonus: comboBonusFor(nextBonusAt) };
 }
 
 function promptFor(state: MvpRunState): HudPrompt {

@@ -288,3 +288,12 @@ describe('dash cue', () => {
     })).not.toContain('dash');
   });
 });
+
+describe('combo cue', () => {
+  it('chimes when the combo crosses a milestone', () => {
+    expect(cuesAfter((state) => { state.stats.combo = 5; })).toContain('combo');
+    const going = createMvpRun(9);
+    going.stats.combo = 6;
+    expect(cuesBetween(going, (state) => { state.stats.combo = 7; })).not.toContain('combo');
+  });
+});

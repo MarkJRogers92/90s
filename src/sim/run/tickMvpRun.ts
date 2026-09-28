@@ -22,6 +22,7 @@
 import { circleIntersectsRect } from '../core/geometry';
 import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
+import { stepCombo } from './combo';
 import { freezeDeep } from '../items/types';
 import type { Rect, Vec2 } from '../model';
 import { crossedStoreExit } from '../shop/tickWingRun';
@@ -516,6 +517,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     y: state.room.combat.player.y,
   };
   const livingBeforeCombat = markLivingEnemies(state);
+  const healthBeforeCombat = state.room.combat.player.health;
   tickRun(
     state.room.combat,
     {
@@ -532,6 +534,18 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
 
   // 6b. Mall Tokens: fallen monsters drop change; the janitor sweeps it up.
   dropTokensForDeaths(state, livingBeforeCombat);
+  // 6c. Cleanup Combo: blows landed, kills, and whether the janitor was hurt.
+  {
+    const after = new Map(state.room.combat.enemies.map((enemy) => [enemy.id, enemy.health]));
+    let hits = 0;
+    let kills = 0;
+    for (const marker of livingBeforeCombat) {
+      const now = after.get(marker.id);
+      if (now === undefined || now <= 0) kills += marker.health > 0 ? 1 : 0;
+      if ((now ?? 0) < marker.health) hits += 1;
+    }
+    stepCombo(state, { hits, kills, hurt: state.room.combat.player.health < healthBeforeCombat });
+  }
   collectTokens(state);
 
   // 7. Store boundary evaluation.

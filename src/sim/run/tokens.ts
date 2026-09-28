@@ -32,7 +32,7 @@ export const MALL_TOKEN_VALUE: Readonly<Record<EnemyKind, number>> = {
 /** The janitor sweeps up anything within this distance of their feet. */
 export const TOKEN_PICKUP_RADIUS = 22;
 
-export type EnemyMarker = { readonly id: number; readonly kind: EnemyKind; readonly x: number; readonly y: number };
+export type EnemyMarker = { readonly id: number; readonly kind: EnemyKind; readonly x: number; readonly y: number; readonly health: number };
 
 /**
  * Records every enemy still standing in the room before the combat step. The
@@ -40,7 +40,7 @@ export type EnemyMarker = { readonly id: number; readonly kind: EnemyKind; reado
  * this tick, whatever brought their health to zero.
  */
 export function markLivingEnemies(state: MvpRunState): EnemyMarker[] {
-  return state.room.combat.enemies.map((enemy) => ({ id: enemy.id, kind: enemy.kind, x: enemy.x, y: enemy.y }));
+  return state.room.combat.enemies.map((enemy) => ({ id: enemy.id, kind: enemy.kind, x: enemy.x, y: enemy.y, health: enemy.health }));
 }
 
 /** Drops a token where every enemy that was alive before this tick fell. */

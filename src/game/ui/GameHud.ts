@@ -120,6 +120,7 @@ export class GameHud {
     this.drawHotbar(model);
     this.drawLog(state);
     this.drawPrompt(model, state.room.combat.player.y > 200);
+    this.drawCombo(model);
     this.drawToast(state);
     this.drawControlsCard(state);
     this.drawTitleCard(state);
@@ -391,6 +392,22 @@ export class GameHud {
       this.text(`prompt-action-${index}`, entry.action, cx, y + 36, TEXT);
       cx += entry.action.length * 12 + 16;
     });
+  }
+
+  /** The Cleanup Combo: a big neon count, a draining window bar, the next payout. */
+  private drawCombo(model: GameHudModel): void {
+    const combo = model.combo;
+    if (!combo) return;
+    const x = SCREEN_W - 190;
+    const y = 180;
+    const hot = combo.count >= 10;
+    const color = hot ? '#ffd84a' : '#ff3fc8';
+    this.panel(this.frame, x, y, 178, 74, hot ? YELLOW : MAGENTA);
+    this.text('combo-label', 'CLEANUP COMBO', x + 10, y + 8, '#9a8fb4', 1);
+    this.text('combo-count', `X${combo.count}`, x + 10, y + 20, color, 4);
+    this.frame.fillStyle(0x2a1c3a, 1).fillRect(x + 10, y + 56, 158, 6);
+    this.frame.fillStyle(hot ? YELLOW : MAGENTA, 1).fillRect(x + 10, y + 56, Math.round(158 * combo.remaining), 6);
+    this.text('combo-next', `$${combo.nextBonus} AT X${combo.nextBonusAt}`, x + 168, y + 26, '#6aff8a', 1, false, 1, 'right');
   }
 
   /**
