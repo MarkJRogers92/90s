@@ -30,6 +30,7 @@ export type AudioCue =
   | 'escalator'
   | 'stamp'
   | 'dawn'
+  | 'paper'
   | 'shot'
   | 'splash'
   | 'hit'

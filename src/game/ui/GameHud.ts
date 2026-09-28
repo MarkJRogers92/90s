@@ -595,8 +595,9 @@ export class GameHud {
       this.frame.fillStyle(0x05030a, 0.92).fillRect(0, 0, SCREEN_W, bar).fillRect(0, SCREEN_H - bar, SCREEN_W, bar);
       this.frame.fillStyle(0xff2a3a, fade).fillRect(0, bar, SCREEN_W, 2).fillRect(0, SCREEN_H - bar - 2, SCREEN_W, 2);
     }
-    // A wind-up must never hide behind the room title: it steps aside.
-    const alpha = Math.min(fade, this.windupActive(state) ? 0.2 : 1);
+    // A wind-up must never hide behind the room title: it steps aside. Once the
+    // shift is over the sim clock stops, so a young title would freeze on screen.
+    const alpha = state.status !== 'playing' ? 0 : Math.min(fade, this.windupActive(state) ? 0.2 : 1);
     for (const image of this.titleCard.images) image.setAlpha(alpha).setVisible(alpha > 0);
   }
 

@@ -10,7 +10,7 @@
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
-import { buildShiftCardModel, type ShiftCardModel } from './shiftCardModel';
+import { buildShiftCardModel, shiftCardDelayMs, type ShiftCardModel } from './shiftCardModel';
 import { browserBestRuns } from '../score/score';
 import { flashAllowed, gameSettings } from '../settings/settings';
 
@@ -29,10 +29,6 @@ export type ShiftCardAction = 'retry' | 'title' | 'ascend';
 type Rect = { x: number; y: number; w: number; h: number; action: ShiftCardAction };
 
 /** How long the card waits after the shift ends, so the death fall reads first. */
-export function shiftCardDelayMs(won: boolean): number {
-  return won ? 900 : 1300;
-}
-
 function clip(value: string): string {
   return value.length <= MAX_VALUE_CHARS ? value : `${value.slice(0, MAX_VALUE_CHARS - 3)}...`;
 }
@@ -76,7 +72,10 @@ export class ShiftCard {
     this.hovered = this.buttonAt(x, y);
   }
 
-  public sync(state: MvpRunState, mallSeed: number = state.seed): void {
+  private afterCinematic = false;
+
+  public sync(state: MvpRunState, mallSeed: number = state.seed, afterCinematic = false): void {
+    this.afterCinematic = afterCinematic;
     const model = buildShiftCardModel(state, mallSeed);
     if (!model) {
       this.endedAt = null;
@@ -95,7 +94,7 @@ export class ShiftCard {
       this.submitted = true;
       this.newBest = this.bests.submit({ score: model.score, won: model.won, seconds: model.seconds });
     }
-    const age = now - this.endedAt - shiftCardDelayMs(model.won);
+    const age = now - this.endedAt - shiftCardDelayMs(model.won, this.afterCinematic);
     if (age < 0) {
       this.root.setVisible(false);
       this.buttons = [];

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import type { MvpRunState } from '../../src/sim/run/types';
-import { buildShiftCardModel, formatShiftTime } from '../../src/game/ui/shiftCardModel';
+import { buildShiftCardModel, formatShiftTime, shiftCardDelayMs } from '../../src/game/ui/shiftCardModel';
 import { ascendToFloorTwo } from '../../src/sim/run/floors';
 
 function ended(status: 'won' | 'dead', mutate: (state: MvpRunState) => void = () => undefined): MvpRunState {
@@ -77,5 +77,14 @@ describe('shift card score', () => {
     expect(card.rows).toContainEqual({ label: 'KILLS', value: '7' });
     expect(card.rows).toContainEqual({ label: 'BEST COMBO', value: 'X9' });
     expect(card.score).toBeGreaterThan(0);
+  });
+});
+
+describe('when the end card opens', () => {
+  it('waits for the fall on its own, but opens almost at once after a cinematic already covered it', () => {
+    expect(shiftCardDelayMs(false)).toBe(1300);
+    expect(shiftCardDelayMs(true)).toBe(900);
+    expect(shiftCardDelayMs(false, true)).toBeLessThanOrEqual(200);
+    expect(shiftCardDelayMs(true, true)).toBeLessThanOrEqual(200);
   });
 });

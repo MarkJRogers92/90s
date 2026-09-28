@@ -17,6 +17,8 @@ import { EscalatorRide } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
 import { DawnEnding } from '../ui/DawnEnding';
 import { ClockIn } from '../ui/ClockIn';
+import { PinkSlip } from '../ui/PinkSlip';
+import { pinkSlipReason } from '../ui/pinkSlipModel';
 import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
@@ -378,6 +380,10 @@ export class MvpRunScene extends Phaser.Scene {
   private ending: DawnEnding | null = null;
   /** The clock-in cold open over a fresh shift (it never holds the run). */
   private clockIn: ClockIn | null = null;
+  /** The Notice of Termination after a death; the end card waits for it. */
+  private pinkSlip: PinkSlip | null = null;
+  /** True once a kill cam or pink slip has played this shift's final beat. */
+  private endBeatPlayed = false;
   /** True once the ending has played out and holds its last shot under the card. */
   private endingHeld = false;
   /** The live boss last frame, so its fall can be framed once it is gone. */
@@ -459,7 +465,7 @@ export class MvpRunScene extends Phaser.Scene {
     const card = new ShiftCard(this);
     this.shiftCard = card;
     // Cinematic moments own every key and click while they play.
-    this.inputAdapter.riding = () => this.ride !== null || this.killCam !== null || (this.ending !== null && !this.endingHeld);
+    this.inputAdapter.riding = () => this.ride !== null || this.killCam !== null || this.pinkSlip !== null || (this.ending !== null && !this.endingHeld);
     this.inputAdapter.endCard = {
       isOpen: () => card.open,
       ascends: () => card.offersAscend,
@@ -483,7 +489,7 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.runView?.presentationSnapshot() ?? null,
         () => this.runView?.actorPresentationSnapshot() ?? null,
         () => this.runView?.concourseAmbienceSnapshot() ?? null,
-        () => this.clockIn !== null || this.killCam !== null || this.ride !== null || this.ending !== null,
+        () => this.clockIn !== null || this.killCam !== null || this.ride !== null || this.ending !== null || this.pinkSlip !== null,
       );
       const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
       this.removeDebugBridge = () => {
@@ -538,6 +544,7 @@ export class MvpRunScene extends Phaser.Scene {
       this.accumulator = 0;
       if (this.killCam && this.killCam.update(elapsedMs)) this.endKillCam(true);
       if (this.ending && !this.endingHeld && this.ending.update(elapsedMs)) this.endingHeld = true;
+      if (this.pinkSlip && this.pinkSlip.update(elapsedMs)) this.endPinkSlip();
       this.syncCheckpoint();
       this.syncView();
       return;
@@ -624,7 +631,9 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** From the end card, a won shift clocks into a new mall; otherwise the same one. */
   private restartRun(fromEndCard = false): void {
+    this.endBeatPlayed = false;
     this.endKillCam();
+    this.endPinkSlip();
     this.lastStatus = 'playing';
     const won = fromEndCard && this.run.status === 'won';
     this.seed = nextShiftSeed({ seed: this.seed, pinned: this.seedPinned }, won);
@@ -657,6 +666,7 @@ export class MvpRunScene extends Phaser.Scene {
    */
   private ascend(): void {
     if (!canAscend(this.run)) return;
+    this.endBeatPlayed = false;
     this.stopClockIn();
     this.endKillCam();
     this.lastStatus = 'playing';
@@ -759,7 +769,12 @@ export class MvpRunScene extends Phaser.Scene {
     if (this.run.status === 'playing') {
       const boss = this.run.room.combat.enemies.find((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
       this.lastBoss = boss && isBossKind(boss.kind) ? { kind: boss.kind, x: boss.x, y: boss.y } : null;
+    } else if (this.lastStatus === 'playing' && this.run.status === 'dead' && !this.pinkSlip) {
+      const reason = pinkSlipReason(this.playtest.lastDamageSource, this.run.wing.floor === 2 ? 2 : 1);
+      this.endBeatPlayed = true;
+      this.pinkSlip = new PinkSlip(this, reason, { fall: () => this.audio?.play('paper'), stamp: () => this.audio?.play('stamp') });
     } else if (this.lastStatus === 'playing' && this.run.status === 'won' && this.lastBoss && !this.killCam) {
+      this.endBeatPlayed = true;
       this.killCam = new KillCam(this, this.lastBoss.kind, this.lastBoss, () => this.audio?.play('stamp'));
       this.runView?.setEffectsTimeWarp(slowMoMs);
       this.gameHud?.setHidden(true);
@@ -782,6 +797,11 @@ export class MvpRunScene extends Phaser.Scene {
     this.endEnding();
   }
 
+  private endPinkSlip(): void {
+    this.pinkSlip?.destroy();
+    this.pinkSlip = null;
+  }
+
   private endEnding(): void {
     this.ending?.destroy();
     this.ending = null;
@@ -790,9 +810,10 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   private syncView(): void {
-    this.watchBossKill();
     this.runView?.sync(this.run);
     this.recordPlaytest();
+    // After the recorder has seen this frame, so a death knows what did it.
+    this.watchBossKill();
     this.syncHeartbeat();
     const rawHold = this.runView?.takeHitStop() ?? 0;
     const hold = rawHold * hitStopScale(gameSettings().get());
@@ -807,7 +828,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.benchCard?.hover(pointer.x, pointer.y);
     this.benchCard?.sync(this.run);
     // The end card waits for the kill cam to finish framing the fall.
-    if (!this.killCam && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed);
+    if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
     this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
@@ -915,6 +936,18 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return upstairs;
     }
+    if (fixture === 'mvp-last-heart') {
+      // Into the food court fight on the last point of health (for death flows).
+      let guard = 0;
+      while (state.wing.rooms[state.roomIndex]?.id !== 'food_court' && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      state.room.combat.player.health = 1;
+      return state;
+    }
     if (fixture === 'mvp-back-hall') {
       // Skips to the back hall, where the display mannequins always stand.
       let guard = 0;
@@ -985,6 +1018,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   private readonly destroyRun = (): void => {
     this.stopClockIn();
+    this.endPinkSlip();
     this.killCam?.destroy();
     this.killCam = null;
     this.ending?.destroy();

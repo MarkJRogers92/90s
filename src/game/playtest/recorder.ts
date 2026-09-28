@@ -135,6 +135,11 @@ export class PlaytestRecorder {
     });
   }
 
+  /** What landed the most recent blow on the janitor this shift, if anything. */
+  public get lastDamageSource(): DamageSource | null {
+    return this.killedBy;
+  }
+
   /** Feed every rendered frame; returns the finished record once, when the shift ends. */
   public observe(state: MvpRunState): RunRecord | null {
     const previous = this.previous;
