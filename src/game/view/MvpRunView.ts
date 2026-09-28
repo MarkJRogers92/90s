@@ -33,6 +33,7 @@ import {
   type SpriteSpec,
 } from './ActorSpriteView';
 import { DASH_TICKS } from '../../sim/combat/dash';
+import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
 import { flashAllowed, gameSettings } from '../settings/settings';
 import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
 import { attackFrameFor, combinePoses, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
@@ -133,6 +134,8 @@ export class MvpRunView {
       this.mallRoomKey = roomKey;
     }
     this.openingConcourse.render(state);
+    const blackout = roomEventFor(state, state.roomIndex) === 'blackout';
+    this.openingConcourse.setBlackout(blackout);
     if (room.id === 'service_corridor') {
       this.concourseAmbience = this.openingConcourse.ambienceSnapshot();
     }
@@ -289,7 +292,19 @@ export class MvpRunView {
     this.drawDashReadiness(state, playerEffects, fxTick);
     this.contactShadow('player', player.x, player.y, 1);
     // The janitor carries a little warm light, so the player never loses themself in the dark.
-    opening?.addLight({ x: player.x, y: player.y - 10, radius: 96, color: 0xffe6c8, intensity: 0.62 });
+    opening?.addLight({ x: player.x, y: player.y - 10, radius: blackout ? 70 : 96, color: 0xffe6c8, intensity: blackout ? 0.5 : 0.62 });
+    if (blackout) {
+      // A flashlight: a cone of pools thrown along the aim, widening with distance.
+      const fx = player.facing.x;
+      const fy = player.facing.y;
+      for (const [distance, radius, intensity] of [[46, 44, 0.85], [100, 62, 0.8], [160, 82, 0.7], [224, 100, 0.55]] as const) {
+        opening?.addLight({ x: player.x + fx * distance, y: player.y - 8 + fy * distance, radius, color: 0xfff4d8, intensity });
+      }
+      // Eyes in the dark: every enemy shows where it is, not what it is doing.
+      for (const enemy of state.room.combat.enemies) {
+        opening?.addLight({ x: enemy.x, y: enemy.y - (enemy.kind === 'lp_manager' ? 70 : 34), radius: 18, color: enemy.kind === 'spitter' ? 0x9aff6a : 0xff2a3a, intensity: 0.95 });
+      }
+    }
     if (player.attackActiveTicks > 0) {
       opening?.addLight({ x: player.x + player.facing.x * 24, y: player.y + player.facing.y * 24 - 8, radius: 70, color: 0xfff4d0, intensity: 0.7 });
     }
@@ -465,11 +480,23 @@ export class MvpRunView {
         cues.fillStyle(kindColor, 0.22 * pulse).fillRect(offer.position.x - 3, offer.position.y - 58, 6, 58);
         floor.fillStyle(kindColor, 0.18).fillEllipse(offer.position.x, offer.position.y, 40, 15);
         floor.lineStyle(2, kindColor, 0.9).strokeEllipse(offer.position.x, offer.position.y, 40, 15);
-        this.offerName(offer.id, itemDefinitionName(offer.itemDefinitionId).toUpperCase(), weapon, offer.position.x, offer.position.y - 74, Math.hypot(player.x - offer.position.x, player.y - offer.position.y), offer.id === nearestId);
+        const special = offer.id === blueLightOfferId(state);
+        const name = itemDefinitionName(offer.itemDefinitionId).toUpperCase();
+        this.offerName(offer.id, special ? `${name} - HALF PRICE` : name, weapon, offer.position.x, offer.position.y - 74, Math.hypot(player.x - offer.position.x, player.y - offer.position.y), offer.id === nearestId, special);
       } else if (status === 'carried') {
         floor.lineStyle(2, 0xffd84a, 1).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
       } else {
         floor.lineStyle(1, 0x5a5e55, 0.8).strokeEllipse(offer.position.x, offer.position.y, 26, 10);
+      }
+      if (status === 'available' && offer.id === blueLightOfferId(state)) {
+        // BLUE LIGHT SPECIAL: a spinning blue beacon over the half-price item.
+        const spin = state.tick / 8;
+        const bx = offer.position.x;
+        // The beacon sits on the item's own ring, so there is no doubt which one is on sale.
+        const by = offer.position.y - 72;
+        cues.fillStyle(0x1a2a6a, 1).fillRect(bx + 18, by + 2, 12, 8);
+        cues.fillStyle(Math.floor(state.tick / 10) % 2 === 0 ? 0x8ab4ff : 0x2a4aff, 1).fillCircle(bx + 24, by, 6);
+        this.openingConcourse?.addLight({ x: bx + Math.cos(spin) * 60, y: offer.position.y - 30 + Math.sin(spin) * 22, radius: 80, color: 0x3a6aff, intensity: 0.9, squash: 0.6 });
       }
       if (status !== 'available') this.offerNames.get(offer.id)?.setVisible(false);
       this.offerIcon(offer.id, offer.itemDefinitionId, offer.position.x, offer.position.y, state.tick, status, kindColor);
@@ -1165,8 +1192,8 @@ export class MvpRunView {
 
   /** Store stock drawn as the actual item, bobbing on its shelf under a spotlight. */
   /** The item's name over its pedestal: dim from afar, bright up close. */
-  private offerName(offerId: string, name: string, weapon: boolean, x: number, y: number, distance: number, featured: boolean): void {
-    const label = ensurePixelLabel(this.scene, name, weapon ? '#3ff0ff' : '#6aff8a', 1, '#05030a');
+  private offerName(offerId: string, name: string, weapon: boolean, x: number, y: number, distance: number, featured: boolean, special = false): void {
+    const label = ensurePixelLabel(this.scene, name, special ? '#8ab4ff' : weapon ? '#3ff0ff' : '#6aff8a', 1, '#05030a');
     let image = this.offerNames.get(offerId);
     if (!image) {
       image = this.scene.add.image(0, 0, label.key).setDepth(presentationDepth('prompt', 4));

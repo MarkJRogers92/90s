@@ -411,6 +411,19 @@ export class MallRoomView {
   }
 
   /** Commits the lightmap for this frame after the caller added dynamic lights. */
+  private blackout = false;
+
+  /**
+   * BLACKOUT: near-black ambient and the room's own lights down to embers.
+   * Neon signs keep their additive glow, so the mall still reads as a mall.
+   */
+  public setBlackout(on: boolean): void {
+    if (on === this.blackout) return;
+    this.blackout = on;
+    this.lighting.setAmbient(on ? 0x040308 : this.plan.ambient);
+    this.lighting.setStaticLights(on ? this.plan.lights.map((light) => ({ ...light, intensity: light.intensity * 0.12 })) : this.plan.lights);
+  }
+
   public renderLighting(tick: number): void {
     this.lighting.render(tick);
   }

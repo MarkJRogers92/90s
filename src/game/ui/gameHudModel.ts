@@ -19,6 +19,7 @@ import {
 } from '../../sim/run/economy';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { COMBO_MILESTONE, COMBO_WINDOW_TICKS, comboBonusFor } from '../../sim/run/combo';
+import { blueLightOfferId } from '../../sim/run/roomEvents';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
@@ -207,7 +208,9 @@ function promptFor(state: MvpRunState): HudPrompt {
         ? `NEED $${short} MORE - OR STEAL IT (+${stealHeat} HEAT)`
         : handsFull
           ? 'HANDS FULL - CARRY YOUR LOOT OUT FIRST'
-          : `STEAL: FREE, +${stealHeat} HEAT AT THE EXIT`;
+          : blueLightOfferId(state) === offer.id
+            ? `BLUE LIGHT SPECIAL: HALF PRICE - OR STEAL (+${stealHeat} HEAT)`
+            : `STEAL: FREE, +${stealHeat} HEAT AT THE EXIT`;
       return {
         subject,
         keys: [{ key: 'E', action: 'BUY', disabled: short > 0 }, { key: 'F', action: 'STEAL', disabled: handsFull }],

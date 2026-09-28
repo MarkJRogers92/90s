@@ -18,6 +18,7 @@ import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildGameHudModel, type GameHudModel, type HudOfferDetail } from './gameHudModel';
+import { roomEventFor } from '../../sim/run/roomEvents';
 import { itemBlurb } from './itemBlurbs';
 
 const HUD_DEPTH = 20_000;
@@ -519,7 +520,15 @@ export class GameHud {
       this.titleCard?.images.forEach((image) => image.destroy());
       const room = state.wing.rooms[state.roomIndex];
       const name = (room?.store?.name ?? room?.name ?? '').toUpperCase();
-      const sign = ensureNeonSign(this.scene, { text: name, color: '#ff3fc8', scale: 4, subtitle: `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`, subtitleColor: '#3ff0ff' });
+      // Room events announce themselves in the title card's subtitle.
+      const event = roomEventFor(state, state.roomIndex);
+      const subtitle = event === 'blackout'
+        ? 'BLACKOUT - STAY IN YOUR FLASHLIGHT'
+        : event === 'blue_light'
+          ? 'BLUE LIGHT SPECIAL - ONE ITEM HALF PRICE'
+          : `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`;
+      const subtitleColor = event === 'blackout' ? '#ff5a6a' : event === 'blue_light' ? '#6a9aff' : '#3ff0ff';
+      const sign = ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });
       const halo = this.scene.add.image(SCREEN_W / 2, 200, sign.halo).setBlendMode(Phaser.BlendModes.ADD);
       const core = this.scene.add.image(SCREEN_W / 2, 200, sign.core);
       this.root.add([halo, core]);
