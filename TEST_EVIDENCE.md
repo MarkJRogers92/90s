@@ -1,5 +1,16 @@
 # Test evidence
 
+## 2026-09-28 — concourse civilians stroll
+
+- Five new `concourse-ambience.test.ts` cases failed first (no `civilianPoses`):
+  wandering in both axes while facing the direction of travel, pausing to
+  browse, never entering walls/fountain or leaving the room over 3000 ticks,
+  hurrying to the exit and vanishing on evacuation, determinism per seed.
+- Real browser, `?seed=99`: four frames 1.5 s apart show shoppers walking in
+  different directions and pausing (`audit/stroll-grid.png`); no page errors.
+- `npx vitest run` — PASS: 722 tests. `PW_PORT=4193 npx playwright test
+  --workers=2` — PASS: 62/62 (3.0 min).
+
 ## 2026-09-28 — round 20: the pink slip and the mall PA
 
 - `pink-slip.test.ts` (4) and `pa-announcer.test.ts` (9) failed first on their
