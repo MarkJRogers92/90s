@@ -890,6 +890,44 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-arsenal') {
+      // The food court fight holding every weapon and the visible modifiers,
+      // so each weapon's look and each status effect can be seen (keys 1-9).
+      let guard = 0;
+      while (state.wing.rooms[state.roomIndex]?.id !== 'food_court' && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      const ids = ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
+      state.inventory = {
+        ...state.inventory,
+        inventory: [
+          ...state.inventory.inventory,
+          ...ids.map((id): InventoryLeaf => ({ kind: 'leaf', instanceId: `dev-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: state.tick })),
+        ],
+        selectedPrimaryInstanceId: 'dev-pump_soaker',
+        revision: state.inventory.revision + 1,
+      };
+      refreshRunLoadout(state);
+      // Two far, idle targets to shoot at, one already Wet so a chain has somewhere to go.
+      const targets = state.room.combat.enemies.filter((enemy) => enemy.kind === 'spitter' || enemy.kind === 'hanger').slice(0, 2);
+      targets.forEach((enemy, index) => {
+        enemy.x = 760;
+        enemy.y = 180 + index * 110;
+        enemy.health = 400;
+        enemy.phase = 'recover';
+        enemy.phaseTicks = 1_000_000;
+        enemy.kind = 'spitter';
+      });
+      if (targets[1]?.statuses) targets[1].statuses.wetTicks = 100_000;
+      if (targets[0]?.statuses) targets[0].statuses.stickyTicks = 100_000;
+      state.room.combat.enemies = targets;
+      state.room.combat.player.x = 300;
+      state.room.combat.player.y = 235;
+      return state;
+    }
     if (fixture === 'mvp-bench') {
       // Stands the shift at the service-corridor Bench Warrant kiosk already
       // owning the car and a projectile primary, so browser acceptance can

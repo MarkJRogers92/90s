@@ -253,6 +253,11 @@ export type GameplayOriginKind =
   | 'surface';
 
 /** Every gameplay event carries this deterministic ancestry. */
+export type ChainArc = {
+  readonly tick: number;
+  readonly points: ReadonlyArray<{ readonly id: number; readonly x: number; readonly y: number }>;
+};
+
 export type GameplayEventMeta = {
   readonly rootActionId: number;
   readonly eventId: string;
@@ -331,4 +336,10 @@ export type RunState = {
   behaviorTrace: string[];
   /** Created lazily by the interaction stages. */
   rootEffectLedger?: RootEffectLedger;
+  /**
+   * Recent conductive chains: the enemies each one arced through, in order,
+   * where they stood, and the tick it fired. A read-only record for the view
+   * (the lightning); kept for CHAIN_ARC_TICKS and never read by any rule.
+   */
+  chainArcs?: ChainArc[];
 };

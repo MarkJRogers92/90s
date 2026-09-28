@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-09-28 — round 21: collapsible HUD, weapon effects, payload bug
+
+- Red first: HUD disclosure (4), equipped payload (2 — `expected
+  ['bottle_rocket_pack', ...] to deeply equal ['pump_soaker']`), chain arc
+  record (the record test; the pruning test first failed only because its
+  empty room ended the run, fixed by keeping an idle enemy). The projectile
+  style tests (5) were written with the module, not observed red.
+- Real browser: `audit/hud-collapsed.png` vs `hud-peek.png` (Tab);
+  `audit/shots-grid.png` — seven weapons, seven distinct shots, after the
+  payload fix (before it, all seven were rockets); `audit/fx-zoom.png` — wet
+  and sticky enemies; `audit/car-*.png`. No page errors.
+- `npx vitest run` — PASS: 735 tests. `PW_PORT=4193 npx playwright test
+  --workers=2` — PASS: 62/62 (3.0 min).
+
 ## 2026-09-28 — concourse civilians stroll
 
 - Five new `concourse-ambience.test.ts` cases failed first (no `civilianPoses`):

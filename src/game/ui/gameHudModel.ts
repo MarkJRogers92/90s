@@ -279,3 +279,28 @@ export function wrapLogText(text: string, width = LOG_LINE_CHARS, maxLines = 2):
   if (line) lines.push(line);
   return lines;
 }
+
+/** How long the full objectives and map stay open after entering a room, and after a change. */
+export const HUD_ROOM_OPEN_TICKS = 60 * 5;
+export const HUD_CHANGE_OPEN_TICKS = 60 * 4;
+
+/**
+ * Whether the top HUD shows its full panels or collapses to corner chips, so
+ * the storefront art stays visible while nothing new needs reading.
+ */
+export function hudExpanded(input: {
+  readonly tick: number;
+  readonly roomEnteredTick: number;
+  readonly objectivesChangedTick: number;
+  readonly peek: boolean;
+  readonly paused: boolean;
+  readonly playing: boolean;
+}): boolean {
+  if (input.peek || input.paused || !input.playing) return true;
+  return input.tick - input.roomEnteredTick < HUD_ROOM_OPEN_TICKS || input.tick - input.objectivesChangedTick < HUD_CHANGE_OPEN_TICKS;
+}
+
+/** The one objective the collapsed chip keeps in view: the first still to do. */
+export function collapsedObjective(model: GameHudModel): string | undefined {
+  return model.objectives.find((objective) => !objective.done)?.text;
+}
