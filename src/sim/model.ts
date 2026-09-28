@@ -52,6 +52,8 @@ export type EnemyStatusState = {
 export type EnemyState = Vec2 & {
   id: number;
   kind: EnemyKind;
+  /** A CLEARANCE elite: double health, triple change. Optional for fixtures. */
+  elite?: boolean;
   health: number;
   radius: number;
   phase: 'pursue' | 'telegraph' | 'recover';

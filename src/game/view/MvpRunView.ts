@@ -10,6 +10,7 @@
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
+import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
@@ -218,10 +219,18 @@ export class MvpRunView {
         effects.lineStyle(4 * (1 - t) + 1, enemy.kind === 'spitter' ? 0x9aff6a : 0xff3a5a, 1 - t).strokeEllipse(enemy.x, enemy.y, r * 2, r);
       }
       this.threats.push({ enemy, windups });
+      if (enemy.elite) {
+        // CLEARANCE: a pulsing gold aura and a price-tag label.
+        const glow = 0.6 + 0.3 * Math.sin(state.tick / 7 + enemy.id);
+        effects.lineStyle(3, 0xffd84a, glow).strokeEllipse(enemy.x, enemy.y + 2, 58, 22);
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 70, color: 0xffd84a, intensity: 0.5 * glow });
+        this.eliteTag(`enemy:${enemy.id}`, enemy.x, enemy.y - 70);
+      }
       const sheet = enemySpriteSheet(enemySnapshot.kind, false);
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
       const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
-      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, pose, attackColumn);
+      const shown = enemy.elite ? combinePoses(pose, { offsetX: 0, offsetY: 0, scaleX: 1.18, scaleY: 1.18, flash: false, tint: 0x302000 }) : pose;
+      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, shown, attackColumn);
       const spriteActive = sprite.spriteActive;
       this.drawActorEffectCues(enemySnapshot, sprite, effects);
       if (enemy.kind === 'hanger') {
@@ -324,6 +333,7 @@ export class MvpRunView {
     opening?.renderLighting(state.tick);
     opening?.endFrame();
     this.pruneShadows();
+    this.pruneEliteTags();
     this.pruneOfferIcons();
     this.pruneActorSprites();
     this.actorMovement.retain(new Set([
@@ -502,7 +512,12 @@ export class MvpRunView {
     effects.fillStyle(0x12060c, 0.9);
     effects.fillRect(enemy.x - 14, barY, 28, 4);
     effects.fillStyle(0xe8243c, 1);
-    effects.fillRect(enemy.x - 13, barY + 1, 26 * Math.max(0, Math.min(1, enemy.health / 8)), 2);
+    // Measured against the health it arrived with, so elites and retuned
+    // enemies read correctly.
+    const key = `enemy:${enemy.id}`;
+    const max = Math.max(this.enemyMaxHealth.get(key) ?? 0, enemy.health);
+    this.enemyMaxHealth.set(key, max);
+    effects.fillRect(enemy.x - 13, barY + 1, 26 * Math.max(0, Math.min(1, enemy.health / max)), 2);
   }
 
   /**
@@ -772,11 +787,37 @@ export class MvpRunView {
     };
   }
 
+  private readonly enemyMaxHealth = new Map<string, number>();
+  private readonly eliteTags = new Map<string, Phaser.GameObjects.Image>();
+  private readonly usedEliteTags = new Set<string>();
+
+  private eliteTag(id: string, x: number, y: number): void {
+    const label = ensurePixelLabel(this.scene, 'CLEARANCE', '#ffd84a', 1, '#2a1400');
+    let tag = this.eliteTags.get(id);
+    if (!tag) {
+      tag = this.scene.add.image(0, 0, label.key).setDepth(presentationDepth('prompt', 2));
+      this.eliteTags.set(id, tag);
+    }
+    this.usedEliteTags.add(id);
+    tag.setVisible(true).setPosition(Math.round(x), Math.round(y));
+  }
+
+  private pruneEliteTags(): void {
+    for (const [id, tag] of this.eliteTags) {
+      if (!this.usedEliteTags.has(id)) {
+        tag.destroy();
+        this.eliteTags.delete(id);
+      }
+    }
+    this.usedEliteTags.clear();
+  }
+
   /** First tick an id was seen in this room; a new room starts a fresh map. */
   private firstSeen(scope: string, id: string, tick: number): number {
     if (scope !== this.enemyScope) {
       this.enemyScope = scope;
       this.enemyFirstSeen.clear();
+      this.enemyMaxHealth.clear();
     }
     let seen = this.enemyFirstSeen.get(id);
     if (seen === undefined || seen > tick) {
@@ -1081,11 +1122,22 @@ export class MvpRunView {
     for (const token of state.room.tokens) {
       live.add(token.id);
       let sprite = this.tokenSprites.get(token.id);
+      const snack = token.kind === 'snack';
       if (!sprite) {
-        sprite = this.scene.add.image(token.x, token.y, FX_TEXTURES.token).setDepth(presentationDepth('actor', token.y - 1));
+        sprite = this.scene.add.image(token.x, token.y, snack ? FX_TEXTURES.pretzel : FX_TEXTURES.token).setDepth(presentationDepth('actor', token.y - 1));
         this.tokenSprites.set(token.id, sprite);
       }
       const age = state.tick - token.droppedTick;
+      if (snack) {
+        // A pretzel sits still and glows warm; it pulses when the janitor is hurt.
+        const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 18 : 0;
+        const hurt = state.room.combat.player.health < PLAYER_MAX_HEALTH;
+        const pulse = hurt ? 1 + 0.12 * Math.sin(state.tick / 6) : 1;
+        sprite.setPosition(Math.round(token.x), Math.round(token.y - 8 - hop)).setScale(2 * pulse);
+        this.contactShadow(`token:${token.id}`, token.x, token.y, 0.45);
+        this.openingConcourse?.addLight({ x: token.x, y: token.y - 8, radius: hurt ? 50 : 34, color: 0xffa040, intensity: hurt ? 0.9 : 0.55 });
+        continue;
+      }
       // A short pop out of the body, then a lazy spin and bob on the floor.
       const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 14 : 0;
       const spin = Math.abs(Math.cos((state.tick + token.x) / 9));
