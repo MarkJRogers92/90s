@@ -293,6 +293,11 @@ export class MusicPlayer {
     }
   }
 
+  /** Music bus level, 0..1, from the player's settings. */
+  public setVolume(volume: number): void {
+    this.bus.gain.setTargetAtTime(Math.max(0, Math.min(1, volume)), this.context.currentTime, 0.05);
+  }
+
   public stop(): void {
     const now = this.context.currentTime;
     for (const playing of this.playing.values()) {

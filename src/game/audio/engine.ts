@@ -17,6 +17,7 @@ import type { AudioCue, AudioSnapshot } from './cues';
 import type { MvpRunState } from '../../sim/run/types';
 import { MusicPlayer } from './music';
 import { musicCue } from './musicState';
+import { gameSettings } from '../settings/settings';
 
 type Tone = {
   readonly wave: OscillatorType;
@@ -274,6 +275,9 @@ export class GameAudioEngine {
   private tone: BiquadFilterNode | null = null;
   private noiseBuffer: AudioBuffer | null = null;
   private music: MusicPlayer | null = null;
+  /** Sound effects run through their own bus so they have their own volume. */
+  private sfxBus: GainNode | null = null;
+  private appliedVolumes = '';
   private musicOn = true;
   private muted = false;
   private playedCount = 0;
@@ -328,6 +332,8 @@ export class GameAudioEngine {
         this.master = master;
         this.tone = tone;
         this.noiseBuffer = createNoiseBuffer(context);
+        this.sfxBus = context.createGain();
+        this.sfxBus.connect(master);
         this.music = new MusicPlayer(context, master, this.noiseBuffer);
       } catch {
         this.context = null;
@@ -393,7 +399,18 @@ export class GameAudioEngine {
    * without a previous snapshot, every field would look like a change and a run
    * would open with a burst of noise.
    */
+  /** Applies the player's music and effects volumes when they change. */
+  private applyVolumes(): void {
+    const { musicVolume, sfxVolume } = gameSettings().get();
+    const key = `${musicVolume}:${sfxVolume}`;
+    if (key === this.appliedVolumes || this.context === null) return;
+    this.appliedVolumes = key;
+    this.sfxBus?.gain.setTargetAtTime(sfxVolume, this.context.currentTime, 0.03);
+    this.music?.setVolume(musicVolume);
+  }
+
   public syncTo(state: MvpRunState): void {
+    this.applyVolumes();
     if (this.music !== null && this.context?.state === 'running') {
       try {
         this.music.update(musicCue(state), this.musicOn);
@@ -425,6 +442,7 @@ export class GameAudioEngine {
     }
     const recipe = RECIPES[cue];
     const now = context.currentTime;
+    const out = this.sfxBus ?? master;
     const last = this.lastPlayedAt.get(cue);
     if (last !== undefined && now - last < recipe.minGapMs / 1000) {
       return;
@@ -433,10 +451,10 @@ export class GameAudioEngine {
 
     try {
       for (const layer of recipe.noise ?? []) {
-        this.playNoise(context, master, now, layer);
+        this.playNoise(context, out, now, layer);
       }
       for (const tone of recipe.tones) {
-        this.playTone(context, master, now, tone);
+        this.playTone(context, out, now, tone);
       }
       this.playedCount += 1;
     } catch {
@@ -501,6 +519,8 @@ export class GameAudioEngine {
     this.context = null;
     this.music?.stop();
     this.music = null;
+    this.sfxBus = null;
+    this.appliedVolumes = '';
     this.master = null;
     this.tone = null;
     this.noiseBuffer = null;

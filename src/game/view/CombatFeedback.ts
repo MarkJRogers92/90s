@@ -17,6 +17,7 @@ import { presentationDepth } from '../presentation/depth';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { PointLight } from '../presentation/lighting/LightingLayer';
 import { ACTOR_DIRECTION_ORDER, directionForVector } from './ActorSpriteView';
+import { flashAllowed, gameSettings, shakeScale, washScale } from '../settings/settings';
 import {
   HEAVY_HIT_DAMAGE,
   HIT_REACTION_TICKS,
@@ -142,6 +143,12 @@ export class CombatFeedback {
     this.impacts = scene.add.graphics().setDepth(presentationDepth('effect', 80));
   }
 
+  /** Camera shake, scaled by the player's comfort setting (off = none). */
+  private shake(duration: number, intensity: number): void {
+    const scale = shakeScale(gameSettings().get());
+    if (scale > 0) this.scene.cameras.main.shake(duration, intensity * scale);
+  }
+
   private random(): number {
     this.seed = (this.seed * 16807) % 2147483647;
     return (this.seed - 1) / 2147483646;
@@ -211,7 +218,7 @@ export class CombatFeedback {
    */
   public heartbeat(active: boolean, sinceBeatMs: number): void {
     if (!active) return;
-    const pulse = 0.18 + 0.32 * Math.max(0, 1 - sinceBeatMs / 420);
+    const pulse = (0.18 + 0.32 * Math.max(0, 1 - sinceBeatMs / 420)) * washScale(gameSettings().get());
     this.vignette.setAlpha(Math.max(this.vignette.alpha, pulse));
   }
 
@@ -273,7 +280,7 @@ export class CombatFeedback {
     // Spray carries on through the enemy, away from the swing.
     for (let i = 0; i < (heavy ? 16 : 10); i += 1) this.spark(ix, iy, tick, blood, dirX / length, dirY / length);
     this.pendingLights.push({ x: ix, y: iy, radius: heavy ? 120 : 90, color: 0xfff0d8, intensity: 1 });
-    this.scene.cameras.main.shake(heavy ? 110 : 70, heavy ? 0.006 : 0.0035);
+    this.shake(heavy ? 110 : 70, heavy ? 0.006 : 0.0035);
     return { kind: 'hit', heavy };
   }
 
@@ -291,7 +298,7 @@ export class CombatFeedback {
     const word = boss ? 'CLOSING TIME!' : KILL_WORDS[Math.floor(this.random() * KILL_WORDS.length)]!;
     this.word(word, death.x, death.y - 70, tick, boss ? '#ffd84a' : '#ff5a8a', boss ? 5 : 3, boss ? 110 : FLOAT_TICKS + 10);
     this.spawnCorpse(death, player, tick);
-    this.scene.cameras.main.shake(boss ? 600 : 160, boss ? 0.02 : 0.008);
+    this.shake(boss ? 600 : 160, boss ? 0.02 : 0.008);
     if (boss) {
       this.flashUntil = tick + 30;
       this.flashStrength = 0.5;
@@ -334,7 +341,7 @@ export class CombatFeedback {
       this.addDecal(attack.x, attack.y + 6, DECAL_TEXTURE_KEYS.scorch, 2.8, 'lp_manager');
       for (let i = 0; i < 24; i += 1) this.spark(attack.x, attack.y, tick, i % 2 ? 0xd8c8a8 : 0xffd84a);
       this.pendingLights.push({ x: attack.x, y: attack.y, radius: 220, color: 0xffd84a, intensity: 1 });
-      this.scene.cameras.main.shake(260, 0.014);
+      this.shake(260, 0.014);
       this.reactions.set(`enemy:${attack.id}`, { born: tick, dirX: 0, dirY: 1, heavy: true });
       this.word('SLAM!', attack.x, attack.y - 110, tick, '#ffd84a', 4);
       return { kind: 'slam' };
@@ -342,7 +349,7 @@ export class CombatFeedback {
     if (attack.kind === 'volley') {
       this.bursts.push({ kind: 'ring', x: attack.x + attack.aimX * 30, y: attack.y - 30 + attack.aimY * 30, born: tick, life: 12, radius: 60, color: 0xff3fc8, angle: 0 });
       this.pendingLights.push({ x: attack.x, y: attack.y - 30, radius: 160, color: 0xff3fc8, intensity: 1 });
-      this.scene.cameras.main.shake(120, 0.006);
+      this.shake(120, 0.006);
       return null;
     }
     // A spit: the mouth bursts and the body recoils away from the shot.
@@ -381,7 +388,7 @@ export class CombatFeedback {
     this.bursts.push({ kind: 'star', x: ix, y: iy, born: tick, life: 11, radius: 40, color: 0xff2a3a, angle: this.random() * Math.PI });
     this.bursts.push({ kind: 'shockwave', x: player.x, y: player.y, born: tick, life: 16, radius: 80, color: 0xff2a3a, angle: 0 });
     for (let i = 0; i < 18; i += 1) this.spark(ix, iy, tick, 0xff2a3a, dirX / length, dirY / length);
-    this.scene.cameras.main.shake(300, 0.016);
+    this.shake(300, 0.016);
     this.flashUntil = tick + 10;
     this.flashStrength = 0.14;
     this.vignetteUntil = tick + 40;
@@ -509,15 +516,17 @@ export class CombatFeedback {
         continue;
       }
       this.placeCorpse(corpse, Math.min(corpse.frames - 1, Math.floor(age / CORPSE_FRAME_TICKS)));
-      if (age < 3) corpse.image.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+      if (age < 3 && flashAllowed(gameSettings().get())) corpse.image.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
       else corpse.image.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
       corpse.image.setAlpha(age < playTicks + CORPSE_HOLD_TICKS - 24 ? 1 : (playTicks + CORPSE_HOLD_TICKS - age) / 24);
     }
     this.drawBursts(tick);
+    const settings = gameSettings().get();
     const remaining = this.flashUntil - tick;
-    this.flash.setFillStyle(0xff1a2a, remaining > 0 ? (remaining / 10) * this.flashStrength : 0);
+    // Reduced flashes: no full-screen flash at all, and a gentler red edge.
+    this.flash.setFillStyle(0xff1a2a, remaining > 0 && flashAllowed(settings) ? (remaining / 10) * this.flashStrength : 0);
     const edge = this.vignetteUntil - tick;
-    this.vignette.setAlpha(edge > 0 ? Math.min(1, edge / 24) : 0);
+    this.vignette.setAlpha(edge > 0 ? Math.min(1, edge / 24) * washScale(settings) : 0);
   }
 
   public resetRoom(scope: string): void {

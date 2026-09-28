@@ -31,6 +31,7 @@ import {
   type SpriteSpec,
 } from './ActorSpriteView';
 import { DASH_TICKS } from '../../sim/combat/dash';
+import { flashAllowed, gameSettings } from '../settings/settings';
 import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
 import { attackFrameFor, combinePoses, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
@@ -686,6 +687,8 @@ export class MvpRunView {
     bodyAction: PlayerBodyAction | null = null,
   ): ActorFrameEvidence {
     const visual = actorPresentation(this.actorMemory, snapshot, tick);
+    // Reduced flashes: sprites never go solid white on a hit or a release.
+    if (pose.flash && !flashAllowed(gameSettings().get())) pose = { ...pose, flash: false };
     if (snapshot.kind === 'alex') {
       const neon = this.neonPlayerSpec(visual.walking, bodyAction);
       if (neon) return this.syncSheetSprite(snapshot, visual, tick, depth, neon, pose);

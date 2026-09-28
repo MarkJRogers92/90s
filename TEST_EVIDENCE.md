@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-09-27 — round 10: settings
+
+- `npx vitest run` — PASS: 47 files, 604 tests (new `settings.test.ts`, 5 tests;
+  failed first on the missing module).
+- Real-browser flow: change settings on the title (saved JSON checked), start a
+  shift, O opens the dialog and pauses, shows the saved values; Esc closes it
+  and stays paused; Esc again resumes. No page or console errors.
+- Browser suite NOT cleanly re-verified this round: the host was saturated by
+  unrelated processes (three ffmpeg jobs, fileproviderd, iCloud bird; load
+  average 59-94). At that load a single headless page ran 16 fps / 17 sim
+  ticks per second, and the known timing-based cases failed (53-56/57),
+  including with music scheduling disabled as an experiment (reverted). A
+  full 57/57 rerun on an idle machine is still owed.
+
 ## 2026-09-27 — round 9: playtest log
 
 - `npx vitest run` — PASS: 46 files, 599 tests (new `playtest-recorder.test.ts`,

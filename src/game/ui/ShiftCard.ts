@@ -11,6 +11,7 @@ import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildShiftCardModel, type ShiftCardModel } from './shiftCardModel';
+import { flashAllowed, gameSettings } from '../settings/settings';
 
 const DEPTH = 20_600;
 const W = 960;
@@ -119,7 +120,7 @@ export class ShiftCard {
     let slot = 0;
     const sign = ensureNeonSign(this.scene, { text: model.headline, color: model.won ? '#3ff0ff' : '#ff3a5a', scale: 5 });
     // The sign buzzes on like a real neon tube before it holds steady.
-    const flicker = age < 420 ? (Math.floor(age / 60) % 3 === 1 ? 0.25 : 1) : 1;
+    const flicker = age < 420 && flashAllowed(gameSettings().get()) ? (Math.floor(age / 60) % 3 === 1 ? 0.25 : 1) : 1;
     this.image(slot++, sign.halo, W / 2, CARD_Y + oy + 58).setBlendMode(Phaser.BlendModes.ADD).setAlpha(ease * flicker);
     this.image(slot++, sign.core, W / 2, CARD_Y + oy + 58).setAlpha(ease * flicker);
     const sub = ensurePixelLabel(this.scene, model.subline, model.won ? '#6aff8a' : '#ffd84a', 2);

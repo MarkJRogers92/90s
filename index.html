@@ -32,6 +32,9 @@
           <button id="playtest-open" class="secondary-action" type="button">
             Playtest stats
           </button>
+          <button id="settings-open" class="secondary-action" type="button">
+            Settings
+          </button>
         </div>
         <section id="playtest-panel" class="playtest-panel" aria-labelledby="playtest-title" hidden>
           <h2 id="playtest-title">Playtest stats</h2>
@@ -209,6 +212,7 @@
             <button id="mvp-restart-run" type="button">Restart run</button>
             <button id="mvp-return" class="secondary-action" type="button">Return to title</button>
             <button id="mvp-toggle-sound" class="secondary-action" type="button" aria-pressed="false">SOUND: ON (M)</button>
+            <button id="mvp-open-settings" class="secondary-action" type="button">SETTINGS (O)</button>
           </div>
         </aside>
         <div id="game-host"></div>
@@ -248,6 +252,34 @@
             <ul id="lab-item-list" class="lab-item-list" aria-labelledby="lab-items-title"></ul>
           </div>
         </section>
+      </section>
+
+      <section id="settings-panel" class="settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+        <h2 id="settings-title">Settings</h2>
+        <fieldset class="settings-group">
+          <legend>Screen shake</legend>
+          <label><input type="radio" name="setting-shake" value="full" /> Full</label>
+          <label><input type="radio" name="setting-shake" value="reduced" /> Reduced</label>
+          <label><input type="radio" name="setting-shake" value="off" /> Off</label>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>Freeze on big hits</legend>
+          <label><input type="radio" name="setting-hitStop" value="full" /> Full</label>
+          <label><input type="radio" name="setting-hitStop" value="reduced" /> Reduced</label>
+          <label><input type="radio" name="setting-hitStop" value="off" /> Off</label>
+        </fieldset>
+        <fieldset class="settings-group">
+          <legend>Flashes</legend>
+          <label><input type="radio" name="setting-flashes" value="full" /> Full</label>
+          <label><input type="radio" name="setting-flashes" value="reduced" /> Reduced (no white flashes, softer red, no flicker)</label>
+        </fieldset>
+        <label class="settings-slider">Music volume <input id="setting-music" type="range" min="0" max="100" step="5" /> <output id="setting-music-value"></output></label>
+        <label class="settings-slider">Sound effects volume <input id="setting-sfx" type="range" min="0" max="100" step="5" /> <output id="setting-sfx-value"></output></label>
+        <p class="settings-note">Saved in this browser. M mutes everything, N toggles music.</p>
+        <div class="settings-actions">
+          <button id="settings-reset" class="secondary-action" type="button">Defaults</button>
+          <button id="settings-close" type="button">Close (Esc)</button>
+        </div>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>

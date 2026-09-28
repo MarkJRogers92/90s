@@ -10,9 +10,11 @@
  */
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
+import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { PauseCard } from '../ui/PauseCard';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
+import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
 import { PlaytestRecorder } from '../playtest/recorder';
 import { PlaytestLog } from '../playtest/log';
@@ -157,7 +159,11 @@ class MvpRunInputAdapter {
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (event.repeat) {
+    if (event.repeat || settingsDialogOpen()) {
+      return;
+    }
+    if (event.code === 'KeyO') {
+      window.dispatchEvent(new CustomEvent(OPEN_SETTINGS_EVENT));
       return;
     }
     if (this.benchCard?.isOpen()) {
@@ -370,6 +376,7 @@ export class MvpRunScene extends Phaser.Scene {
     // key press anywhere unlocks it; until then the engine is silent, not broken.
     window.addEventListener('pointerdown', this.unlockAudio);
     window.addEventListener('keydown', this.unlockAudio);
+    window.addEventListener(SETTINGS_OPENED_EVENT, this.pauseForSettings);
     ensureFxTextures(this);
     this.runView = new MvpRunView(this);
     // The whole room is always on screen, like an Isaac room: the camera is
@@ -537,6 +544,11 @@ export class MvpRunScene extends Phaser.Scene {
     this.syncView();
   }
 
+  /** Opening settings mid-shift pauses it, like Esc. */
+  private readonly pauseForSettings = (): void => {
+    if (this.run.status === 'playing' && !this.run.paused && this.run.preview === null) this.setPaused(true);
+  };
+
   private readonly returnToTitle = (): void => {
     this.recordQuit();
     window.dispatchEvent(new CustomEvent(RETURN_TO_TITLE_EVENT));
@@ -585,10 +597,11 @@ export class MvpRunScene extends Phaser.Scene {
     this.runView?.sync(this.run);
     this.recordPlaytest();
     this.syncHeartbeat();
-    const hold = this.runView?.takeHitStop() ?? 0;
+    const rawHold = this.runView?.takeHitStop() ?? 0;
+    const hold = rawHold * hitStopScale(gameSettings().get());
     this.hitStopMs = Math.max(this.hitStopMs, hold);
     // Getting hurt (and the boss kill) ring the ears: the mix muffles while the frame holds.
-    if (hold >= HIT_STOP_MS.playerHurt) this.audio?.muffle(hold);
+    if (rawHold >= HIT_STOP_MS.playerHurt) this.audio?.muffle(Math.max(hold, 120));
     centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);
@@ -755,6 +768,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.removeBloom = undefined;
     window.removeEventListener('pointerdown', this.unlockAudio);
     window.removeEventListener('keydown', this.unlockAudio);
+    window.removeEventListener(SETTINGS_OPENED_EVENT, this.pauseForSettings);
     this.audio?.destroy();
     this.audio = undefined;
     this.removeDebugBridge?.();

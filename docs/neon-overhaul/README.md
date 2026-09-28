@@ -272,6 +272,21 @@ Pure rules in `src/game/view/playerCues.ts` (tests: `player-cues.test.ts`).
   end, damage by source, average time per room, most bought), the last 10
   runs, Copy as JSON (to paste back for tuning) and Clear.
 
+## Round 10 — settings
+
+- **Store** (`src/game/settings/settings.ts`): shake, freeze-on-hit (full /
+  reduced / off), flashes (full / reduced), music and effects volume. Saved in
+  this browser (guarded); garbage repairs to defaults. Presentation only —
+  hit stop off just means the clock never holds.
+- **Applied**: camera shake scales through `CombatFeedback.shake`; the scene
+  scales the hit stop; reduced flashes drop solid-white sprite and corpse
+  flashes, the full-screen hurt flash and the neon flicker, and soften the
+  red vignette and heartbeat pulse; effects play through their own bus and the
+  music bus follows its slider.
+- **Dialog** (`src/game/ui/SettingsPanel.ts`): one neon form for the title
+  (Settings) and the game (O, the SETTINGS button, listed on the pause card).
+  Opening it mid-shift pauses; Esc closes it first without unpausing.
+
 ## Known gaps / next steps
 
 - Round 3 finished the cast at 64px: a portrait generated from Alex's

@@ -1559,3 +1559,83 @@ body[data-mode='run'] .marquee {
   color: #6aff8a;
   font-size: 0.72rem;
 }
+
+/* Settings: one neon dialog for the title and the game. */
+.settings-panel {
+  position: fixed;
+  z-index: 40;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(560px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 20px 22px;
+  border: 2px solid #3ff0ff;
+  box-shadow: 0 0 0 2px rgb(255 63 200 / 45%), 0 0 30px rgb(63 240 255 / 25%);
+  background: rgb(11 7 20 / 97%);
+  color: #f4ecff;
+  text-align: left;
+}
+
+.settings-panel h2 {
+  margin: 0 0 12px;
+  color: #3ff0ff;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.settings-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border: 1px solid rgb(255 63 200 / 45%);
+  font-size: 0.8rem;
+}
+
+.settings-group legend {
+  padding: 0 6px;
+  color: #ffd84a;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.settings-group label,
+.settings-slider {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.settings-slider {
+  margin: 10px 0;
+  color: #ffd84a;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+}
+
+.settings-slider input {
+  flex: 1;
+  accent-color: #ff3fc8;
+}
+
+.settings-slider output {
+  min-width: 3.5ch;
+  color: #f4ecff;
+}
+
+.settings-note {
+  margin: 8px 0 14px;
+  color: #9a8fb4;
+  font-size: 0.72rem;
+}
+
+.settings-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
