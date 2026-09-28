@@ -11,8 +11,9 @@ import type { FusionInventoryNode } from '../../sim/fusion/types';
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
+import { STATIC_BURST_RADIUS } from '../../sim/combat/staticEnemy';
 
-export type DamageSource = 'hanger' | 'mannequin' | 'glob' | 'slam' | 'bossShot' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'glob' | 'slam' | 'bossShot' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -28,6 +29,8 @@ export type RunRecord = {
   readonly startedAt: string;
   readonly seed: number;
   readonly outcome: 'won' | 'dead' | 'quit';
+  /** Present (2) only for shifts on the upper floor. */
+  readonly floor?: 2;
   readonly ticks: number;
   readonly reachedRoom: number;
   readonly rooms: readonly RoomLog[];
@@ -46,7 +49,7 @@ type Snapshot = {
   readonly dashTicks: number;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, glob: 0, slam: 0, bossShot: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, glob: 0, slam: 0, bossShot: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -72,6 +75,16 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
     (enemy) => enemy.kind === 'mannequin' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
   );
   if (mannequin) return 'mannequin';
+  // A Bargain Hunter only hurts mid-charge, so one touching the janitor did it.
+  const shopper = combat.enemies.some(
+    (enemy) => enemy.kind === 'shopper' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 12,
+  );
+  if (shopper) return 'shopper';
+  // A Static shocks where it lands, so it is standing inside its burst.
+  const shock = combat.enemies.some(
+    (enemy) => enemy.kind === 'static' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= STATIC_BURST_RADIUS + 4,
+  );
+  if (shock) return 'static';
   const boss = combat.enemies.some((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
   if (boss && amount >= 2) return 'slam';
   const shots = combat.projectiles.filter((shot) => shot.faction === 'enemy').length;
@@ -162,6 +175,7 @@ export class PlaytestRecorder {
       startedAt: this.startedAt,
       seed: state.seed,
       outcome,
+      ...(state.wing.floor === 2 ? { floor: 2 as const } : {}),
       ticks: state.tick - this.startTick,
       reachedRoom: state.roomIndex + 1,
       rooms: this.rooms.map((room) => ({ ...room, damage: { ...room.damage } })),

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import type { EnemyState } from '../../src/sim/model';
 import { PlaytestRecorder } from '../../src/game/playtest/recorder';
+import { ascendToFloorTwo } from '../../src/sim/run/floors';
 import { PLAYTEST_MAX_RUNS, PlaytestLog, summarizeRuns } from '../../src/game/playtest/log';
 
 function hanger(x: number, y: number): EnemyState {
@@ -34,6 +35,25 @@ describe('playtest recorder', () => {
     expect(record.killedBy).toBe('hanger');
     expect(record.ticks).toBe(60);
     expect(recorder.observe(state)).toBeNull();
+  });
+
+  it('names the upstairs attackers and records which floor the shift was on', () => {
+    const state = ascendToFloorTwo(Object.assign(createMvpRun(7), { status: 'won' as const }));
+    const recorder = new PlaytestRecorder();
+    recorder.observe(state);
+    const p = state.room.combat.player;
+    state.room.combat.enemies = [{ ...hanger(p.x + 12, p.y), kind: 'shopper', radius: 16, chargeTicks: 8 } as EnemyState];
+    state.tick += 5;
+    p.health -= 1;
+    recorder.observe(state);
+    state.room.combat.enemies = [{ ...hanger(p.x + 20, p.y), kind: 'static', phase: 'recover' } as EnemyState];
+    state.tick += 5;
+    p.health -= 1;
+    recorder.observe(state);
+    const record = recorder.finish(state, 'quit')!;
+    expect(record.floor).toBe(2);
+    expect(record.rooms[0]!.damage.shopper).toBe(1);
+    expect(record.rooms[0]!.damage.static).toBe(1);
   });
 
   it('counts kills and records a quit', () => {
@@ -80,7 +100,7 @@ describe('playtest log', () => {
 
 describe('run summary', () => {
   it('reports win rate, where runs die, and what hurts', () => {
-    const room = (roomId: string, hanger: number, glob: number) => ({ roomId, name: roomId, enteredTick: 0, leftTick: 600, kills: 2, damage: { hanger, mannequin: 0, glob, slam: 0, bossShot: 0, other: 0 } });
+    const room = (roomId: string, hanger: number, glob: number) => ({ roomId, name: roomId, enteredTick: 0, leftTick: 600, kills: 2, damage: { hanger, mannequin: 0, static: 0, shopper: 0, glob, slam: 0, bossShot: 0, other: 0 } });
     const base = { version: 1, startedAt: 'x', seed: 1, ticks: 1200, reachedRoom: 3, bought: ['PARTY POPPER'], stolen: [], dashes: 4, killedBy: 'glob' } as const;
     const summary = summarizeRuns([
       { ...base, outcome: 'dead', rooms: [room('opening_concourse', 0, 0), room('food_court', 2, 4)] },
@@ -93,5 +113,17 @@ describe('run summary', () => {
     expect(summary.damageBySource.hanger).toBe(3);
     expect(summary.avgSecondsByRoom.food_court).toBe(10);
     expect(summary.topBought[0]).toEqual({ name: 'PARTY POPPER', count: 2 });
+  });
+
+  it('keeps upstairs rooms apart from the downstairs rooms that share their ids', () => {
+    const room = { roomId: 'food_court', name: 'CINEMA LOBBY', enteredTick: 0, leftTick: 600, kills: 1, damage: { hanger: 0, mannequin: 0, static: 0, shopper: 0, glob: 0, slam: 0, bossShot: 0, other: 0 } };
+    const base = { version: 1, startedAt: 'x', seed: 1, ticks: 600, reachedRoom: 3, bought: [], stolen: [], dashes: 0, killedBy: 'other' } as const;
+    const summary = summarizeRuns([
+      { ...base, outcome: 'dead', floor: 2, rooms: [room] },
+      { ...base, outcome: 'dead', rooms: [{ ...room, name: 'FOOD COURT' }] },
+    ]);
+    expect(summary.deathsByRoom).toEqual({ '2:food_court': 1, food_court: 1 });
+    expect(summary.roomNames['2:food_court']).toBe('CINEMA LOBBY');
+    expect(summary.roomNames.food_court).toBe('FOOD COURT');
   });
 });
