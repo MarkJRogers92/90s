@@ -99,6 +99,12 @@ export class MvpRunView {
   private deadSince: number | null = null;
   /** Real time the shift ended (won or dead), for the effects clock. */
   private endedAt: number | null = null;
+  /**
+   * Effect ticks that played while a cinematic held the sim (the boss title
+   * card). Added to every effects tick so spawn-ins, idles and feedback keep
+   * moving under the card, and the clock never runs backwards afterwards.
+   */
+  private heldTicks = 0;
   /** The RC car's sprite and its presentation memory (facing, dust, bump sparks). */
   private carSprite: Phaser.GameObjects.Image | null = null;
   private carLast: { x: number; y: number; bump: number } | null = null;
@@ -1361,13 +1367,19 @@ export class MvpRunView {
    * of freezing on top of the death fall. (The pause menu still freezes.)
    */
   private effectsTick(state: MvpRunState): number {
+    const held = Math.floor(this.heldTicks);
     if (state.status === 'playing') {
       this.endedAt = null;
-      return state.tick;
+      return state.tick + held;
     }
     if (this.endedAt === null) this.endedAt = this.scene.time.now;
     const since = this.scene.time.now - this.endedAt;
-    return state.tick + Math.floor((this.timeWarp ? this.timeWarp(since) : since) / (1000 / 60));
+    return state.tick + held + Math.floor((this.timeWarp ? this.timeWarp(since) : since) / (1000 / 60));
+  }
+
+  /** Lets effects run on while a cinematic holds the sim clock. */
+  public advanceHeldEffects(elapsedMs: number): void {
+    this.heldTicks += Math.max(0, elapsedMs) / (1000 / 60);
   }
 
   /** Slow motion for the effects that play out after the shift ends; null restores real time. */
@@ -1711,6 +1723,7 @@ export class MvpRunView {
 
   public resetForRun(): void {
     this.timeWarp = null;
+    this.heldTicks = 0;
     this.feedback.resetRoom('');
     this.weapon.reset();
     this.clearDashGhosts();

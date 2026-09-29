@@ -17,6 +17,7 @@ import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
+import { BossIntro } from '../ui/BossIntro';
 import { DawnEnding } from '../ui/DawnEnding';
 import { ClockIn } from '../ui/ClockIn';
 import { PinkSlip } from '../ui/PinkSlip';
@@ -393,6 +394,8 @@ export class MvpRunScene extends Phaser.Scene {
   private ride: EscalatorRide | null = null;
   /** The boss kill cam, while it plays; the end card waits for it. */
   private killCam: KillCam | null = null;
+  /** The boss title card while it holds the fight on entering a boss room. */
+  private bossIntro: BossIntro | null = null;
   /** The walk out at dawn after the Mall Manager; the end card waits for it. */
   private ending: DawnEnding | null = null;
   /** The clock-in cold open over a fresh shift (it never holds the run). */
@@ -489,7 +492,7 @@ export class MvpRunScene extends Phaser.Scene {
     const card = new ShiftCard(this);
     this.shiftCard = card;
     // Cinematic moments own every key and click while they play.
-    this.inputAdapter.riding = () => this.ride !== null || this.killCam !== null || this.pinkSlip !== null || (this.ending !== null && !this.endingHeld);
+    this.inputAdapter.riding = () => this.ride !== null || this.bossIntro !== null || this.killCam !== null || this.pinkSlip !== null || (this.ending !== null && !this.endingHeld);
     this.inputAdapter.endCard = {
       isOpen: () => card.open,
       ascends: () => card.offersAscend,
@@ -513,7 +516,7 @@ export class MvpRunScene extends Phaser.Scene {
         () => this.runView?.presentationSnapshot() ?? null,
         () => this.runView?.actorPresentationSnapshot() ?? null,
         () => this.runView?.concourseAmbienceSnapshot() ?? null,
-        () => this.clockIn !== null || this.killCam !== null || this.ride !== null || this.ending !== null || this.pinkSlip !== null,
+        () => this.clockIn !== null || this.bossIntro !== null || this.killCam !== null || this.ride !== null || this.ending !== null || this.pinkSlip !== null,
       );
       const removeProjection = installWorldToCanvas((x, y) => worldToCanvas(this, x, y));
       this.removeDebugBridge = () => {
@@ -540,6 +543,10 @@ export class MvpRunScene extends Phaser.Scene {
       if (pad.confirm || pad.cancel || pad.pause) (this.ride ?? this.ending)?.requestSkip();
       return;
     }
+    if (this.bossIntro) {
+      if (pad.confirm || pad.cancel || pad.pause) this.bossIntro.requestSkip();
+      return;
+    }
     if (this.benchCard?.open) {
       if (pad.confirm) this.confirmFusion();
       else if (pad.cancel) this.cancelFusion();
@@ -561,10 +568,19 @@ export class MvpRunScene extends Phaser.Scene {
     if (this.clockIn && this.clockIn.update(elapsedMs)) this.stopClockIn();
     // The PA waits out any cinematic, and stops talking once the shift is over.
     if (this.run.status !== 'playing') this.paTicker?.clear();
-    this.paTicker?.update(elapsedMs, this.clockIn !== null || this.ride !== null || this.killCam !== null || this.run.paused);
+    this.paTicker?.update(elapsedMs, this.clockIn !== null || this.ride !== null || this.bossIntro !== null || this.killCam !== null || this.run.paused);
     if (this.ride) {
       this.accumulator = 0;
       if (this.ride.update(elapsedMs)) this.endRide();
+      return;
+    }
+    if (this.bossIntro) {
+      // The title card holds the fight clock, like a pause the player didn't ask for.
+      this.accumulator = 0;
+      if (this.bossIntro.update(elapsedMs)) this.endBossIntro();
+      // The boss finishes stepping in under the card, rather than freezing mid-spawn.
+      this.runView?.advanceHeldEffects(elapsedMs);
+      this.syncView();
       return;
     }
     if (!this.inputAdapter || this.run.paused || this.run.status !== 'playing') {
@@ -610,9 +626,29 @@ export class MvpRunScene extends Phaser.Scene {
       this.cameras.main.fadeIn(240, 7, 5, 12);
       this.inputAdapter.clearHeld();
       clearMvpHeldActions(this.run);
+      this.startBossIntro();
     }
     this.syncCheckpoint();
     this.syncView();
+  }
+
+  /** Walking into a boss room: the title card names who runs this floor. */
+  private startBossIntro(): void {
+    if (this.bossIntro || this.run.status !== 'playing') return;
+    const boss = this.run.room.combat.enemies.find((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
+    if (!boss || !isBossKind(boss.kind)) return;
+    this.bossIntro = new BossIntro(this, boss.kind, { x: boss.x, y: boss.y }, { x: 480, y: 240 });
+    this.gameHud?.setHidden(true);
+    this.audio?.play('stamp');
+  }
+
+  private endBossIntro(): void {
+    if (this.bossIntro) this.gameHud?.setHidden(false);
+    this.bossIntro?.destroy();
+    this.bossIntro = null;
+    this.accumulator = 0;
+    this.inputAdapter?.clearHeld();
+    clearMvpHeldActions(this.run);
   }
 
   private setPaused(paused: boolean): void {
@@ -674,6 +710,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.endBeatPlayed = false;
     this.paTicker?.clear();
     this.endKillCam();
+    this.endBossIntro();
     this.endPinkSlip();
     this.lastStatus = 'playing';
     const won = fromEndCard && this.run.status === 'won';
@@ -713,6 +750,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.endBeatPlayed = false;
     this.stopClockIn();
     this.endKillCam();
+    this.endBossIntro();
     this.lastStatus = 'playing';
     this.run = ascend(this.run);
     this.playtest = new PlaytestRecorder();
@@ -868,7 +906,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.hitStopMs = Math.max(this.hitStopMs, hold);
     // Getting hurt (and the boss kill) ring the ears: the mix muffles while the frame holds.
     if (rawHold >= HIT_STOP_MS.playerHurt) this.audio?.muffle(Math.max(hold, 120));
-    if (!this.killCam) centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
+    if (!this.killCam && !this.bossIntro) centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);
     const pointer = this.input.activePointer;
@@ -1079,6 +1117,23 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return upstairs;
     }
+    if (fixture === 'mvp-boss-door') {
+      // The room before the boss, cleared, at its east door: walk in for the title card.
+      let guard = 0;
+      while (state.wing.rooms[state.roomIndex + 1]?.bossAnchor == null && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      state.room.combat.enemies = [];
+      const door = state.wing.rooms[state.roomIndex]?.doorways.find((entry) => entry.side === 'east');
+      if (door) {
+        state.room.combat.player.x = door.rect.x - 40;
+        state.room.combat.player.y = door.rect.y + door.rect.height / 2;
+      }
+      return state;
+    }
     if (fixture === 'mvp-wanted') {
       // Five stars in the opening corridor: Loss Prevention arrives in 3 s.
       state.heat = 100;
@@ -1171,6 +1226,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.endPinkSlip();
     this.killCam?.destroy();
     this.killCam = null;
+    this.bossIntro?.destroy();
+    this.bossIntro = null;
     this.ending?.destroy();
     this.ending = null;
     this.ride?.destroy();

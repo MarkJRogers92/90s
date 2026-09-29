@@ -64,7 +64,6 @@ export class GameHud {
   private expanded = true;
   private readonly peekKey: Phaser.Input.Keyboard.Key | undefined;
   private titleRoomKey = '';
-  private bossIntro = false;
   private wantedShown = 0;
   private wantedChangedTick = -1000;
   private shiftStartTick: number | null = null;
@@ -627,7 +626,7 @@ export class GameHud {
   private titleCardBusy(state: MvpRunState): boolean {
     if (this.roomKey(state) !== this.titleRoomKey) return true;
     if (!this.titleCard) return false;
-    return state.tick - this.titleCard.startedTick < (this.bossIntro ? 150 : 110) + 40;
+    return state.tick - this.titleCard.startedTick < 110 + 40;
   }
 
   private roomKey(state: MvpRunState): string {
@@ -700,16 +699,13 @@ export class GameHud {
           ? 'BLUE LIGHT SPECIAL - ONE ITEM HALF PRICE'
           : `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`;
       const subtitleColor = event === 'blackout' ? '#ff5a6a' : event === 'blue_light' ? '#6a9aff' : '#3ff0ff';
-      // The boss room gets a boss card instead of a room name.
+      // The boss room's card is BossIntro, which holds the fight while it plays.
       const bossRoom = (room?.bossAnchor ?? null) !== null;
-      const sign = bossRoom
-        ? state.wing.floor === 3
-          ? ensureNeonSign(this.scene, { text: 'THE MALL OWNER', color: '#ff2a3a', scale: 6, subtitle: 'EVERYTHING YOU SEE IS MINE. INCLUDING YOU.', subtitleColor: '#ffd84a' })
-          : state.wing.floor === 2
-          ? ensureNeonSign(this.scene, { text: 'THE MALL MANAGER', color: '#ff2a3a', scale: 6, subtitle: 'THE CUSTOMER IS NEVER RIGHT.', subtitleColor: '#ffd84a' })
-          : ensureNeonSign(this.scene, { text: 'LOSS PREVENTION', color: '#ff2a3a', scale: 6, subtitle: 'NO REFUNDS. NO EXCHANGES. NO SURVIVORS.', subtitleColor: '#ffd84a' })
-        : ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });
-      this.bossIntro = bossRoom;
+      if (bossRoom) {
+        this.titleCard = null;
+        return;
+      }
+      const sign = ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });
       const halo = this.scene.add.image(SCREEN_W / 2, 200, sign.halo).setBlendMode(Phaser.BlendModes.ADD);
       const core = this.scene.add.image(SCREEN_W / 2, 200, sign.core);
       this.root.add([halo, core]);
@@ -717,14 +713,8 @@ export class GameHud {
     }
     if (!this.titleCard) return;
     const age = state.tick - this.titleCard.startedTick;
-    const hold = this.bossIntro ? 150 : 110;
+    const hold = 110;
     const fade = age < 20 ? age / 20 : age < hold ? 1 : Math.max(0, 1 - (age - hold) / 40);
-    if (this.bossIntro && fade > 0) {
-      // Letterbox bars slam in for the boss card.
-      const bar = Math.round(Math.min(1, age / 10) * 46 * fade);
-      this.frame.fillStyle(0x05030a, 0.92).fillRect(0, 0, SCREEN_W, bar).fillRect(0, SCREEN_H - bar, SCREEN_W, bar);
-      this.frame.fillStyle(0xff2a3a, fade).fillRect(0, bar, SCREEN_W, 2).fillRect(0, SCREEN_H - bar - 2, SCREEN_W, 2);
-    }
     // A wind-up must never hide behind the room title: it steps aside. Once the
     // shift is over the sim clock stops, so a young title would freeze on screen.
     const alpha = state.status !== 'playing' ? 0 : Math.min(fade, this.windupActive(state) ? 0.2 : 1);
