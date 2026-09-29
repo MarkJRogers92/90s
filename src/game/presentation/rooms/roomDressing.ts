@@ -15,7 +15,8 @@
  */
 import type { Rect } from '../../../sim/model';
 import type { WingRoomDefinition } from '../../../sim/wing/types';
-import { INTERIOR_BOUNDS, INTERIOR_EXIT } from '../../../sim/run/storeInterior';
+import { INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_XS, roomStores } from '../../../sim/run/storeInterior';
+import type { WingStoreInstance } from '../../../sim/wing/types';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
 
@@ -413,14 +414,21 @@ function openingConcourse(room: WingRoomDefinition): DressingPlan {
  * there is only the mall: planters, a bench, a cart, and that door lit up.
  */
 function storefront(room: WingRoomDefinition): DressingPlan {
-  const store = room.store;
-  const look = (store && STORE_LOOKS[store.templateId]) ?? STORE_LOOKS['mall-mart']!;
-  const neighbour: FacadeId = look.facade === 'arcade' ? 'video' : 'arcade';
-  const facades = facadeRow([
-    { facade: neighbour, sign: null, spill: 0x8a70c0 },
-    { facade: look.facade, sign: sign((store?.name ?? 'STORE').toUpperCase(), look.neon, look.subtitle, NEON.yellow), spill: look.spill },
-    { facade: 'music', sign: null, spill: 0x9a6aa8 },
-  ]);
+  const stores = roomStores(room);
+  // Each shopfront is centred on its door (STORE_ENTRANCE_XS), so walking
+  // into the art's doorway is walking into the shop.
+  const facades: DressingFacade[] = stores.map((store, index) => {
+    const look = STORE_LOOKS[store.templateId] ?? STORE_LOOKS['mall-mart']!;
+    const width = FACADE_TEXTURES[look.facade].width;
+    const x = Math.round((STORE_ENTRANCE_XS[index] ?? 480) - width / 2);
+    return {
+      id: `facade-${index}-${look.facade}`,
+      facade: look.facade,
+      x,
+      sign: { ...sign(store.name.toUpperCase(), look.neon, look.subtitle, NEON.yellow), x: x + width / 2, y: FACADE_BASE_Y - FACADE_HEIGHT + 30 },
+      spill: look.spill,
+    };
+  });
   const props: DressingProp[] = [];
   interiorWalls(room).forEach((wall, index) => props.push(...coverWall(wall, index, 'storefront')));
   props.push(
@@ -437,12 +445,19 @@ function storefront(room: WingRoomDefinition): DressingPlan {
     ...facadeSpillLights(facades),
     ...doorwayLights(room, NEON.violet),
     ...ceilingGrid(NEON.warm, 0.4, 150, [150, 400], [110, 480, 850]),
-    // The open shop door throws its light out across the floor.
-    { x: 480, y: 70, radius: 150, color: look.spill, intensity: 0.8, squash: 0.6 },
+    // Each open shop door throws its light out across the floor.
+    ...stores.map((store, index) => ({
+      x: STORE_ENTRANCE_XS[index] ?? 480,
+      y: 70,
+      radius: 150,
+      color: (STORE_LOOKS[store.templateId] ?? STORE_LOOKS['mall-mart']!).spill,
+      intensity: 0.8,
+      squash: 0.6,
+    })),
   ];
   return {
     themeId: 'storefront',
-    areaName: (store?.name ?? room.name).toUpperCase(),
+    areaName: room.name.toUpperCase(),
     floor: 'terrazzo',
     ambient: 0x4a3e5c,
     facades,
@@ -486,8 +501,7 @@ function sized(prop: PropId, scale = 1.35): { width: number; height: number } {
  * behind every item for sale, checkouts either side of the door, and the
  * door itself at the bottom (drawn by MallRoomView).
  */
-function storeInterior(room: WingRoomDefinition): DressingPlan {
-  const store = room.store;
+function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null): DressingPlan {
   const look = (store && STORE_LOOKS[store.templateId]) ?? STORE_LOOKS['mall-mart']!;
   const stock = (store && INTERIOR_LOOKS[store.templateId]) ?? INTERIOR_LOOKS['mall-mart']!;
   const b = INTERIOR_BOUNDS;
@@ -507,7 +521,7 @@ function storeInterior(room: WingRoomDefinition): DressingPlan {
     }
   }
   // A shelf behind every item for sale, so it reads as on display.
-  for (const offer of room.offers) {
+  for (const offer of room.offers.filter((candidate) => candidate.storeId === store?.templateId)) {
     props.push({ id: `fixture-${offer.id}`, prop: look.fixture, x: offer.position.x, y: offer.position.y - 12, ...sized(look.fixture, 1.5) });
   }
   // Checkouts either side of the door, and the corners.
@@ -839,9 +853,10 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
   }
 }
 
-export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 | 3 = 1, interior = false): DressingPlan {
+export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 | 3 = 1, insideStore: number | null = null): DressingPlan {
   // A shop looks like itself on any floor.
-  if (interior && room.store) return storeInterior(room);
+  const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
+  if (shop) return storeInterior(room, shop);
   const plan = planFloorOneRoom(room);
   return floor === 3 ? topFloor(plan, room) : floor === 2 ? upperFloor(plan, room) : plan;
 }

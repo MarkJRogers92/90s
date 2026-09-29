@@ -22,6 +22,7 @@ import { blueLightOfferId } from '../../sim/run/roomEvents';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { hotHeatFloor, hotItemCount, isHotNode, wantedStars } from '../../sim/run/wanted';
 import { STALKER_MIN_STARS } from '../../sim/run/stalker';
+import { activeStore, roomStores } from '../../sim/run/storeInterior';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
@@ -161,17 +162,21 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
       text: state.room.cleared ? 'AREA SECURED' : `CLEAR THE AREA  ${living.length} LEFT`,
       done: state.room.cleared,
     });
-  } else if (room?.store) {
-    const taken = room.offers.filter((offer) => (state.offerStatus[offer.id] ?? 'available') !== 'available').length;
+  } else if (room && roomStores(room).length > 0) {
+    const stores = roomStores(room);
+    const inside = activeStore(state);
+    const shelf = inside ? room.offers.filter((offer) => offer.storeId === inside.templateId) : room.offers;
+    const taken = shelf.filter((offer) => (state.offerStatus[offer.id] ?? 'available') !== 'available').length;
     const alarm = state.alarm;
     if (alarm?.shutter === 'open') {
       objectives.push({ text: `GET OUT! SHUTTER IN ${(Math.ceil(alarm.ticksLeft / 6) / 10).toFixed(1)}S`, done: false });
     } else if (alarm?.shutter === 'closed') {
       objectives.push({ text: `LOCKED IN - TAKE DOWN SECURITY  ${living.length} LEFT`, done: false });
-    } else if (!state.room.interior) {
-      objectives.push({ text: `STEP INTO ${room.store.name.toUpperCase()}`, done: taken > 0 });
+    } else if (!inside) {
+      const names = stores.map((store) => store.name.toUpperCase()).join(' OR ');
+      objectives.push({ text: `STEP INTO ${names}`, done: taken > 0 });
     } else {
-      objectives.push({ text: `SHOP OR GRAB & RUN  ${taken}/${room.offers.length}`, done: taken > 0 });
+      objectives.push({ text: `SHOP OR GRAB & RUN  ${taken}/${shelf.length}`, done: taken > 0 });
     }
   } else if (room?.benchKiosk) {
     objectives.push({ text: 'CHECK THE BENCH WARRANT', done: state.inventory.committedTransactions.length > 0 });
@@ -248,13 +253,19 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   };
 }
 
+/** A store's name by template id, among the current room's shops. */
+function storeNamed(state: MvpRunState, templateId: string): string | undefined {
+  const room = state.wing.rooms[state.roomIndex];
+  return room ? roomStores(room).find((store) => store.templateId === templateId)?.name : undefined;
+}
+
 function alarmFor(state: MvpRunState): HudAlarm | null {
   const alarm = state.alarm;
   if (alarm === null) return null;
   return {
     secondsLeft: Math.ceil(alarm.ticksLeft / 6) / 10,
     shutter: alarm.shutter,
-    store: (state.wing.rooms[alarm.roomIndex]?.store?.name ?? '').toUpperCase(),
+    store: (storeNamed(state, alarm.storeId) ?? '').toUpperCase(),
   };
 }
 

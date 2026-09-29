@@ -13,6 +13,7 @@
  * presentation: shown messages, toast timers, and the hotbar's hit boxes.
  */
 import Phaser from 'phaser';
+import { activeStore } from '../../sim/run/storeInterior';
 import type { MvpRunState } from '../../sim/run/types';
 import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
@@ -691,7 +692,8 @@ export class GameHud {
       this.titleRoomKey = roomKey;
       this.titleCard?.images.forEach((image) => image.destroy());
       const room = state.wing.rooms[state.roomIndex];
-      const name = (room?.store?.name ?? room?.name ?? '').toUpperCase();
+      // Inside a shop the card names the shop; out on the concourse, the wing.
+      const name = (activeStore(state)?.name ?? room?.name ?? '').toUpperCase();
       // Room events announce themselves in the title card's subtitle.
       const event = roomEventFor(state, state.roomIndex);
       const subtitle = event === 'blackout'

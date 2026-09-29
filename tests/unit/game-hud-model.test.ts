@@ -79,12 +79,14 @@ describe('game HUD model', () => {
       enterDoorway(run, 'east');
     }
     run.room.combat.enemies = [];
-    const storeName = run.wing.rooms[run.roomIndex]!.store!.name.toUpperCase();
-    run.alarm = { storeId: 'x', roomIndex: run.roomIndex, ticksLeft: 192, shutter: 'open' };
+    const store = run.wing.rooms[run.roomIndex]!.store!;
+    const storeName = store.name.toUpperCase();
+    // The banner names the shop whose alarm is ringing (a room has two).
+    run.alarm = { storeId: store.templateId, roomIndex: run.roomIndex, ticksLeft: 192, shutter: 'open' };
     const open = buildGameHudModel(run);
     expect(open.alarm?.store).toBe(storeName);
     expect(open.objectives.some((objective) => objective.text === 'GET OUT! SHUTTER IN 3.2S')).toBe(true);
-    run.alarm = { storeId: 'x', roomIndex: run.roomIndex, ticksLeft: 0, shutter: 'closed' };
+    run.alarm = { storeId: store.templateId, roomIndex: run.roomIndex, ticksLeft: 0, shutter: 'closed' };
     const guards = buildGameHudModel(run).enemiesLeft;
     expect(buildGameHudModel(run).objectives.some((objective) => objective.text === `LOCKED IN - TAKE DOWN SECURITY  ${guards} LEFT`)).toBe(true);
   });

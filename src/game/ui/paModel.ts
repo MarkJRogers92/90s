@@ -16,6 +16,7 @@ import { COMBO_MILESTONE } from '../../sim/run/combo';
 import type { MvpRunState } from '../../sim/run/types';
 import { hotItemCount, wantedStars } from '../../sim/run/wanted';
 import { STALKER_MIN_STARS } from '../../sim/run/stalker';
+import { activeStore } from '../../sim/run/storeInterior';
 
 export const PA_COOLDOWN_TICKS = 60 * 12;
 export const PA_IDLE_TICKS = 60 * 45;
@@ -107,7 +108,7 @@ function snapshot(state: MvpRunState): Snapshot {
     hotItems: hotItemCount(state),
     alarm: state.alarm !== null,
     shutter: state.alarm?.shutter ?? null,
-    store: (state.wing.rooms[state.roomIndex]?.store?.name ?? 'the store').toUpperCase(),
+    store: (activeStore(state)?.name ?? 'the store').toUpperCase(),
     comboTier: Math.floor((state.stats?.combo ?? 0) / COMBO_MILESTONE),
     quiet: !state.room.combat.enemies.some((enemy) => enemy.health > 0),
   };

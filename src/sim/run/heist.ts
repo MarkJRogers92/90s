@@ -22,6 +22,7 @@ import { RUN_SECURED_THEFT_HEAT, beginRunTheft, publishRunFeedback, runOwnsCapab
 import { hasLivingEnemies, spawnSecurityGuard, type SecurityKind } from './rooms';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { applyHeatFloor, wantedStars } from './wanted';
+import { activeStore } from './storeInterior';
 import { MAX_SECURITY_HEAT } from '../shop/types';
 
 /** Four seconds from the grab to the shutter. */
@@ -83,7 +84,7 @@ export function alarmTicksFor(state: MvpRunState): number {
 }
 
 function currentStore(state: MvpRunState): WingStoreInstance | null {
-  return state.wing.rooms[state.roomIndex]?.store ?? null;
+  return activeStore(state);
 }
 
 function sendGuards(state: MvpRunState, store: WingStoreInstance, wave: 'alarm' | 'lockdown'): void {

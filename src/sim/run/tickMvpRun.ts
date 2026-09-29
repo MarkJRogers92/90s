@@ -60,7 +60,7 @@ import {
 import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
 import { layLow, wantedStars } from './wanted';
 import { updateStalker } from './stalker';
-import { checkStoreEntrance, enterStore, leaveStore, nearStoreEntrance } from './storeInterior';
+import { activeStore, checkStoreEntrance, enterStore, leaveStore, roomStores, storeEntranceNear } from './storeInterior';
 import type {
   MvpCommandResult,
   MvpInputFrame,
@@ -95,12 +95,14 @@ function rejected(reason: string): MvpCommandResult {
 
 /** The nearest available offer in the current room, within interaction range. */
 export function nearestRunOffer(state: MvpRunState) {
-  // The shelves are inside the store; from the concourse only the door is.
-  if (!state.room.interior) return undefined;
+  // The shelves are inside the store; from the concourse only the doors are.
+  const store = activeStore(state);
+  if (store === null) return undefined;
   const player = state.room.combat.player;
   return currentRoom(state)
     .offers.filter(
       (offer) =>
+        offer.storeId === store.templateId &&
         (state.offerStatus[offer.id] ?? 'available') === 'available' &&
         distanceToPoint(player, offer.position) <= RUN_INTERACTION_RANGE,
     )
@@ -182,11 +184,13 @@ export function nearestMvpInteraction(state: MvpRunState): MvpInteraction {
     });
   }
 
-  if (room.store && nearStoreEntrance(state, RUN_INTERACTION_RANGE)) {
+  const shop = storeEntranceNear(state, RUN_INTERACTION_RANGE);
+  const shopStore = shop === null ? undefined : roomStores(room)[shop];
+  if (shop !== null && shopStore) {
     candidates.push({
       distance: Math.max(0, player.y - 26),
-      key: 'store',
-      interaction: { kind: 'store', label: `Enter the ${room.store.name}` },
+      key: `store:${shop}`,
+      interaction: { kind: 'store', storeIndex: shop, label: `Enter the ${shopStore.name}` },
     });
   }
 
@@ -230,7 +234,7 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
     case 'bench':
       return openRunWorkbench(state);
     case 'store':
-      return enterStore(state);
+      return enterStore(state, interaction.storeIndex);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }
@@ -294,6 +298,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
     enteredFrom: enteringFrom,
     tokens: [],
     interior: false,
+    storeIndex: 0,
   };
   state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
   state.alarm = null;
@@ -357,8 +362,8 @@ function healClearedRoom(state: MvpRunState): void {
  * the alarm runs, for a janitor still inside.
  */
 function evaluateStoreBoundary(state: MvpRunState, previousPosition: Vec2): void {
-  const store: WingStoreInstance | null = currentRoom(state).store;
-  if (store && state.room.interior) {
+  const store: WingStoreInstance | null = activeStore(state);
+  if (store) {
     const player = state.room.combat.player;
     if (crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store))) {
       let secured = false;

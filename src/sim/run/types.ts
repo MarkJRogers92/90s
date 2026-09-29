@@ -43,6 +43,8 @@ export type MvpRoomState = {
   tokens: MallTokenPickup[];
   /** Inside this storefront's store rather than on its concourse (see storeInterior.ts). Never checkpointed. */
   interior: boolean;
+  /** Which of the room's shops (`roomStores` order) the janitor is inside; 0 on the concourse. */
+  storeIndex: number;
 };
 
 /** Renderer-neutral held input for exactly one fixed simulation tick. */
@@ -77,7 +79,7 @@ export type MvpInteraction =
       readonly lockedReason: string | null;
     }
   | { readonly kind: 'bench'; readonly label: string }
-  | { readonly kind: 'store'; readonly label: string }
+  | { readonly kind: 'store'; readonly storeIndex: number; readonly label: string }
   | { readonly kind: 'none'; readonly label: string };
 
 /** Every run command reports its own outcome; the HUD never infers success. */

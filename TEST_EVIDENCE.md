@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-09-29 — round 27b: two shops per storefront
+
+- `tests/unit/store-interior.test.ts` rewritten for two shops (10 tests):
+  every floor of five seeds visits all four stores exactly once, four items
+  each, the wing's own first shop keeps its stock; each door enters its own
+  shop; only that shop's shelves answer; walking out returns in front of
+  that shop; a grab from either shop is secured; restores keep the shops.
+- `game-hud-model` alarm test now uses the ringing shop's real id (it faked
+  `'x'` and relied on the room having one store).
+- `npx tsc --noEmit` clean; `npx vitest run` 924 tests passed; browser suite
+  74/74.
+- Manual: the West Shops concourse shows Arcade Annex and Mall Mart side by
+  side with chevrons at each door; walking into the right one enters Mall
+  Mart with its own stock.
+
 ## 2026-09-29 — round 27: store interiors
 
 - New: `tests/unit/store-interior.test.ts` (8: full-room scaling keeps stock,

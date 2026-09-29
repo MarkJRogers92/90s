@@ -3,17 +3,21 @@
  *
  * A storefront room used to put its store in the middle of the concourse: a
  * rug with items floating over it and an invisible door on its bottom edge.
- * Now the concourse is just the concourse, and the shop's own door in the
- * back-wall art leads inside. The inside is the whole room: the store's
- * template is scaled up to fill it (`generateRunWing`), walls go up around
- * it, and the only way out is the shop door at the bottom, past the
+ * Now the concourse is just the concourse, with two shops in its back wall,
+ * and each shop's own door leads inside. The inside is the whole room: the
+ * store's template is scaled up to fill it (`generateRunWing`), walls go up
+ * around it, and the only way out is the shop door at the bottom, past the
  * anti-theft gates. Walking out through it secures stolen goods and puts the
- * janitor back on the concourse at the shop's entrance.
+ * janitor back on the concourse in front of that shop.
  *
- * Because the scaled store is still an ordinary `WingStoreInstance`, the
+ * Every floor's wing has four store templates and two storefront rooms. The
+ * wing gives each room one; the run adds the other two as each room's second
+ * shop, with its own seeded window of stock, so a shift visits all four.
+ *
+ * Because each scaled store is still an ordinary `WingStoreInstance`, the
  * alarm, guard spots, shutter and securing rules in heist.ts and economy.ts
  * all work inside unchanged. The separate M3 Shoplifting Loop mode does not
- * use the run's wing and keeps its original stores.
+ * use the run's wing and keeps its original one-store rooms.
  *
  * Pure rules over run data; nothing here reads the renderer.
  */
@@ -21,7 +25,7 @@ import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
 import type { Rect, Vec2 } from '../model';
 import { generateWing } from '../wing/generateWing';
 import type { GeneratedWing, WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/types';
-import { DOORWAY_WIDTH, WALL_THICKNESS } from '../wing/templates';
+import { DOORWAY_WIDTH, STORE_TEMPLATES, WALL_THICKNESS, type AuthoredStoreTemplate } from '../wing/templates';
 import { publishRunFeedback } from './economy';
 import type { MvpCommandResult, MvpRunState } from './types';
 
@@ -40,14 +44,35 @@ export const INTERIOR_EXIT: Rect = {
 /** Where the janitor stands on arrival: just inside the door, facing in. */
 export const INTERIOR_ARRIVAL: Vec2 = { x: PLAYFIELD_WIDTH / 2, y: INTERIOR_EXIT.y - 30 };
 /**
- * The shop's entrance on the concourse: the door in the back-wall art, which
- * the dressing centres. Walking into the back wall here goes inside.
+ * The shops' doors on the concourse, left and right on the back wall, in the
+ * order of `roomStores`. The dressing centres each shopfront on its door.
  */
-export const STORE_ENTRANCE: Vec2 = { x: PLAYFIELD_WIDTH / 2, y: 26 };
-/** How wide the entrance is, either side of its centre. */
+export const STORE_ENTRANCE_XS: readonly number[] = [240, 720];
+/** How far down the back wall a shop door reaches. */
+export const STORE_ENTRANCE_Y = 26;
+/** How wide an entrance is, either side of its centre. */
 export const STORE_ENTRANCE_HALF_WIDTH = 44;
-/** Where the janitor comes back out: in front of the shop, clear of the entrance. */
-export const STORE_EXIT_ARRIVAL: Vec2 = { x: PLAYFIELD_WIDTH / 2, y: 64 };
+/** Where the janitor comes back out: this far in front of the shop door. */
+export const STORE_EXIT_ARRIVAL_Y = 64;
+/** Stock per shop, like the wing's own storefronts. */
+const OFFERS_PER_STORE = 4;
+
+/** Every shop in a room, in back-wall order: the wing's own first, then the run's second. */
+export function roomStores(room: WingRoomDefinition): readonly WingStoreInstance[] {
+  return room.stores ?? (room.store ? [room.store] : []);
+}
+
+/** The concourse door of a room's shop, by its index in `roomStores`. */
+export function storeEntrance(index: number): Vec2 {
+  return { x: STORE_ENTRANCE_XS[index] ?? PLAYFIELD_WIDTH / 2, y: STORE_ENTRANCE_Y };
+}
+
+/** The store the janitor is inside, or null on the concourse. */
+export function activeStore(state: MvpRunState): WingStoreInstance | null {
+  if (!state.room.interior) return null;
+  const room = state.wing.rooms[state.roomIndex];
+  return room ? roomStores(room)[state.room.storeIndex] ?? null : null;
+}
 
 /** Maps a point from a template store's bounds onto the full-room interior. */
 function toInterior(point: Vec2, from: Rect): Vec2 {
@@ -57,24 +82,82 @@ function toInterior(point: Vec2, from: Rect): Vec2 {
   };
 }
 
-/** One storefront's store and offers, scaled up to fill the room. */
-export function scaleStoreToInterior(room: WingRoomDefinition): WingRoomDefinition {
-  const store = room.store;
-  if (!store) return room;
-  const scaled: WingStoreInstance = {
-    ...store,
-    bounds: { ...INTERIOR_BOUNDS },
-    resetPoint: { x: INTERIOR_ARRIVAL.x, y: INTERIOR_EXIT.y + 20 },
-    exit: { ...store.exit, bounds: { ...INTERIOR_EXIT } },
+/** A store scaled to the full-room interior, with its offers moved to match. */
+function scaleStore(store: WingStoreInstance, offers: readonly WingOffer[]): { store: WingStoreInstance; offers: WingOffer[] } {
+  return {
+    store: {
+      ...store,
+      bounds: { ...INTERIOR_BOUNDS },
+      resetPoint: { x: INTERIOR_ARRIVAL.x, y: INTERIOR_EXIT.y + 20 },
+      exit: { ...store.exit, bounds: { ...INTERIOR_EXIT } },
+    },
+    offers: offers.map((offer) => ({ ...offer, position: toInterior(offer.position, store.bounds) })),
   };
-  const offers: WingOffer[] = room.offers.map((offer) => ({ ...offer, position: toInterior(offer.position, store.bounds) }));
-  return { ...room, store: scaled, offers };
 }
 
-/** The run's wing: the generated wing with every store scaled to a full-room interior. */
+/** A stable hash, so the second shops and their stock are seeded without touching the wing's own rolls. */
+function hash(seed: number, key: string): number {
+  let value = (2166136261 ^ seed) >>> 0;
+  for (let index = 0; index < key.length; index += 1) {
+    value ^= key.charCodeAt(index);
+    value = Math.imul(value, 16777619) >>> 0;
+  }
+  return value;
+}
+
+/** A template as a run store: a seeded window of its stock, like the wing's own. */
+function instantiate(template: AuthoredStoreTemplate, seed: number): { store: WingStoreInstance; offers: WingOffer[] } {
+  const span = Math.max(0, template.offers.length - OFFERS_PER_STORE);
+  const start = span === 0 ? 0 : hash(seed, `${template.id}:stock`) % (span + 1);
+  const offers: WingOffer[] = template.offers.slice(start, start + OFFERS_PER_STORE).map((offer) => ({
+    id: `${template.id}-${offer.itemDefinitionId}`,
+    storeId: template.id,
+    itemDefinitionId: offer.itemDefinitionId,
+    position: { ...offer.position },
+    price: offer.price,
+  }));
+  return {
+    store: {
+      templateId: template.id,
+      name: template.name,
+      bounds: { ...template.bounds },
+      resetPoint: { ...template.resetPoint },
+      exit: { id: template.exit.id, label: template.exit.label, bounds: { ...template.exit.bounds } },
+      sightZone: { ...template.sightZone, origin: { ...template.sightZone.origin } },
+      offerIds: offers.map((offer) => offer.id),
+    },
+    offers,
+  };
+}
+
+/**
+ * The run's wing: the generated wing, with every storefront given a second
+ * shop from the templates the wing left unused, and every shop scaled to a
+ * full-room interior.
+ */
 export function generateRunWing(seed: number, floor: 1 | 2 | 3 = 1): GeneratedWing {
   const wing = generateWing(seed, floor);
-  return { ...wing, rooms: wing.rooms.map(scaleStoreToInterior) };
+  const used = new Set(wing.rooms.flatMap((room) => (room.store ? [room.store.templateId] : [])));
+  const spare = STORE_TEMPLATES
+    .filter((template) => !used.has(template.id))
+    .sort((first, second) => hash(seed, first.id) - hash(seed, second.id));
+  let nextSpare = 0;
+  const rooms = wing.rooms.map((room): WingRoomDefinition => {
+    if (!room.store) return room;
+    const first = scaleStore(room.store, room.offers);
+    const template = spare[nextSpare];
+    nextSpare += 1;
+    if (!template) return { ...room, store: first.store, stores: [first.store], offers: first.offers };
+    const extra = instantiate(template, seed);
+    const second = scaleStore(extra.store, extra.offers);
+    return {
+      ...room,
+      store: first.store,
+      stores: [first.store, second.store],
+      offers: [...first.offers, ...second.offers],
+    };
+  });
+  return { ...wing, rooms };
 }
 
 /** The walls of a store's inside: everything but its floor, with a gap for the door. */
@@ -91,19 +174,24 @@ export function interiorWalls(store: Pick<WingStoreInstance, 'bounds' | 'exit'>)
   ];
 }
 
-function currentStore(state: MvpRunState): WingStoreInstance | null {
-  return state.wing.rooms[state.roomIndex]?.store ?? null;
-}
-
-/** True when the janitor is on the concourse close enough to the shop door to go in. */
-export function nearStoreEntrance(state: MvpRunState, reach: number): boolean {
-  if (state.room.interior || currentStore(state) === null) return false;
+/**
+ * The shop whose concourse door the janitor is at (within `reach` of it), as
+ * its index in `roomStores`, or null.
+ */
+export function storeEntranceNear(state: MvpRunState, reach: number): number | null {
+  if (state.room.interior) return null;
+  const room = state.wing.rooms[state.roomIndex];
+  if (!room) return null;
   const player = state.room.combat.player;
-  return Math.abs(player.x - STORE_ENTRANCE.x) <= STORE_ENTRANCE_HALF_WIDTH + reach
-    && player.y - STORE_ENTRANCE.y <= reach;
+  const stores = roomStores(room);
+  for (let index = 0; index < stores.length; index += 1) {
+    const door = storeEntrance(index);
+    if (Math.abs(player.x - door.x) <= STORE_ENTRANCE_HALF_WIDTH + reach && player.y - door.y <= reach) return index;
+  }
+  return null;
 }
 
-/** Leaves the room-local things behind a doorway: shots, puddles, the car's spot. */
+/** Leaves the room-local things behind a doorway: shots, puddles, the stalker's position. */
 function clearRoomLocal(state: MvpRunState): void {
   const combat = state.room.combat;
   combat.projectiles = [];
@@ -112,13 +200,15 @@ function clearRoomLocal(state: MvpRunState): void {
   state.stalker = null;
 }
 
-/** Walks through the shop door into the store. */
-export function enterStore(state: MvpRunState): MvpCommandResult {
-  const store = currentStore(state);
-  if (store === null) return { accepted: false, reason: 'There is no store here.' };
-  if (state.room.interior) return { accepted: false, reason: `Already inside the ${store.name}.` };
+/** Walks through a shop's door into the store. */
+export function enterStore(state: MvpRunState, index = 0): MvpCommandResult {
+  const room = state.wing.rooms[state.roomIndex];
+  const store = room ? roomStores(room)[index] : undefined;
+  if (!store) return { accepted: false, reason: 'There is no store here.' };
+  if (state.room.interior) return { accepted: false, reason: 'Already inside a store.' };
   const combat = state.room.combat;
   state.room.interior = true;
+  state.room.storeIndex = index;
   combat.walls = interiorWalls(store);
   combat.player.x = INTERIOR_ARRIVAL.x;
   combat.player.y = INTERIOR_ARRIVAL.y;
@@ -130,19 +220,20 @@ export function enterStore(state: MvpRunState): MvpCommandResult {
 }
 
 /**
- * Back out onto the concourse. Anything the alarm sent stays inside with the
- * shutter: getting out is getting away.
+ * Back out onto the concourse, in front of the shop just left. Anything the
+ * alarm sent stays inside with the shutter: getting out is getting away.
  */
 export function leaveStore(state: MvpRunState, announce = true): void {
-  const store = currentStore(state);
-  if (store === null || !state.room.interior) return;
+  const store = activeStore(state);
+  if (store === null) return;
   const combat = state.room.combat;
   const room = state.wing.rooms[state.roomIndex]!;
+  const door = storeEntrance(state.room.storeIndex);
   state.room.interior = false;
   combat.walls = room.walls.map((wall) => ({ ...wall }));
   combat.enemies = [];
-  combat.player.x = STORE_EXIT_ARRIVAL.x;
-  combat.player.y = STORE_EXIT_ARRIVAL.y;
+  combat.player.x = door.x;
+  combat.player.y = STORE_EXIT_ARRIVAL_Y;
   combat.player.facing = { x: 0, y: 1 };
   state.alarm = null;
   clearRoomLocal(state);
@@ -150,12 +241,14 @@ export function leaveStore(state: MvpRunState, announce = true): void {
 }
 
 /**
- * Walking into the shop door on the back wall goes inside, like walking into
- * a doorway at either end of the room.
+ * Walking into a shop door on the back wall goes inside, like walking into a
+ * doorway at either end of the room.
  */
 export function checkStoreEntrance(state: MvpRunState, moveY: number): boolean {
-  if (moveY >= 0 || !nearStoreEntrance(state, 0)) return false;
+  if (moveY >= 0) return false;
+  const index = storeEntranceNear(state, 0);
+  if (index === null) return false;
   const player = state.room.combat.player;
-  if (player.y - player.radius > STORE_ENTRANCE.y) return false;
-  return enterStore(state).accepted;
+  if (player.y - player.radius > STORE_ENTRANCE_Y) return false;
+  return enterStore(state, index).accepted;
 }

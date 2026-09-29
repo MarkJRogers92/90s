@@ -424,6 +424,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
       enteredFrom: checkpoint.enteredFrom,
       tokens: [],
       interior: false,
+      storeIndex: 0,
     },
     clearedRooms: [...checkpoint.clearedRoomIds],
     inventory,

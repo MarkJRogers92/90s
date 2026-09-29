@@ -766,3 +766,13 @@ theft. Walking off the side of the rug looked like leaving and did nothing.
   `mvp-storefront` (inside, at the shelf nearest the door).
 - **Unplayed**: whether 4 s is still fair from the back shelves of a
   full-room store.
+- **Two shops per storefront (27b)**: every floor's wing has four store
+  templates and uses two; `generateRunWing` gives each storefront room one
+  of the two left over as a second shop (`room.stores`, read through
+  `roomStores`), with its own seeded four-item window, so a shift visits all
+  four stores. The shopfronts stand left and right on the back wall, centred
+  on `STORE_ENTRANCE_XS` (240, 720); `state.room.storeIndex` says which one
+  the janitor is inside and `activeStore` reads it. Shelves, alarm banner,
+  PA, dressing and title card all follow the active shop; the concourse
+  title is now the wing's room name (WEST SHOPS), and the objective lists
+  both shops.

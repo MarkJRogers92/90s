@@ -66,6 +66,11 @@ export type WingRoomDefinition = {
   readonly bossAnchor: Vec2 | null;
   readonly enemySpawns: readonly WingEnemySpawn[];
   readonly store: WingStoreInstance | null;
+  /**
+   * Every shop in the room when there is more than one (the run gives each
+   * storefront a second). Absent means just `store`; see `roomStores`.
+   */
+  readonly stores?: readonly WingStoreInstance[];
   readonly offers: readonly WingOffer[];
   readonly benchKiosk: Vec2 | null;
 };

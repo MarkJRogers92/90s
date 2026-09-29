@@ -15,7 +15,7 @@ import { ITEM_CATALOG } from '../../sim/items/catalog';
 import type { EnemyState, ProjectileState, Rect, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
-import { STORE_ENTRANCE, STORE_ENTRANCE_HALF_WIDTH } from '../../sim/run/storeInterior';
+import { STORE_ENTRANCE_HALF_WIDTH, activeStore, roomStores, storeEntrance } from '../../sim/run/storeInterior';
 import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
 import { presentationDepth } from '../presentation/depth';
@@ -149,7 +149,7 @@ export class MvpRunView {
       return;
     }
     // Going into a store and back out rebuilds the room, like a doorway.
-    const roomKey = `${state.roomIndex}:${room.id}:${state.room.interior ? 'inside' : 'concourse'}`;
+    const roomKey = `${state.roomIndex}:${room.id}:${state.room.interior ? `inside-${state.room.storeIndex}` : 'concourse'}`;
     if (this.openingConcourse && this.mallRoomKey !== roomKey) {
       this.concourseAmbience = this.openingConcourse.leaveRoom(state.tick);
       this.openingConcourse.destroy();
@@ -172,10 +172,11 @@ export class MvpRunView {
     this.usedShadows.clear();
     this.usedOfferIcons.clear();
 
-    if (room.store && state.room.interior) {
-      this.drawStore(state, room.store.templateId);
-    } else if (room.store) {
-      this.drawStoreEntrance(state);
+    const inside = activeStore(state);
+    if (inside) {
+      this.drawStore(state, inside.templateId);
+    } else {
+      roomStores(room).forEach((_, index) => this.drawStoreEntrance(state, index));
     }
 
     if (room.benchKiosk) {
@@ -598,13 +599,13 @@ export class MvpRunView {
   }
 
   /**
-   * On a storefront's concourse, the shop door in the back wall is the way in:
-   * a lit mat at its foot and chevrons climbing toward it.
+   * On a storefront's concourse, each shop's door in the back wall is a way
+   * in: a lit mat at its foot and chevrons climbing toward it.
    */
-  private drawStoreEntrance(state: MvpRunState): void {
+  private drawStoreEntrance(state: MvpRunState, index: number): void {
     const cues = this.effectGraphics;
     const floor = this.storeGraphics;
-    const x = STORE_ENTRANCE.x;
+    const x = storeEntrance(index).x;
     const pulse = 0.5 + 0.35 * Math.sin(state.tick / 10);
     floor.fillStyle(0x1a2a30, 0.9).fillRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
     floor.fillStyle(0x3ff0ff, 0.35 * pulse).fillRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
@@ -648,10 +649,12 @@ export class MvpRunView {
 
   private drawStore(state: MvpRunState, templateId: string): void {
     const room = state.wing.rooms[state.roomIndex];
-    const store = room?.store;
-    if (!store) {
+    const store = activeStore(state);
+    if (!store || store.templateId !== templateId) {
       return;
     }
+    // Only this shop's shelves: the room's other shop is behind its own door.
+    const shelf = (room?.offers ?? []).filter((offer) => offer.storeId === store.templateId);
     const floor = this.storeGraphics;
     const cues = this.effectGraphics;
     const carriedHere = state.carried.some((theft) => theft.sourceStoreId === store.templateId);
@@ -709,7 +712,7 @@ export class MvpRunView {
     // Only the nearest available item's name grows, so neighbours never collide.
     let nearestId: string | null = null;
     let nearestDistance = 150;
-    for (const offer of room?.offers ?? []) {
+    for (const offer of shelf) {
       if ((state.offerStatus[offer.id] ?? 'available') !== 'available') continue;
       const distance = Math.hypot(player.x - offer.position.x, player.y - offer.position.y);
       if (distance < nearestDistance) {
@@ -717,7 +720,7 @@ export class MvpRunView {
         nearestId = offer.id;
       }
     }
-    for (const offer of room?.offers ?? []) {
+    for (const offer of shelf) {
       const status = state.offerStatus[offer.id] ?? 'available';
       const weapon = ITEM_CATALOG.find((definition) => definition.id === offer.itemDefinitionId)?.base !== undefined;
       const kindColor = weapon ? 0x3ff0ff : 0x6aff8a;
@@ -1658,9 +1661,10 @@ export class MvpRunView {
     if (state.stalker !== null) {
       keep.add('stalker');
     }
-    if (room?.store && state.room.interior) {
+    const inside = activeStore(state);
+    if (room && inside) {
       keep.add('store-alarm');
-      for (const offer of room.offers) {
+      for (const offer of room.offers.filter((candidate) => candidate.storeId === inside.templateId)) {
         keep.add(`offer:${offer.id}`);
       }
     }
