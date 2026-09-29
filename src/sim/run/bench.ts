@@ -10,12 +10,14 @@
  */
 import { resolveEmitterMount } from '../fusion/emitterMount';
 import { commitEmitterMount } from '../fusion/transaction';
-import type { InventoryLeaf } from '../fusion/types';
+import type { FusionProposal, InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import { syncRunCarrier } from './carrier';
 import { blockedRunReason, publishRunFeedback } from './economy';
 import { refreshRunLoadout } from './loadout';
-import type { MvpCommandResult, MvpRunState } from './types';
+import { hasLivingEnemies } from './rooms';
+import type { MvpCommandResult, MvpRunState, MvpWorkbench } from './types';
+import { commitFusion, resolveFusion } from '../fusion/fuse';
 
 function rejected(reason: string): MvpCommandResult {
   return { accepted: false, reason };
@@ -117,80 +119,96 @@ export function commitRunEmitterMount(
 }
 
 /**
- * Whether the kiosk would actually offer a proposal, without opening one.
- *
- * The HUD uses this so it never advertises "E PREVIEW FUSION" where the sim
- * would refuse. It deliberately checks only the two conditions that decide
- * whether an offer exists at all — a standalone selected primary and an owned
- * carrier — because those are cheap and stable per frame. A cash shortfall is
- * not pre-judged: opening still publishes the resolver's real reason, so the
- * prompt is never a promise the sim silently breaks.
+ * Whether the kiosk has anything to fuse, without opening it: two standalone
+ * items are enough, since almost any pair fuses. The HUD uses this so it never
+ * advertises the bench where the sim would refuse to open it.
  */
 export function canOpenRunFusionPreview(state: MvpRunState): boolean {
-  if (state.status !== 'playing' || state.preview !== null) {
-    return false;
+  if (state.status !== 'playing' || state.preview !== null || state.workbench !== null) return false;
+  if (hasLivingEnemies(state.room.combat)) return false;
+  return state.inventory.inventory.filter((node) => node.kind === 'leaf').length >= 2;
+}
+
+function recompute(state: MvpRunState, bench: MvpWorkbench): void {
+  state.preview = null;
+  if (bench.firstId === null || bench.secondId === null) {
+    state.workbench = { ...bench, message: '' };
+    return;
   }
-  const primary = selectedPrimaryLeaf(state);
-  if (primary === null || findRunCarrierLeaf(state) === null) {
-    return false;
+  const resolution = resolveFusion(state.inventory, bench.firstId, bench.secondId, state.tick);
+  if (resolution.accepted) {
+    state.preview = resolution.proposal;
+    state.workbench = { ...bench, message: '' };
+  } else {
+    state.workbench = { ...bench, message: resolution.message };
   }
-  // A melee primary such as the starting mop can never be an Emitter Mount, and
-  // that is the most common state early in a shift, so the check rules it out
-  // rather than advertising a preview the sim would refuse.
-  return (
-    ITEM_CATALOG.find((definition) => definition.id === primary.itemDefinitionId)?.base
-      ?.delivery === 'projectile'
-  );
 }
 
 /**
- * Opens the Bench Warrant preview for the selected primary and the owned car.
+ * Opens the Bench Warrant: the run halts while two items are picked.
  *
- * Opening pauses the run so the proposal is read, not acted past. The preview
- * holds the proposal's own transaction ID and source revision, so a confirm
- * after any intervening purchase or theft fails atomically instead of fusing
- * against state the player never saw.
+ * It opens empty, except when the equipped weapon is a shooter and the RC car
+ * is owned: then both are picked, so the classic Emitter Mount is one key
+ * press away exactly as before.
  */
-export function openRunFusionPreview(state: MvpRunState): MvpCommandResult {
+export function openRunWorkbench(state: MvpRunState): MvpCommandResult {
   const blocked = blockedRunReason(state);
-  if (blocked) {
-    return rejected(blocked);
-  }
-  if (state.preview !== null) {
-    return rejected('A fusion preview is already open.');
+  if (blocked) return rejected(blocked);
+  if (state.preview !== null || state.workbench !== null) return rejected('The Bench Warrant is already open.');
+  // A bench is not a pause button: it opens once the room is safe.
+  if (hasLivingEnemies(state.room.combat)) return rejected('Clear the room before using the Bench Warrant.');
+  const leaves = state.inventory.inventory.filter((node): node is InventoryLeaf => node.kind === 'leaf');
+  if (leaves.length < 2) {
+    return rejected('Nothing to fuse: the Bench Warrant needs two items that are not already fused.');
   }
   const primary = selectedPrimaryLeaf(state);
-  if (primary === null) {
-    return rejected('Emitter Mount is already complete: no standalone primary remains.');
-  }
   const carrier = findRunCarrierLeaf(state);
-  if (carrier === null) {
-    return rejected('No emitter carrier is available for Emitter Mount fusion.');
-  }
-  const resolution = resolveEmitterMount(
-    state.inventory,
-    primary.instanceId,
-    carrier.instanceId,
-    state.tick,
-  );
-  if (!resolution.accepted) {
-    return rejected(resolution.message);
-  }
-  state.preview = resolution.proposal;
+  const emitterReady = primary !== null && carrier !== null
+    && ITEM_CATALOG.find((definition) => definition.id === primary.itemDefinitionId)?.base?.delivery === 'projectile';
   state.paused = true;
-  const message =
-    `Previewing Emitter Mount: ${resolution.proposal.primaryName} + ` +
-    `${resolution.proposal.carrierName} for $${resolution.proposal.fee}.`;
+  recompute(state, emitterReady
+    ? { firstId: primary.instanceId, secondId: carrier.instanceId, message: '' }
+    : { firstId: null, secondId: null, message: '' });
+  const opened = state.preview as FusionProposal | null;
+  const message = opened
+    ? `Bench Warrant: ${opened.primaryName} + ${opened.carrierName} for $${opened.fee}.`
+    : 'Bench Warrant open: pick two items to fuse.';
   publishRunFeedback(state, message);
   return { accepted: true, message };
 }
 
-/** Closes an open preview and resumes the run without changing the inventory. */
+/** The legacy name: opening the preview now opens the whole bench. */
+export const openRunFusionPreview = openRunWorkbench;
+
+/**
+ * Picks (or puts back) one item on the open bench. Picking a third item
+ * replaces the second; picking a picked item puts it back.
+ */
+export function pickWorkbenchItem(state: MvpRunState, instanceId: string): MvpCommandResult {
+  const bench = state.workbench;
+  if (bench === null) return rejected('The Bench Warrant is not open.');
+  const node = state.inventory.inventory.find((candidate) => candidate.instanceId === instanceId);
+  if (!node) return rejected('That item is not owned.');
+  if (node.kind !== 'leaf') {
+    state.workbench = { ...bench, message: 'Already fused: a fused item cannot be fused again.' };
+    return rejected(state.workbench.message);
+  }
+  let next: MvpWorkbench;
+  if (bench.firstId === instanceId) next = { firstId: bench.secondId, secondId: null, message: '' };
+  else if (bench.secondId === instanceId) next = { ...bench, secondId: null };
+  else if (bench.firstId === null) next = { ...bench, firstId: instanceId };
+  else next = { ...bench, secondId: instanceId };
+  recompute(state, next);
+  return { accepted: true, message: state.workbench?.message || 'Picked.' };
+}
+
+/** Closes the bench and resumes the run without changing the inventory. */
 export function cancelRunFusionPreview(state: MvpRunState): MvpCommandResult {
-  if (state.preview === null) {
+  if (state.preview === null && state.workbench === null) {
     return rejected('No fusion preview is open.');
   }
   state.preview = null;
+  state.workbench = null;
   state.paused = false;
   const message = 'Fusion preview cancelled.';
   publishRunFeedback(state, message);
@@ -198,10 +216,10 @@ export function cancelRunFusionPreview(state: MvpRunState): MvpCommandResult {
 }
 
 /**
- * Commits the open preview exactly once.
+ * Commits the open proposal exactly once.
  *
  * A rejected commit leaves cash, inventory, revision, loadout, and the open
- * preview untouched, so the player can read the reason and cancel.
+ * bench untouched, so the player can read the reason and cancel.
  */
 export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
   const preview = state.preview;
@@ -213,13 +231,7 @@ export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
   if (state.status !== 'playing') {
     return rejected('The shift is over.');
   }
-  const committed = commitEmitterMount(state.inventory, {
-    primaryInstanceId: preview.primaryInstanceId,
-    carrierInstanceId: preview.carrierInstanceId,
-    expectedRevision: preview.sourceRevision,
-    transactionId: preview.transactionId,
-    createdTick: state.tick,
-  });
+  const committed = commitFusion(state.inventory, preview, state.tick);
   if (!committed.committed) {
     // Publish the refusal so the player sees why the click did nothing; the
     // preview stays open, so the reason can be read and then cancelled.
@@ -229,14 +241,15 @@ export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
   state.inventory = committed.state;
   state.cash = committed.state.cash;
   state.preview = null;
+  state.workbench = null;
   state.paused = false;
-  // The inventory now holds a composite, so this promotes the owned car from
-  // independent companion to the steered firing origin in the same tick.
+  // An Emitter Mount promotes the owned car from independent companion to
+  // the steered firing origin in the same tick; a hybrid leaves it alone.
   syncRunCarrier(state);
   refreshRunLoadout(state);
-  const message =
-    `Emitter Mount complete: ${preview.primaryName} + ` +
-    `${preview.carrierName} for $${committed.record.fee}. The car now carries the shots.`;
+  const message = preview.recipeId === 'emitter_mount'
+    ? `Emitter Mount complete: ${preview.primaryName} + ${preview.carrierName} for $${committed.record.fee}. The car now carries the shots.`
+    : `Fused ${preview.primaryName} + ${preview.carrierName} into the ${preview.resultName} for $${committed.record.fee}.`;
   publishRunFeedback(state, message);
   return { accepted: true, message };
 }

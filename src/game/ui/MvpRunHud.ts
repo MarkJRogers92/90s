@@ -23,7 +23,7 @@ import type { EnemyState } from '../../sim/model';
 
 const TERMINAL_PROMPT = 'RUN COMPLETE — RESTART OR RETURN';
 const PAUSED_PROMPT = 'PAUSED — PRESS ESC TO RESUME';
-const PREVIEW_PROMPT = 'FUSION PREVIEW OPEN — CONFIRM OR CANCEL';
+const PREVIEW_PROMPT = 'BENCH WARRANT OPEN — PICK TWO ITEMS, ENTER TO FUSE, ESC TO CANCEL';
 
 /**
  * The movement and action prompt for a live shift.
@@ -286,18 +286,20 @@ export class MvpRunHud {
 
     if (state.status !== 'playing') {
       this.controls.textContent = TERMINAL_PROMPT;
-    } else if (state.preview !== null) {
+    } else if (state.preview !== null || state.workbench !== null) {
       this.controls.textContent = PREVIEW_PROMPT;
     } else if (state.paused) {
       this.controls.textContent = PAUSED_PROMPT;
     } else if (interaction.kind === 'door' && interaction.locked) {
       this.controls.textContent = interaction.lockedReason ?? movementControls(state);
     } else if (interaction.kind === 'bench') {
-      // Never advertise a key the sim would refuse: without an owned carrier the
-      // kiosk has no proposal to offer, so the prompt says what is missing.
+      // Never advertise a key the sim would refuse: the bench needs two
+      // standalone items, so the prompt says what is missing.
       this.controls.textContent = canOpenRunFusionPreview(state)
-        ? 'E PREVIEW FUSION · ' + movementControls(state)
-        : 'BENCH WARRANT NEEDS AN OWNED EMITTER CARRIER · ' + movementControls(state);
+        ? 'E FUSE ITEMS · ' + movementControls(state)
+        : state.room.combat.enemies.some((enemy) => enemy.health > 0)
+          ? 'BENCH WARRANT: CLEAR THE ROOM FIRST · ' + movementControls(state)
+          : 'BENCH WARRANT: BUY OR STEAL A SECOND ITEM TO FUSE · ' + movementControls(state);
     } else if (interaction.kind === 'offer') {
       this.controls.textContent = 'E BUY · F STEAL · ' + movementControls(state);
     } else {
@@ -345,13 +347,16 @@ export class MvpRunHud {
     this.benchFee.textContent =
       `FEE: $${preview.fee} (base $${preview.baseFee} − clean discount $${preview.cleanDiscount})` +
       ` · CASH $${state.cash}`;
-    this.benchOperation.textContent =
-      `RESULT: attack origin ${preview.operation.attackOrigin} · steering ` +
-      `${preview.operation.steering} · recall ${preview.operation.recallKey} · ` +
-      `${preview.operation.lostBehavior} lost`;
+    this.benchOperation.textContent = preview.recipeId === 'emitter_mount'
+      ? `RESULT: attack origin ${preview.operation.attackOrigin} · steering ` +
+        `${preview.operation.steering} · recall ${preview.operation.recallKey} · ` +
+        `${preview.operation.lostBehavior} lost`
+      : `RESULT: ${preview.resultName} · ${preview.highlights.join(' · ')}`;
     this.benchRetained.textContent =
       `RETAINED: ${preview.retainedInstanceIds.join(', ') || 'nothing else'}`;
-    this.benchExcluded.textContent = `EXCLUDED: ${preview.excludedNotes.join(' ')}`;
+    this.benchExcluded.textContent = preview.recipeId === 'emitter_mount'
+      ? `EXCLUDED: ${preview.excludedNotes.join(' ')}`
+      : 'EXCLUDED: both ingredients become one item.';
     this.benchNotice.textContent = preview.irreversibilityNotice;
   }
 

@@ -280,10 +280,10 @@ describe('seeded wing generation', () => {
     }
   });
 
-  it('places the bench kiosk only in the service corridor', () => {
+  it('places a bench kiosk in the service corridor and the back hall before the boss', () => {
     const wing = generateWing(31);
     for (const room of wing.rooms) {
-      if (room.id === 'service_corridor') {
+      if (room.id === 'service_corridor' || room.id === 'back_hall') {
         expect(room.benchKiosk).not.toBeNull();
       } else {
         expect(room.benchKiosk).toBeNull();

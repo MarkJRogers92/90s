@@ -8,13 +8,19 @@
  * from the seed on every transition.
  */
 import type { CarrierState } from '../carrier/car';
-import type { EmitterMountProposal, FusionInventoryState } from '../fusion/types';
+import type { FusionInventoryState, FusionProposal } from '../fusion/types';
 import type { RunState } from '../model';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
 import type { MallTokenPickup } from './tokens';
 import type { RunStats } from './combo';
 import type { ShiftPerks } from './perks';
+
+export type MvpWorkbench = {
+  readonly firstId: string | null;
+  readonly secondId: string | null;
+  readonly message: string;
+};
 
 export type MvpRunStatus = 'playing' | 'won' | 'dead';
 
@@ -123,8 +129,13 @@ export type MvpRunState = {
    * deterministically, exactly as the room itself is rebuilt from the seed.
    */
   carrier: CarrierState | null;
-  /** The open Bench Warrant preview, which pauses the run while it is set. */
-  preview: EmitterMountProposal | null;
+  /** The open Bench Warrant proposal, which pauses the run while it is set. */
+  preview: FusionProposal | null;
+  /**
+   * The Bench Warrant while it is open: the two items picked so far, in
+   * order, and why the pair was refused when it was. Halts the run.
+   */
+  workbench: MvpWorkbench | null;
   /** Cleanup Combo and kill count for this session (not checkpointed). */
   stats: RunStats;
   /** What the janitor's career brought to this shift (checkpointed; rides the escalator). */

@@ -19,7 +19,7 @@ import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH, circleIntersectsRect } from '../core
 import { createEnemyStatusState } from '../effects/statuses';
 import { projectFusionInventory } from '../fusion/inventory';
 import type { FusionInventoryState } from '../fusion/types';
-import { ITEM_CATALOG } from '../items/catalog';
+import { catalogFor } from '../items/registry';
 import { compileLoadout } from '../items/compileLoadout';
 import type { EnemyState, RunState } from '../model';
 import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
@@ -179,7 +179,7 @@ export function buildRoomCombatState(
 
   const projected = projectFusionInventory(inventory);
   const compiledLoadout = compileLoadout(
-    ITEM_CATALOG,
+    catalogFor(projected.instances),
     runCompilerInstances(projected.instances, projected.selectedPrimaryInstanceId),
     projected.selectedPrimaryInstanceId,
   );

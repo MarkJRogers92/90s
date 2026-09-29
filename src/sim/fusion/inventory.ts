@@ -7,8 +7,9 @@
  */
 import { ITEM_CATALOG } from '../items/catalog';
 import type { ItemDefinition, ItemInstance } from '../items/types';
+import { HYBRID_BASE_FEE, HYBRID_CLEAN_DISCOUNT, hybridDefinitionId, isHybridPair } from './hybrid';
 import type {
-  EmitterMountComposite,
+  FusionComposite,
   FusionInventoryNode,
   FusionInventoryState,
   FusionTransactionRecord,
@@ -35,9 +36,10 @@ function isEmitterCarrier(definition: ItemDefinition): boolean {
   return definition.capabilities?.includes('emitter_carrier') === true;
 }
 
-function expectedFeeFor(primary: InventoryLeaf, carrier: InventoryLeaf): number {
+function expectedFeeFor(composite: FusionComposite): number {
   const bothClean =
-    primary.acquisitionKind === 'purchased' && carrier.acquisitionKind === 'purchased';
+    composite.primary.acquisitionKind === 'purchased' && composite.carrier.acquisitionKind === 'purchased';
+  if (composite.recipeId === 'hybrid') return HYBRID_BASE_FEE - (bothClean ? HYBRID_CLEAN_DISCOUNT : 0);
   return bothClean ? 4 : 6;
 }
 
@@ -55,13 +57,13 @@ function isValidLeaf(node: FusionInventoryNode): node is InventoryLeaf {
   );
 }
 
-function isValidComposite(node: FusionInventoryNode): node is EmitterMountComposite {
+function isValidComposite(node: FusionInventoryNode): node is FusionComposite {
   if (node.kind !== 'composite') {
     return false;
   }
   if (
     !isNonEmptyString(node.instanceId) ||
-    node.recipeId !== 'emitter_mount' ||
+    (node.recipeId !== 'emitter_mount' && node.recipeId !== 'hybrid') ||
     !isNonNegativeInteger(node.createdTick) ||
     !isNonEmptyString(node.transactionId) ||
     !isValidLeaf(node.primary) ||
@@ -75,6 +77,9 @@ function isValidComposite(node: FusionInventoryNode): node is EmitterMountCompos
   if (!primaryDefinition || !carrierDefinition) {
     return false;
   }
+  if (node.recipeId === 'hybrid') {
+    return isHybridPair(primaryDefinition.id, carrierDefinition.id);
+  }
   if (!isProjectilePrimary(primaryDefinition)) {
     return false;
   }
@@ -87,7 +92,7 @@ function isValidComposite(node: FusionInventoryNode): node is EmitterMountCompos
 function isValidRecord(record: FusionTransactionRecord): boolean {
   return (
     isNonEmptyString(record.transactionId) &&
-    record.recipeId === 'emitter_mount' &&
+    (record.recipeId === 'emitter_mount' || record.recipeId === 'hybrid') &&
     isNonEmptyString(record.primaryInstanceId) &&
     isNonEmptyString(record.carrierInstanceId) &&
     isNonEmptyString(record.compositeInstanceId) &&
@@ -157,7 +162,7 @@ export function isValidFusionInventoryState(state: FusionInventoryState): boolea
     }
   }
   const composites = state.inventory.filter(
-    (node): node is EmitterMountComposite => node.kind === 'composite',
+    (node): node is FusionComposite => node.kind === 'composite',
   );
   const recordsByTransaction = new Map(
     state.committedTransactions.map((record) => [record.transactionId, record]),
@@ -179,11 +184,12 @@ export function isValidFusionInventoryState(state: FusionInventoryState): boolea
     if (
       record.primaryInstanceId !== composite.primary.instanceId ||
       record.carrierInstanceId !== composite.carrier.instanceId ||
-      record.compositeInstanceId !== composite.instanceId
+      record.compositeInstanceId !== composite.instanceId ||
+      record.recipeId !== composite.recipeId
     ) {
       return false;
     }
-    if (record.fee !== expectedFeeFor(composite.primary, composite.carrier)) {
+    if (record.fee !== expectedFeeFor(composite)) {
       return false;
     }
     if (record.committedRevision < 1 || record.committedRevision > state.revision) {
@@ -231,8 +237,19 @@ export function projectFusionInventory(
     instances: state.inventory.map((node) =>
       node.kind === 'leaf'
         ? { instanceId: node.instanceId, itemId: node.itemDefinitionId }
-        : { instanceId: node.instanceId, itemId: node.primary.itemDefinitionId },
+        : { instanceId: node.instanceId, itemId: nodeDefinitionId(node) },
     ),
     selectedPrimaryInstanceId: state.selectedPrimaryInstanceId,
   };
+}
+
+/**
+ * The definition a top-level node acts as: a leaf is itself, an Emitter Mount
+ * is its primary (the car is the firing origin, not an effect), and a hybrid
+ * is the definition derived from its two ingredients.
+ */
+export function nodeDefinitionId(node: FusionInventoryNode): string {
+  if (node.kind === 'leaf') return node.itemDefinitionId;
+  if (node.recipeId === 'hybrid') return hybridDefinitionId(node.primary.itemDefinitionId, node.carrier.itemDefinitionId);
+  return node.primary.itemDefinitionId;
 }

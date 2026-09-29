@@ -188,7 +188,7 @@ export const ROOM_VARIANTS: Readonly<
         { slotId: 'back-hall-pillars-mixed-southeast', x: 780, y: 360, kinds: ['hanger', 'spitter'] },
       ],
       enemyCount: { min: 2, max: 4 },
-      benchKiosk: null,
+      benchKiosk: { x: 480, y: 60 },
     },
     {
       id: 'back-hall-crate-corners',
@@ -205,7 +205,7 @@ export const ROOM_VARIANTS: Readonly<
         { slotId: 'back-hall-crates-mixed-west', x: 260, y: 360, kinds: ['hanger', 'spitter'] },
       ],
       enemyCount: { min: 2, max: 3 },
-      benchKiosk: null,
+      benchKiosk: { x: 480, y: 60 },
     },
   ],
 };

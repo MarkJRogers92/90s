@@ -215,6 +215,20 @@ export function resolvePrimaryAttack(
     return root;
   }
 
+  // A melee hybrid that carries its own shot (the Hydro Mop) throws it on
+  // every swing, whether or not the swing connects.
+  const ownShot = state.compiledLoadout.effects.some(
+    (effect) => effect.kind === 'projectile_payload' && effect.sourceItemId === descriptor.definitionId,
+  );
+  if (ownShot) {
+    spawnPlayerProjectiles(state, {
+      root,
+      origin: attackContext.projectileOrigin ?? state.player,
+      aimX: input.aimX,
+      aimY: input.aimY,
+    });
+  }
+
   const targets = directHitTargets(state, input, descriptor);
   if (targets.length === 0) {
     setRecentChange(state, `${descriptor.name} swing hit nothing`);

@@ -32,6 +32,8 @@ export type AudioCue =
   | 'dawn'
   | 'paper'
   | 'pa_voice'
+  | 'bench_pick'
+  | 'fuse'
   | 'shot'
   | 'splash'
   | 'hit'

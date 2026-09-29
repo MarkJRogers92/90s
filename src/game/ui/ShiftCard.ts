@@ -12,6 +12,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildShiftCardModel, shiftCardDelayMs, type ShiftCardModel } from './shiftCardModel';
 import { browserBestRuns } from '../score/score';
+import { nodeDefinitionId } from '../../sim/fusion/inventory';
 import { browserCareer, localDay, recordShift, type ShiftRecord } from '../career/career';
 import { flashAllowed, gameSettings } from '../settings/settings';
 
@@ -131,6 +132,9 @@ export class ShiftCard {
       bestCombo: state.stats.bestCombo,
       seconds: model.seconds,
       mall: this.lastMallSeed,
+      fusions: state.inventory.inventory
+        .filter((node) => node.kind === 'composite' && node.recipeId === 'hybrid')
+        .map(nodeDefinitionId),
     }, localDay());
     this.career.save(this.record.career);
   }

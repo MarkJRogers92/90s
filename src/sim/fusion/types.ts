@@ -27,11 +27,30 @@ export type EmitterMountComposite = {
   readonly carrier: InventoryLeaf;
 };
 
-export type FusionInventoryNode = InventoryLeaf | EmitterMountComposite;
+/**
+ * Void the Warranty: any two items fused into one. `primary` is the base,
+ * `carrier` the ingredient bolted onto it (the field names are shared with
+ * Emitter Mount so both composites store, clone and validate alike). The
+ * behaviour is derived from the two ingredient ids; see `hybrid.ts`.
+ */
+export type HybridComposite = {
+  readonly kind: 'composite';
+  readonly instanceId: string;
+  readonly recipeId: 'hybrid';
+  readonly createdTick: number;
+  readonly transactionId: string;
+  readonly primary: InventoryLeaf;
+  readonly carrier: InventoryLeaf;
+};
+
+export type FusionComposite = EmitterMountComposite | HybridComposite;
+export type FusionRecipeId = FusionComposite['recipeId'];
+
+export type FusionInventoryNode = InventoryLeaf | FusionComposite;
 
 export type FusionTransactionRecord = {
   readonly transactionId: string;
-  readonly recipeId: 'emitter_mount';
+  readonly recipeId: FusionRecipeId;
   readonly primaryInstanceId: string;
   readonly carrierInstanceId: string;
   readonly compositeInstanceId: string;
@@ -77,6 +96,40 @@ export type EmitterMountProposal = {
   readonly selectedCompositeInstanceId: string;
   readonly irreversibilityNotice: string;
 };
+
+/** A proposed hybrid: which two items, what they become, and the fee. */
+export type HybridProposal = {
+  readonly recipeId: 'hybrid';
+  readonly transactionId: string;
+  readonly sourceRevision: number;
+  /** The base item (a weapon when either ingredient is one). */
+  readonly primaryInstanceId: string;
+  /** The ingredient fused onto the base. */
+  readonly carrierInstanceId: string;
+  readonly primaryName: string;
+  readonly carrierName: string;
+  readonly primaryProvenance: FusionAcquisitionKind;
+  readonly carrierProvenance: FusionAcquisitionKind;
+  readonly baseFee: number;
+  readonly cleanDiscount: number;
+  readonly fee: number;
+  readonly resultDefinitionId: string;
+  readonly resultName: string;
+  readonly highlights: readonly string[];
+  readonly signature: boolean;
+  readonly retainedInstanceIds: readonly string[];
+  readonly compositePreview: HybridComposite;
+  readonly selectedCompositeInstanceId: string;
+  /** False when the result is a passive kit: the equipped weapon stays equipped. */
+  readonly selectsResult: boolean;
+  readonly irreversibilityNotice: string;
+};
+
+export type FusionProposal = EmitterMountProposal | HybridProposal;
+
+export type HybridResolution =
+  | { readonly accepted: true; readonly proposal: HybridProposal }
+  | { readonly accepted: false; readonly reason: string; readonly message: string };
 
 export type EmitterMountResolution =
   | { readonly accepted: true; readonly proposal: EmitterMountProposal }

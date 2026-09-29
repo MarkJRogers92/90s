@@ -522,25 +522,29 @@ function validateBossAnchor(room: WingRoomDefinition): void {
   }
 }
 
+/** Rooms with a Bench Warrant: the safe entry room and the last room before the boss. */
+const BENCH_ROOMS: readonly string[] = ['service_corridor', 'back_hall'];
+
 function validateBenchKiosk(room: WingRoomDefinition): void {
-  if (room.id === 'service_corridor') {
+  if (BENCH_ROOMS.includes(room.id)) {
+    const where = room.id.replace(/_/g, ' ');
     if (room.benchKiosk === null) {
-      fail('service corridor is missing its bench kiosk');
+      fail(`${where} is missing its bench kiosk`);
     }
     if (!isValidPoint(room.benchKiosk)) {
-      fail('bench kiosk in service corridor must be a finite point');
+      fail(`bench kiosk in ${where} must be a finite point`);
     }
     if (!pointInRect(room.benchKiosk, room.bounds)) {
-      fail('bench kiosk in service corridor is outside room bounds');
+      fail(`bench kiosk in ${where} is outside room bounds`);
     }
     if (room.walls.some((wall) => pointInRect(room.benchKiosk!, wall))) {
-      fail('bench kiosk in service corridor lies inside a wall');
+      fail(`bench kiosk in ${where} lies inside a wall`);
     }
     return;
   }
 
   if (room.benchKiosk !== null) {
-    fail(`bench kiosk may appear only in service corridor; found in ${room.id}`);
+    fail(`bench kiosk may appear only in ${BENCH_ROOMS.join(' or ')}; found in ${room.id}`);
   }
 }
 

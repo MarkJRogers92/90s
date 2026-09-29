@@ -30,7 +30,7 @@ import type { Rect, Vec2 } from '../model';
 import { crossedStoreExit } from '../shop/tickWingRun';
 import { tickRun } from '../tickRun';
 import type { WingDoorSide, WingRoomDefinition, WingStoreInstance } from '../wing/types';
-import { openRunFusionPreview } from './bench';
+import { openRunWorkbench } from './bench';
 import { isBossKind } from '../combat/boss';
 import {
   carrierAttackContext,
@@ -214,7 +214,7 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
     case 'door':
       return enterDoorway(state, interaction.side);
     case 'bench':
-      return openRunFusionPreview(state);
+      return openRunWorkbench(state);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }
@@ -442,7 +442,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   if (state.status !== 'playing') {
     return;
   }
-  if (state.paused || state.preview !== null) {
+  if (state.paused || state.preview !== null || state.workbench !== null) {
     // An open Bench Warrant preview always halts the run, not only while it has
     // set `paused`. Otherwise clearing `paused` from outside the sim (the
     // scene's Escape handler does exactly that) would resume live combat behind
@@ -481,7 +481,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     }
     // Opening the Bench Warrant preview pauses the shift for this tick and the
     // ones after it, so the proposal is read rather than played past.
-    if (state.preview !== null) {
+    if (state.preview !== null || state.workbench !== null) {
       return;
     }
   } else if (stealPressed) {

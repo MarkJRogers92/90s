@@ -7,7 +7,7 @@
  * behaviour while shots already in flight keep their spawn-time specification.
  */
 import { projectFusionInventory } from '../fusion/inventory';
-import { ITEM_CATALOG } from '../items/catalog';
+import { catalogFor } from '../items/registry';
 import { compileLoadout } from '../items/compileLoadout';
 import type { ItemInstance } from '../items/types';
 import type { MvpRunState } from './types';
@@ -48,7 +48,7 @@ export function refreshRunLoadout(state: MvpRunState): void {
   state.room.combat.inventory = projected.instances.map((instance) => ({ ...instance }));
   state.room.combat.selectedPrimaryInstanceId = projected.selectedPrimaryInstanceId;
   state.room.combat.compiledLoadout = compileLoadout(
-    ITEM_CATALOG,
+    catalogFor(projected.instances),
     runCompilerInstances(projected.instances, projected.selectedPrimaryInstanceId),
     projected.selectedPrimaryInstanceId,
   );

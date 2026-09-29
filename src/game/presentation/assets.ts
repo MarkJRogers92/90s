@@ -1,3 +1,4 @@
+import { hybridParts } from '../../sim/fusion/hybrid';
 export interface PresentationAsset {
   key: string;
   url: string;
@@ -166,7 +167,9 @@ export const ITEM_ICON_FILES: Readonly<Record<string, string>> = {
 };
 
 export function itemIconKey(itemDefinitionId: string): string | null {
-  const file = ITEM_ICON_FILES[itemDefinitionId];
+  // A fused item shows its base's icon (the HUD marks it as fused).
+  const parts = hybridParts(itemDefinitionId);
+  const file = ITEM_ICON_FILES[parts?.baseId ?? itemDefinitionId];
   return file ? `neon:item:${file}` : null;
 }
 

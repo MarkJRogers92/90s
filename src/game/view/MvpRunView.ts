@@ -127,7 +127,11 @@ export class MvpRunView {
     this.storeGraphics = scene.add.graphics().setDepth(presentationDepth('decal', 800));
   }
 
+  /** Where the janitor stood last frame, for effects fired from outside a sync. */
+  private lastPlayer: { x: number; y: number } | null = null;
+
   public sync(state: MvpRunState): void {
+    this.lastPlayer = { x: state.room.combat.player.x, y: state.room.combat.player.y };
     const graphics = this.graphics;
     const room = state.wing.rooms[state.roomIndex];
     if (!room) {
@@ -1651,6 +1655,44 @@ export class MvpRunView {
   }
 
   /** Forwards the last-heart pulse to the feedback layer. */
+  /**
+   * The moment a fusion lands: welding sparks and a shockwave ring off the
+   * janitor, and a FUSED! stamp that floats up. Real-time tweens, since the
+   * sim has only just resumed and this is pure presentation.
+   */
+  public celebrateFusion(): void {
+    const player = this.lastPlayer;
+    if (!player) return;
+    const scene = this.scene;
+    const depth = 9_000;
+    const ring = scene.add.graphics().setDepth(depth).setBlendMode(Phaser.BlendModes.ADD);
+    const state = { t: 0 };
+    scene.tweens.add({
+      targets: state, t: 1, duration: 520, ease: 'Cubic.easeOut',
+      onUpdate: () => {
+        ring.clear();
+        ring.lineStyle(4 * (1 - state.t) + 1, 0x6aff8a, 1 - state.t).strokeCircle(player.x, player.y - 14, 12 + state.t * 90);
+        ring.lineStyle(2, 0x3ff0ff, (1 - state.t) * 0.8).strokeCircle(player.x, player.y - 14, 6 + state.t * 60);
+      },
+      onComplete: () => ring.destroy(),
+    });
+    for (let i = 0; i < 14; i += 1) {
+      const angle = (i / 14) * Math.PI * 2 + Math.random() * 0.3;
+      const spark = scene.add.rectangle(player.x, player.y - 14, 3, 3, i % 2 === 0 ? 0xffd84a : 0x6aff8a).setDepth(depth).setBlendMode(Phaser.BlendModes.ADD);
+      scene.tweens.add({
+        targets: spark,
+        x: player.x + Math.cos(angle) * (40 + Math.random() * 40),
+        y: player.y - 14 + Math.sin(angle) * (40 + Math.random() * 40),
+        alpha: 0, duration: 420 + Math.random() * 220, ease: 'Quad.easeOut',
+        onComplete: () => spark.destroy(),
+      });
+    }
+    const label = ensurePixelLabel(scene, 'FUSED!', '#6aff8a', 3, '#06120a');
+    const stamp = scene.add.image(player.x, player.y - 48, label.key).setDepth(depth + 1).setScale(1.6);
+    scene.tweens.add({ targets: stamp, scale: 1, duration: 160, ease: 'Back.easeOut' });
+    scene.tweens.add({ targets: stamp, y: player.y - 84, alpha: 0, delay: 650, duration: 600, onComplete: () => stamp.destroy() });
+  }
+
   public heartbeat(active: boolean, sinceBeatMs: number): void {
     this.feedback.heartbeat(active, sinceBeatMs);
   }

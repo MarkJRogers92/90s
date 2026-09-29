@@ -110,6 +110,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; re
     behaviorTrace: [],
     carrier: null,
     preview: null,
+    workbench: null,
     stats: options.carry ? { ...options.carry.stats, combo: 0, lastHitTick: -Infinity } : createRunStats(),
     perks,
   };

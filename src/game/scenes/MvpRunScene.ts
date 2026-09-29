@@ -52,6 +52,7 @@ import {
 import {
   cancelRunFusionPreview,
   confirmRunFusionPreview,
+  pickWorkbenchItem,
 } from '../../sim/run/bench';
 import { syncRunCarrier } from '../../sim/run/carrier';
 import { createMvpRun } from '../../sim/run/createMvpRun';
@@ -142,6 +143,7 @@ class MvpRunInputAdapter {
     readonly isOpen: () => boolean;
     readonly buttonAt: (x: number, y: number) => BenchCardAction | null;
     readonly act: (action: BenchCardAction) => void;
+    readonly tileForKey: (key: number) => string | null;
   } | null = null;
   /** N toggles the soundtrack on its own. */
   public onToggleMusic: (() => void) | null = null;
@@ -211,6 +213,12 @@ class MvpRunInputAdapter {
       if (event.code === 'Escape') {
         event.preventDefault();
         this.benchCard.act('cancel');
+        return;
+      }
+      // Number keys pick items on the bench instead of switching weapons.
+      if (/^Digit[1-9]$/.test(event.code)) {
+        const tile = this.benchCard.tileForKey(Number(event.code.slice(5)));
+        if (tile) this.benchCard.act({ pick: tile });
         return;
       }
     }
@@ -466,7 +474,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.inputAdapter.benchCard = {
       isOpen: () => bench.open,
       buttonAt: (x, y) => bench.buttonAt(x, y),
-      act: (action) => (action === 'fuse' ? this.confirmFusion() : this.cancelFusion()),
+      act: (action) => (action === 'fuse' ? this.confirmFusion() : action === 'cancel' ? this.cancelFusion() : this.pickBenchItem(action.pick)),
+      tileForKey: (key) => bench.tileForKey(key),
     };
     this.paTicker = new PaTicker(this, (cue) => this.audio?.play(cue));
     const card = new ShiftCard(this);
@@ -620,8 +629,16 @@ export class MvpRunScene extends Phaser.Scene {
   private confirmFusion(): void {
     const result = confirmRunFusionPreview(this.run);
     if (result.accepted) {
+      this.audio?.play('fuse');
+      this.runView?.celebrateFusion();
       this.resumeAfterPreview();
     }
+    this.syncView();
+  }
+
+  private pickBenchItem(instanceId: string): void {
+    pickWorkbenchItem(this.run, instanceId);
+    this.audio?.play('bench_pick');
     this.syncView();
   }
 
@@ -713,7 +730,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** Opening settings mid-shift pauses it, like Esc. */
   private readonly pauseForSettings = (): void => {
-    if (this.run.status === 'playing' && !this.run.paused && this.run.preview === null) this.setPaused(true);
+    if (this.run.status === 'playing' && !this.run.paused && this.run.preview === null && this.run.workbench === null) this.setPaused(true);
   };
 
   private readonly returnToTitle = (): void => {
@@ -847,7 +864,7 @@ export class MvpRunScene extends Phaser.Scene {
     // The end card waits for the kill cam to finish framing the fall.
     if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
-    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null, firstGamepad() !== null);
+    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null && this.run.workbench === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
@@ -931,6 +948,28 @@ export class MvpRunScene extends Phaser.Scene {
       state.room.combat.enemies = targets;
       state.room.combat.player.x = 300;
       state.room.combat.player.y = 235;
+      return state;
+    }
+    if (fixture === 'mvp-workbench') {
+      // At the service-corridor Bench Warrant holding a shooter and three
+      // modifiers, with cash to spare, so any fusion can be tried at once.
+      const ids = ['pump_soaker', 'plasma_globe', 'gel_pens', 'party_popper'];
+      state.inventory = {
+        ...state.inventory,
+        inventory: [
+          ...state.inventory.inventory,
+          ...ids.map((id): InventoryLeaf => ({ kind: 'leaf', instanceId: `dev-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: state.tick })),
+        ],
+        cash: 60,
+        revision: state.inventory.revision + 1,
+      };
+      state.cash = 60;
+      refreshRunLoadout(state);
+      const kiosk = state.wing.rooms[state.roomIndex]?.benchKiosk;
+      if (kiosk) {
+        state.room.combat.player.x = kiosk.x;
+        state.room.combat.player.y = kiosk.y;
+      }
       return state;
     }
     if (fixture === 'mvp-bench') {

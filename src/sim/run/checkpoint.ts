@@ -14,12 +14,13 @@ import {
   projectFusionInventory,
 } from '../fusion/inventory';
 import type {
-  EmitterMountComposite,
+  FusionComposite,
   FusionInventoryNode,
   FusionInventoryState,
 } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import { compileLoadout } from '../items/compileLoadout';
+import { catalogFor } from '../items/registry';
 import { MAX_SECURITY_HEAT, MAX_SUSPICION } from '../shop/types';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import { generateWing } from '../wing/generateWing';
@@ -84,7 +85,7 @@ function cloneNode(node: FusionInventoryNode): FusionInventoryNode {
   if (node.kind === 'leaf') {
     return { ...node };
   }
-  const composite: EmitterMountComposite = {
+  const composite: FusionComposite = {
     ...node,
     primary: { ...node.primary },
     carrier: { ...node.carrier },
@@ -343,7 +344,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   try {
     const projected = projectFusionInventory(inventory);
     compileLoadout(
-      ITEM_CATALOG,
+      catalogFor(projected.instances),
       runCompilerInstances(projected.instances, projected.selectedPrimaryInstanceId),
       projected.selectedPrimaryInstanceId,
     );
@@ -434,6 +435,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     behaviorTrace: [],
     carrier: null,
     preview: null,
+    workbench: null,
     stats: createRunStats(),
     perks: sanitizePerks(checkpoint.perks),
   };

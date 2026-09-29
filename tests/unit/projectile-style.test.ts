@@ -39,3 +39,18 @@ describe('what a player shot looks like', () => {
     expect(projectileStyle(shot('mystery')).shape).toBe('bolt');
   });
 });
+
+describe('fused shots', () => {
+  const traits = { delivery: 'water_projectile', sticky: false, returning: false, conductive: false };
+  it('a fused shooter keeps its own look, trimmed with the ingredient colour', () => {
+    const storm = projectileStyle({ ...traits, sourceItemId: 'hybrid__pump_soaker__party_popper' });
+    const soaker = projectileStyle({ ...traits, sourceItemId: 'pump_soaker' });
+    const popper = projectileStyle({ ...traits, sourceItemId: 'party_popper' });
+    expect(storm.shape).toBe(soaker.shape);
+    expect(storm.accent).toBe(popper.color);
+  });
+
+  it('a melee hybrid throws the shot of the weapon fused into it', () => {
+    expect(projectileStyle({ ...traits, sourceItemId: 'hybrid__janitor_mop__pump_soaker' }).shape).toBe('droplet');
+  });
+});

@@ -9,6 +9,7 @@
  */
 import { itemDefinitionName } from '../../sim/run/economy';
 import { LOCKER_ITEM_IDS, NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
+import { hybridParts, isHybridPair, signatureFusions } from '../../sim/fusion/hybrid';
 
 export type PerkId = 'seniority' | 'dental' | 'coffee';
 
@@ -67,6 +68,8 @@ export type Career = {
   readonly lockerEquipped: string | null;
   /** Best photos first. */
   readonly wall: readonly Polaroid[];
+  /** Every hybrid ever fused, by definition id, sorted. */
+  readonly fusionsFound: readonly string[];
 };
 
 /** How many polaroids fit on the wall. */
@@ -86,6 +89,7 @@ export function newCareer(): Career {
     lockerOwned: [],
     lockerEquipped: null,
     wall: [],
+    fusionsFound: [],
   };
 }
 
@@ -100,6 +104,8 @@ export type ShiftResult = {
   readonly bestCombo: number;
   readonly seconds: number;
   readonly mall: number;
+  /** Hybrids the shift ended holding, by definition id. */
+  readonly fusions?: readonly string[];
 };
 
 export type PayLine = { readonly label: string; readonly amount: number };
@@ -158,11 +164,44 @@ export function recordShift(career: Career, result: ShiftResult, date: string): 
       kills: career.kills + Math.max(0, result.kills),
       bestCombo: Math.max(career.bestCombo, result.bestCombo),
       wall,
+      fusionsFound: [...new Set([...career.fusionsFound, ...(result.fusions ?? []).filter(isRealFusion)])].sort(),
     },
     earned: pay.total,
     pay,
     polaroid,
     employeeOfTheMonth: polaroid !== null && wall[0] === polaroid,
+  };
+}
+
+function isRealFusion(id: unknown): id is string {
+  if (typeof id !== 'string') return false;
+  const parts = hybridParts(id);
+  return parts !== null && isHybridPair(parts.baseId, parts.ingredientId);
+}
+
+export type FusionLogEntry = { readonly name: string; readonly found: boolean };
+export type FusionLog = {
+  readonly entries: readonly FusionLogEntry[];
+  readonly signaturesFound: number;
+  readonly signatureTotal: number;
+  readonly totalFound: number;
+};
+
+/** The signature fusions, named once found and ??? until then. */
+export function fusionLog(career: Career): FusionLog {
+  const found = new Set(career.fusionsFound.map((id) => {
+    const parts = hybridParts(id)!;
+    return [parts.baseId, parts.ingredientId].sort().join('+');
+  }));
+  const entries = signatureFusions().map((signature) => {
+    const known = found.has([...signature.itemIds].sort().join('+'));
+    return { name: known ? signature.name : '???', found: known };
+  });
+  return {
+    entries,
+    signaturesFound: entries.filter((entry) => entry.found).length,
+    signatureTotal: entries.length,
+    totalFound: career.fusionsFound.length,
   };
 }
 
@@ -268,6 +307,7 @@ export function parseCareer(raw: string | null): Career {
     lockerOwned,
     lockerEquipped: equipped,
     wall,
+    fusionsFound: Array.isArray(value.fusionsFound) ? [...new Set(value.fusionsFound.filter(isRealFusion))].sort() : [],
   };
 }
 

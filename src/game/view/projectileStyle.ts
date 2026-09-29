@@ -4,6 +4,8 @@
  * (sticky, rewind, conductive). Pure, so every weapon provably reads
  * differently and a new weapon falls back to a plain bolt.
  */
+import { hybridParts } from '../../sim/fusion/hybrid';
+
 export type ProjectileShape = 'droplet' | 'confetti' | 'rocket' | 'cloud' | 'dart' | 'ball' | 'slush' | 'bubble' | 'bolt';
 export type ProjectileTrail = 'droplets' | 'streamers' | 'flame' | 'mist' | 'ink' | 'none' | 'ice';
 
@@ -37,8 +39,23 @@ const BASE: Record<string, Pick<ProjectileStyle, 'shape' | 'color' | 'accent' | 
   slushie_cup: { shape: 'slush', color: 0xb06aff, accent: 0xff6ab0, trail: 'ice', scale: 1.3 },
 };
 
+const BOLT = { shape: 'bolt' as const, color: 0xf0e6d2, accent: 0x9ad8ff, trail: 'none' as const, scale: 1 };
+
+/**
+ * A fused shot: the shooter's own look (or, for a melee hybrid, the look of
+ * the weapon fused into it), trimmed in the other ingredient's colour.
+ */
+function baseLook(sourceItemId: string): Pick<ProjectileStyle, 'shape' | 'color' | 'accent' | 'trail' | 'scale'> {
+  const parts = hybridParts(sourceItemId);
+  if (!parts) return BASE[sourceItemId] ?? BOLT;
+  const base = BASE[parts.baseId];
+  const ingredient = BASE[parts.ingredientId];
+  if (base) return { ...base, accent: ingredient?.color ?? base.accent, scale: base.scale * 1.15 };
+  return ingredient ?? BOLT;
+}
+
 export function projectileStyle(traits: ProjectileTraits): ProjectileStyle {
-  const base = BASE[traits.sourceItemId] ?? { shape: 'bolt' as const, color: 0xf0e6d2, accent: 0x9ad8ff, trail: 'none' as const, scale: 1 };
+  const base = baseLook(traits.sourceItemId);
   const bubble = traits.delivery === 'drifting_bubble';
   return {
     ...base,

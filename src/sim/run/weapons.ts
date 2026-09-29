@@ -8,8 +8,8 @@
  * the janitor kept swinging the mop. Weapons are numbered 1..n in the order
  * they were acquired; passives are never numbered because they are always on.
  */
-import { ITEM_CATALOG } from '../items/catalog';
-import type { FusionInventoryNode } from '../fusion/types';
+import { nodeDefinitionId } from '../fusion/inventory';
+import { definitionFor } from '../items/registry';
 import { blockedRunReason, itemDefinitionName, publishRunFeedback } from './economy';
 import { refreshRunLoadout } from './loadout';
 import type { MvpCommandResult, MvpRunState } from './types';
@@ -26,16 +26,16 @@ export type RunPassiveItem = {
   readonly itemDefinitionId: string;
 };
 
-const ATTACK_DEFINITIONS = new Set(ITEM_CATALOG.filter((definition) => definition.base).map((definition) => definition.id));
+/** The definition a top-level node acts as (a hybrid is its derived definition). */
+const firingDefinition = nodeDefinitionId;
 
-/** The item that decides whether a top-level node can be fired. */
-function firingDefinition(node: FusionInventoryNode): string {
-  return node.kind === 'leaf' ? node.itemDefinitionId : node.primary.itemDefinitionId;
+function isWeapon(itemDefinitionId: string): boolean {
+  return definitionFor(itemDefinitionId)?.base !== undefined;
 }
 
 export function runWeaponSlots(state: MvpRunState): RunWeaponSlot[] {
   return state.inventory.inventory
-    .filter((node) => ATTACK_DEFINITIONS.has(firingDefinition(node)))
+    .filter((node) => isWeapon(firingDefinition(node)))
     .map((node, index) => ({
       slot: index + 1,
       instanceId: node.instanceId,
@@ -46,8 +46,9 @@ export function runWeaponSlots(state: MvpRunState): RunWeaponSlot[] {
 
 export function runPassiveItems(state: MvpRunState): RunPassiveItem[] {
   return state.inventory.inventory
-    .filter((node): node is Extract<FusionInventoryNode, { kind: 'leaf' }> => node.kind === 'leaf' && !ATTACK_DEFINITIONS.has(node.itemDefinitionId))
-    .map((node) => ({ instanceId: node.instanceId, itemDefinitionId: node.itemDefinitionId }));
+    // A fused passive kit is still a passive: listed, never numbered.
+    .filter((node) => !isWeapon(firingDefinition(node)) && !(node.kind === 'composite' && node.recipeId === 'emitter_mount'))
+    .map((node) => ({ instanceId: node.instanceId, itemDefinitionId: firingDefinition(node) }));
 }
 
 function equip(state: MvpRunState, weapon: RunWeaponSlot): MvpCommandResult {
