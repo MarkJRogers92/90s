@@ -9,7 +9,7 @@ import type {
 } from './items/types';
 
 export type RunStatus = 'playing' | 'won' | 'dead';
-export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper';
+export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner';
 export type Vec2 = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 
@@ -60,6 +60,10 @@ export type EnemyState = Vec2 & {
   /** Bargain Hunter: ticks left in a charge, and a wall-stun. */
   chargeTicks?: number;
   stunnedTicks?: number;
+  /** Mall Owner: slam/charge attacks finished so far (every other one charges). */
+  bossAttacks?: number;
+  /** Mall Owner: the phase-two Mascot Brute has been called in. */
+  bossSummonedMid?: boolean;
   health: number;
   radius: number;
   phase: 'pursue' | 'telegraph' | 'recover';

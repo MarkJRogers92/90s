@@ -13,7 +13,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
 import { STATIC_BURST_RADIUS } from '../../sim/combat/staticEnemy';
 
-export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'glob' | 'slam' | 'bossShot' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -29,8 +29,8 @@ export type RunRecord = {
   readonly startedAt: string;
   readonly seed: number;
   readonly outcome: 'won' | 'dead' | 'quit';
-  /** Present (2) only for shifts on the upper floor. */
-  readonly floor?: 2;
+  /** Present (2 or 3) only for shifts above the ground floor. */
+  readonly floor?: 2 | 3;
   readonly ticks: number;
   readonly reachedRoom: number;
   readonly rooms: readonly RoomLog[];
@@ -49,7 +49,7 @@ type Snapshot = {
   readonly dashTicks: number;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, glob: 0, slam: 0, bossShot: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -80,6 +80,15 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
     (enemy) => enemy.kind === 'shopper' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 12,
   );
   if (shopper) return 'shopper';
+  // A Mascot Brute only hurts mid-charge; the Owner's charge is its own source.
+  const brute = combat.enemies.some(
+    (enemy) => enemy.kind === 'mascot' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 14,
+  );
+  if (brute) return 'mascot';
+  const ownerCharging = combat.enemies.some(
+    (enemy) => enemy.kind === 'owner' && enemy.health > 0 && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 14 && ((enemy.chargeTicks ?? 0) > 0 || (enemy.stunnedTicks ?? 0) > 0),
+  );
+  if (ownerCharging) return 'ownerCharge';
   // A Static shocks where it lands, so it is standing inside its burst.
   const shock = combat.enemies.some(
     (enemy) => enemy.kind === 'static' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= STATIC_BURST_RADIUS + 4,
@@ -180,7 +189,7 @@ export class PlaytestRecorder {
       startedAt: this.startedAt,
       seed: state.seed,
       outcome,
-      ...(state.wing.floor === 2 ? { floor: 2 as const } : {}),
+      ...(state.wing.floor === 2 || state.wing.floor === 3 ? { floor: state.wing.floor } : {}),
       ticks: state.tick - this.startTick,
       reachedRoom: state.roomIndex + 1,
       rooms: this.rooms.map((room) => ({ ...room, damage: { ...room.damage } })),

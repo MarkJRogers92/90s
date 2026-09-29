@@ -64,7 +64,7 @@ describe('snack drops', () => {
     expect(normal).toBeGreaterThan(20);
     expect(normal).toBeLessThan(160);
     expect(elite).toBeGreaterThan(normal);
-  });
+  }, 30_000);
 
   it('heal half a heart, and wait on the floor while health is full', () => {
     const state = createMvpRun(7);

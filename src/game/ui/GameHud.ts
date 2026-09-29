@@ -598,7 +598,7 @@ export class GameHud {
   private drawControlsCard(state: MvpRunState): void {
     const age = state.tick - (this.shiftStartTick ?? state.tick);
     // Once per shift: not again at the top of the escalator.
-    if (state.roomIndex !== 0 || state.wing.floor === 2 || age > 60 * 9) return;
+    if (state.roomIndex !== 0 || state.wing.floor !== undefined || age > 60 * 9) return;
     const alpha = age > 60 * 8 ? Math.max(0, 1 - (age - 480) / 60) : 1;
     const rows: Array<[string, string]> = [
       ['WASD', 'MOVE'],
@@ -640,7 +640,9 @@ export class GameHud {
       // The boss room gets a boss card instead of a room name.
       const bossRoom = (room?.bossAnchor ?? null) !== null;
       const sign = bossRoom
-        ? state.wing.floor === 2
+        ? state.wing.floor === 3
+          ? ensureNeonSign(this.scene, { text: 'THE MALL OWNER', color: '#ff2a3a', scale: 6, subtitle: 'EVERYTHING YOU SEE IS MINE. INCLUDING YOU.', subtitleColor: '#ffd84a' })
+          : state.wing.floor === 2
           ? ensureNeonSign(this.scene, { text: 'THE MALL MANAGER', color: '#ff2a3a', scale: 6, subtitle: 'THE CUSTOMER IS NEVER RIGHT.', subtitleColor: '#ffd84a' })
           : ensureNeonSign(this.scene, { text: 'LOSS PREVENTION', color: '#ff2a3a', scale: 6, subtitle: 'NO REFUNDS. NO EXCHANGES. NO SURVIVORS.', subtitleColor: '#ffd84a' })
         : ensureNeonSign(this.scene, { text: name, color: event === 'blackout' ? '#ff5a6a' : '#ff3fc8', scale: 4, subtitle, subtitleColor });

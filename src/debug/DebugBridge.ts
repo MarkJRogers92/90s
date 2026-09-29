@@ -274,6 +274,8 @@ export type MvpRunDebugSnapshot = {
   seed: number;
   roomIndex: number;
   roomId: string;
+  /** 1 ground floor, 2 the upper level, 3 Food Court After Dark. */
+  floor: 1 | 2 | 3;
   cash: number;
   heat: number;
   suspicion: number;
@@ -383,6 +385,7 @@ export function installMvpRunDebugBridge(
           seed: state.seed,
           roomIndex: state.roomIndex,
           roomId: state.room.roomId,
+          floor: state.wing.floor ?? 1,
           cash: state.cash,
           heat: state.heat,
           suspicion: state.suspicion,

@@ -28,7 +28,7 @@ export type WingDoorway = {
 
 export type WingEnemySpawn = {
   readonly slotId: string;
-  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper';
+  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper' | 'mascot';
   readonly x: number;
   readonly y: number;
 };
@@ -72,8 +72,8 @@ export type WingRoomDefinition = {
 
 export type GeneratedWing = {
   readonly seed: number;
-  /** The upper level is floor 2; absent means floor 1 (the original wing). */
-  readonly floor?: 2;
+  /** The upper level is floor 2, the food court after dark floor 3; absent means floor 1 (the original wing). */
+  readonly floor?: 2 | 3;
   readonly rooms: readonly WingRoomDefinition[];
   readonly startingCash: number;
 };

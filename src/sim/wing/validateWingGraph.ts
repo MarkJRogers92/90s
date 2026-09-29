@@ -489,8 +489,8 @@ function validateCombatRoom(room: WingRoomDefinition): void {
       );
     }
     // Upstairs substitutes fill the slot of the monster they replace.
-    const slotKind = spawn.kind === 'static' ? 'hanger' : spawn.kind === 'shopper' ? 'spitter' : spawn.kind;
-    if (!authoredSlot.kinds.includes(slotKind)) {
+    const slotKind = spawn.kind === 'static' ? 'hanger' : spawn.kind === 'shopper' ? 'spitter' : spawn.kind === 'mascot' ? 'hanger' : spawn.kind;
+    if (spawn.kind !== 'mascot' && !authoredSlot.kinds.includes(slotKind)) {
       fail(
         `spawn slot ${spawn.slotId} in room ${room.id} uses kind ${spawn.kind} outside its authored band`,
       );

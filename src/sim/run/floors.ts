@@ -1,11 +1,12 @@
 /**
- * The escalator: beating Loss Prevention opens the upper level.
+ * The escalator: beating a floor's boss opens the next one up.
  *
- * Going up is a new run on floor 2 (its own seeded wing, Statics, Bargain
- * Hunters and the Mall Manager) that carries the janitor's gear, cash and
- * shift stats, with health restored as the reward for the first floor. The
- * floor-2 wing seed is derived from the floor-1 seed, so a seed still names
- * one whole night.
+ * Going up is a new run on the next floor (its own seeded wing) that carries
+ * the janitor's gear, cash, shift stats and perks, with health restored as the
+ * reward for the floor. Floor 2 (Statics, Bargain Hunters, the Mall Manager)
+ * follows Loss Prevention; Floor 3 (Food Court After Dark: Mascot Brutes and
+ * the Mall Owner) follows the Mall Manager. Each floor's wing seed is derived
+ * from the one below, so a seed still names one whole night.
  */
 import { createMvpRun } from './createMvpRun';
 import { cloneFusionInventory } from './checkpoint';
@@ -18,18 +19,35 @@ export function floorTwoSeed(seed: number): number {
   return (Math.imul(seed | 0, 31) + 7919) | 0;
 }
 
-export function canAscend(state: MvpRunState): boolean {
-  return state.status === 'won' && state.wing.floor !== 2;
+/** The top floor's wing seed, derived from the floor-2 wing seed. */
+export function floorThreeSeed(seed: number): number {
+  return (Math.imul(seed | 0, 37) + 104729) | 0;
 }
 
-export function ascendToFloorTwo(state: MvpRunState): MvpRunState {
-  if (!canAscend(state)) throw new Error('The escalator only opens after Loss Prevention falls.');
-  const next = createMvpRun(floorTwoSeed(state.seed), {
-    floor: 2,
+/** 1 for the ground floor (an absent flag), else 2 or 3. */
+export function floorOf(state: Pick<MvpRunState, 'wing'>): 1 | 2 | 3 {
+  return state.wing.floor === 3 ? 3 : state.wing.floor === 2 ? 2 : 1;
+}
+
+export function canAscend(state: MvpRunState): boolean {
+  return state.status === 'won' && floorOf(state) !== 3;
+}
+
+/** Up one floor: the next wing, carrying gear, cash, stats and perks. */
+export function ascend(state: MvpRunState): MvpRunState {
+  if (!canAscend(state)) throw new Error('The escalator only opens after a floor boss falls.');
+  const floor = floorOf(state) === 1 ? 2 : 3;
+  const next = createMvpRun(floor === 2 ? floorTwoSeed(state.seed) : floorThreeSeed(state.seed), {
+    floor,
     carry: { inventory: cloneFusionInventory(state.inventory), cash: state.cash, stats: { ...state.stats } },
     perks: state.perks,
   });
   refreshRunLoadout(next);
   syncRunCarrier(next);
   return next;
+}
+
+export function ascendToFloorTwo(state: MvpRunState): MvpRunState {
+  if (floorOf(state) !== 1) throw new Error('Floor 2 is reached from Floor 1.');
+  return ascend(state);
 }

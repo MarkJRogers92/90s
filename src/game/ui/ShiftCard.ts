@@ -7,6 +7,7 @@
  * slides in. It draws `buildShiftCardModel` and nothing else; the DOM summary
  * stays in the page (off-screen) for assistive tech and the browser tests.
  */
+import { floorOf } from '../../sim/run/floors';
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
@@ -134,11 +135,12 @@ export class ShiftCard {
     if (this.lastDaily) {
       this.newDailyBest = this.dailies.submit(this.lastDaily, { score: model.score, won: model.won && !model.ascend, seconds: model.seconds });
     }
-    const upstairs = state.wing.floor === 2;
+    const floor = floorOf(state);
     this.record = recordShift(this.career.load(), {
       score: model.score,
-      won: model.won && upstairs,
-      floorCleared: upstairs || model.ascend,
+      won: model.won && floor === 3,
+      floorCleared: floor > 1 || model.ascend,
+      floorTwoCleared: floor === 3 || (floor === 2 && model.ascend),
       kills: state.stats.kills,
       bestCombo: state.stats.bestCombo,
       seconds: model.seconds,

@@ -657,9 +657,106 @@ function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan 
   }
 }
 
-export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 = 1): DressingPlan {
+/**
+ * Food Court After Dark (floor 3): the same rooms again, but closed for the
+ * night. Greasy orange and teal neon over dim warm light, dead menus, dark
+ * cabinets and the Owner's gold-and-magenta suite.
+ */
+function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
+  const teal = 0x2ad8c8;
+  switch (room.id) {
+    case 'service_corridor': {
+      const facades = facadeRow([
+        { facade: 'pizza', sign: sign('PIZZA PALACE', NEON.orange, 'CLOSED FOR THE NIGHT', teal), spill: 0xff9a50 },
+        { facade: 'wok', sign: sign('WOK N ROLL', NEON.red, 'ORDER UP', teal), spill: 0xff7a40 },
+        { facade: 'burger', sign: sign('BURGER ORBIT', teal, 'NOW HIRING. ALWAYS.', NEON.orange), spill: 0x60ffe8 },
+      ]);
+      return {
+        ...plan,
+        areaName: 'FOOD COURT SEATING',
+        floor: 'checker',
+        ambient: 0x3a241e,
+        facades,
+        lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.orange), ...ceilingGrid(0xff9a50, 0.55, 190, [150, 390], [140, 480, 820]), { x: 480, y: 330, radius: 170, color: teal, intensity: 0.5, squash: 0.7 }],
+        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.orange }, { x1: 20, y1: 304, x2: 940, y2: 304, color: teal }],
+        neonRings: plan.neonRings.map((ring, i) => ({ ...ring, color: i === 0 ? NEON.orange : teal })),
+        civilians: false,
+      };
+    }
+    case 'storefront_a':
+    case 'storefront_b':
+      return {
+        ...plan,
+        ambient: 0x3e2622,
+        lights: [...plan.lights, ...ceilingGrid(0xff9a50, 0.35, 150, [150, 400], [110, 850])],
+        neonStrips: [...plan.neonStrips, { x1: 20, y1: 60, x2: 940, y2: 60, color: teal }],
+      };
+    case 'food_court': {
+      const facades = facadeRow([
+        { facade: 'arcade', sign: sign('GAME OVER', NEON.magenta, 'INSERT COIN', NEON.yellow), spill: 0xc080ff },
+        { facade: 'arcade', sign: sign('HIGH SCORES', teal, 'AAA 999999', NEON.orange), spill: 0x60ffe8 },
+        { facade: 'arcade', sign: sign('TOKENS', NEON.orange, '4 FOR A DOLLAR', teal), spill: 0xff9a50 },
+      ]);
+      const props = [
+        ...plan.props,
+        { id: 'cab-1', prop: 'arcadeCabinet' as const, x: 60, y: 300, width: 32, height: 70 },
+        { id: 'cab-2', prop: 'arcadeCabinet' as const, x: 900, y: 300, width: 32, height: 70 },
+        { id: 'claw-1', prop: 'clawMachine' as const, x: 60, y: 400, width: 38, height: 68 },
+        { id: 'claw-2', prop: 'clawMachine' as const, x: 900, y: 400, width: 38, height: 68 },
+      ];
+      return {
+        ...plan,
+        areaName: 'ARCADE',
+        floor: 'carpet',
+        ambient: 0x241a3a,
+        facades,
+        props,
+        lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.magenta), ...ceilingGrid(0x9a7cff, 0.5, 170, [180, 380], [200, 480, 760], (i) => (i === 3 ? 'buzz' : undefined))],
+        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.magenta }, { x1: 20, y1: 304, x2: 940, y2: 304, color: teal }],
+      };
+    }
+    case 'back_hall': {
+      const facades = facadeRow([
+        { facade: 'service', sign: sign('LOADING DOCK', NEON.orange, undefined, undefined, 2), spill: 0xffa050 },
+        { facade: 'service', sign: sign('DOCK 3', teal, undefined, undefined, 2), spill: 0x60d8c8 },
+        { facade: 'service', sign: sign('NO EXIT', NEON.red, undefined, undefined, 2), spill: 0xb0c8d0 },
+      ]);
+      return {
+        ...plan,
+        areaName: 'LOADING DOCK',
+        ambient: 0x1a2226,
+        facades,
+        lights: [...facadeSpillLights(facades).map((light) => ({ ...light, intensity: light.intensity * 0.55 })), ...doorwayLights(room, NEON.orange), ...ceilingGrid(teal, 0.55, 150, [140, 360], [160, 480, 800], (i) => (i % 2 === 1 ? 'buzz' : undefined))],
+      };
+    }
+    case 'security_office': {
+      const facades = facadeRow([
+        { facade: 'security', sign: sign('THE OWNER', NEON.yellow, 'EST. FOREVER', NEON.magenta), spill: 0xffd060 },
+        { facade: 'service', sign: sign('PRIVATE', NEON.magenta, 'STAFF DIE HERE', NEON.orange, 2), spill: 0xd060b0 },
+        { facade: 'security', sign: sign('NO TRESPASSING', NEON.red, undefined, undefined, 2), spill: 0xff9080 },
+      ]);
+      return {
+        ...plan,
+        areaName: "OWNER'S SUITE",
+        floor: 'carpet',
+        ambient: 0x2a1a2a,
+        facades,
+        lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.yellow), ...ceilingGrid(0xffc870, 0.5, 150, [160, 380], [240, 560]), { x: 760, y: 240, radius: 210, color: NEON.magenta, intensity: 0.55, squash: 0.8, flicker: 'pulse' }],
+        neonStrips: [
+          { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow },
+          { x1: 580, y1: 110, x2: 940, y2: 110, color: NEON.magenta },
+          { x1: 580, y1: 370, x2: 940, y2: 370, color: NEON.magenta },
+        ],
+      };
+    }
+    default:
+      return plan;
+  }
+}
+
+export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 | 3 = 1): DressingPlan {
   const plan = planFloorOneRoom(room);
-  return floor === 2 ? upperFloor(plan, room) : plan;
+  return floor === 3 ? topFloor(plan, room) : floor === 2 ? upperFloor(plan, room) : plan;
 }
 
 function planFloorOneRoom(room: WingRoomDefinition): DressingPlan {

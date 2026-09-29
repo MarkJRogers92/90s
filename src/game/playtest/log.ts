@@ -78,13 +78,13 @@ export type RunSummary = {
 
 export function summarizeRuns(records: readonly RunRecord[]): RunSummary {
   const deathsByRoom: Record<string, number> = {};
-  const damageBySource: Record<DamageSource, number> = { hanger: 0, mannequin: 0, static: 0, shopper: 0, glob: 0, slam: 0, bossShot: 0, other: 0 };
+  const damageBySource: Record<DamageSource, number> = { hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, other: 0 };
   const roomTime: Record<string, { ticks: number; visits: number }> = {};
   const bought = new Map<string, number>();
   const roomNames: Record<string, string> = {};
   for (const record of records) {
     // Upstairs rooms reuse the downstairs ids, so they are keyed apart.
-    const key = (roomId: string): string => (record.floor === 2 ? `2:${roomId}` : roomId);
+    const key = (roomId: string): string => (record.floor === undefined ? roomId : `${record.floor}:${roomId}`);
     for (const room of record.rooms) roomNames[key(room.roomId)] = room.name;
     if (record.outcome === 'dead') {
       const room = key(record.rooms.at(-1)?.roomId ?? 'unknown');

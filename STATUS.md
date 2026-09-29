@@ -13,6 +13,15 @@ Room perks). Best score and attempts per day are kept in
 `dead-mall:daily:v1`; the title, clock-in and end card show the date. See
 TEST_EVIDENCE.md round 23a.
 
+Round 23b (2026-09-28): Floor 3, Food Court After Dark. Beating the Mall
+Manager now offers the escalator to a third six-room wing (Food Court Seating,
+Pizza Counter, Arcade, Kitchen Back, Loading Dock, Owner's Suite) with a new
+enemy, the Mascot Brute (wind-up, straight charge, wall-stun for bonus damage),
+and a new final boss, the Mall Owner (240 hp: tray volleys, a wall-shaking
+charge, calls in brutes) with its own theme. The kill cam, dawn walk-out and
+CLOCKED OUT card now follow the Owner; the Break Room pays for clearing Floor 2.
+PixelLab art for both, `floor: 3` checkpoints, Floor 3 fixtures. 795 unit tests
+pass; see TEST_EVIDENCE.md for the browser run (load-related flakes noted).
 
 Round 22 (2026-09-28): the Break Room — meta-progression between shifts. Every
 shift pays Pay Stubs (more for clearing Floor 1 and clocking out); the title's

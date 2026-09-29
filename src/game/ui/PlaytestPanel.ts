@@ -12,6 +12,8 @@ const SOURCE_NAMES: Record<DamageSource, string> = {
   mannequin: 'Mannequin',
   static: 'Static shock',
   shopper: 'Bargain Hunter charge',
+  mascot: 'Mascot Brute charge',
+  ownerCharge: 'Mall Owner charge',
   glob: 'Spitter glob',
   slam: 'Boss slam',
   bossShot: 'Boss volley',
@@ -104,7 +106,7 @@ export class PlaytestPanel {
     const when = new Date(record.startedAt);
     const date = Number.isNaN(when.getTime()) ? '' : `${when.toLocaleDateString()} ${when.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · `;
     const how = record.outcome === 'dead' ? `died (${record.killedBy ? SOURCE_NAMES[record.killedBy] : 'unknown'})` : record.outcome;
-    item.textContent = `${date}${how} · reached ${record.floor === 2 ? 'floor 2, ' : ''}room ${record.reachedRoom} · ${formatTime(record.ticks)} · ${record.dashes} dash${record.dashes === 1 ? '' : 'es'}`;
+    item.textContent = `${date}${how} · reached ${record.floor !== undefined ? `floor ${record.floor}, ` : ''}room ${record.reachedRoom} · ${formatTime(record.ticks)} · ${record.dashes} dash${record.dashes === 1 ? '' : 'es'}`;
     return item;
   }
 }

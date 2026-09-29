@@ -96,10 +96,12 @@ export function newCareer(): Career {
 /** How one finished shift went, as the end card scored it. */
 export type ShiftResult = {
   readonly score: number;
-  /** Clocked out: the top floor's boss is down. */
+  /** Clocked out: the top floor's boss (the Mall Owner) is down. */
   readonly won: boolean;
-  /** Loss Prevention is down (true on any floor-2 shift). */
+  /** Loss Prevention is down (true on any floor-2 or floor-3 shift). */
   readonly floorCleared: boolean;
+  /** The Mall Manager is down (true on any floor-3 shift). Absent means false. */
+  readonly floorTwoCleared?: boolean;
   readonly kills: number;
   readonly bestCombo: number;
   readonly seconds: number;
@@ -116,7 +118,8 @@ export function stubsForShift(result: ShiftResult): Pay {
   const performance = Math.floor(Math.max(0, result.score) / 200);
   if (performance > 0) lines.push({ label: 'PERFORMANCE', amount: performance });
   if (result.floorCleared) lines.push({ label: 'FLOOR 1 CLEARED', amount: 6 });
-  if (result.won) lines.push({ label: 'CLOCKED OUT', amount: 12 });
+  if (result.floorTwoCleared === true || result.won) lines.push({ label: 'FLOOR 2 CLEARED', amount: 9 });
+  if (result.won) lines.push({ label: 'CLOCKED OUT', amount: 14 });
   return { total: lines.reduce((sum, line) => sum + line.amount, 0), lines };
 }
 
@@ -138,7 +141,7 @@ export type ShiftRecord = {
 
 export function recordShift(career: Career, result: ShiftResult, date: string): ShiftRecord {
   const pay = stubsForShift(result);
-  const polaroid: Polaroid | null = result.floorCleared || result.won
+  const polaroid: Polaroid | null = result.floorCleared || result.floorTwoCleared === true || result.won
     ? {
         score: result.score,
         won: result.won,

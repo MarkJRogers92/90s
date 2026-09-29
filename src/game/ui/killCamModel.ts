@@ -54,5 +54,5 @@ export function slowMoMs(realMs: number): number {
 }
 
 export function killCamStamp(kind: BossKind): string {
-  return kind === 'manager' ? "YOU'RE FIRED" : 'LOSS PREVENTED';
+  return kind === 'owner' ? 'GOING OUT OF BUSINESS' : kind === 'manager' ? "YOU'RE FIRED" : 'LOSS PREVENTED';
 }
