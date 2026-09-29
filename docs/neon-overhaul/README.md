@@ -624,3 +624,52 @@ round 22's next steps.
   `docs/art/neon-overhaul/draw_perk_icons.py` (as the locker icon was), 48x48,
   in the manifest.
 - **Clock-in:** the benefits line names NEW SNEAKERS and SHOP-VAC.
+
+## Round 25: grab and run, the wanted level, hot goods
+
+The owner felt shoplifting was bolted on: in the shift it was the M3 camera
+sweep (stand still, wait for the cone, get teleported back when caught), Heat
+never went down and only cost score, and the LOSE THE HEAT objective could not
+be completed. It is now one loop of three parts. The separate M3 Shoplifting
+Loop mode keeps its own camera rules unchanged.
+
+- **Grab and run** (`src/sim/run/heist.ts`): F on a shelf item sets off the
+  store alarm (`state.alarm`, room-local, never checkpointed). Two Bargain
+  Hunters appear either side of the store door (36-tick beat before their
+  first wind-up) and two display Mannequins wake in the back corners; three
+  stars adds a third Hunter. The janitor has `ALARM_TICKS` (240, 4 s; +90 with
+  the Reinforced Fanny Pack) to cross the store door, which secures the item as
+  before. Too slow: the shutter becomes a wall across the door
+  (never while the janitor stands in it), `LOCKDOWN_HEAT` (+20) is added and
+  two more Hunters come down the side aisles. When every enemy in the room is
+  down the shutter lifts. Nothing is ever confiscated; suspicion stays 0.
+- **Wanted level** (`src/sim/run/wanted.ts`): 20 Heat is a star, five at most.
+  A secured theft is +20 (one star). Each star adds one guard to every fight
+  room and boss room (`WANTED_SECURITY`: Mannequin, Hunter, Mannequin, Hunter,
+  placed on seeded spots with their own luck key so a clean run is unchanged),
+  and $2 to shelf prices. Clearing a fight sheds 10 Heat (`LAY_LOW_COOLING`).
+  Heat now rides the escalator. Score gives +60 per star at the end instead of
+  -5 per Heat, and the Break Room pays a FIVE-FINGER BONUS stub per star.
+- **Hot goods**: a stolen leaf that is not fused deals +1 damage (applied to
+  the compiled loadout in `compileRunLoadout`, so item definitions are
+  unchanged), and each one held keeps Heat at least one star
+  (`hotHeatFloor`). Fusing it at the Bench Warrant launders it: the hybrid is
+  not hot, and the bench says "Laundered a hot item".
+- **Fanny Pack**: its "-5 Heat per theft" was meaningless under the hot floor,
+  so it now adds 1.5 s to the alarm (it still carries a second item).
+- **Presentation**: the camera cone is gone. The store gets flashing red
+  beacons and lights, a SHUTTER n countdown over the door and a roll-down
+  grille that creeps down over the countdown (`src/game/view/alarmCues.ts`)
+  and is solid when locked. The canvas HUD shows five wanted stars in the
+  vitals panel, an alarm banner under the PA ticker, and HOT tags on stolen
+  weapon slots; objectives read GET OUT! SHUTTER IN n / LOCKED IN - TAKE DOWN
+  SECURITY / WANTED ** - CLEAR FIGHTS TO LAY LOW / HOT GOODS - LAUNDER AT THE
+  BENCH. The PA announces a FIVE-FINGER DISCOUNT, the lockdown, three stars and
+  laundering; the synth adds alarm, shutter, lift, wanted and launder cues.
+  The end card's HEAT row is now WANTED.
+- **Tuning knobs**: `ALARM_TICKS`, `LOCKDOWN_HEAT`, `alarmSpawnSpots`,
+  `HEAT_PER_STAR`, `LAY_LOW_COOLING`, `WANTED_SURCHARGE_PER_STAR`,
+  `WANTED_SECURITY`, `HOT_DAMAGE_BONUS`, `WANTED_STAR_SCORE`.
+- **Unplayed**: whether 4 s is right, whether the Hunters at the door are fair
+  on Floor 1 (it is the first place a Floor 1 player meets them), and whether
+  +60 score a star makes stealing too attractive.

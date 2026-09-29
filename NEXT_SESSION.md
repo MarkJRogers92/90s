@@ -7,10 +7,14 @@ Latest (round 24, 2026-09-29): NEW SNEAKERS and SHOP-VAC ATTACHMENT perk lines
 `docs/art/neon-overhaul/draw_perk_icons.py`). Tuning knobs: 10 ticks and 40 px
 per level in `perksFor`, 5 px/tick pull in `TOKEN_MAGNET_SPEED`.
 
-Open design question raised by the owner: shoplifting feels bolted on. Heat
-never goes down and only speeds up suspicion and costs score, so the HUD's
-LOSE THE HEAT objective can never be completed. A rework proposal is in the
-round 24 reply; no stealing code has changed yet.
+Latest (round 25): grab and run, wanted level, hot goods — the owner's
+"stealing feels bolted on" rework (options A+B+C). Sim in
+`src/sim/run/heist.ts` and `src/sim/run/wanted.ts`; visuals in
+`src/game/view/alarmCues.ts` and `MvpRunView.drawStore`; HUD in
+`gameHudModel.ts`/`GameHud.ts`. Try it with `?fixture=mvp-storefront`, press F.
+Needs a human playtest: the 4 s alarm, Hunters at the door on Floor 1, and
+whether +60 score a star over-rewards stealing. Possible next: blackouts
+silence the alarm (option E), a Loss Prevention stalker at 4+ stars (G).
 
 In this cloud container, run the browser suite with a config that sets
 `launchOptions.executablePath: '/opt/pw-browsers/chromium'`; four tests fail

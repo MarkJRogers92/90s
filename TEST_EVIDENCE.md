@@ -1,5 +1,40 @@
 # Test evidence
 
+## 2026-09-29 — round 25: grab and run, wanted level, hot goods
+
+- Red first: `tests/unit/grab-and-run.test.ts` (20 tests) failed on the missing
+  `heist`/`wanted` modules; it covers the alarm and its guards, guard spots
+  inside every store template, escaping for one star, no suspicion, the
+  shutter (a real wall), lockdown wave and Heat, the lift and late securing,
+  the shutter never closing on the doorway, the Fanny Pack's +90 ticks, a
+  second grab not restarting, star maths, wanted security in fights (none in
+  safe rooms, none when clean), security on doorway entry and checkpoint
+  restore, laying low, the surcharge, Heat up the escalator, score and stub
+  pay per star, hot +1 damage (melee and shots, surviving a room change), the
+  hot floor, and laundering at the Bench Warrant. `alarm-cues.test.ts` (4) was
+  red on the missing view module. The audio-cue test for the removed
+  confiscation cue was rewritten and seen red before the dead branch went.
+  Sonnet subagents wrote the PA/audio and HUD-model changes test-first (6 and
+  ~9 new tests); both diffs were reviewed here.
+- Old sweep tests removed deliberately (confiscation, suspicion rise, sweep in
+  another room, car re-park on confiscation); the M3 Shoplifting Loop's own
+  camera tests are untouched and pass.
+- Unit: 80 files / 880 tests pass. `npx tsc --noEmit -p .` clean;
+  `npm run build` OK; no debug bridge symbols in `dist/assets/*.js`.
+- Real browser: `night-shift.spec.ts` grab test (alarm open, a Hunter present,
+  run out the door, +20 Heat, alarm cleared) and a lingering test (shutter
+  closes, carried item kept, Heat at least 20). Captures:
+  `artifacts/neon-overhaul/heist-alarm.png`, `heist-locked.png`,
+  `heist-hot-slot.png` (HOT slot, HOT GOODS objective, +$2 prices at one star).
+  The first capture showed the alarm banner hidden under the PA ticker; it was
+  moved below it and recaptured.
+- Full suite (scratch config with `executablePath: /opt/pw-browsers/chromium`),
+  `--workers=2`: 72/74. `night-shift.spec.ts:230` and
+  `presentation-evidence.spec.ts:269` both pass in isolation (load-sensitive,
+  as in rounds 23-24). The console 404 that failed three tests in round 24 was
+  `/favicon.ico` requested by full Chromium; `index.html` now declares an empty
+  inline icon.
+
 ## 2026-09-29 — round 24: New Sneakers and the Shop-Vac Attachment
 
 - Red first: `tests/unit/sneakers-shopvac.test.ts` (15 tests) failed on the

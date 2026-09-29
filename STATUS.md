@@ -7,6 +7,16 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 25 (2026-09-29): shoplifting rebuilt as one loop. Grabbing an item
+sets off the store alarm: Bargain Hunters at the door, Mannequins at the back,
+four seconds to get out before a shutter locks you in with a second wave.
+Heat is now a 1-5 star wanted level (extra security in fights, a price
+surcharge, shed by clearing fights, carried up the escalator, paid out in score
+and stubs). Stolen items are hot: +1 damage, but each keeps you a star wanted
+until fused at the Bench Warrant. The in-run camera sweep, suspicion and
+confiscation are gone (the M3 mode keeps them). See the playbook's Round 25 and
+TEST_EVIDENCE.md round 25.
+
 Round 24 (2026-09-29): two more Break Room perk lines. NEW SNEAKERS cuts the
 dash cooldown by 10 ticks a level (two levels); the SHOP-VAC ATTACHMENT draws
 loose change in from 40 px further a level (two levels). Both are clamped sim
