@@ -711,9 +711,18 @@ Three items from the NEXT_SESSION ideas backlog.
   sprays and ripples, and about one sign in three has a dying tube. All pure
   in (tick, seed). Screens drop to standby in a blackout, and the tube
   stutter respects reduced flashes.
+- **Follow-up visuals (same round)**: the plaque carries a mugshot, a
+  head-and-shoulders crop of the boss's south idle frame (`portraitCrop`);
+  red and blue wash in from the screen edges and spill across the
+  storefronts while Loss Prevention is in the room (`policeWash`, steady
+  violet under reduced flashes, which now also holds the door warning red);
+  and dust motes climb through every light pool of radius 70+ (`dustMotes`).
 - **Gotcha found on the way**: `Container.setScrollFactor(0)` does not reach
   a container's children in Phaser unless `updateChildren` is passed, which
   matters as soon as the camera zooms or scrolls under a screen overlay.
+  And never `texture.add()` a named frame to a shared single-frame sheet:
+  the first added frame becomes the texture's default, so every sprite made
+  from it afterwards draws that crop. Use `setCrop` on the image instead.
 - **Unplayed**: whether the stalker at 150 px/s is oppressive or ignorable,
   whether 4 stars is the right threshold, and whether 2.6 s of boss card is
   welcome on a retry (it plays on every entry; consider first-entry only).

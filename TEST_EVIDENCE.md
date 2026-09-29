@@ -27,6 +27,13 @@
   container's scroll factor (off-screen under the zoom); the boss froze at
   spawn-in frame 0 under the hold; the HUD's old boss card would have
   frozen under the hold (removed; its taglines moved to the new card).
+- Follow-up visuals: +4 unit tests (portrait crop, police wash x2, dust
+  motes); 914 total pass; build clean, no fixture strings in `dist/`;
+  Chromium suite 74/74 again.
+  Manual: the police wash spills red/blue on the storefronts with the
+  stalker in the room; the plaque mugshot renders. Found and fixed: adding a
+  named frame to the boss sheet made it the texture's default frame, so the
+  boss in the room drew as the mugshot; now cropped with `setCrop`.
 - Not verified: prop motion over time is only seen in stills (subtle
   sway/flicker is hard to judge from a capture); WebKit/Safari untested.
 
