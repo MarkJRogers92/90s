@@ -346,13 +346,18 @@ export class GameHud {
     this.frame.fillStyle(0xffffff, 0.35).fillRect(x, y + 20, fill, 3);
   }
 
-  /** A red flashing strip with the shutter countdown; above the boss bar, clear of the area title. */
+  /**
+   * A red flashing strip with the shutter countdown, just under the PA ticker
+   * (which runs y 6-30 and is always talking during an alarm) and between the
+   * objectives panel and the minimap. Alarms only ring in stores, never with
+   * the boss bar up.
+   */
   private drawAlarm(model: GameHudModel, state: MvpRunState): void {
     const alarm = model.alarm;
     if (!alarm) return;
-    const width = 320;
+    const width = 300;
     const x = (SCREEN_W - width) / 2;
-    const y = 6;
+    const y = 34;
     const on = Math.floor(state.tick / 10) % 2 === 0;
     const closed = alarm.shutter === 'closed';
     const lifted = alarm.shutter === 'lifted';
