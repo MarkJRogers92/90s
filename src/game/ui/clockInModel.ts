@@ -70,6 +70,8 @@ export function benefitsLine(perks: ShiftPerks): string | null {
   const hearts = perks.bonusHealth / 2;
   if (hearts > 0) parts.push(`+${hearts} HEART${hearts === 1 ? '' : 'S'}`);
   if (perks.clearHealBonus > 0) parts.push('COFFEE BREAK');
+  if (perks.dashCooldownCut > 0) parts.push('NEW SNEAKERS');
+  if (perks.tokenMagnet > 0) parts.push('SHOP-VAC');
   if (perks.lockerItemId) parts.push(itemDefinitionName(perks.lockerItemId).toUpperCase());
   return parts.length === 0 ? null : `BENEFITS: ${parts.join(' - ')}`;
 }

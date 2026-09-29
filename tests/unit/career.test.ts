@@ -140,8 +140,8 @@ describe('the Break Room counter', () => {
 
   it('turns the career into the perks a shift starts with', () => {
     expect(perksFor(newCareer())).toEqual(NO_PERKS);
-    const career: Career = { ...newCareer(), perks: { seniority: 2, dental: 1, coffee: 1 }, lockerOwned: ['pump_soaker'], lockerEquipped: 'pump_soaker' };
-    expect(perksFor(career)).toEqual({ bonusCash: 10, bonusHealth: 2, clearHealBonus: 1, lockerItemId: 'pump_soaker' });
+    const career: Career = { ...newCareer(), perks: { seniority: 2, dental: 1, coffee: 1, sneakers: 0, shopvac: 0 }, lockerOwned: ['pump_soaker'], lockerEquipped: 'pump_soaker' };
+    expect(perksFor(career)).toEqual({ bonusCash: 10, bonusHealth: 2, clearHealBonus: 1, dashCooldownCut: 0, tokenMagnet: 0, lockerItemId: 'pump_soaker' });
   });
 });
 

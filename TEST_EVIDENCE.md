@@ -1,5 +1,28 @@
 # Test evidence
 
+## 2026-09-29 — round 24: New Sneakers and the Shop-Vac Attachment
+
+- Red first: `tests/unit/sneakers-shopvac.test.ts` (15 tests) failed on the
+  missing `dashCooldownCut`/`tokenMagnet` perk fields, `runDashCooldown`, the
+  Break Room lines and the clock-in names; a real `tickMvpRun` dash set 57
+  cooldown ticks where the sneakers expect 47. `player-cues.test.ts` gained a
+  readiness case over a shortened cooldown, red before `dashReadiness` took it.
+- Unit: 76 files / 849 tests pass. `npx tsc --noEmit -p .` clean;
+  `npm run build` OK.
+- Real browser: new `break-room.spec.ts` test enrolls in both perks through the
+  panel, starts a shift, reads `dashCooldownCut: 10, tokenMagnet: 40` from the
+  run and a real Space dash leaves at most 47 cooldown ticks. Capture:
+  `artifacts/neon-overhaul/break-room-perks-6.png`.
+- Full suite (this container, Chromium 1194 via a scratch config pointing
+  `executablePath` at `/opt/pw-browsers/chromium`, because the installed
+  Playwright wants a headless shell this image does not have), `--workers=2`:
+  68/73 passed. Four failures reproduce identically on an untouched `main`
+  worktree in the same container: `break-room.spec.ts:43`, `night-shift.spec.ts:300`
+  and `:350` fail only on a console "404 (Not Found)" error, and
+  `night-shift.spec.ts:229` times out its wait. The fifth,
+  `presentation-evidence.spec.ts:269` (ten restart cycles), passes in isolation
+  on this branch, as round 23 recorded.
+
 ## 2026-09-28 — round 23a: Daily Shift
 
 - Red first: `tests/unit/daily-shift.test.ts` failed on the missing

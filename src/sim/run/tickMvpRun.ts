@@ -24,7 +24,7 @@ import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
 import { stepCombo } from './combo';
 import { freezeDeep } from '../items/types';
-import { LOCKER_SOURCE_LOCATION, roomClearHeal, runMaxHealth } from './perks';
+import { LOCKER_SOURCE_LOCATION, roomClearHeal, runDashCooldown, runMaxHealth } from './perks';
 import { ASSOCIATE_MOP_INSTANCE_ID } from './createMvpRun';
 import type { Rect, Vec2 } from '../model';
 import { crossedStoreExit } from '../shop/tickWingRun';
@@ -532,6 +532,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
       dash: input.dash === true,
     },
     carrierAttackContext(state),
+    { dashCooldownTicks: runDashCooldown(state) },
   );
   enforceRunCarrierLeash(state);
 

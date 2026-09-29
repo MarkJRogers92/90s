@@ -26,6 +26,8 @@ const PERK_ICONS: Record<PerkId, string> = {
   seniority: `${ART}/perk-seniority.png`,
   dental: `${ART}/perk-dental.png`,
   coffee: `${ART}/perk-coffee.png`,
+  sneakers: `${ART}/perk-sneakers.png`,
+  shopvac: `${ART}/perk-shopvac.png`,
 };
 const ITEM_ICON = (itemId: string): string => `/assets/neon/items/${itemId.replace(/_/g, '-')}.png`;
 

@@ -13,7 +13,7 @@
 import type { EnemyKind } from '../model';
 import { publishRunFeedback } from './economy';
 import { ELITE_SNACK_CHANCE, ELITE_TOKEN_MULTIPLIER, SNACK_CHANCE, luck } from './luck';
-import { runMaxHealth } from './perks';
+import { runMaxHealth, tokenMagnetReach } from './perks';
 import type { MvpRunState } from './types';
 
 export type MallTokenPickup = {
@@ -41,6 +41,9 @@ export const MALL_TOKEN_VALUE: Readonly<Record<EnemyKind, number>> = {
 
 /** The janitor sweeps up anything within this distance of their feet. */
 export const TOKEN_PICKUP_RADIUS = 22;
+
+/** How far the Shop-Vac Attachment draws a pickup in each tick. */
+export const TOKEN_MAGNET_SPEED = 5;
 
 export type EnemyMarker = { readonly id: number; readonly kind: EnemyKind; readonly x: number; readonly y: number; readonly health: number; readonly elite?: boolean };
 
@@ -73,9 +76,31 @@ export function dropTokensForDeaths(state: MvpRunState, before: readonly EnemyMa
   }
 }
 
+/**
+ * Draws loose pickups inside the Shop-Vac's reach toward the janitor. A
+ * pretzel is only drawn in when the janitor is hurt, as it would only be eaten
+ * then; without the attachment the reach is the pickup radius and nothing moves.
+ */
+function vacuumTokens(state: MvpRunState): void {
+  const reach = tokenMagnetReach(state);
+  if (reach <= TOKEN_PICKUP_RADIUS) return;
+  const player = state.room.combat.player;
+  const hungry = player.health < runMaxHealth(state);
+  state.room.tokens = state.room.tokens.map((token) => {
+    if (token.kind === 'snack' && !hungry) return token;
+    const dx = player.x - token.x;
+    const dy = player.y - token.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance <= TOKEN_PICKUP_RADIUS || distance > reach) return token;
+    const step = Math.min(TOKEN_MAGNET_SPEED, distance);
+    return { ...token, x: token.x + (dx / distance) * step, y: token.y + (dy / distance) * step };
+  });
+}
+
 /** Pays every token under the janitor into cash, keeping inventory cash in step. */
 export function collectTokens(state: MvpRunState): void {
   if (state.room.tokens.length === 0) return;
+  vacuumTokens(state);
   const player = state.room.combat.player;
   let collected = 0;
   let healed = 0;

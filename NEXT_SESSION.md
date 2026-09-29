@@ -2,6 +2,20 @@
 
 ## Claude neon overhaul — start here
 
+Latest (round 24, 2026-09-29): NEW SNEAKERS and SHOP-VAC ATTACHMENT perk lines
+(`src/sim/run/perks.ts`, `PERKS` in `src/game/career/career.ts`, icons drawn by
+`docs/art/neon-overhaul/draw_perk_icons.py`). Tuning knobs: 10 ticks and 40 px
+per level in `perksFor`, 5 px/tick pull in `TOKEN_MAGNET_SPEED`.
+
+Open design question raised by the owner: shoplifting feels bolted on. Heat
+never goes down and only speeds up suspicion and costs score, so the HUD's
+LOSE THE HEAT objective can never be completed. A rework proposal is in the
+round 24 reply; no stealing code has changed yet.
+
+In this cloud container, run the browser suite with a config that sets
+`launchOptions.executablePath: '/opt/pw-browsers/chromium'`; four tests fail
+here on `main` too (a console 404 and one timeout).
+
 Latest (round 22): the Break Room. Career rules and storage are in
 `src/game/career/career.ts`, the run-side perks in `src/sim/run/perks.ts`, the
 panel in `src/game/ui/BreakRoomPanel.ts`, and the art in

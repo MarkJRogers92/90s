@@ -19,6 +19,11 @@ describe('dash readiness', () => {
     expect(dashReadiness({ dashCooldownTicks: DASH_TICKS + DASH_COOLDOWN_TICKS })).toBe(0);
     expect(dashReadiness({ dashCooldownTicks: Math.round(DASH_COOLDOWN_TICKS / 2) })).toBeCloseTo(0.5, 1);
   });
+
+  it('fills over a shortened cooldown when the run has New Sneakers', () => {
+    expect(dashReadiness({ dashCooldownTicks: 25 }, 25)).toBe(0);
+    expect(dashReadiness({ dashCooldownTicks: 12 }, 24)).toBeCloseTo(0.5, 5);
+  });
 });
 
 describe('dash hint', () => {

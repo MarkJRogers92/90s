@@ -7,7 +7,7 @@
  * state and never mutates it; damage, movement, economy, and transitions
  * stay in `src/sim`.
  */
-import { runMaxHealth } from '../../sim/run/perks';
+import { runDashCooldown, runMaxHealth } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH, isBossKind } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
@@ -1209,7 +1209,7 @@ export class MvpRunView {
   private drawDashReadiness(state: MvpRunState, effects: Phaser.GameObjects.Graphics, fxTick: number): void {
     const player = state.room.combat.player;
     const live = state.status === 'playing' && !state.paused;
-    const readiness = dashReadiness(player);
+    const readiness = dashReadiness(player, runDashCooldown(state));
     if ((player.dashTicks ?? 0) === DASH_TICKS) this.dashesThisRun += 1;
     if (readiness >= 1 && this.lastReadiness < 1) this.readyFlashTick = fxTick;
     this.lastReadiness = readiness;

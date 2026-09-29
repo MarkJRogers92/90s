@@ -7,6 +7,12 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 24 (2026-09-29): two more Break Room perk lines. NEW SNEAKERS cuts the
+dash cooldown by 10 ticks a level (two levels); the SHOP-VAC ATTACHMENT draws
+loose change in from 40 px further a level (two levels). Both are clamped sim
+perks, checkpointed, and older saves and careers load them as level 0. 849 unit
+tests pass; see TEST_EVIDENCE.md round 24 for the browser run.
+
 Round 23a (Daily Shift): a title button launches today's mall (seed hashed from
 the local date, pinned so retries keep it) with standard-issue gear (no Break
 Room perks). Best score and attempts per day are kept in

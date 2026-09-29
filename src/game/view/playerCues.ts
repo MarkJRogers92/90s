@@ -17,8 +17,8 @@ export const SPAWN_IN_TICKS = 18;
 const clamp01 = (value: number): number => Math.max(0, Math.min(1, value));
 
 /** 1 when a dash can start, rising from 0 as the cooldown runs out. */
-export function dashReadiness(player: { readonly dashCooldownTicks?: number }): number {
-  return clamp01(1 - (player.dashCooldownTicks ?? 0) / DASH_COOLDOWN_TICKS);
+export function dashReadiness(player: { readonly dashCooldownTicks?: number }, cooldownTicks = DASH_COOLDOWN_TICKS): number {
+  return clamp01(1 - (player.dashCooldownTicks ?? 0) / cooldownTicks);
 }
 
 type Point = { readonly x: number; readonly y: number };

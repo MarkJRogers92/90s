@@ -601,3 +601,26 @@ a third wing begins. Beating **the Mall Owner** on Floor 3 is the win: kill cam
   ingredient's colour.
 - **Meta:** the Break Room's fusion log counts signatures found and fusions
   made (recorded when the end card settles).
+
+## Round 24: New Sneakers and the Shop-Vac Attachment
+
+Two more Break Room perk lines, the "dash upgrade" and "token magnet" named in
+round 22's next steps.
+
+- **NEW SNEAKERS** (12, 28 stubs): each level takes 10 ticks off the dash
+  cooldown (45 → 35 → 25). `ShiftPerks.dashCooldownCut` (clamped to 20) reaches
+  the combat tick as `tickRun(..., { dashCooldownTicks })`, so the shared dash
+  rule stays perk-agnostic; `runDashCooldown(state)` is the one source, and the
+  view's readiness ring fills over the shortened cooldown.
+- **SHOP-VAC ATTACHMENT** (10, 24 stubs): each level widens the reach loose
+  change is drawn in from by 40 px (`ShiftPerks.tokenMagnet`, clamped to 80;
+  `tokenMagnetReach`). Inside the reach a pickup slides 5 px per tick toward
+  the janitor and is paid at the usual 22 px radius. A pretzel is only drawn in
+  when the janitor is hurt, matching when it would be eaten.
+- **Saves:** both fields are checkpointed with the other perks. A checkpoint or
+  career written before this round simply lacks them and loads as level 0; a
+  checkpoint carrying values the Break Room never sells is refused.
+- **Art:** `perk-sneakers.png` and `perk-shopvac.png`, pixel-drawn in Pillow by
+  `docs/art/neon-overhaul/draw_perk_icons.py` (as the locker icon was), 48x48,
+  in the manifest.
+- **Clock-in:** the benefits line names NEW SNEAKERS and SHOP-VAC.

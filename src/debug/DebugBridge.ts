@@ -2,6 +2,7 @@ import type { RunState } from '../sim/model';
 import type { CompiledPrimary } from '../sim/items/types';
 import type { WingState } from '../sim/shop/types';
 import type { Point2D } from '../game/view/projection';
+import type { ShiftPerks } from '../sim/run/perks';
 
 export type DebugMode = 'shift' | 'lab' | 'shop' | 'bench';
 
@@ -279,7 +280,9 @@ export type MvpRunDebugSnapshot = {
   cash: number;
   heat: number;
   suspicion: number;
-  player: { x: number; y: number; health: number };
+  player: { x: number; y: number; health: number; dashCooldownTicks: number };
+  /** The Break Room perks this shift started with. */
+  perks: ShiftPerks;
   enemies: Array<{
     id: number;
     kind: string;
@@ -393,7 +396,9 @@ export function installMvpRunDebugBridge(
             x: state.room.combat.player.x,
             y: state.room.combat.player.y,
             health: state.room.combat.player.health,
+            dashCooldownTicks: state.room.combat.player.dashCooldownTicks ?? 0,
           },
+          perks: { ...state.perks },
           enemies: state.room.combat.enemies.map((enemy) => ({
             id: enemy.id,
             kind: enemy.kind,

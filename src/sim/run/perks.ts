@@ -7,7 +7,9 @@
  * the run: they ride the escalator and are written into the checkpoint, so a
  * resumed shift keeps the health cap it started with.
  */
+import { DASH_COOLDOWN_TICKS } from '../combat/dash';
 import { PLAYER_MAX_HEALTH, ROOM_CLEAR_HEAL } from './rooms';
+import { TOKEN_PICKUP_RADIUS } from './tokens';
 import type { MvpRunState } from './types';
 
 export type ShiftPerks = {
@@ -17,11 +19,15 @@ export type ShiftPerks = {
   readonly bonusHealth: number;
   /** Coffee Break: extra health each cleared room pays out. */
   readonly clearHealBonus: number;
+  /** New Sneakers: ticks taken off the dash cooldown. */
+  readonly dashCooldownCut: number;
+  /** Shop-Vac Attachment: extra distance loose change is pulled in from. */
+  readonly tokenMagnet: number;
   /** The one item brought from the employee locker, if any. */
   readonly lockerItemId: string | null;
 };
 
-export const NO_PERKS: ShiftPerks = { bonusCash: 0, bonusHealth: 0, clearHealBonus: 0, lockerItemId: null };
+export const NO_PERKS: ShiftPerks = { bonusCash: 0, bonusHealth: 0, clearHealBonus: 0, dashCooldownCut: 0, tokenMagnet: 0, lockerItemId: null };
 
 /** The weapons a janitor may keep in their locker. */
 export const LOCKER_ITEM_IDS: readonly string[] = ['pump_soaker', 'foam_ball_blaster', 'party_popper', 'paint_marker'];
@@ -33,6 +39,8 @@ export const LOCKER_SOURCE_LOCATION = 'employee_locker';
 const MAX_BONUS_CASH = 50;
 const MAX_BONUS_HEALTH = 6;
 const MAX_CLEAR_HEAL_BONUS = 2;
+const MAX_DASH_COOLDOWN_CUT = 20;
+const MAX_TOKEN_MAGNET = 80;
 
 function clampInt(value: unknown, max: number): number {
   const number = typeof value === 'number' && Number.isFinite(value) ? Math.trunc(value) : 0;
@@ -49,12 +57,14 @@ export function sanitizePerks(value: Partial<ShiftPerks> | null | undefined): Sh
     bonusCash: clampInt(value.bonusCash, MAX_BONUS_CASH),
     bonusHealth: health - (health % 2),
     clearHealBonus: clampInt(value.clearHealBonus, MAX_CLEAR_HEAL_BONUS),
+    dashCooldownCut: clampInt(value.dashCooldownCut, MAX_DASH_COOLDOWN_CUT),
+    tokenMagnet: clampInt(value.tokenMagnet, MAX_TOKEN_MAGNET),
     lockerItemId: locker,
   };
 }
 
 export function hasPerks(perks: ShiftPerks): boolean {
-  return perks.bonusCash > 0 || perks.bonusHealth > 0 || perks.clearHealBonus > 0 || perks.lockerItemId !== null;
+  return perks.bonusCash > 0 || perks.bonusHealth > 0 || perks.clearHealBonus > 0 || perks.dashCooldownCut > 0 || perks.tokenMagnet > 0 || perks.lockerItemId !== null;
 }
 
 /** The janitor's health cap for this run. */
@@ -65,4 +75,14 @@ export function runMaxHealth(state: Pick<MvpRunState, 'perks'>): number {
 /** What clearing a fight pays back in health this run. */
 export function roomClearHeal(state: Pick<MvpRunState, 'perks'>): number {
   return ROOM_CLEAR_HEAL + state.perks.clearHealBonus;
+}
+
+/** Ticks the dash takes to come back after it ends, this run. */
+export function runDashCooldown(state: Pick<MvpRunState, 'perks'>): number {
+  return DASH_COOLDOWN_TICKS - state.perks.dashCooldownCut;
+}
+
+/** How far away loose change starts sliding toward the janitor this run. */
+export function tokenMagnetReach(state: Pick<MvpRunState, 'perks'>): number {
+  return TOKEN_PICKUP_RADIUS + state.perks.tokenMagnet;
 }
