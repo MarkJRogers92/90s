@@ -15,7 +15,7 @@
  */
 import type { Rect } from '../../../sim/model';
 import type { WingRoomDefinition } from '../../../sim/wing/types';
-import { INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_XS, roomStores } from '../../../sim/run/storeInterior';
+import { CONCOURSE_FURNITURE, INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_XS, roomStores } from '../../../sim/run/storeInterior';
 import type { WingStoreInstance } from '../../../sim/wing/types';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
@@ -81,6 +81,13 @@ export const PROP_TEXTURES = {
   directory: { key: 'neon:prop:mall-directory', file: 'legacy-props/mall-directory.png', width: 17, height: 54 },
   drinkingFountain: { key: 'neon:prop:drinking-fountain', file: 'legacy-props/drinking-fountain.png', width: 20, height: 22 },
   condiments: { key: 'neon:prop:condiment-stand', file: 'legacy-props/condiment-stand.png', width: 41, height: 36 },
+  // Round 28: concourse life once the stores moved inside (sizes are the cropped art).
+  seatingIsland: { key: 'neon:prop:seating-island', file: 'props/seating-island.png', width: 91, height: 70 },
+  pretzelCart: { key: 'neon:prop:pretzel-cart', file: 'props/pretzel-cart.png', width: 51, height: 56 },
+  massageChairs: { key: 'neon:prop:massage-chairs', file: 'props/massage-chairs.png', width: 79, height: 50 },
+  photoBooth: { key: 'neon:prop:photo-booth', file: 'props/photo-booth.png', width: 30, height: 81 },
+  gumballStand: { key: 'neon:prop:gumball-stand', file: 'props/gumball-stand.png', width: 35, height: 54 },
+  saleSign: { key: 'neon:prop:sale-sign', file: 'props/sale-sign.png', width: 17, height: 62 },
 } as const;
 export type PropId = keyof typeof PROP_TEXTURES;
 
@@ -430,17 +437,25 @@ function storefront(room: WingRoomDefinition): DressingPlan {
     };
   });
   const props: DressingProp[] = [];
-  interiorWalls(room).forEach((wall, index) => props.push(...coverWall(wall, index, 'storefront')));
+  // The furniture's footprints are collision too, but they carry their own art.
+  const furniture = CONCOURSE_FURNITURE.flatMap((piece) => (piece.footprint ? [piece.footprint] : []));
+  const isFurniture = (wall: Rect) => furniture.some((rect) => rect.x === wall.x && rect.y === wall.y && rect.width === wall.width && rect.height === wall.height);
+  interiorWalls(room).filter((wall) => !isFurniture(wall)).forEach((wall, index) => props.push(...coverWall(wall, index, 'storefront')));
   props.push(
     { id: 'palm-w', prop: 'palm', x: 70, y: 150, width: 44, height: 67 },
     { id: 'palm-e', prop: 'palm', x: 890, y: 440, width: 44, height: 67 },
-    { id: 'palm-c1', prop: 'palm', x: 330, y: 90, width: 40, height: 60 },
-    { id: 'palm-c2', prop: 'palm', x: 630, y: 90, width: 40, height: 60 },
+    { id: 'palm-c1', prop: 'palm', x: 340, y: 92, width: 40, height: 60 },
     { id: 'bench', prop: 'bench', x: 160, y: 452, width: 64, height: 34 },
-    { id: 'bench-2', prop: 'bench', x: 480, y: 330, width: 64, height: 34 },
     { id: 'cart', prop: 'cart', x: 820, y: 76, width: 40, height: 37 },
     { id: 'bin', prop: 'bin', x: 560, y: 452, width: 20, height: 27 },
   );
+  // The furniture the sim stands in the way (CONCOURSE_FURNITURE), drawn a
+  // little larger than its source art like the rest of the mall's props.
+  for (const piece of CONCOURSE_FURNITURE) {
+    const texture = PROP_TEXTURES[piece.kind];
+    const scale = piece.kind === 'saleSign' ? 1.15 : 1.3;
+    props.push({ id: `concourse-${piece.id}`, prop: piece.kind, x: piece.x, y: piece.y, width: Math.round(texture.width * scale), height: Math.round(texture.height * scale), flipX: piece.id === 'sale-e' });
+  }
   const lights: PointLight[] = [
     ...facadeSpillLights(facades),
     ...doorwayLights(room, NEON.violet),

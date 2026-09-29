@@ -57,6 +57,33 @@ export const STORE_EXIT_ARRIVAL_Y = 64;
 /** Stock per shop, like the wing's own storefronts. */
 const OFFERS_PER_STORE = 4;
 
+/**
+ * What stands on a storefront's concourse now the stores are inside: a
+ * seating island, a pretzel cart, massage chairs, a photo booth between the
+ * two shop doors, a gumball stand and a pair of sale signs. `x`/`y` is where
+ * each stands on the floor; the big pieces have a `footprint` the janitor
+ * cannot walk through, kept out of the lane between the two side doors.
+ * The dressing places the art from this same list.
+ */
+export type ConcourseFurniture = {
+  readonly id: string;
+  readonly kind: 'seatingIsland' | 'pretzelCart' | 'massageChairs' | 'photoBooth' | 'gumballStand' | 'saleSign';
+  readonly x: number;
+  readonly y: number;
+  readonly footprint: Rect | null;
+};
+
+export const CONCOURSE_FURNITURE: readonly ConcourseFurniture[] = [
+  { id: 'island', kind: 'seatingIsland', x: 480, y: 336, footprint: { x: 430, y: 298, width: 100, height: 34 } },
+  // Above the bottom HUD panels, so the art is never hidden behind them.
+  { id: 'pretzels', kind: 'pretzelCart', x: 250, y: 364, footprint: { x: 224, y: 346, width: 52, height: 16 } },
+  { id: 'massage', kind: 'massageChairs', x: 710, y: 364, footprint: { x: 666, y: 342, width: 88, height: 20 } },
+  { id: 'photo-booth', kind: 'photoBooth', x: 480, y: 66, footprint: { x: 462, y: 46, width: 36, height: 18 } },
+  { id: 'gumballs', kind: 'gumballStand', x: 620, y: 100, footprint: null },
+  { id: 'sale-w', kind: 'saleSign', x: 172, y: 110, footprint: null },
+  { id: 'sale-e', kind: 'saleSign', x: 788, y: 110, footprint: null },
+];
+
 /** Every shop in a room, in back-wall order: the wing's own first, then the run's second. */
 export function roomStores(room: WingRoomDefinition): readonly WingStoreInstance[] {
   return room.stores ?? (room.store ? [room.store] : []);
@@ -142,9 +169,12 @@ export function generateRunWing(seed: number, floor: 1 | 2 | 3 = 1): GeneratedWi
     .filter((template) => !used.has(template.id))
     .sort((first, second) => hash(seed, first.id) - hash(seed, second.id));
   let nextSpare = 0;
+  const furniture = CONCOURSE_FURNITURE.flatMap((piece) => (piece.footprint ? [{ ...piece.footprint }] : []));
   const rooms = wing.rooms.map((room): WingRoomDefinition => {
     if (!room.store) return room;
     const first = scaleStore(room.store, room.offers);
+    // The concourse furniture stands in the way, like any wall.
+    room = { ...room, walls: [...room.walls, ...furniture] };
     const template = spare[nextSpare];
     nextSpare += 1;
     if (!template) return { ...room, store: first.store, stores: [first.store], offers: first.offers };

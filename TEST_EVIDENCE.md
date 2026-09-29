@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-09-29 — round 28: concourse furniture
+
+- +2 unit tests: the furniture's footprints are in the storefront walls,
+  the lane between the side doors stays walkable at three heights, the
+  seating island blocks; the photo booth flashes only when flashes are
+  allowed. 926 pass; the asset validator accepts the six new manifest
+  entries.
+- `npm run build` clean; no fixture or debug-bridge strings in `dist/`.
+- `PW_PORT=4191 npx playwright test` — 74/74.
+- Manual: seeds 77 and 5150 show both shopfronts with the photo booth
+  between them, gumballs and sale signs by the doors, the seating island,
+  pretzel cart and massage chairs on the floor clear of the HUD. Fixed on
+  the way: the cart and chairs first sat behind the bottom HUD panels, and
+  the dressing covered each new footprint with a planter.
+
 ## 2026-09-29 — round 27b: two shops per storefront
 
 - `tests/unit/store-interior.test.ts` rewritten for two shops (10 tests):

@@ -776,3 +776,27 @@ theft. Walking off the side of the rug looked like leaving and did nothing.
   PA, dressing and title card all follow the active shop; the concourse
   title is now the wing's room name (WEST SHOPS), and the objective lists
   both shops.
+
+## Round 28: a concourse worth crossing
+
+With the stores moved inside, the storefront concourses were bare. Six new
+PixelLab props (`create_map_object`, high top-down, high detail, detailed
+shading, selective outline, generated at display size): a pretzel cart, a
+seating island, a pair of massage chairs, a photo booth, a gumball stand and
+a blank sale sign. The first pretzel cart came back with generated lettering
+on its sign and was regenerated with "no text, no lettering": text in this
+game is always the pixel font. Seven generations (817 → 810 this cycle).
+
+- **Placement and collision** come from one list, `CONCOURSE_FURNITURE` in
+  `storeInterior.ts`: `generateRunWing` adds each piece's `footprint` to the
+  storefront's walls, and `storefront()` in `roomDressing.ts` places the art
+  from the same list (and does not dress those footprints with planters, as
+  it does other collision). Footprints stay out of the lane between the side
+  doors, and the cart and chairs sit above the bottom HUD panels.
+- The photo booth glows and, every eight seconds, fires four camera flashes
+  (none under reduced flashes). The big pieces fade when the janitor walks
+  behind them.
+- Sources in `docs/art/neon-overhaul/pixellab/`, promoted with the import
+  script's own crop and recorded in `manifest.json`; the script's `PROPS`
+  list includes them for a future full re-run.
+

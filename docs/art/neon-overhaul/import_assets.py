@@ -41,6 +41,8 @@ PROPS = [
     'globe-fountain', 'bunny-mascot', 'food-table-set', 'planter-long',
     'crate-stack', 'security-desk', 'booth-row', 'concrete-pillar',
     'bench-kiosk', 'planter-straight',
+    # Round 28: concourse life once the stores moved inside.
+    'gumball-stand', 'massage-chairs', 'photo-booth', 'pretzel-cart', 'sale-sign', 'seating-island',
 ]
 LEGACY = {
     'enemies': ['spitter-idle', 'lp-manager-idle', 'hanger-idle'],

@@ -5,6 +5,7 @@ import { parseCheckpoint, restoreMvpRun, serializeCheckpoint } from '../../src/s
 import { alarmSpawnSpots } from '../../src/sim/run/heist';
 import { HEAT_PER_STAR } from '../../src/sim/run/wanted';
 import {
+  CONCOURSE_FURNITURE,
   INTERIOR_ARRIVAL,
   INTERIOR_BOUNDS,
   INTERIOR_EXIT,
@@ -19,6 +20,7 @@ import {
 import { generateWing } from '../../src/sim/wing/generateWing';
 import { STORE_TEMPLATES } from '../../src/sim/wing/templates';
 import { circleIntersectsRect } from '../../src/sim/core/geometry';
+import { moveCircle } from '../../src/sim/combat/movement';
 import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
 
 const idle: MvpInputFrame = { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false };
@@ -208,5 +210,25 @@ describe('store interiors', () => {
     tick(state);
     expect(state.stalker?.phase).toBe('arriving');
     expect({ x: state.stalker!.x, y: state.stalker!.y }).toEqual(INTERIOR_ARRIVAL);
+  });
+
+  it('stands the concourse furniture in the way, but never across the lane between the side doors', () => {
+    const state = onConcourse();
+    const room = state.wing.rooms[state.roomIndex]!;
+    for (const piece of CONCOURSE_FURNITURE) {
+      if (piece.footprint) expect(state.room.combat.walls).toContainEqual(piece.footprint);
+    }
+    // Walk the whole lane from the west door to the east door at the entry height.
+    for (const y of [200, 240, 280]) {
+      let position = { x: 30, y };
+      for (let step = 0; step < 400; step += 1) position = moveCircle(position, 10, 3.5, 0, state.room.combat.walls);
+      expect(position.x).toBeGreaterThan(900);
+    }
+    // And the furniture really blocks: walking up into the seating island stops short of it.
+    const island = CONCOURSE_FURNITURE.find((piece) => piece.id === 'island')!.footprint!;
+    let position = { x: island.x + island.width / 2, y: island.y + island.height + 40 };
+    for (let step = 0; step < 60; step += 1) position = moveCircle(position, 10, 0, -3.5, state.room.combat.walls);
+    expect(position.y).toBeGreaterThanOrEqual(island.y + island.height + 10);
+    expect(room.walls).toEqual(state.room.combat.walls);
   });
 });

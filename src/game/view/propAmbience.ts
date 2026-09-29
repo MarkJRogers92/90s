@@ -24,6 +24,7 @@ export function propMotion(prop: PropId): PropMotion | null {
     case 'vending':
     case 'atm':
     case 'securityDesk':
+    case 'photoBooth':
       return 'screen';
     case 'fountain':
       return 'fountain';
@@ -77,9 +78,17 @@ export type ScreenGlow = {
 const ATTRACT = [0xff3fc8, 0x3ff0ff, 0xffd84a, 0x6aff8a] as const;
 
 /** What a screen or display prop is showing this tick. */
-export function screenGlow(prop: PropId, tick: number, seed: number): ScreenGlow | null {
+export function screenGlow(prop: PropId, tick: number, seed: number, flashes = true): ScreenGlow | null {
   const t = tick + (seed % 997);
   switch (prop) {
+    case 'photoBooth': {
+      // A warm curtain glow, and now and then four quick camera flashes.
+      const local = t % 480;
+      const flash = flashes && local < 40 && local % 10 < 3;
+      return flash
+        ? { color: 0xffffff, intensity: 1, heightFraction: 0.55 }
+        : { color: 0xffc890, intensity: 0.35, heightFraction: 0.55 };
+    }
     case 'arcadeCabinet': {
       // Attract mode: a new colour every 40 ticks, with a scan flicker.
       const color = ATTRACT[Math.floor(t / 40) % ATTRACT.length]!;

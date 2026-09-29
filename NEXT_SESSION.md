@@ -48,6 +48,8 @@ see TEST_EVIDENCE.md round 26 for the browser run.
     (inside, at the shelf nearest the door).
   - Each storefront has two shops (left and right), so a shift visits all
     four stores (round 27b).
+  - The concourse has PixelLab furniture with collision (round 28):
+    `CONCOURSE_FURNITURE` in `storeInterior.ts`.
 - **Loss Prevention stalker** (round 26): at four stars an agent who can't
   be killed follows you room to room. A mop swing shoves him back, and
   dropping below four stars loses him.

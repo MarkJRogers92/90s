@@ -104,4 +104,11 @@ describe('prop ambience', () => {
     // And they climb: over a short span, height goes up (dy falls).
     expect(dustMotes(10, 3, 120)[0]!.dy).toBeLessThan(dustMotes(0, 3, 120)[0]!.dy + 1e-9);
   });
+
+  it('flashes the photo booth now and then, never under reduced flashes', () => {
+    const lit = (flashes: boolean) => ticks(480).filter((tick) => screenGlow('photoBooth', tick, 0, flashes)!.color === 0xffffff).length;
+    expect(lit(true)).toBeGreaterThan(0);
+    expect(lit(true)).toBeLessThan(40);
+    expect(lit(false)).toBe(0);
+  });
 });

@@ -423,7 +423,8 @@ export class MallRoomView {
         this.water = this.scene.add.graphics().setDepth(presentationDepth('actor', prop.y + 1));
       }
     }
-    if (image && (prop.prop === 'fountain' || prop.prop === 'palm' || prop.prop === 'pillar' || prop.prop === 'bunny' || prop.prop === 'crates')) {
+    if (image && (prop.prop === 'fountain' || prop.prop === 'palm' || prop.prop === 'pillar' || prop.prop === 'bunny' || prop.prop === 'crates'
+      || prop.prop === 'seatingIsland' || prop.prop === 'photoBooth' || prop.prop === 'pretzelCart' || prop.prop === 'massageChairs')) {
       this.occluders.push({
         object: image,
         rect: { x: prop.x - width / 2, y: prop.y - height, width, height },
@@ -501,7 +502,7 @@ export class MallRoomView {
           entry.image.setRotation(rockAngle(tick, entry.seed));
           break;
         case 'screen': {
-          const glow = screenGlow(entry.prop, tick, entry.seed);
+          const glow = screenGlow(entry.prop, tick, entry.seed, flickers);
           if (glow) {
             this.lighting.addDynamic({
               x: entry.x,
