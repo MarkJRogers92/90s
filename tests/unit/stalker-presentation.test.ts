@@ -3,7 +3,7 @@ import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { tickMvpRun } from '../../src/sim/run/tickMvpRun';
 import { STALKER_ARRIVAL_TICKS, type StalkerState } from '../../src/sim/run/stalker';
 import { HEAT_PER_STAR } from '../../src/sim/run/wanted';
-import { stalkerCue } from '../../src/game/view/stalkerCues';
+import { POLICE_WASH_BEAT_TICKS, policeWash, stalkerCue } from '../../src/game/view/stalkerCues';
 import { createAudioSnapshot, deriveAudioCues } from '../../src/game/audio/cues';
 import { PA_LINES, PaDirector } from '../../src/game/ui/paModel';
 import { buildGameHudModel } from '../../src/game/ui/gameHudModel';
@@ -37,6 +37,22 @@ describe('stalker cues', () => {
     expect(stalkerCue(agent({ phase: 'writing_up', phaseTicks: 40 }), 0).label).toBe('WRITTEN UP!');
     const shoved = [50, 45, 40, 35].map((ticks) => stalkerCue(agent({ phase: 'shoved', phaseTicks: ticks }), 0).sway);
     expect(shoved.some((sway) => sway !== 0)).toBe(true);
+  });
+});
+
+describe('police wash', () => {
+  it('is off without a stalker, builds at the door, and holds while he hunts', () => {
+    expect(policeWash(null, 0, true)).toBeNull();
+    expect(policeWash(agent({ phase: 'arriving', phaseTicks: STALKER_ARRIVAL_TICKS }), 0, true)!.strength).toBe(0);
+    const late = policeWash(agent({ phase: 'arriving', phaseTicks: 10 }), 0, true)!.strength;
+    expect(late).toBeGreaterThan(0.5);
+    expect(late).toBeLessThanOrEqual(0.6);
+    expect(policeWash(agent(), 0, true)!.strength).toBe(1);
+  });
+
+  it('trades red and blue sides each beat, or holds steady under reduced flashes', () => {
+    expect(policeWash(agent(), 0, true)!.leftRed).not.toBe(policeWash(agent(), POLICE_WASH_BEAT_TICKS, true)!.leftRed);
+    expect(policeWash(agent(), 0, false)!.steady).toBe(true);
   });
 });
 

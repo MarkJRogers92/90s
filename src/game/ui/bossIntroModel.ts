@@ -42,6 +42,17 @@ export function bossIntroCopy(kind: BossKind): BossIntroCopy {
   }
 }
 
+/**
+ * The plaque's mugshot: a square crop of the boss's south-facing idle frame,
+ * head and shoulders. Every boss sheet puts the figure's head within the top
+ * few percent of its frame and fills about half of it with shoulders and
+ * chest, so one crop fits all three.
+ */
+export function portraitCrop(frameSize: number): { readonly x: number; readonly y: number; readonly size: number } {
+  const size = Math.round(frameSize * 0.56);
+  return { x: Math.round((frameSize - size) / 2), y: Math.round(frameSize * 0.02), size };
+}
+
 export type BossIntroFrame = {
   readonly zoom: number;
   /** Letterbox bar height in stage pixels. */

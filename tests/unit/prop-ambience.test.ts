@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   DROPLET_COUNT,
+  MOTES_PER_LIGHT,
+  dustMotes,
   ROCK_MAX,
   SWAY_MAX,
   fountainDroplets,
@@ -84,5 +86,22 @@ describe('prop ambience', () => {
     const rings = fountainRipples(0, 0);
     expect(rings).toHaveLength(3);
     for (const ring of rings) expect(ring.alpha).toBeCloseTo(0.5 * (1 - (ring.scale - 0.3) / 0.7));
+  });
+
+  it('keeps dust motes inside the light pool, fading at its edge, and drifting', () => {
+    for (const tick of [0, 200, 777]) {
+      const motes = dustMotes(tick, 3, 120);
+      expect(motes).toHaveLength(MOTES_PER_LIGHT);
+      for (const mote of motes) {
+        expect(Math.abs(mote.dx)).toBeLessThanOrEqual(120 * 0.55 * 0.8 + 10 + 1e-9);
+        expect(Math.abs(mote.dy)).toBeLessThanOrEqual(120 * 0.55 + 1e-9);
+        expect(mote.alpha).toBeGreaterThanOrEqual(0);
+        expect(mote.alpha).toBeLessThanOrEqual(1);
+      }
+    }
+    // They move: the same mote is somewhere else a second later.
+    expect(dustMotes(0, 3, 120)[0]).not.toEqual(dustMotes(60, 3, 120)[0]);
+    // And they climb: over a short span, height goes up (dy falls).
+    expect(dustMotes(10, 3, 120)[0]!.dy).toBeLessThan(dustMotes(0, 3, 120)[0]!.dy + 1e-9);
   });
 });

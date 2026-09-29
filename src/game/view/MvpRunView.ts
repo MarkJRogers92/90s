@@ -16,7 +16,7 @@ import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/m
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { alarmCue } from './alarmCues';
-import { stalkerCue } from './stalkerCues';
+import { policeWash, stalkerCue } from './stalkerCues';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -82,6 +82,8 @@ export class MvpRunView {
   private readonly actorMovement = new ActorMovementMemory();
   private readonly deathEffects = new ActorDeathEffectLifecycle();
   private readonly actorSprites = new Map<string, ActorSpriteView>();
+  /** Screen-fixed red/blue edge glow while Loss Prevention is in the room. */
+  private policeGlow: Phaser.GameObjects.Graphics | null = null;
   private readonly usedActorSpriteIds = new Set<string>();
   private openingConcourse: MallRoomView | undefined;
   private mallRoomKey = '';
@@ -502,11 +504,13 @@ export class MvpRunView {
   private drawStalker(state: MvpRunState, fxTick: number, effects: Phaser.GameObjects.Graphics): void {
     const stalker = state.stalker;
     const cue = stalkerCue(stalker, state.tick);
+    this.drawPoliceWash(state);
     if (stalker === null || cue.phase === 'none') {
       this.clearLabel('stalker');
       return;
     }
-    const strobe = cue.strobeRed ? 0xff2a3a : 0x2a6aff;
+    // Reduced flashes: the warning holds red instead of strobing.
+    const strobe = cue.strobeRed || !flashAllowed(gameSettings().get()) ? 0xff2a3a : 0x2a6aff;
     if (cue.doorProgress !== null) {
       // The doorway warning: a strobing floor ring that tightens as he nears.
       const radius = 70 - 34 * cue.doorProgress;
@@ -549,6 +553,44 @@ export class MvpRunView {
     } else {
       this.clearLabel('stalker');
     }
+  }
+
+  /**
+   * Red and blue bleeding in at the screen's edges and spilling on the
+   * storefront wall while Loss Prevention is in the room (see policeWash).
+   */
+  private drawPoliceWash(state: MvpRunState): void {
+    const flashes = flashAllowed(gameSettings().get());
+    const wash = state.status === 'playing' ? policeWash(state.stalker, state.tick, flashes) : null;
+    if (!wash || wash.strength <= 0) {
+      this.policeGlow?.clear().setVisible(false);
+      return;
+    }
+    if (!this.policeGlow) {
+      this.policeGlow = this.scene.add.graphics()
+        .setScrollFactor(0)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(presentationDepth('prompt', 900));
+    }
+    const RED = 0xff2a3a;
+    const BLUE = 0x2a6aff;
+    const PURPLE = 0x9a3aff;
+    const left = wash.steady ? PURPLE : wash.leftRed ? RED : BLUE;
+    const right = wash.steady ? PURPLE : wash.leftRed ? BLUE : RED;
+    const peak = (wash.steady ? 0.07 : 0.14) * wash.strength;
+    const { width, height } = this.scene.scale;
+    const g = this.policeGlow.clear().setVisible(true);
+    // A soft gradient from each side edge: stacked bands, fading inward.
+    const bands = 6;
+    const band = 16;
+    for (let index = 0; index < bands; index += 1) {
+      const alpha = peak * (1 - index / bands);
+      g.fillStyle(left, alpha).fillRect(index * band, 0, band, height);
+      g.fillStyle(right, alpha).fillRect(width - (index + 1) * band, 0, band, height);
+    }
+    // The wall catches it too: two pools on the storefronts, trading colour.
+    this.openingConcourse?.addLight({ x: 240, y: 30, radius: 230, color: left, intensity: 0.4 * wash.strength });
+    this.openingConcourse?.addLight({ x: 720, y: 30, radius: 230, color: right, intensity: 0.4 * wash.strength });
   }
 
   private drawStore(state: MvpRunState, templateId: string): void {
@@ -1691,6 +1733,8 @@ export class MvpRunView {
   }
 
   public destroy(): void {
+    this.policeGlow?.destroy();
+    this.policeGlow = null;
     this.clearDashGhosts();
     this.carSprite?.destroy();
     this.carSprite = null;

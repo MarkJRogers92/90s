@@ -4,6 +4,7 @@ import {
   BOSS_INTRO_ZOOM,
   bossIntroCopy,
   bossIntroFrame,
+  portraitCrop,
 } from '../../src/game/ui/bossIntroModel';
 
 describe('boss title card', () => {
@@ -43,6 +44,18 @@ describe('boss title card', () => {
       wasDone = frame.done;
       expect(frame.zoom).toBeGreaterThanOrEqual(1);
       expect(frame.zoom).toBeLessThanOrEqual(BOSS_INTRO_ZOOM + 1e-9);
+    }
+  });
+
+  it('crops a square head-and-shoulders mugshot inside every boss frame', () => {
+    for (const frame of [64, 96, 128]) {
+      const crop = portraitCrop(frame);
+      expect(crop.size).toBeGreaterThan(frame / 2);
+      expect(crop.x).toBeGreaterThanOrEqual(0);
+      expect(crop.x + crop.size).toBeLessThanOrEqual(frame);
+      expect(crop.y + crop.size).toBeLessThanOrEqual(frame * 0.6);
+      // Centred: the head is in the middle of every sheet.
+      expect(Math.abs(crop.x + crop.size / 2 - frame / 2)).toBeLessThanOrEqual(1);
     }
   });
 });

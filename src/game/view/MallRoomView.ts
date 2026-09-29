@@ -34,6 +34,8 @@ import { croppedFrameOrigin } from './ActorSpriteView';
 import { ConcourseAmbience, type ConcourseAmbienceSnapshot, type ConcourseCivilianLane } from './ConcourseAmbience';
 import {
   BLACKOUT_SCREEN_SCALE,
+  MOTE_MIN_RADIUS,
+  dustMotes,
   fountainDroplets,
   fountainRipples,
   propMotion,
@@ -93,6 +95,8 @@ export class MallRoomView {
   private readonly signs: Array<{ core: Phaser.GameObjects.Image; halo: Phaser.GameObjects.Image; seed: number }> = [];
   /** The fountain's spray and ripples, y-sorted just in front of it. */
   private water: Phaser.GameObjects.Graphics | null = null;
+  /** Dust hanging in the light pools, drawn additively over the lightmap. */
+  private dust: Phaser.GameObjects.Graphics | null = null;
   private readonly actorGraphicsById = new Map<string, { graphics: Phaser.GameObjects.Graphics; baseY: number }>();
   private readonly effectGraphicsById = new Map<string, Phaser.GameObjects.Graphics>();
   private readonly usedActorIds = new Set<string>();
@@ -460,6 +464,7 @@ export class MallRoomView {
       sign.core.setAlpha(flicker);
       if (flicker < 1) sign.halo.setAlpha(sign.halo.alpha * flicker);
     }
+    this.renderDust(tick);
     this.water?.clear();
     const screenScale = this.blackout ? BLACKOUT_SCREEN_SCALE : 1;
     for (const entry of this.animatedProps) {
@@ -488,6 +493,24 @@ export class MallRoomView {
           break;
       }
     }
+  }
+
+  /** Specks of dust turning in each large light pool; gone in a blackout. */
+  private renderDust(tick: number): void {
+    if (!this.dust) {
+      this.dust = this.scene.add.graphics().setBlendMode(Phaser.BlendModes.ADD);
+      this.glow.add(this.dust);
+    }
+    const dust = this.dust.clear();
+    if (this.blackout) return;
+    this.plan.lights.forEach((light, index) => {
+      if (light.radius < MOTE_MIN_RADIUS) return;
+      for (const mote of dustMotes(tick, index * 131 + Math.round(light.x), light.radius)) {
+        if (mote.alpha <= 0.02) continue;
+        dust.fillStyle(0xfff0d0, 0.35 * mote.alpha * Math.min(1, light.intensity + 0.3))
+          .fillRect(Math.round(light.x + mote.dx), Math.round(light.y + mote.dy), 2, 2);
+      }
+    });
   }
 
   private renderFountain(entry: MallRoomView['animatedProps'][number], tick: number): void {
@@ -678,6 +701,7 @@ export class MallRoomView {
     this.signs.length = 0;
     this.water?.destroy();
     this.water = null;
+    this.dust = null; // destroyed with the glow layer
     this.actorGraphicsById.clear();
     this.effectGraphicsById.clear();
     for (const sprite of this.civilianSprites.values()) sprite.destroy();

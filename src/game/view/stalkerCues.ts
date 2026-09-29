@@ -56,3 +56,32 @@ export function stalkerCue(stalker: StalkerState | null, tick: number): StalkerC
       return { phase: 'hunting', body: true, doorProgress: null, strobeRed, label: null, flashlight: true, sway: 0 };
   }
 }
+
+export type PoliceWash = {
+  /** 0..1 overall strength of the edge glow and wall spill. */
+  readonly strength: number;
+  /** Which side is red this beat (the other is blue). */
+  readonly leftRed: boolean;
+  /** Reduced flashes: both sides hold a dim, steady mix instead of alternating. */
+  readonly steady: boolean;
+};
+
+/** Slower than the door strobe: a cruiser's bar seen through the mall glass. */
+export const POLICE_WASH_BEAT_TICKS = 24;
+
+/**
+ * Red and blue light washing the room's edges while Loss Prevention is in it,
+ * so the janitor feels him before seeing him. It builds while he is at the
+ * door and holds while he hunts. Null when he is not coming.
+ */
+export function policeWash(stalker: StalkerState | null, tick: number, flashes: boolean): PoliceWash | null {
+  if (stalker === null) return null;
+  const strength = stalker.phase === 'arriving'
+    ? 0.6 * Math.max(0, Math.min(1, 1 - stalker.phaseTicks / STALKER_ARRIVAL_TICKS))
+    : 1;
+  return {
+    strength,
+    leftRed: Math.floor(tick / POLICE_WASH_BEAT_TICKS) % 2 === 0,
+    steady: !flashes,
+  };
+}

@@ -161,3 +161,33 @@ export function fountainRipples(tick: number, seed: number): Array<{ readonly sc
   }
   return rings;
 }
+
+export type Mote = { readonly dx: number; readonly dy: number; readonly alpha: number };
+
+/** Motes per light pool, and the slowest a pool gets them (small lamps don't). */
+export const MOTES_PER_LIGHT = 5;
+export const MOTE_MIN_RADIUS = 70;
+const MOTE_RISE_TICKS = 900;
+
+/**
+ * Dust hanging in a light pool: a few specks that climb slowly through the
+ * beam, wander side to side, twinkle as they turn, and fade out at its edge.
+ * Offsets are in world units from the light's centre, inside `radius`.
+ */
+export function dustMotes(tick: number, seed: number, radius: number, count = MOTES_PER_LIGHT): Mote[] {
+  const reach = radius * 0.55;
+  const motes: Mote[] = [];
+  for (let index = 0; index < count; index += 1) {
+    const key = propSeed(`${seed}:${index}`);
+    const home = ((key % 1000) / 1000) * 2 - 1;
+    const phase = (key >>> 10) % 628;
+    // Climb from the bottom of the pool to the top, then start again below.
+    const climb = ((tick + (key % MOTE_RISE_TICKS)) % MOTE_RISE_TICKS) / MOTE_RISE_TICKS;
+    const dy = reach * (1 - 2 * climb);
+    const dx = reach * 0.8 * home + 10 * Math.sin(tick / 70 + phase / 100);
+    const edge = Math.hypot(dx, dy) / reach;
+    const twinkle = 0.55 + 0.45 * Math.sin(tick / 23 + phase);
+    motes.push({ dx, dy, alpha: Math.max(0, 1 - edge * edge) * twinkle });
+  }
+  return motes;
+}
