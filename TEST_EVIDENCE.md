@@ -1,5 +1,35 @@
 # Test evidence
 
+## 2026-09-29 — round 26: Loss Prevention stalker, boss title cards, ambient props
+
+- New unit coverage: `tests/unit/stalker.test.ts` (11: threshold, arrival
+  delay and entry point, pursuit, write-up and its cooldown, mop shove,
+  doors and room clears unaffected, following through a doorway, losing the
+  trail, no boss rooms, not checkpointed, determinism),
+  `tests/unit/stalker-presentation.test.ts` (7: cues, audio, PA, HUD),
+  `tests/unit/boss-intro.test.ts` (4), `tests/unit/prop-ambience.test.ts` (8).
+- An existing test caught two new PA lines over the ticker's 56 characters;
+  they were shortened.
+- `npx tsc --noEmit` clean; `npx vitest run` 82 files, 910 tests passed.
+- `npm run build` exit 0; `dist/` holds no `mvp-wanted`, `mvp-boss-door` or
+  debug-bridge strings.
+- `PW_PORT=4191 npx playwright test` — 74/74 Chromium passed in 4.0 min.
+- Manual (in-app browser, dev server with the debug bridge):
+  `?fixture=mvp-wanted` — the agent walks in at the entry door after 3 s,
+  writes Alex up (-1 heart, WRITTEN UP!, log line), five stars in the vitals
+  panel, no console errors. `?fixture=mvp-boss-door` walking east — the card
+  holds the fight (`cinematic: true`), HUD hidden, plate and neon name
+  visible, the boss fully spawned under the card (after the effects-clock
+  fix), a key press skips to live combat. The plate was inspected with
+  `BOSS_INTRO_MS` temporarily raised to 60 s, then reverted. The opening
+  concourse renders with the fountain spray and no errors.
+- Found and fixed in manual checks: the plate's children ignored the
+  container's scroll factor (off-screen under the zoom); the boss froze at
+  spawn-in frame 0 under the hold; the HUD's old boss card would have
+  frozen under the hold (removed; its taglines moved to the new card).
+- Not verified: prop motion over time is only seen in stills (subtle
+  sway/flicker is hard to judge from a capture); WebKit/Safari untested.
+
 ## 2026-09-29 — round 25: grab and run, wanted level, hot goods
 
 - Red first: `tests/unit/grab-and-run.test.ts` (20 tests) failed on the missing

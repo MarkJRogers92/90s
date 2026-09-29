@@ -673,3 +673,47 @@ Loop mode keeps its own camera rules unchanged.
 - **Unplayed**: whether 4 s is right, whether the Hunters at the door are fair
   on Floor 1 (it is the first place a Floor 1 player meets them), and whether
   +60 score a star makes stealing too attractive.
+
+## Round 26: the Loss Prevention stalker, boss title cards, ambient props
+
+Three items from the NEXT_SESSION ideas backlog.
+
+- **Loss Prevention stalker** (`src/sim/run/stalker.ts`): at four stars
+  (`STALKER_MIN_STARS`) an agent who cannot be put down follows the janitor
+  from room to room. He is run state beside the room (`state.stalker`), like
+  the car, not an enemy: he never locks a door, never blocks a room clear,
+  and is never checkpointed. Each room change clears him; three seconds later
+  (`STALKER_ARRIVAL_TICKS`) he walks in through the door the janitor used.
+  He hunts at 150 px/s (the janitor walks at 210), a touch costs one heart
+  and he steps back for `STALKER_WRITE_UP_TICKS`, and a mop swing shoves him
+  `STALKER_SHOVE_DISTANCE` and staggers him. Losing him means dropping below
+  four stars (lay low, launder). He never enters a boss room.
+  Presentation: `src/game/view/stalkerCues.ts` (strobing door warning with a
+  countdown, a cold-tinted `lp_agent` drawn from the LP Manager's sheets at
+  80 px, a flashlight beam, WRITTEN UP!, stars when shoved), PA lines
+  `stalker`/`stalker_lost`, the objective LOSS PREVENTION ON YOU, and synth
+  cues `stalker_in`, `write_up`, `stalker_shove`. Try `?fixture=mvp-wanted`.
+- **Boss title cards** (`src/game/ui/BossIntro.ts`, `bossIntroModel.ts`):
+  walking into a boss room holds the fight for `BOSS_INTRO_MS` (2.6 s) with
+  letterbox bars, a camera lean toward the boss, and a brass MALL DIRECTORY
+  plaque (floor and room, YOU ARE HERE, the neon name stuttering on, the
+  original taglines). A fresh key, click or pad button skips; auto-repeat of
+  a held movement key does not. It replaces the in-canvas HUD's tick-driven
+  boss card, which would have frozen under the hold. The view's effects clock
+  now keeps running while a cinematic holds the sim
+  (`MvpRunView.advanceHeldEffects`), so the boss finishes his spawn-in on
+  camera. Fixture-placed boss rooms get no card, so the browser specs are
+  unaffected. Try `?fixture=mvp-boss-door` and walk east.
+- **Ambient props** (`src/game/view/propAmbience.ts`, applied in
+  `MallRoomView.renderProps`): palms sway, the kiddie ride rocks now and then,
+  arcade cabinets cycle attract colours, the claw machine chases, the vending
+  machine buzzes, the ATM blinks, the CCTV desk rolls, the globe fountain
+  sprays and ripples, and about one sign in three has a dying tube. All pure
+  in (tick, seed). Screens drop to standby in a blackout, and the tube
+  stutter respects reduced flashes.
+- **Gotcha found on the way**: `Container.setScrollFactor(0)` does not reach
+  a container's children in Phaser unless `updateChildren` is passed, which
+  matters as soon as the camera zooms or scrolls under a screen overlay.
+- **Unplayed**: whether the stalker at 150 px/s is oppressive or ignorable,
+  whether 4 stars is the right threshold, and whether 2.6 s of boss card is
+  welcome on a retry (it plays on every entry; consider first-entry only).

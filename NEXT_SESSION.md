@@ -20,9 +20,8 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 25): `tsc` clean, 880 unit tests, `npm run build` passes;
-browser suite 72/74 in one run, and the other two are load-sensitive and pass
-alone. See TEST_EVIDENCE.md rounds 23–25.
+Last gate (round 26): `tsc` clean, 910 unit tests, `npm run build` passes;
+see TEST_EVIDENCE.md round 26 for the browser run.
 
 ## What the game has now
 
@@ -38,6 +37,16 @@ alone. See TEST_EVIDENCE.md rounds 23–25.
   - Code: sim in `src/sim/run/heist.ts` and `wanted.ts`, visuals in
     `src/game/view/alarmCues.ts`.
   - Try it with `?fixture=mvp-storefront`, then press F.
+- **Loss Prevention stalker** (round 26): at four stars an agent who can't
+  be killed follows you room to room. A mop swing shoves him back, and
+  dropping below four stars loses him.
+  - Code: `src/sim/run/stalker.ts`, visuals in `src/game/view/stalkerCues.ts`.
+  - Try it with `?fixture=mvp-wanted`.
+- **Boss title cards** (round 26): entering a boss room holds the fight for
+  a mall-directory card (`src/game/ui/BossIntro.ts`). Any fresh key skips.
+  Try `?fixture=mvp-boss-door` and walk east.
+- **Ambient props** (round 26): swaying palms, attract-mode arcades, the
+  fountain's spray, dying neon tubes (`src/game/view/propAmbience.ts`).
 - **Void the Warranty** (round 23c): any two items fuse at the Bench Warrant.
 - **Daily Shift** (round 23a): today's seeded mall with standard-issue gear.
   Each day's record is saved in `dead-mall:daily:v1`.
@@ -57,6 +66,10 @@ alone. See TEST_EVIDENCE.md rounds 23–25.
   - Is the 4 s alarm the right length?
   - Are Hunters guarding the store door fair on Floor 1?
   - Does +60 score per star over-reward stealing?
+- Loss Prevention stalker: is 150 px/s oppressive or ignorable, and is
+  four stars the right threshold?
+- Boss card: is 2.6 s welcome on every retry, or should it play only on the
+  first entry?
 - Floor 3: Mascot Brute charge fairness and Mall Owner length (240 hp).
 - Floor 2 difficulty since round 16. The playtest log separates upstairs
   rooms and attackers.
@@ -81,7 +94,6 @@ Candidates, not commitments. Pick with the owner.
 
 **Heist follow-ups**
 - Blackouts silence the alarm (option E).
-- A Loss Prevention stalker who hunts you at 4+ stars (option G).
 
 **Content**
 - Floor 4 / the Roof or Parking Garage, or a Basement Service Tunnels
@@ -99,8 +111,6 @@ Candidates, not commitments. Pick with the owner.
 - Convert the remaining vector rooms and earlier modes to the neon kit.
 - Weather through the skylights.
 - A CRT/VHS post-process toggle.
-- Boss intro title cards.
-- Idle and ambient animations for props.
 
 **Accessibility**
 - Colourblind-safe telegraphs.

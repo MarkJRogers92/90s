@@ -7,6 +7,13 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 26 (2026-09-29): three backlog items. At four stars a Loss Prevention
+agent who cannot be put down follows the janitor room to room (a mop swing
+shoves him; laying low under four stars loses him). Walking into a boss room
+now holds the fight for a mall-directory title card. Props have ambient life:
+swaying palms, attract-mode arcades, a spraying fountain, dying neon tubes.
+910 unit tests pass and the build is clean; see TEST_EVIDENCE.md round 26.
+
 Round 25 (2026-09-29): shoplifting rebuilt as one loop. Grabbing an item
 sets off the store alarm: Bargain Hunters at the door, Mannequins at the back,
 four seconds to get out before a shutter locks you in with a second wave.
