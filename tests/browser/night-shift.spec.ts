@@ -10,6 +10,7 @@ type RunSnapshot = {
   seed: number;
   roomIndex: number;
   roomId: string;
+  floor: 1 | 2 | 3;
   cash: number;
   heat: number;
   suspicion: number;
@@ -665,11 +666,7 @@ test('the escalator ride holds the run still until it ends or is skipped', async
   expect(errors.consoleErrors).toEqual([]);
 });
 
-test('beating the Mall Manager plays out to the CLOCKED OUT card, and a new shift starts from it', async ({ page }) => {
-  test.setTimeout(120_000);
-  const errors = collectErrors(page);
-  await launchRun(page, '/?fixture=mvp-floor-two-boss-win&seed=4242');
-  await expect.poll(() => runSnapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'manager'))).toBe(true);
+async function swingUntilWon(page: Page): Promise<void> {
   const box = await page.locator('canvas').boundingBox();
   if (!box) throw new Error('no canvas');
   await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.5);
@@ -683,15 +680,65 @@ test('beating the Mall Manager plays out to the CLOCKED OUT card, and a new shif
     await page.waitForTimeout(160);
   }
   expect((await runSnapshot(page)).status).toBe('won');
+}
+
+test('beating the Mall Manager clears Floor 2 and rides the escalator up to Floor 3', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-two-boss-win&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'manager'))).toBe(true);
+  expect((await runSnapshot(page)).floor).toBe(2);
+  await swingUntilWon(page);
+
+  // Kill cam, then FLOOR CLEARED: Enter takes the escalator to the food court.
+  await expect
+    .poll(async () => {
+      const before = await runSnapshot(page);
+      if (before.status === 'won' && before.floor === 2) await page.keyboard.press('Enter');
+      return runSnapshot(page).then((state) => `${state.status}:${state.floor}:${state.roomId}`);
+    }, { timeout: 30_000, intervals: [700] })
+    .toBe('playing:3:service_corridor');
+  const boarded = (await runSnapshot(page)).tick;
+  await page.waitForTimeout(800);
+  // Mid-ride the run is on Floor 3 but its clock has not moved.
+  expect((await runSnapshot(page)).tick).toBe(boarded);
+  await page.keyboard.press('Space');
+  await expect.poll(() => runSnapshot(page).then((state) => state.tick), { timeout: 3000 }).toBeGreaterThan(boarded);
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the Food Court After Dark boss room spawns the Mall Owner', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-three-boss&seed=5150');
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 30_000 })
+    .toBe('security_office');
+  const state = await runSnapshot(page);
+  expect(state.floor).toBe(3);
+  expect(state.enemies.some((enemy) => enemy.kind === 'owner')).toBe(true);
+  await expect(page.locator('#mvp-run-boss')).toContainText('HP 240/240');
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('beating the Mall Owner plays out to the CLOCKED OUT card, and a new shift starts from it', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-three-boss-win&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'owner'))).toBe(true);
+  await swingUntilWon(page);
 
   // Kill cam, the walk out at dawn, then the card: R starts a new shift.
   await expect
     .poll(async () => {
       const before = await runSnapshot(page);
       if (before.status === 'won') await page.keyboard.press('KeyR');
-      return runSnapshot(page).then((state) => `${state.status}:${state.roomIndex}`);
+      return runSnapshot(page).then((state) => `${state.status}:${state.floor}:${state.roomIndex}`);
     }, { timeout: 30_000, intervals: [700] })
-    .toBe('playing:0');
+    .toBe('playing:1:0');
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

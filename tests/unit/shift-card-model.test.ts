@@ -27,6 +27,12 @@ describe('shift card model', () => {
     expect(card.subline).toContain(createMvpRun(7).wing.rooms[0]!.name.toUpperCase());
   });
 
+  it('adds a DAILY row only for a Daily Shift', () => {
+    expect(buildShiftCardModel(ended('dead'))!.rows.some((row) => row.label === 'DAILY')).toBe(false);
+    const daily = buildShiftCardModel(ended('dead'), 7, '2026-09-28')!;
+    expect(daily.rows.find((row) => row.label === 'DAILY')?.value).toBe('SEP 28');
+  });
+
   it('calls a floor-1 win FLOOR CLEARED and offers the escalator', () => {
     const card = buildShiftCardModel(ended('won'))!;
     expect(card.won).toBe(true);
@@ -34,15 +40,15 @@ describe('shift card model', () => {
     expect(card.ascend).toBe(true);
   });
 
-  it('saves CLOCKED OUT for beating the Mall Manager upstairs', () => {
+  it('calls beating the Mall Manager upstairs FLOOR CLEARED, with the escalator to Floor 3', () => {
     const below = createMvpRun(7);
     below.status = 'won';
     const above = ascendToFloorTwo(below);
     above.status = 'won';
     above.summary = { seed: above.seed, status: 'won', roomIndex: 5, roomsCleared: 5, purchasedInstanceIds: [], stolenInstanceIds: [], cash: 10, heat: 0, tick: 100 };
     const card = buildShiftCardModel(above)!;
-    expect(card.headline).toBe('CLOCKED OUT');
-    expect(card.ascend).toBe(false);
+    expect(card.headline).toBe('FLOOR CLEARED');
+    expect(card.ascend).toBe(true);
     expect(card.rows.find((row) => row.label === 'REACHED')?.value).toBe('FLOOR 2 - 6/6');
   });
 

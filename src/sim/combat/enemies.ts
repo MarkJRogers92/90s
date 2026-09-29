@@ -6,6 +6,7 @@ import { moveCircle, scaleMovementDelta } from './movement';
 import { playerDashing } from './dash';
 import { updateMannequin } from './mannequin';
 import { updateShopper } from './shopper';
+import { updateMascot } from './mascot';
 import { updateStatic } from './staticEnemy';
 import {
   circlesOverlap,
@@ -61,6 +62,11 @@ export function updateEnemies(state: RunState): void {
 
     if (enemy.kind === 'static') {
       updateStatic(state, enemy);
+      continue;
+    }
+
+    if (enemy.kind === 'mascot') {
+      updateMascot(state, enemy);
       continue;
     }
 

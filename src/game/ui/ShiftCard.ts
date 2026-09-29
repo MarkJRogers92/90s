@@ -7,22 +7,26 @@
  * slides in. It draws `buildShiftCardModel` and nothing else; the DOM summary
  * stays in the page (off-screen) for assistive tech and the browser tests.
  */
+import { floorOf } from '../../sim/run/floors';
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildShiftCardModel, shiftCardDelayMs, type ShiftCardModel } from './shiftCardModel';
 import { browserBestRuns } from '../score/score';
+import { nodeDefinitionId } from '../../sim/fusion/inventory';
 import { browserCareer, localDay, recordShift, type ShiftRecord } from '../career/career';
+import { browserDaily } from '../run/dailyShift';
 import { flashAllowed, gameSettings } from '../settings/settings';
 
 const DEPTH = 20_600;
 const W = 960;
 const H = 600;
 const CARD_W = 540;
-const CARD_H = 540;
+const CARD_H = 570;
 const CARD_X = (W - CARD_W) / 2;
 const CARD_Y = (H - CARD_H) / 2;
 const ROW_MS = 120;
+const ROW_H = 25;
 const MAX_VALUE_CHARS = 30;
 
 export type ShiftCardAction = 'retry' | 'title' | 'ascend';
@@ -51,6 +55,9 @@ export class ShiftCard {
   private record: ShiftRecord | null = null;
   private lastState: MvpRunState | null = null;
   private lastMallSeed = 0;
+  private lastDaily: string | null = null;
+  private newDailyBest = false;
+  private readonly dailies = browserDaily();
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -80,14 +87,15 @@ export class ShiftCard {
 
   private afterCinematic = false;
 
-  public sync(state: MvpRunState, mallSeed: number = state.seed, afterCinematic = false): void {
+  public sync(state: MvpRunState, mallSeed: number = state.seed, afterCinematic = false, dailyDate: string | null = null): void {
     this.afterCinematic = afterCinematic;
-    const model = buildShiftCardModel(state, mallSeed);
+    const model = buildShiftCardModel(state, mallSeed, dailyDate);
     if (!model) {
       this.endedAt = null;
       this.model = null;
       this.submitted = false;
       this.newBest = false;
+      this.newDailyBest = false;
       this.record = null;
       this.lastState = null;
       this.buttons = [];
@@ -99,6 +107,7 @@ export class ShiftCard {
     this.model = model;
     this.lastState = state;
     this.lastMallSeed = mallSeed;
+    this.lastDaily = dailyDate;
     // A floor-1 clear is not the end of the night: the best is judged at the finish.
     if (!model.ascend) this.settle();
     const age = now - this.endedAt - shiftCardDelayMs(model.won, this.afterCinematic);
@@ -122,15 +131,23 @@ export class ShiftCard {
     if (this.submitted || !model || !state) return;
     this.submitted = true;
     this.newBest = this.bests.submit({ score: model.score, won: model.won && !model.ascend, seconds: model.seconds });
-    const upstairs = state.wing.floor === 2;
+    // Daily Shift: every finished attempt is counted, and the day keeps its best.
+    if (this.lastDaily) {
+      this.newDailyBest = this.dailies.submit(this.lastDaily, { score: model.score, won: model.won && !model.ascend, seconds: model.seconds });
+    }
+    const floor = floorOf(state);
     this.record = recordShift(this.career.load(), {
       score: model.score,
-      won: model.won && upstairs,
-      floorCleared: upstairs || model.ascend,
+      won: model.won && floor === 3,
+      floorCleared: floor > 1 || model.ascend,
+      floorTwoCleared: floor === 3 || (floor === 2 && model.ascend),
       kills: state.stats.kills,
       bestCombo: state.stats.bestCombo,
       seconds: model.seconds,
       mall: this.lastMallSeed,
+      fusions: state.inventory.inventory
+        .filter((node) => node.kind === 'composite' && node.recipeId === 'hybrid')
+        .map(nodeDefinitionId),
     }, localDay());
     this.career.save(this.record.career);
   }
@@ -178,8 +195,8 @@ export class ShiftCard {
       const rowAge = age - 300 - index * ROW_MS;
       if (rowAge < 0) return;
       const pop = rowAge < 90 ? 1.25 - (rowAge / 90) * 0.25 : 1;
-      const y = rowTop + index * 27;
-      g.fillStyle(0xffffff, index % 2 === 0 ? 0.04 : 0).fillRect(CARD_X + 24, y - 4, CARD_W - 48, 28);
+      const y = rowTop + index * ROW_H;
+      g.fillStyle(0xffffff, index % 2 === 0 ? 0.04 : 0).fillRect(CARD_X + 24, y - 4, CARD_W - 48, ROW_H + 1);
       const label = ensurePixelLabel(this.scene, row.label, '#9a8fb4', 2);
       this.image(slot++, label.key, CARD_X + 40, y + 10).setOrigin(0, 0.5);
       const value = ensurePixelLabel(this.scene, clip(row.value), '#f4ecff', 2);
@@ -190,9 +207,18 @@ export class ShiftCard {
     const scoreAge = age - 300 - model.rows.length * ROW_MS;
     if (scoreAge >= 0) {
       const pop = scoreAge < 120 ? 1.4 - (scoreAge / 120) * 0.4 : 1;
-      const scoreY = rowTop + model.rows.length * 27 + 22;
+      const scoreY = rowTop + model.rows.length * ROW_H + 22;
       const scoreLabel = ensurePixelLabel(this.scene, `SCORE ${model.score.toLocaleString('en-US')}`, '#ffd84a', 3);
       this.image(slot++, scoreLabel.key, W / 2, scoreY).setScale(pop);
+      if (this.newDailyBest) {
+        // Straight, on a plate: rotated pixel lettering breaks up.
+        const daily = ensurePixelLabel(this.scene, 'NEW DAILY BEST!', '#3ff0ff', 2);
+        const plateW = daily.width + 20;
+        const dailyY = scoreY + 30;
+        g.fillStyle(0x05030a, 1).fillRect(W / 2 - plateW / 2, dailyY - 11, plateW, 22);
+        g.lineStyle(2, 0x3ff0ff, Math.floor(age / 300) % 2 === 0 ? 1 : 0.6).strokeRect(W / 2 - plateW / 2, dailyY - 11, plateW, 22);
+        this.image(slot++, daily.key, W / 2, dailyY);
+      }
       if (this.newBest) {
         const best = ensurePixelLabel(this.scene, 'NEW BEST!', '#ff3fc8', 2);
         this.image(slot++, best.key, W / 2 + 176, scoreY - 4).setScale(Math.floor(age / 250) % 2 === 0 ? 1.1 : 1);
@@ -202,7 +228,7 @@ export class ShiftCard {
     const payAge = scoreAge - 220;
     if (this.record && payAge >= 0) {
       const pop = payAge < 120 ? 1.3 - (payAge / 120) * 0.3 : 1;
-      const payY = rowTop + model.rows.length * 27 + 54;
+      const payY = rowTop + model.rows.length * ROW_H + (this.newDailyBest ? 84 : 54);
       const pay = ensurePixelLabel(this.scene, `+${this.record.earned} PAY STUBS`, '#6aff8a', 2);
       this.image(slot++, pay.key, W / 2, payY).setScale(pop);
       const note = this.record.employeeOfTheMonth

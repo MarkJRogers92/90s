@@ -93,6 +93,16 @@ export const FLOOR_TWO_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
   security_office: 'Management Suite',
 };
 
+/** The top floor: a closed food court, arcade and service areas after hours. */
+export const FLOOR_THREE_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
+  service_corridor: 'Food Court Seating',
+  storefront_a: 'Pizza Counter',
+  food_court: 'Arcade',
+  storefront_b: 'Kitchen Back',
+  back_hall: 'Loading Dock',
+  security_office: "Owner's Suite",
+};
+
 export const ROOM_VARIANTS: Readonly<
   Record<CombatRoomRole, readonly [AuthoredRoomVariant, AuthoredRoomVariant]>
 > = {
@@ -188,7 +198,7 @@ export const ROOM_VARIANTS: Readonly<
         { slotId: 'back-hall-pillars-mixed-southeast', x: 780, y: 360, kinds: ['hanger', 'spitter'] },
       ],
       enemyCount: { min: 2, max: 4 },
-      benchKiosk: null,
+      benchKiosk: { x: 480, y: 60 },
     },
     {
       id: 'back-hall-crate-corners',
@@ -205,7 +215,7 @@ export const ROOM_VARIANTS: Readonly<
         { slotId: 'back-hall-crates-mixed-west', x: 260, y: 360, kinds: ['hanger', 'spitter'] },
       ],
       enemyCount: { min: 2, max: 3 },
-      benchKiosk: null,
+      benchKiosk: { x: 480, y: 60 },
     },
   ],
 };

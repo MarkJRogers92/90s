@@ -2138,3 +2138,27 @@ body[data-mode='run'] .marquee {
 .start-screen > .break-room {
   max-width: none;
 }
+
+.br-fusion-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.br-fusion-list li {
+  padding: 5px 8px;
+  border: 1px dashed rgb(154 143 180 / 45%);
+  color: #6a6080;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+}
+
+.br-fusion-list li.is-found {
+  border: 1px solid #6aff8a;
+  color: #6aff8a;
+  background: rgb(106 255 138 / 8%);
+  text-shadow: 0 0 6px rgb(106 255 138 / 50%);
+}

@@ -28,6 +28,10 @@ const renders = [
   ['upstairs', 1, 1, false],
   ['manager', 1, 0.4, false],
   ['manager', 1.12, 1, false],
+  ['topfloor', 1, 0.4, false],
+  ['topfloor', 1, 1, false],
+  ['owner', 1, 0.4, false],
+  ['owner', 1.12, 1, false],
 ];
 for (const [track, tempoScale, intensity, tension] of renders.filter(([track]) => only.length === 0 || only.includes(track))) {
   const result = await page.evaluate(async ([track, tempoScale, intensity, tension]) => {

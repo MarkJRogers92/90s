@@ -1,3 +1,4 @@
+import { vulnerableDamage } from '../combat/mascot';
 import type {
   AttackDelivery,
   CompiledPrimary,
@@ -143,7 +144,7 @@ function resolveDirectHit(
   descriptor: AttackDescriptor,
   statusEffects: readonly StatusModifierEffect[],
 ): void {
-  target.health -= descriptor.damage;
+  target.health -= vulnerableDamage(target, descriptor.damage);
   knockBack(state, target);
   applyWet(target, DIRECT_HIT_WET_TICKS);
   applyStatusModifierEffects(target, statusEffects);
@@ -213,6 +214,20 @@ export function resolvePrimaryAttack(
       setRecentChange(state, `${descriptor.name} fired`);
     }
     return root;
+  }
+
+  // A melee hybrid that carries its own shot (the Hydro Mop) throws it on
+  // every swing, whether or not the swing connects.
+  const ownShot = state.compiledLoadout.effects.some(
+    (effect) => effect.kind === 'projectile_payload' && effect.sourceItemId === descriptor.definitionId,
+  );
+  if (ownShot) {
+    spawnPlayerProjectiles(state, {
+      root,
+      origin: attackContext.projectileOrigin ?? state.player,
+      aimX: input.aimX,
+      aimY: input.aimY,
+    });
   }
 
   const targets = directHitTargets(state, input, descriptor);

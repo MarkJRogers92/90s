@@ -73,8 +73,9 @@ test('stubs buy a perk and a locker weapon, and the next shift starts with both'
 });
 
 test('the Dental Plan adds a heart to the run', async ({ page }) => {
+  // Seeded before the page loads, so no reload can race the write.
+  await page.addInitScript((key) => localStorage.setItem(key, JSON.stringify({ version: 1, perks: { dental: 1 } })), CAREER_KEY);
   await page.goto('/?seed=11');
-  await page.evaluate((key) => localStorage.setItem(key, JSON.stringify({ version: 1, perks: { dental: 1 } })), CAREER_KEY);
   await startShift(page);
   expect((await snapshot(page)).player.health).toBe(8);
 });
@@ -89,12 +90,12 @@ test('a shift that dies still gets paid, with no photo', async ({ page }) => {
   expect(Number(paid?.stubs)).toBeGreaterThan(0);
 });
 
-test('beating the Mall Manager pins up the first Employee of the Month', async ({ page }) => {
+test('beating the Mall Owner pins up the first Employee of the Month', async ({ page }) => {
   test.setTimeout(120_000);
   const errors = collectErrors(page);
-  await page.goto('/?fixture=mvp-floor-two-boss-win&seed=4242');
+  await page.goto('/?fixture=mvp-floor-three-boss-win&seed=4242');
   await startShift(page);
-  await expect.poll(() => snapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'manager'))).toBe(true);
+  await expect.poll(() => snapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'owner'))).toBe(true);
   const box = await page.locator('canvas').boundingBox();
   if (!box) throw new Error('no canvas');
   await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.5);

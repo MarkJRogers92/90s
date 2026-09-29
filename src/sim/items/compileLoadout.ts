@@ -122,7 +122,9 @@ export function compileLoadout(
   const compatibilityNotes: string[] = [];
   for (const definition of ownedDefinitions) {
     for (const effect of definition.effects) {
-      if (primary.delivery === 'direct' && isProjectileOnlyEffectKind(effect.kind)) {
+      // A melee hybrid that carries its own shot (the Hydro Mop) keeps it:
+      // only other items' projectile modifiers stay off a direct attack.
+      if (primary.delivery === 'direct' && isProjectileOnlyEffectKind(effect.kind) && effect.sourceItemId !== primary.definitionId) {
         compatibilityNotes.push(limitedApplicabilityNote(definition, effect, primary));
         continue;
       }

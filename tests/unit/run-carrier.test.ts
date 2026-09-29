@@ -240,7 +240,7 @@ describe('the Bench Warrant preview in the run', () => {
     expect(state.cash).toBe(cashBefore);
   });
 
-  it('refuses to open without a car and reports why', () => {
+  it('without a car the bench still opens, with nothing picked yet', () => {
     const state = createMvpRun(7);
     grantItem(state, 'party_popper');
     state.inventory = { ...state.inventory, selectedPrimaryInstanceId: 'test-party_popper' };
@@ -249,18 +249,21 @@ describe('the Bench Warrant preview in the run', () => {
 
     const result = openRunFusionPreview(state);
 
-    expect(result.accepted).toBe(false);
+    // Any two items fuse now; only the car-and-shooter pair is pre-picked.
+    expect(result.accepted).toBe(true);
+    expect(state.workbench).toMatchObject({ firstId: null, secondId: null });
     expect(state.preview).toBeNull();
   });
 
   it('reports honestly whether the kiosk has anything to offer', () => {
     const state = createMvpRun(7);
-    // The starting mop is not a projectile primary, so there is nothing to fuse
-    // even once a carrier is owned.
+    // The issued mop alone has nothing to fuse with; a second item is enough
+    // to open the bench (the mop and the car cannot fuse, but the bench says
+    // so when both are picked).
     expect(canOpenRunFusionPreview(state)).toBe(false);
     grantItem(state, 'rc_car');
     advance(state, 1);
-    expect(canOpenRunFusionPreview(state)).toBe(false);
+    expect(canOpenRunFusionPreview(state)).toBe(true);
 
     grantItem(state, 'party_popper');
     state.inventory = { ...state.inventory, selectedPrimaryInstanceId: 'test-party_popper' };

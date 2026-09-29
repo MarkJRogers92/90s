@@ -1,3 +1,4 @@
+import { hybridParts } from '../../sim/fusion/hybrid';
 export interface PresentationAsset {
   key: string;
   url: string;
@@ -135,6 +136,12 @@ export const ENEMY_TEXTURE_KEYS = {
   managerIdle: 'neon:enemy:manager-idle',
   managerWalk: 'neon:enemy:manager-walk',
   managerDeath: 'neon:enemy:manager-death',
+  mascotIdle: 'neon:enemy:mascot-idle',
+  mascotWalk: 'neon:enemy:mascot-walk',
+  mascotDeath: 'neon:enemy:mascot-death',
+  ownerIdle: 'neon:enemy:owner-idle',
+  ownerWalk: 'neon:enemy:owner-walk',
+  ownerDeath: 'neon:enemy:owner-death',
 } as const;
 
 /** Item icons keyed by the simulation's item definition id. */
@@ -166,7 +173,9 @@ export const ITEM_ICON_FILES: Readonly<Record<string, string>> = {
 };
 
 export function itemIconKey(itemDefinitionId: string): string | null {
-  const file = ITEM_ICON_FILES[itemDefinitionId];
+  // A fused item shows its base's icon (the HUD marks it as fused).
+  const parts = hybridParts(itemDefinitionId);
+  const file = ITEM_ICON_FILES[parts?.baseId ?? itemDefinitionId];
   return file ? `neon:item:${file}` : null;
 }
 
@@ -225,6 +234,12 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.managerIdle, 'enemies/manager-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.managerWalk, 'enemies/manager-walk.png'),
   neon(ENEMY_TEXTURE_KEYS.managerDeath, 'enemies/manager-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.mascotIdle, 'enemies/mascot-idle.png'),
+  neon(ENEMY_TEXTURE_KEYS.mascotWalk, 'enemies/mascot-walk.png'),
+  neon(ENEMY_TEXTURE_KEYS.mascotDeath, 'enemies/mascot-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.ownerIdle, 'enemies/owner-idle.png'),
+  neon(ENEMY_TEXTURE_KEYS.ownerWalk, 'enemies/owner-walk.png'),
+  neon(ENEMY_TEXTURE_KEYS.ownerDeath, 'enemies/owner-death.png'),
   neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
   neon(SCENE_TEXTURE_KEYS.dawnExit, 'ui/dawn-exit.png'),

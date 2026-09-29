@@ -415,13 +415,13 @@ describe('mvp interactions', () => {
     corridor.room.combat.player.x = kiosk.x;
     corridor.room.combat.player.y = kiosk.y;
     expect(nearestMvpInteraction(corridor)).toMatchObject({ kind: 'bench' });
-    // The kiosk reports itself as the interaction, but an Emitter Mount fuses a
-    // projectile primary with an owned emitter carrier. Acting on it with no
-    // carrier is refused with a readable reason rather than reporting success.
+    // The kiosk reports itself as the interaction, but fusing takes two
+    // standalone items. With only the issued mop, acting on it is refused with
+    // a readable reason rather than reporting success.
     const withoutCarrier = tryInteract(corridor);
     expect(withoutCarrier.accepted).toBe(false);
     if (!withoutCarrier.accepted) {
-      expect(withoutCarrier.reason).toContain('emitter carrier');
+      expect(withoutCarrier.reason).toContain('Nothing to fuse');
     }
     expect(corridor.preview).toBeNull();
 

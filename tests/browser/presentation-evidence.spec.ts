@@ -70,7 +70,8 @@ async function launchRun(page: Page, viewport: { width: number; height: number }
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
   // The evidence is the concourse itself: wait for the clock-in cold open to clear.
   await expect
-    .poll(() => snapshot(page).then((state) => (state as { cinematic?: boolean }).cinematic), { timeout: 10_000 })
+    // Generous: the cold open runs on frame time, so a loaded machine stretches it.
+    .poll(() => snapshot(page).then((state) => (state as { cinematic?: boolean }).cinematic), { timeout: 45_000 })
     .toBe(false);
 }
 

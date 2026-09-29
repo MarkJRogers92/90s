@@ -48,6 +48,8 @@ export const PA_LINES = {
   blue_light: ['ATTENTION SHOPPERS: A BLUE LIGHT SPECIAL. HALF OFF.'],
   boss_floor_one: ['LOSS PREVENTION IS ON THE FLOOR. DO NOT RUN.'],
   boss_floor_two: ['WILL THE MALL MANAGER PLEASE REPORT TO... OH NO.'],
+  boss_floor_three: ['THE OWNER WOULD LIKE A WORD. PLEASE DO NOT REPLY.'],
+  topfloor: ['THE FOOD COURT IS CLOSED. THE MASCOTS ARE NOT.'],
   upstairs: ['WELCOME TO THE UPPER LEVEL. PLEASE HOLD THE HANDRAIL.'],
   idle: [
     'THE MALL CLOSES AT 9 PM. IT IS NOW PAST MIDNIGHT.',
@@ -63,7 +65,7 @@ export type PaEvent = keyof typeof PA_LINES;
 type Snapshot = {
   readonly tick: number;
   readonly seed: number;
-  readonly floor: 1 | 2;
+  readonly floor: 1 | 2 | 3;
   readonly roomIndex: number;
   readonly health: number;
   readonly heat: number;
@@ -75,7 +77,7 @@ function snapshot(state: MvpRunState): Snapshot {
   return {
     tick: state.tick,
     seed: state.seed,
-    floor: state.wing.floor === 2 ? 2 : 1,
+    floor: state.wing.floor === 3 ? 3 : state.wing.floor === 2 ? 2 : 1,
     roomIndex: state.roomIndex,
     health: state.room.combat.player.health,
     heat: state.heat,
@@ -104,11 +106,12 @@ export class PaDirector {
     if (current.tick < previous.tick || current.floor !== previous.floor || current.seed !== previous.seed) {
       this.quietStart(current.tick);
       this.lowHealthRoom = -1;
+      if (current.floor === 3 && previous.floor !== 3) return this.say('topfloor', current, true);
       return current.floor === 2 && previous.floor !== 2 ? this.say('upstairs', current, true) : null;
     }
     if (current.roomIndex !== previous.roomIndex) {
       const room = state.wing.rooms[current.roomIndex];
-      if (room?.bossAnchor != null) return this.say(current.floor === 2 ? 'boss_floor_two' : 'boss_floor_one', current, true);
+      if (room?.bossAnchor != null) return this.say(current.floor === 3 ? 'boss_floor_three' : current.floor === 2 ? 'boss_floor_two' : 'boss_floor_one', current, true);
       const event = roomEventFor(state, current.roomIndex);
       if (event === 'blackout') return this.say('blackout', current, true);
       if (event === 'blue_light') return this.say('blue_light', current, true);

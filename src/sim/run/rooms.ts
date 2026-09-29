@@ -19,7 +19,7 @@ import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH, circleIntersectsRect } from '../core
 import { createEnemyStatusState } from '../effects/statuses';
 import { projectFusionInventory } from '../fusion/inventory';
 import type { FusionInventoryState } from '../fusion/types';
-import { ITEM_CATALOG } from '../items/catalog';
+import { catalogFor } from '../items/registry';
 import { compileLoadout } from '../items/compileLoadout';
 import type { EnemyState, RunState } from '../model';
 import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
@@ -29,6 +29,7 @@ import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
 import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
 import { STATIC_DRIFT_TICKS, STATIC_HEALTH, STATIC_RADIUS } from '../combat/staticEnemy';
 import { SHOPPER_HEALTH, SHOPPER_RADIUS } from '../combat/shopper';
+import { MASCOT_HEALTH, MASCOT_RADIUS } from '../combat/mascot';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -56,6 +57,8 @@ const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; rad
   // Like the spitter, a Bargain Hunter needs a beat before its first charge, so
   // one parked by the door can't hit the janitor before the room has been read.
   shopper: { health: SHOPPER_HEALTH, radius: SHOPPER_RADIUS, phase: 'recover', phaseTicks: 50 },
+  // A Mascot Brute also waits a beat: its wind-up is the first thing it does.
+  mascot: { health: MASCOT_HEALTH, radius: MASCOT_RADIUS, phase: 'recover', phaseTicks: 60 },
 };
 
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemyState {
@@ -179,7 +182,7 @@ export function buildRoomCombatState(
 
   const projected = projectFusionInventory(inventory);
   const compiledLoadout = compileLoadout(
-    ITEM_CATALOG,
+    catalogFor(projected.instances),
     runCompilerInstances(projected.instances, projected.selectedPrimaryInstanceId),
     projected.selectedPrimaryInstanceId,
   );
@@ -188,8 +191,8 @@ export function buildRoomCombatState(
     spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE),
   );
   if (room.bossAnchor) {
-    // Loss Prevention downstairs; the Mall Manager runs the upper level.
-    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, wing.floor === 2 ? 'manager' : 'lp_manager'));
+    // Loss Prevention downstairs; the Mall Manager runs the upper level; the Mall Owner owns the roof.
+    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, wing.floor === 3 ? 'owner' : wing.floor === 2 ? 'manager' : 'lp_manager'));
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
     enemies.push({

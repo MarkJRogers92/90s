@@ -48,6 +48,8 @@ const REASONS: Record<DamageSource, string> = {
   mannequin: 'INSUBORDINATION TOWARD A DISPLAY',
   static: 'FAILURE TO ADJUST THE ANTENNA',
   shopper: 'BLOCKING A DOORBUSTER',
+  mascot: 'DISRESPECTING THE MASCOT',
+  ownerCharge: 'HOSTILE TAKEOVER',
   glob: 'SLIPPED ON AN UNREPORTED SPILL',
   slam: 'DISRESPECTING LOSS PREVENTION',
   bossShot: 'DISRESPECTING LOSS PREVENTION',
@@ -55,7 +57,8 @@ const REASONS: Record<DamageSource, string> = {
 };
 
 /** Why Alex was let go, from what landed the last blow (bosses by floor). */
-export function pinkSlipReason(source: DamageSource | null, floor: 1 | 2): string {
+export function pinkSlipReason(source: DamageSource | null, floor: 1 | 2 | 3): string {
+  if ((source === 'slam' || source === 'bossShot') && floor === 3) return 'HOSTILE TAKEOVER';
   if ((source === 'slam' || source === 'bossShot') && floor === 2) return 'DISAGREEING WITH MANAGEMENT';
   return REASONS[source ?? 'other'];
 }

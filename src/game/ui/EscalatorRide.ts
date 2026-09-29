@@ -37,15 +37,18 @@ export class EscalatorRide {
   private elapsed = 0;
   private skip = false;
 
-  public constructor(private readonly scene: Phaser.Scene) {
+  /** `toFloor` is the floor being ridden to: 2 (cinema and arcade) or 3 (the food court). */
+  public constructor(private readonly scene: Phaser.Scene, toFloor: 2 | 3 = 2) {
     this.back = scene.add.graphics();
-    const lowerRow: FacadeId[] = ['video', 'electronics', 'music'];
-    const upperRow: FacadeId[] = ['cinema', 'arcade', 'cinema'];
+    const lowerRow: FacadeId[] = toFloor === 3 ? ['cinema', 'arcade', 'cinema'] : ['video', 'electronics', 'music'];
+    const upperRow: FacadeId[] = toFloor === 3 ? ['pizza', 'burger', 'wok'] : ['cinema', 'arcade', 'cinema'];
     this.shopRow(lowerRow, this.lowerShops, 0x9a8ab0);
     this.shopRow(upperRow, this.upperShops, 0xffffff);
     this.escalator = scene.add.graphics();
     this.rider = this.makeRider();
-    const sign = ensureNeonSign(scene, { text: 'UPPER LEVEL', color: '#3ff0ff', scale: 5, subtitle: 'CINEMA - ARCADE - MANAGEMENT', subtitleColor: '#ff3fc8' });
+    const sign = toFloor === 3
+      ? ensureNeonSign(scene, { text: 'FOOD COURT', color: '#ff8a3a', scale: 5, subtitle: 'AFTER DARK - ARCADE - THE OWNER', subtitleColor: '#3ff0ff' })
+      : ensureNeonSign(scene, { text: 'UPPER LEVEL', color: '#3ff0ff', scale: 5, subtitle: 'CINEMA - ARCADE - MANAGEMENT', subtitleColor: '#ff3fc8' });
     this.title = [
       scene.add.image(W / 2, 64, sign.halo).setBlendMode(Phaser.BlendModes.ADD),
       scene.add.image(W / 2, 64, sign.core),
@@ -53,7 +56,7 @@ export class EscalatorRide {
     const hint = ensurePixelLabel(scene, 'ANY KEY: SKIP', '#8a7aa8', 1, '#05030a');
     this.hint = scene.add.image(W - 16, H - 14, hint.key).setOrigin(1, 1);
     this.front = scene.add.graphics();
-    const level = ensurePixelLabel(scene, 'LEVEL 2 >', '#3ff0ff', 2, '#05030a');
+    const level = ensurePixelLabel(scene, toFloor === 3 ? 'LEVEL 3 >' : 'LEVEL 2 >', '#3ff0ff', 2, '#05030a');
     this.levelSign = scene.add.image(0, 0, level.key);
     this.curtain = scene.add.graphics();
     this.root = scene.add

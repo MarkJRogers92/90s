@@ -1,5 +1,50 @@
 # Test evidence
 
+## 2026-09-28 — round 23a: Daily Shift
+
+- Red first: `tests/unit/daily-shift.test.ts` failed on the missing
+  `src/game/run/dailyShift` module before it existed (seed hash, date format,
+  record update with 7-day pruning, tolerant parse, blocked storage, title line).
+- Unit: 71 files / 778 tests pass (adds daily-shift.test.ts and a DAILY row
+  case in shift-card-model.test.ts). `npx tsc --noEmit -p .` clean; `npm run build` OK.
+- Real browser (`tests/browser/daily-shift.spec.ts`, 3 tests): the title shows
+  `DAILY SHIFT · SEP 28 · NOT YET WORKED` and a dated button; a Daily Shift
+  runs on `dailySeed(today)` with 6 health even when the career holds Dental
+  Plan and Seniority (a plain shift on the same seed has 8 and more cash);
+  dying with `?fixture=mvp-last-heart` records `{date, attempts: 1}` under
+  `dead-mall:daily:v1` and the title then shows the best and `1 ATTEMPT`.
+  Captures: `artifacts/neon-overhaul/daily-title.png`, `daily-card.png`
+  (10 rows, NEW DAILY BEST plate, pay line, buttons; card is now 570 tall with
+  25px rows, nothing overlaps).
+- Full suite `PW_PORT=4194 npx playwright test --workers=2`: 68 passed, 1
+  flaked under load (`presentation-evidence` ten restart cycles); it passes in
+  isolation.
+- Scope notes: a Continue (checkpoint restore) is never a daily run; dev
+  fixtures are unaffected apart from riding along on the daily launch.
+## 2026-09-28 — round 23b: Floor 3 and the Mall Owner
+
+- Red first: `floor-three.test.ts` and `floor-three-enemies.test.ts` failed on the
+  missing `ascend`, `mascot` module and `owner` boss config before the sim
+  existed. New unit coverage: brute wind-up/charge/wall-stun/bonus damage and a
+  sidestep dodge; Owner volley, phase-two and phase-three summons, charge and
+  wall-shake; floor-3 wing generation; ascend-to-3 carry (gear, cash, stats,
+  perks); floor-3 checkpoint round trip; shift card rows (`FLOOR 3 - n/6`),
+  scoring across three floors; career pay (FLOOR 2 CLEARED, CLOCKED OUT); PA,
+  pink slip, kill cam, playtest sources, HUD names, dressing, music tracks.
+- Real browser: `night-shift.spec.ts` now covers Mall Manager -> FLOOR CLEARED ->
+  escalator -> Floor 3 (`mvp-floor-two-boss-win`), the Owner spawning in the
+  Owner's Suite (`mvp-floor-three-boss`), and the Owner falling -> kill cam ->
+  dawn -> CLOCKED OUT -> new shift (`mvp-floor-three-boss-win`). The break-room
+  Employee-of-the-Month test now uses the Owner. Captures:
+  `artifacts/neon-overhaul/floor3-{landing,arcade,brute,boss,killcam,final-card}.png`.
+- `npx tsc --noEmit` clean; `npx vitest run` — PASS: 795 tests; `npm run build`
+  — PASS. `PW_PORT=4195 npx playwright test --workers=2` — 59/68 on a machine at
+  load average ~60: `break-room.spec.ts:82`, `combat.spec.ts:103`,
+  `night-shift.spec.ts:300` and `:462` passed on isolated rerun;
+  `night-shift.spec.ts:229` times out its 10 s clock-in wait under that load and
+  passes with a 60 s wait; the four `presentation-evidence.spec.ts` tests fail
+  identically on the untouched base commit 8969b8b (pre-existing).
+
 ## 2026-09-28 — round 22: the Break Room (meta-progression)
 
 - Red first: `shiftPerks.test.ts` and `career.test.ts` failed on the missing

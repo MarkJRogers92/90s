@@ -82,6 +82,8 @@ function deathSheet(kind: EnemyState['kind']): string {
         : kind === 'static' ? ENEMY_TEXTURE_KEYS.staticDeath
           : kind === 'shopper' ? ENEMY_TEXTURE_KEYS.shopperDeath
             : kind === 'manager' ? ENEMY_TEXTURE_KEYS.managerDeath
+              : kind === 'mascot' ? ENEMY_TEXTURE_KEYS.mascotDeath
+                : kind === 'owner' ? ENEMY_TEXTURE_KEYS.ownerDeath
               : ENEMY_TEXTURE_KEYS.lpManagerDeath;
 }
 
@@ -329,9 +331,9 @@ export class CombatFeedback {
     // Death canvases are grown copies of the 64px idle canvas, centred on it,
     // so pixel scale and the feet row come from the idle frame.
     // The mannequin and the upper-floor cast are 96 px PixelLab canvases.
-    const bigCanvas = death.kind === 'mannequin' || death.kind === 'static' || death.kind === 'shopper' || death.kind === 'manager';
-    const idleFrame = bigCanvas ? 96 : 64;
-    const shown = isBossKind(death.kind) ? 128 : death.kind === 'shopper' ? 76 : bigCanvas ? 72 : 64;
+    const bigCanvas = death.kind === 'mannequin' || death.kind === 'static' || death.kind === 'shopper' || death.kind === 'manager' || death.kind === 'mascot' || death.kind === 'owner';
+    const idleFrame = death.kind === 'owner' ? 128 : bigCanvas ? 96 : 64;
+    const shown = death.kind === 'owner' ? 150 : isBossKind(death.kind) ? 128 : death.kind === 'mascot' ? 92 : death.kind === 'shopper' ? 76 : bigCanvas ? 72 : 64;
     const scale = shown / idleFrame;
     const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
     const image = this.scene.add.image(death.x, death.y, key).setDepth(presentationDepth('actor', death.y - 1)).setScale(scale);
@@ -357,6 +359,15 @@ export class CombatFeedback {
       this.shake(260, 0.014);
       this.reactions.set(`enemy:${attack.id}`, { born: tick, dirX: 0, dirY: 1, heavy: true });
       this.word('SLAM!', attack.x, attack.y - 110, tick, '#ffd84a', 4);
+      return { kind: 'slam' };
+    }
+    if (attack.kind === 'quake') {
+      const owner = this.attacks.get(attack.id)?.kind === 'owner';
+      this.bursts.push({ kind: 'shockwave', x: attack.x, y: attack.y, born: tick, life: 24, radius: owner ? 240 : 120, color: 0xff8a3a, angle: 0 });
+      this.bursts.push({ kind: 'star', x: attack.x, y: attack.y - 20, born: tick, life: 10, radius: owner ? 90 : 50, color: 0xffd84a, angle: this.random() * Math.PI });
+      for (let i = 0; i < (owner ? 26 : 12); i += 1) this.spark(attack.x, attack.y, tick, i % 2 ? 0xd8c8a8 : 0x2ad8c8);
+      this.shake(owner ? 520 : 240, owner ? 0.022 : 0.012);
+      this.word('CRASH!', attack.x, attack.y - (owner ? 110 : 70), tick, '#ff8a3a', owner ? 4 : 3);
       return { kind: 'slam' };
     }
     if (attack.kind === 'volley') {

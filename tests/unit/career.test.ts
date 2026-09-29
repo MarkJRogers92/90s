@@ -7,6 +7,7 @@ import {
   buyLocker,
   buyPerk,
   equipLocker,
+  fusionLog,
   newCareer,
   parseCareer,
   perksFor,
@@ -169,5 +170,28 @@ describe('saving the career', () => {
     const store = new CareerStore(blocked);
     expect(store.load()).toEqual(newCareer());
     expect(() => store.save(newCareer())).not.toThrow();
+  });
+});
+
+describe('the fusion log', () => {
+  it('remembers every hybrid a shift made, once each', () => {
+    const first = recordShift(newCareer(), { ...death, fusions: ['hybrid__pump_soaker__plasma_globe', 'hybrid__box_cutter__gel_pens'] }, 'd').career;
+    const second = recordShift(first, { ...death, fusions: ['hybrid__pump_soaker__plasma_globe'] }, 'd').career;
+    expect(second.fusionsFound).toEqual(['hybrid__box_cutter__gel_pens', 'hybrid__pump_soaker__plasma_globe']);
+  });
+
+  it('counts the signature fusions discovered', () => {
+    const career = recordShift(newCareer(), { ...death, fusions: ['hybrid__pump_soaker__plasma_globe', 'hybrid__box_cutter__gel_pens'] }, 'd').career;
+    const log = fusionLog(career);
+    expect(log.signaturesFound).toBe(1);
+    expect(log.signatureTotal).toBeGreaterThanOrEqual(12);
+    expect(log.entries.find((entry) => entry.name === 'Storm Soaker')?.found).toBe(true);
+    expect(log.entries.filter((entry) => !entry.found).every((entry) => entry.name === '???')).toBe(true);
+    expect(log.totalFound).toBe(2);
+  });
+
+  it('drops anything in a save that is not a real fusion', () => {
+    const repaired = parseCareer(JSON.stringify({ version: 1, fusionsFound: ['hybrid__pump_soaker__plasma_globe', 'hybrid__rc_car__janitor_mop', 'nonsense'] }));
+    expect(repaired.fusionsFound).toEqual(['hybrid__pump_soaker__plasma_globe']);
   });
 });

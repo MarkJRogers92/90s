@@ -152,6 +152,16 @@ const MCm = [60, 63, 67], MAb = [56, 60, 63], MFm = [56, 60, 65], MG = [55, 59, 
 const MANAGER_CHANGES = [MCm, MCm, MAb, MAb, MFm, MFm, MG, MG, MCm, MCm, MAb, MBb, MFm, MDb, MG, MG];
 const MANAGER_ROOTS = [36, 36, 32, 32, 29, 29, 31, 31, 36, 36, 32, 34, 29, 37, 31, 31];
 
+// Arcade After Dark (Floor 3 fights): G minor, i-VI-III-VII then i-VI-iv-V.
+const TGm = [55, 58, 62], TEb = [51, 55, 58], TBb = [58, 62, 65], TF = [53, 57, 60], TCm = [48, 55, 60], TD = [50, 54, 57];
+const TOP_CHANGES = [TGm, TGm, TEb, TEb, TBb, TBb, TF, TF, TGm, TGm, TEb, TEb, TCm, TCm, TD, TD];
+const TOP_ROOTS = [31, 31, 27, 27, 34, 34, 29, 29, 31, 31, 27, 27, 36, 36, 38, 38];
+
+// Hostile Takeover (the Mall Owner): B minor, with a Phrygian C and a raised F sharp.
+const OBm = [59, 62, 66], OC = [60, 64, 67], OG = [55, 59, 62], OFs = [54, 58, 61], OEm = [52, 55, 59], OA = [57, 61, 64];
+const OWNER_CHANGES = [OBm, OBm, OC, OC, OBm, OBm, OG, OFs, OBm, OBm, OC, OC, OEm, OEm, OA, OFs];
+const OWNER_ROOTS = [35, 35, 36, 36, 35, 35, 31, 30, 35, 35, 36, 36, 28, 28, 33, 30];
+
 const ALL16 = range(0, 16);
 
 export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
@@ -379,6 +389,99 @@ export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
       { kind: 'hat', minIntensity: 0.6, notes: drums('xoxoxoxoxoxoxoxo', ALL16, 0.4) },
       { kind: 'crash', minIntensity: 0.3, reverb: 0.5, notes: drums('x...............', [0, 8]) },
       { kind: 'tom', minIntensity: 0.6, reverb: 0.3, notes: [7, 15].flatMap((bar) => [8, 10, 12, 14].map((s, i) => ({ step: bar * 16 + s, midi: 50 - i * 4, vel: 0.9 }))) },
+    ],
+  },
+
+  /* "Arcade After Dark" (Floor 3 fights) ---------------------------------- */
+  topfloor: {
+    bpm: 122,
+    bars: 16,
+    gain: 0.5,
+    swing: 0.12,
+    voices: [
+      { kind: 'kick', notes: drums('x..ox..ox..ox..o', ALL16) },
+      { kind: 'drivebass', duck: true, notes: bassLine(TOP_ROOTS, [0, null, 0, 12, 0, null, 0, 7, 0, null, 0, 12, 0, 10, 7, 5], 1, 0.7) },
+      { kind: 'snare', minIntensity: 0.2, reverb: 0.4, notes: drums('....x.......x..o', ALL16, 0.85) },
+      { kind: 'hat', minIntensity: 0.25, notes: drums('x.o.x.o.x.o.x.oo', ALL16, 0.7) },
+      // Arcade cabinet blips: a chiptune-ish arpeggio.
+      { kind: 'pluck', minIntensity: 0.35, echo: 0.45, notes: arpeggio(TOP_CHANGES, 0.32) },
+      { kind: 'epiano', minIntensity: 0.4, reverb: 0.4, duck: true, notes: chordsPerBar(TOP_CHANGES, 16, 0.4, [0, 6, 10]) },
+      {
+        // The jukebox hook, greasy and warm.
+        kind: 'lead',
+        minIntensity: 0.6,
+        echo: 0.4,
+        reverb: 0.3,
+        notes: melody([
+          [8, 0, 74, 4], [8, 4, 70, 2], [8, 6, 74, 2], [8, 8, 77, 4], [8, 12, 74, 4],
+          [9, 0, 75, 8], [9, 8, 72, 4], [9, 12, 70, 4],
+          [10, 0, 74, 4], [10, 4, 77, 4], [10, 8, 79, 4], [10, 12, 77, 4],
+          [11, 0, 74, 12], [11, 12, 72, 4],
+          [12, 0, 72, 4], [12, 4, 75, 4], [12, 8, 79, 6], [12, 14, 75, 2],
+          [13, 0, 77, 8], [13, 8, 74, 8],
+          [14, 0, 74, 4], [14, 4, 78, 4], [14, 8, 81, 6], [14, 14, 78, 2],
+          [15, 0, 79, 16],
+        ], 0.55),
+      },
+      { kind: 'bell', minIntensity: 0.7, reverb: 0.5, echo: 0.3, notes: [3, 7, 11, 15].map((bar) => ({ step: bar * 16 + 14, midi: 91, len: 2, vel: 0.35 })) },
+      { kind: 'hat', minIntensity: 0.85, notes: drums('oooooooooooooooo', ALL16, 0.28) },
+      { kind: 'crash', minIntensity: 0.3, reverb: 0.4, notes: drums('x...............', [0, 8]) },
+      { kind: 'tom', minIntensity: 0.5, reverb: 0.3, notes: [10, 12, 13, 14, 15].map((s, i) => ({ step: 15 * 16 + s, midi: 54 - i * 4, vel: 0.9 })) },
+    ],
+  },
+
+  /* "Hostile Takeover" (the Mall Owner) -------------------------------------- */
+  owner: {
+    bpm: 152,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x..xx...x..xx.x.', ALL16) },
+      { kind: 'drivebass', duck: true, notes: bassLine(OWNER_ROOTS, [0, 0, 12, 0, 0, 12, 0, 0, 0, 0, 12, 0, 1, 12, 0, 12], 1, 0.78) },
+      { kind: 'snare', reverb: 0.5, notes: drums('....x.......x...', ALL16, 0.95) },
+      { kind: 'snare', minIntensity: 0.6, notes: drums('o.oo..o.o.oo..oo', ALL16, 0.4) },
+      // Boardroom organ: fat, slow, ominous.
+      { kind: 'pad', reverb: 0.5, notes: chordsPerBar(OWNER_CHANGES, 16, 0.5) },
+      { kind: 'choir', minIntensity: 0.4, reverb: 0.65, notes: chordsPerBar(OWNER_CHANGES, 16, 0.42) },
+      {
+        // Brass hook: the Owner's entrance, a swaggering power fanfare.
+        kind: 'supersaw',
+        echo: 0.2,
+        reverb: 0.35,
+        notes: melody([
+          [0, 0, 71, 2], [0, 2, 71, 1], [0, 3, 71, 1], [0, 4, 78, 4], [0, 8, 76, 4], [0, 12, 74, 4],
+          [1, 0, 71, 16],
+          [2, 0, 72, 2], [2, 2, 72, 1], [2, 3, 72, 1], [2, 4, 79, 4], [2, 8, 76, 4], [2, 12, 72, 4],
+          [3, 0, 74, 16],
+          [4, 0, 71, 2], [4, 2, 71, 1], [4, 3, 71, 1], [4, 4, 78, 4], [4, 8, 81, 4], [4, 12, 78, 4],
+          [5, 0, 79, 8], [5, 8, 76, 8],
+          [6, 0, 74, 4], [6, 4, 71, 4], [6, 8, 67, 4], [6, 12, 66, 4],
+          [7, 0, 66, 16],
+        ], 0.55),
+      },
+      {
+        kind: 'lead',
+        minIntensity: 0.7,
+        echo: 0.3,
+        notes: melody([
+          [8, 0, 83, 4], [8, 4, 86, 4], [8, 8, 90, 4], [8, 12, 86, 4],
+          [9, 0, 84, 8], [9, 8, 83, 8],
+          [10, 0, 84, 4], [10, 4, 88, 4], [10, 8, 91, 4], [10, 12, 88, 4],
+          [11, 0, 86, 8], [11, 8, 83, 8],
+          [12, 0, 83, 4], [12, 4, 79, 4], [12, 8, 76, 8],
+          [13, 0, 85, 8], [13, 8, 81, 8],
+          [14, 0, 86, 4], [14, 4, 90, 4], [14, 8, 93, 8],
+          [15, 0, 90, 16],
+        ], 0.5),
+      },
+      // A cash register and a tray dropped, every phrase.
+      { kind: 'bell', minIntensity: 0.5, reverb: 0.5, echo: 0.3, notes: [3, 7, 11, 15].flatMap((bar) => [
+        { step: bar * 16 + 12, midi: 88, len: 2, vel: 0.45 },
+        { step: bar * 16 + 14, midi: 95, len: 2, vel: 0.5 },
+      ]) },
+      { kind: 'hat', minIntensity: 0.6, notes: drums('xoxoxoxoxoxoxoxo', ALL16, 0.4) },
+      { kind: 'crash', minIntensity: 0.3, reverb: 0.5, notes: drums('x...............', [0, 8]) },
+      { kind: 'tom', minIntensity: 0.6, reverb: 0.3, notes: [7, 15].flatMap((bar) => [8, 10, 12, 13, 14, 15].map((s, i) => ({ step: bar * 16 + s, midi: 52 - i * 3, vel: 0.9 }))) },
     ],
   },
 

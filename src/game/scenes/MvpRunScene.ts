@@ -9,6 +9,7 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import { browserCareer, perksFor } from '../career/career';
+import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
@@ -25,7 +26,7 @@ import { PaTicker } from '../ui/PaTicker';
 import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
-import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
+import { ascend, canAscend, floorOf } from '../../sim/run/floors';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
@@ -52,6 +53,7 @@ import {
 import {
   cancelRunFusionPreview,
   confirmRunFusionPreview,
+  pickWorkbenchItem,
 } from '../../sim/run/bench';
 import { syncRunCarrier } from '../../sim/run/carrier';
 import { createMvpRun } from '../../sim/run/createMvpRun';
@@ -95,6 +97,9 @@ export type MvpRunLaunch = {
   readonly seedPinned?: boolean;
   readonly checkpoint: MvpCheckpoint | null;
   readonly store: CheckpointStore;
+  /** 'daily': today's pinned mall with the standard-issue kit; `date` is that day (YYYY-MM-DD). */
+  readonly mode?: 'night' | 'daily';
+  readonly date?: string;
 };
 
 let pendingLaunch: MvpRunLaunch | null = null;
@@ -142,6 +147,7 @@ class MvpRunInputAdapter {
     readonly isOpen: () => boolean;
     readonly buttonAt: (x: number, y: number) => BenchCardAction | null;
     readonly act: (action: BenchCardAction) => void;
+    readonly tileForKey: (key: number) => string | null;
   } | null = null;
   /** N toggles the soundtrack on its own. */
   public onToggleMusic: (() => void) | null = null;
@@ -211,6 +217,12 @@ class MvpRunInputAdapter {
       if (event.code === 'Escape') {
         event.preventDefault();
         this.benchCard.act('cancel');
+        return;
+      }
+      // Number keys pick items on the bench instead of switching weapons.
+      if (/^Digit[1-9]$/.test(event.code)) {
+        const tile = this.benchCard.tileForKey(Number(event.code.slice(5)));
+        if (tile) this.benchCard.act({ pick: tile });
         return;
       }
     }
@@ -358,6 +370,8 @@ export class MvpRunScene extends Phaser.Scene {
   private run: MvpRunState = createMvpRun(0);
   private seed = 0;
   private seedPinned = true;
+  /** The date of a Daily Shift (null for a normal or continued run). */
+  private dailyDate: string | null = null;
   private store: CheckpointStore = new InMemoryCheckpointStore();
   private generation = 1;
   private accumulator = 0;
@@ -375,7 +389,7 @@ export class MvpRunScene extends Phaser.Scene {
   private hud: MvpRunHud | undefined;
   private gameHud: GameHud | undefined;
   private shiftCard: ShiftCard | undefined;
-  /** The ride up to Floor 2, while it plays (the run does not tick). */
+  /** The ride up to the next floor, while it plays (the run does not tick). */
   private ride: EscalatorRide | null = null;
   /** The boss kill cam, while it plays; the end card waits for it. */
   private killCam: KillCam | null = null;
@@ -422,10 +436,12 @@ export class MvpRunScene extends Phaser.Scene {
     this.store = launch?.store ?? new InMemoryCheckpointStore();
     this.seed = launch?.checkpoint ? launch.checkpoint.seed : (launch?.seed ?? 0);
     this.seedPinned = launch?.seedPinned ?? true;
+    // A restored checkpoint does not carry the daily flag, so it is never a daily run.
+    this.dailyDate = launch?.mode === 'daily' && launch.date && !launch.checkpoint ? launch.date : null;
     this.run =
       launch?.checkpoint !== null && launch?.checkpoint !== undefined
         ? restoreMvpRun(launch.checkpoint)
-        : createMvpRun(this.seed, { perks: perksFor(browserCareer().load()) });
+        : createMvpRun(this.seed, { perks: this.shiftPerks() });
     this.run = this.applyDevFixture(this.run);
     this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
@@ -466,7 +482,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.inputAdapter.benchCard = {
       isOpen: () => bench.open,
       buttonAt: (x, y) => bench.buttonAt(x, y),
-      act: (action) => (action === 'fuse' ? this.confirmFusion() : this.cancelFusion()),
+      act: (action) => (action === 'fuse' ? this.confirmFusion() : action === 'cancel' ? this.cancelFusion() : this.pickBenchItem(action.pick)),
+      tileForKey: (key) => bench.tileForKey(key),
     };
     this.paTicker = new PaTicker(this, (cue) => this.audio?.play(cue));
     const card = new ShiftCard(this);
@@ -620,8 +637,16 @@ export class MvpRunScene extends Phaser.Scene {
   private confirmFusion(): void {
     const result = confirmRunFusionPreview(this.run);
     if (result.accepted) {
+      this.audio?.play('fuse');
+      this.runView?.celebrateFusion();
       this.resumeAfterPreview();
     }
+    this.syncView();
+  }
+
+  private pickBenchItem(instanceId: string): void {
+    pickWorkbenchItem(this.run, instanceId);
+    this.audio?.play('bench_pick');
     this.syncView();
   }
 
@@ -639,6 +664,11 @@ export class MvpRunScene extends Phaser.Scene {
     clearMvpHeldActions(this.run);
   }
 
+  /** A Daily Shift is standard issue; any other shift takes the janitor's Break Room perks. */
+  private shiftPerks(): ShiftPerks {
+    return this.dailyDate ? NO_PERKS : perksFor(browserCareer().load());
+  }
+
   /** From the end card, a won shift clocks into a new mall; otherwise the same one. */
   private restartRun(fromEndCard = false): void {
     this.endBeatPlayed = false;
@@ -654,7 +684,7 @@ export class MvpRunScene extends Phaser.Scene {
     const cleared = this.store.clear();
     // Re-read the career: the Break Room is only open between shifts, but a
     // retry should still start with everything the janitor owns.
-    this.run = createMvpRun(this.seed, { perks: perksFor(browserCareer().load()) });
+    this.run = createMvpRun(this.seed, { perks: this.shiftPerks() });
     this.startClockIn(won ? 'new-shift' : 'retry', false);
     // A fresh run has no previous tick to compare against, so the next sync
     // would read every field as a change and fire a burst of cues.
@@ -673,9 +703,10 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   /**
-   * Up the escalator: the won floor-1 run becomes a floor-2 run carrying the
-   * janitor's gear, cash and stats. The floor-1 record closes as a win; the
-   * upper level gets its own checkpoint so Continue resumes upstairs.
+   * Up the escalator: a won floor-1 (or floor-2) run becomes the next floor's
+   * run carrying the janitor's gear, cash, stats and perks. The lower record
+   * closes as a win; the new floor gets its own checkpoint so Continue resumes
+   * there.
    */
   private ascend(): void {
     if (!canAscend(this.run)) return;
@@ -683,7 +714,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.stopClockIn();
     this.endKillCam();
     this.lastStatus = 'playing';
-    this.run = ascendToFloorTwo(this.run);
+    this.run = ascend(this.run);
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
     this.audio?.resetBaseline();
@@ -697,7 +728,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.syncView();
     // Ride up before the landing appears; the run waits underneath.
     this.ride?.destroy();
-    this.ride = new EscalatorRide(this);
+    this.ride = new EscalatorRide(this, floorOf(this.run) === 3 ? 3 : 2);
     this.audio?.play('escalator');
   }
 
@@ -713,7 +744,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** Opening settings mid-shift pauses it, like Esc. */
   private readonly pauseForSettings = (): void => {
-    if (this.run.status === 'playing' && !this.run.paused && this.run.preview === null) this.setPaused(true);
+    if (this.run.status === 'playing' && !this.run.paused && this.run.preview === null && this.run.workbench === null) this.setPaused(true);
   };
 
   private readonly returnToTitle = (): void => {
@@ -766,7 +797,7 @@ export class MvpRunScene extends Phaser.Scene {
   private startClockIn(reason: ClockInReason, restored: boolean): void {
     this.stopClockIn();
     if (!shouldClockIn({ reason, fixture: this.devFixture(), restored })) return;
-    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'), this.run.perks);
+    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'), this.run.perks, this.dailyDate);
   }
 
   private stopClockIn(): void {
@@ -785,7 +816,7 @@ export class MvpRunScene extends Phaser.Scene {
       const boss = this.run.room.combat.enemies.find((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
       this.lastBoss = boss && isBossKind(boss.kind) ? { kind: boss.kind, x: boss.x, y: boss.y } : null;
     } else if (this.lastStatus === 'playing' && this.run.status === 'dead' && !this.pinkSlip) {
-      const reason = pinkSlipReason(this.playtest.lastDamageSource, this.run.wing.floor === 2 ? 2 : 1);
+      const reason = pinkSlipReason(this.playtest.lastDamageSource, floorOf(this.run));
       this.endBeatPlayed = true;
       this.pinkSlip = new PinkSlip(this, reason, { fall: () => this.audio?.play('paper'), stamp: () => this.audio?.play('stamp') });
     } else if (this.lastStatus === 'playing' && this.run.status === 'won' && this.lastBoss && !this.killCam) {
@@ -802,8 +833,8 @@ export class MvpRunScene extends Phaser.Scene {
     const played = this.killCam !== null;
     this.killCam?.destroy();
     this.killCam = null;
-    // Beating the Mall Manager ends the night: walk out into the sunrise first.
-    if (finished && played && this.run.status === 'won' && this.run.wing.floor === 2) {
+    // Beating the Mall Owner ends the night: walk out into the sunrise first.
+    if (finished && played && this.run.status === 'won' && this.run.wing.floor === 3) {
       this.ending = new DawnEnding(this);
       this.endingHeld = false;
       this.audio?.play('dawn');
@@ -845,9 +876,9 @@ export class MvpRunScene extends Phaser.Scene {
     this.benchCard?.hover(pointer.x, pointer.y);
     this.benchCard?.sync(this.run);
     // The end card waits for the kill cam to finish framing the fall.
-    if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed);
+    if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed, this.dailyDate);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
-    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null, firstGamepad() !== null);
+    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null && this.run.workbench === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
@@ -933,6 +964,28 @@ export class MvpRunScene extends Phaser.Scene {
       state.room.combat.player.y = 235;
       return state;
     }
+    if (fixture === 'mvp-workbench') {
+      // At the service-corridor Bench Warrant holding a shooter and three
+      // modifiers, with cash to spare, so any fusion can be tried at once.
+      const ids = ['pump_soaker', 'plasma_globe', 'gel_pens', 'party_popper'];
+      state.inventory = {
+        ...state.inventory,
+        inventory: [
+          ...state.inventory.inventory,
+          ...ids.map((id): InventoryLeaf => ({ kind: 'leaf', instanceId: `dev-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: state.tick })),
+        ],
+        cash: 60,
+        revision: state.inventory.revision + 1,
+      };
+      state.cash = 60;
+      refreshRunLoadout(state);
+      const kiosk = state.wing.rooms[state.roomIndex]?.benchKiosk;
+      if (kiosk) {
+        state.room.combat.player.x = kiosk.x;
+        state.room.combat.player.y = kiosk.y;
+      }
+      return state;
+    }
     if (fixture === 'mvp-bench') {
       // Stands the shift at the service-corridor Bench Warrant kiosk already
       // owning the car and a projectile primary, so browser acceptance can
@@ -966,10 +1019,45 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-floor-three' || fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-brute' || fixture === 'mvp-floor-three-boss' || fixture === 'mvp-floor-three-boss-win') {
+      // Straight up both escalators, optionally on to the Arcade fight or the Mall Owner.
+      state.status = 'won';
+      const upstairs = ascend(state);
+      upstairs.status = 'won';
+      const top = ascend(upstairs);
+      if (fixture !== 'mvp-floor-three') {
+        const stop = fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-brute' ? 'food_court' : top.wing.rooms.at(-1)?.id;
+        let guard = 0;
+        while (top.wing.rooms[top.roomIndex]?.id !== stop && guard < 10) {
+          guard += 1;
+          top.room.combat.enemies = [];
+          tickMvpRun(top, { moveX: 0, moveY: 0, aimX: top.room.combat.player.x, aimY: top.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(top, 'east').accepted) break;
+        }
+      }
+      if (fixture === 'mvp-floor-three-brute') {
+        // One Mascot Brute across the Arcade, about to wind up.
+        const player = top.room.combat.player;
+        top.room.combat.enemies = [{
+          id: 1, kind: 'mascot', x: player.x + 300, y: player.y, health: 34, radius: 18, phase: 'pursue',
+          phaseTicks: 0, cooldownTicks: 0, telegraphAimX: 0, telegraphAimY: 0,
+        }];
+      }
+      if (fixture === 'mvp-floor-three-boss-win') {
+        // One swing from the ending: the Mall Owner at a single point of health.
+        const boss = top.room.combat.enemies.find((enemy) => isBossKind(enemy.kind));
+        if (boss) {
+          boss.health = 1;
+          top.room.combat.player.x = boss.x - 80;
+          top.room.combat.player.y = boss.y;
+        }
+      }
+      return top;
+    }
     if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-boss' || fixture === 'mvp-floor-two-boss-win') {
       // Straight up the escalator, optionally on to the Cinema Lobby fight or the Mall Manager.
       state.status = 'won';
-      const upstairs = ascendToFloorTwo(state);
+      const upstairs = ascend(state);
       if (fixture !== 'mvp-floor-two') {
         const stop = fixture === 'mvp-floor-two-lobby' ? 'food_court' : upstairs.wing.rooms.at(-1)?.id;
         let guard = 0;

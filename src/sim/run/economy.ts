@@ -7,6 +7,7 @@
  * a rejected command leaves cash, Heat, suspicion, offers, inventory, and the
  * player untouched.
  */
+import { definitionFor } from '../items/registry';
 import { hasLineOfSight } from '../combat/collision';
 import type { InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
@@ -92,7 +93,7 @@ export function publishRunFeedback(
 }
 
 export function itemDefinitionName(itemDefinitionId: ItemId): string {
-  return DEFINITIONS_BY_ID.get(itemDefinitionId)?.name ?? itemDefinitionId;
+  return (DEFINITIONS_BY_ID.get(itemDefinitionId) ?? definitionFor(itemDefinitionId))?.name ?? itemDefinitionId;
 }
 
 /** Every owned definition, including the two halves of an Emitter Mount. */
@@ -109,6 +110,14 @@ function ownedDefinitionIds(state: MvpRunState): Set<ItemId> {
   return ids;
 }
 
+/** True when a hybrid (not an Emitter Mount) has this item fused into it. */
+function hybridOwns(state: MvpRunState, itemDefinitionId: ItemId): boolean {
+  return state.inventory.inventory.some(
+    (node) => node.kind === 'composite' && node.recipeId === 'hybrid'
+      && (node.primary.itemDefinitionId === itemDefinitionId || node.carrier.itemDefinitionId === itemDefinitionId),
+  );
+}
+
 /** True when any owned instance declares the capability. */
 export function runOwnsCapability(state: MvpRunState, capability: ItemCapability): boolean {
   for (const itemDefinitionId of ownedDefinitionIds(state)) {
@@ -121,14 +130,16 @@ export function runOwnsCapability(state: MvpRunState, capability: ItemCapability
 
 /** Receipt Wallet: two dollars off each lawful purchase. */
 export function runPurchaseDiscount(state: MvpRunState): number {
-  return runOwnsCapability(state, 'shop_discount') ? RUN_SHOP_DISCOUNT : 0;
+  if (!runOwnsCapability(state, 'shop_discount')) return 0;
+  // Fused into anything, the wallet is overclocked: a dollar more off.
+  return RUN_SHOP_DISCOUNT + (hybridOwns(state, 'receipt_wallet') ? 1 : 0);
 }
 
 /** One unsecured theft, plus one while the smuggle_pouch capability is owned. */
 export function runCarryLimit(state: MvpRunState): number {
   return (
     RUN_BASE_CARRY_LIMIT +
-    (runOwnsCapability(state, 'smuggle_pouch') ? RUN_SMUGGLE_POUCH_CARRY_BONUS : 0)
+    (runOwnsCapability(state, 'smuggle_pouch') ? RUN_SMUGGLE_POUCH_CARRY_BONUS + (hybridOwns(state, 'fanny_pack') ? 1 : 0) : 0)
   );
 }
 

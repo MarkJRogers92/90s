@@ -532,3 +532,72 @@ drawn by a small Phaser class; all presentation only.
 - Earlier modes (Start shift, Lab, Shoplifting Loop, Void the Warranty) keep
   their original presentation; Night Shift is the game.
 - Physical-device, Safari and Windows performance are untested.
+
+## Round 23b — Floor 3: Food Court After Dark
+
+Beating the Mall Manager no longer ends the night: the card says FLOOR CLEARED
+and offers the ESCALATOR, the ride plays (now titled FOOD COURT / LEVEL 3), and
+a third wing begins. Beating **the Mall Owner** on Floor 3 is the win: kill cam
+("GOING OUT OF BUSINESS"), the dawn walk-out, then CLOCKED OUT.
+
+- **Sim**: `floors.ts` generalises the escalator to `ascend(state)` (and
+  `floorOf`, `floorThreeSeed`, derived from the floor-2 seed); `ascendToFloorTwo`
+  still works. Gear, cash, stats and perks carry; health is restored to the
+  perk-adjusted maximum. `generateWing(seed, 3)` keeps the six-room shape under
+  new names (Food Court Seating, Pizza Counter, Arcade, Kitchen Back, Loading
+  Dock, The Owner's Suite), full-strength fights, and mixes Statics, Bargain
+  Hunters and the new brute into the hanger/spitter slots. Checkpoints save
+  `floor: 3`; `createMvpRun` takes `floor: 1 | 2 | 3`.
+- **Mascot Brute** (`combat/mascot.ts`, 34 hp): plods, winds up for 46 ticks
+  (locked lane, drawn as a charge lane), charges 26 ticks at 10.5 px/tick for 2
+  damage. A wall or obstacle stuns it for 110 ticks and stunned brutes take
+  x1.5 damage (`vulnerableDamage`, applied to mop hits and projectiles). Enters a
+  room with a 60-tick beat.
+- **The Mall Owner** (`BOSS_CONFIGS.owner`, 240 hp, radius 28): phase 1 slam and a
+  five-tray fan volley; from phase 2 every other attack is a straight charge
+  (36 ticks at 9.5 px/tick, 2 damage) with a wind-up lane. Hitting a wall shakes
+  the room (view: shake + a ring of 10 trays), and stuns the Owner for 100
+  ticks, open to x1.5 damage. Phase 2 calls in one Mascot Brute, phase 3 two more.
+- **Presentation**: `topFloor` dressing (greasy orange and teal neon, dead
+  menus, dark arcade cabinets, the gold-and-magenta Owner's suite); tracks
+  "Arcade After Dark" (122 bpm, G minor) and "Hostile Takeover" (152 bpm, B minor);
+  PA lines, pink-slip reasons (DISRESPECTING THE MASCOT, HOSTILE TAKEOVER),
+  boss intro card and bar name, Floor 3 map names, PixelLab sprites for the brute
+  and the Owner (`mascot-*`, `owner-*` in the manifest).
+- **Career**: `ShiftResult.floorTwoCleared` adds FLOOR 2 CLEARED (9 stubs);
+  `won` (CLOCKED OUT, 14 stubs) now means the Owner is down. The shift card's
+  REACHED row reads `FLOOR 3 - n/6` and scoring counts rooms on all three floors.
+- **Playtest**: damage sources `mascot` and `ownerCharge`; log records carry
+  `floor: 2 | 3` and the summary keys rooms as `3:<roomId>`.
+- **Fixtures**: `mvp-floor-three`, `-lobby` (Arcade), `-boss`, `-boss-win`;
+  the debug snapshot reports `floor`. `mvp-floor-two-boss-win` now leads to
+  the escalator, not CLOCKED OUT.
+- Balance: the Break Room's +2 hearts (Dental Plan) make Floor 3 fair; nothing
+  else was retuned. Untested by human playtest yet.
+
+## Round 23c: Void the Warranty — fuse any two items
+
+- **Rule:** any two standalone items fuse at a Bench Warrant. The RC car still
+  only takes a shooter (Emitter Mount); everything else makes a *hybrid*.
+- **Derived, not authored:** a hybrid's id is `hybrid__<base>__<ingredient>`
+  and its `ItemDefinition` is computed by `hybridDefinition()` in
+  `src/sim/fusion/hybrid.ts`. Saves store only the two ingredient leaves, so
+  every pair works and old saves never reference a missing recipe.
+- **Which is the base:** melee > ranged > modifier > utility; ties keep pick
+  order. Ranged + ranged merges volleys (the second fan widened x1.6), melee +
+  melee makes one heavy swing, melee + ranged swings *and* fires (the only
+  resolver change: a direct attack also spawns its own payload), and any
+  modifier fused in is overclocked (status x1.5, chain +1 target, range +60,
+  geometry x1.5). Every fused weapon gets +1 damage; the 16 named signature
+  pairs another +1.
+- **Economy:** $5, or $3 when both ingredients were bought. A wallet or fanny
+  pack fused into anything is overclocked by the economy rules ($3 off, +1
+  carry).
+- **Where:** service corridor and back hall on every floor; a bench opens only
+  when the room is clear.
+- **UI:** `BenchCard` is a picker — numbered tiles (click or 1-9), the pair,
+  the named result and plain-words highlights, fee against cash. `fuse` sound
+  and a FUSED! burst on commit; fused shots use the base's look trimmed in the
+  ingredient's colour.
+- **Meta:** the Break Room's fusion log counts signatures found and fusions
+  made (recorded when the end card settles).

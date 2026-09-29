@@ -71,6 +71,28 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 50, gain: 0.02, cutoff: 1800, cutoffTo: 900 }],
     minGapMs: 55,
   },
+  bench_pick: {
+    // A part dropped on the bench: a short metal tick.
+    tones: [
+      { wave: 'square', from: 1400, to: 900, ms: 35, gain: 0.05 },
+      { wave: 'triangle', from: 420, to: 300, ms: 70, gain: 0.07, atMs: 10 },
+    ],
+    minGapMs: 60,
+  },
+  fuse: {
+    // Void the warranty: an arc-welder crackle, a rising charge, a heavy clamp.
+    tones: [
+      { wave: 'sawtooth', from: 110, to: 880, ms: 420, gain: 0.08 },
+      { wave: 'square', from: 220, to: 1760, ms: 420, gain: 0.04 },
+      { wave: 'sine', from: 160, to: 45, ms: 300, gain: 0.4, atMs: 430 },
+      { wave: 'sine', from: 880, to: 1320, ms: 380, gain: 0.07, atMs: 470 },
+    ],
+    noise: [
+      { ms: 420, gain: 0.08, cutoff: 6000, cutoffTo: 9000 },
+      { ms: 90, gain: 0.3, cutoff: 5000, atMs: 430 },
+    ],
+    minGapMs: 900,
+  },
   paper: {
     // A sheet of paper sliding off a desk: two soft swishes.
     tones: [],

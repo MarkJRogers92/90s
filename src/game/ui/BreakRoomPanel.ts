@@ -13,6 +13,7 @@ import {
   buyLocker,
   buyPerk,
   equipLocker,
+  fusionLog,
   nextPerkCost,
   type Career,
   type CareerStore,
@@ -138,8 +139,20 @@ export class BreakRoomPanel {
       ? 'No shifts on record yet. Clock in and get paid.'
       : `${career.shifts} SHIFTS · ${career.floorClears} FLOOR CLEARS · ${career.clockOuts} CLOCK-OUTS · ${career.kills} KILLS · BEST COMBO X${career.bestCombo} · ${career.lifetimeStubs} STUBS EARNED`;
 
+    const log = fusionLog(career);
+    const fusions = el('section', 'br-section br-fusions');
+    fusions.append(
+      el('h3', 'br-heading', `Fusion log · ${log.signaturesFound}/${log.signatureTotal} signatures`),
+      el('p', 'br-note', log.totalFound === 0
+        ? 'Fuse any two items at a Bench Warrant. Some pairs have names.'
+        : `${log.totalFound} different fusions made. Some pairs have names — find them all.`),
+    );
+    const list = el('ul', 'br-fusion-list');
+    for (const entry of log.entries) list.append(el('li', entry.found ? 'is-found' : '', entry.name.toUpperCase()));
+    fusions.append(list);
+
     const left = el('div', 'br-column');
-    left.append(perks, locker);
+    left.append(perks, locker, fusions);
     this.body.replaceChildren(left, wall, stats);
   }
 

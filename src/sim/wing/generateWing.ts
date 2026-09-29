@@ -22,6 +22,7 @@ import {
   REGULAR_COMBAT_ROOM_ROLES,
   ROOM_BOUNDS,
   ROOM_HEIGHT,
+  FLOOR_THREE_ROOM_NAMES,
   FLOOR_TWO_ROOM_NAMES,
   ROOM_NAMES,
   ROOM_VARIANTS,
@@ -189,7 +190,7 @@ function instantiateStore(
 function chooseCombatSpawns(
   rng: ReturnType<typeof createWingRng>,
   variant: AuthoredRoomVariant,
-  floor: 1 | 2 = 1,
+  floor: 1 | 2 | 3 = 1,
 ): WingEnemySpawn[] {
   const drawn = nextInt(
     rng,
@@ -197,7 +198,7 @@ function chooseCombatSpawns(
     variant.enemyCount.max,
   );
   // Upstairs every fight is at full strength.
-  const count = floor === 2 ? variant.enemyCount.max : drawn;
+  const count = floor >= 2 ? variant.enemyCount.max : drawn;
   if (count === 0) {
     return [];
   }
@@ -213,7 +214,7 @@ function chooseCombatSpawns(
     const authored = slot.kinds[kindIndex]!;
     return {
       slotId: slot.slotId,
-      kind: floor === 2 ? upperFloorKind(authored, rng) : authored,
+      kind: floor === 3 ? topFloorKind(authored, rng) : floor === 2 ? upperFloorKind(authored, rng) : authored,
       x: slot.x,
       y: slot.y,
     };
@@ -229,6 +230,17 @@ function upperFloorKind(kind: WingEnemySpawn['kind'], rng: ReturnType<typeof cre
   const roll = nextInt(rng, 0, 99);
   if (kind === 'hanger') return roll < 45 ? 'static' : 'hanger';
   if (kind === 'spitter') return roll < 45 ? 'shopper' : 'spitter';
+  return kind;
+}
+
+/**
+ * The top floor mixes everything: Statics and Bargain Hunters as upstairs,
+ * plus Mascot Brutes in place of either familiar monster.
+ */
+function topFloorKind(kind: WingEnemySpawn['kind'], rng: ReturnType<typeof createWingRng>): WingEnemySpawn['kind'] {
+  const roll = nextInt(rng, 0, 99);
+  if (kind === 'hanger') return roll < 28 ? 'static' : roll < 58 ? 'mascot' : 'hanger';
+  if (kind === 'spitter') return roll < 32 ? 'shopper' : roll < 62 ? 'mascot' : 'spitter';
   return kind;
 }
 
@@ -301,9 +313,9 @@ function storefrontRoom(
   };
 }
 
-export function generateWing(seed: number, floor: 1 | 2 = 1): GeneratedWing {
+export function generateWing(seed: number, floor: 1 | 2 | 3 = 1): GeneratedWing {
   const rng = createWingRng(seed);
-  roomNames = floor === 2 ? FLOOR_TWO_ROOM_NAMES : ROOM_NAMES;
+  roomNames = floor === 3 ? FLOOR_THREE_ROOM_NAMES : floor === 2 ? FLOOR_TWO_ROOM_NAMES : ROOM_NAMES;
 
   const combatVariants = new Map<CombatRoomRole, AuthoredRoomVariant>();
   for (const role of COMBAT_ROOM_ROLES) {
@@ -409,7 +421,7 @@ export function generateWing(seed: number, floor: 1 | 2 = 1): GeneratedWing {
   roomNames = ROOM_NAMES;
   const wing: GeneratedWing = freezeDeep({
     seed,
-    ...(floor === 2 ? { floor: 2 as const } : {}),
+    ...(floor === 2 ? { floor: 2 as const } : floor === 3 ? { floor: 3 as const } : {}),
     rooms,
     startingCash: STARTING_CASH,
   });

@@ -4,7 +4,7 @@ import type { EnemyState } from '../../src/sim/model';
 import { musicCue } from '../../src/game/audio/musicState';
 import { TRACKS, stepTimes } from '../../src/game/audio/music';
 import { roomEventFor } from '../../src/sim/run/roomEvents';
-import { ascendToFloorTwo } from '../../src/sim/run/floors';
+import { ascend, ascendToFloorTwo } from '../../src/sim/run/floors';
 
 function boss(overrides: Partial<EnemyState> = {}): EnemyState {
   return {
@@ -112,7 +112,7 @@ describe('upstairs music', () => {
 
 describe('tracks', () => {
   it('has a full sixteen-bar arrangement for every track, including Lights Out', () => {
-    for (const id of ['muzak', 'combat', 'boss', 'blackout', 'upstairs', 'manager'] as const) {
+    for (const id of ['muzak', 'combat', 'boss', 'blackout', 'upstairs', 'manager', 'topfloor', 'owner'] as const) {
       expect(TRACKS[id].bars).toBeGreaterThanOrEqual(16);
     }
   });
@@ -141,5 +141,30 @@ describe('step scheduling', () => {
     expect(steps[0]!.time).toBeCloseTo(0.25);
     const wrapped = stepTimes(0, 120, 64, 7.95, 8.1);
     expect(wrapped.map((s) => s.step)).toEqual([0]);
+  });
+});
+
+describe('top floor music', () => {
+  const topFloor = () => {
+    const two = ascendToFloorTwo(Object.assign(createMvpRun(7), { status: 'won' as const }));
+    return ascend(Object.assign(two, { status: 'won' as const }));
+  };
+
+  it('plays Arcade After Dark in Floor 3 fights, muzak between them', () => {
+    const state = topFloor();
+    state.room.combat.enemies = [];
+    expect(musicCue(state).track).toBe('muzak');
+    state.room.combat.enemies = [{ ...boss(), kind: 'mascot', health: 34 } as EnemyState];
+    expect(musicCue(state).track).toBe('topfloor');
+  });
+
+  it('gives the Mall Owner Hostile Takeover, faster by phase', () => {
+    const state = topFloor();
+    state.room.combat.enemies = [boss({ kind: 'owner', health: 240, bossPhase: 1 })];
+    const one = musicCue(state);
+    state.room.combat.enemies = [boss({ kind: 'owner', health: 40, bossPhase: 3 })];
+    const three = musicCue(state);
+    expect(one.track).toBe('owner');
+    expect(three.tempoScale).toBeGreaterThan(one.tempoScale);
   });
 });
