@@ -73,8 +73,9 @@ test('stubs buy a perk and a locker weapon, and the next shift starts with both'
 });
 
 test('the Dental Plan adds a heart to the run', async ({ page }) => {
+  // Seeded before the page loads, so no reload can race the write.
+  await page.addInitScript((key) => localStorage.setItem(key, JSON.stringify({ version: 1, perks: { dental: 1 } })), CAREER_KEY);
   await page.goto('/?seed=11');
-  await page.evaluate((key) => localStorage.setItem(key, JSON.stringify({ version: 1, perks: { dental: 1 } })), CAREER_KEY);
   await startShift(page);
   expect((await snapshot(page)).player.health).toBe(8);
 });

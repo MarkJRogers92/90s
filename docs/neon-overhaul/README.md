@@ -574,3 +574,30 @@ a third wing begins. Beating **the Mall Owner** on Floor 3 is the win: kill cam
   the escalator, not CLOCKED OUT.
 - Balance: the Break Room's +2 hearts (Dental Plan) make Floor 3 fair; nothing
   else was retuned. Untested by human playtest yet.
+
+## Round 23c: Void the Warranty — fuse any two items
+
+- **Rule:** any two standalone items fuse at a Bench Warrant. The RC car still
+  only takes a shooter (Emitter Mount); everything else makes a *hybrid*.
+- **Derived, not authored:** a hybrid's id is `hybrid__<base>__<ingredient>`
+  and its `ItemDefinition` is computed by `hybridDefinition()` in
+  `src/sim/fusion/hybrid.ts`. Saves store only the two ingredient leaves, so
+  every pair works and old saves never reference a missing recipe.
+- **Which is the base:** melee > ranged > modifier > utility; ties keep pick
+  order. Ranged + ranged merges volleys (the second fan widened x1.6), melee +
+  melee makes one heavy swing, melee + ranged swings *and* fires (the only
+  resolver change: a direct attack also spawns its own payload), and any
+  modifier fused in is overclocked (status x1.5, chain +1 target, range +60,
+  geometry x1.5). Every fused weapon gets +1 damage; the 16 named signature
+  pairs another +1.
+- **Economy:** $5, or $3 when both ingredients were bought. A wallet or fanny
+  pack fused into anything is overclocked by the economy rules ($3 off, +1
+  carry).
+- **Where:** service corridor and back hall on every floor; a bench opens only
+  when the room is clear.
+- **UI:** `BenchCard` is a picker — numbered tiles (click or 1-9), the pair,
+  the named result and plain-words highlights, fee against cash. `fuse` sound
+  and a FUSED! burst on commit; fused shots use the base's look trimmed in the
+  ingredient's colour.
+- **Meta:** the Break Room's fusion log counts signatures found and fusions
+  made (recorded when the end card settles).
