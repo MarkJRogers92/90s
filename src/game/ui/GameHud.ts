@@ -65,6 +65,8 @@ export class GameHud {
   private readonly peekKey: Phaser.Input.Keyboard.Key | undefined;
   private titleRoomKey = '';
   private bossIntro = false;
+  private wantedShown = 0;
+  private wantedChangedTick = -1000;
   private shiftStartTick: number | null = null;
   /** Everything the HUD would draw this frame; unchanged means skip the redraw. */
   private lastSignature = '';
@@ -121,6 +123,10 @@ export class GameHud {
     this.trackMannequins(state);
     this.joltHearts(state);
     this.trackDisclosure(state, model);
+    if (model.wanted !== this.wantedShown) {
+      this.wantedShown = model.wanted;
+      this.wantedChangedTick = state.tick;
+    }
     if (state.recentChange && state.recentChange !== this.lastRecent) this.pushLog(state);
     // Rebuilding vector panels every frame is expensive on software renderers,
     // and most frames change nothing, so redraw only when the picture changes.
@@ -133,6 +139,7 @@ export class GameHud {
     this.drawObjectives(model);
     this.drawMinimap(model, state);
     this.drawBoss(model);
+    this.drawAlarm(model, state);
     this.drawVitals(model, state);
     this.drawHotbar(model);
     this.drawLog(state);
@@ -189,6 +196,9 @@ export class GameHud {
       cardAge !== null && cardAge < 560 ? bucket(cardAge) : 'x',
       this.log.map((entry) => entry.text).join('|'), logAges,
       this.expanded,
+      // The alarm banner blinks and the stars flash briefly when they change.
+      model.alarm ? Math.floor(state.tick / 10) % 2 : 'x',
+      state.tick - this.wantedChangedTick < 40 ? Math.floor((state.tick - this.wantedChangedTick) / 5) % 2 : 'x',
     ]);
   }
 
@@ -272,7 +282,8 @@ export class GameHud {
       if (objective.done) {
         this.frame.fillStyle(0x6aff8a, 1).fillRect(x + 13, oy + 7, 2, 2).fillRect(x + 15, oy + 9, 2, 2).fillRect(x + 17, oy + 4, 2, 5);
       }
-      this.text(`obj-${index}`, objective.text, x + 30, oy, objective.done ? MUTED : TEXT);
+      // Long lines (wanted, lockdown) drop to the small size to fit the panel.
+      this.text(`obj-${index}`, objective.text, x + 30, oy + (objective.text.length > 22 ? 3 : 0), objective.done ? MUTED : TEXT, objective.text.length > 22 ? 1 : 2);
     });
   }
 
@@ -335,6 +346,47 @@ export class GameHud {
     this.frame.fillStyle(0xffffff, 0.35).fillRect(x, y + 20, fill, 3);
   }
 
+  /** A red flashing strip with the shutter countdown; above the boss bar, clear of the area title. */
+  private drawAlarm(model: GameHudModel, state: MvpRunState): void {
+    const alarm = model.alarm;
+    if (!alarm) return;
+    const width = 320;
+    const x = (SCREEN_W - width) / 2;
+    const y = 6;
+    const on = Math.floor(state.tick / 10) % 2 === 0;
+    const closed = alarm.shutter === 'closed';
+    const lifted = alarm.shutter === 'lifted';
+    const edge = lifted ? 0x6aff8a : 0xff3a4a;
+    this.frame.fillStyle(lifted ? 0x0a2a14 : on ? 0x5a0a14 : 0x2a0a12, 0.94).fillRect(x, y, width, 40);
+    this.frame.lineStyle(2, edge, on || lifted ? 1 : 0.5).strokeRect(x + 1, y + 1, width - 2, 38);
+    const title = lifted ? 'SHUTTER UP - GO!' : closed ? 'LOCKED IN!' : `ALARM  ${alarm.secondsLeft.toFixed(1)}S`;
+    this.text('alarm-title', title, SCREEN_W / 2, y + 6, lifted ? '#6aff8a' : on ? '#ffffff' : '#ff6f7a', 2, false, 1, 'center');
+    const sub = lifted ? 'GET THE LOOT TO THE DOOR' : closed ? 'TAKE DOWN SECURITY' : `${alarm.store || 'THE STORE'}: RUN FOR THE DOOR`;
+    this.text('alarm-sub', sub, SCREEN_W / 2, y + 26, '#ffd84a', 1, false, 1, 'center');
+  }
+
+  /** Five star outlines; the wanted ones fill in, and flash when the level changes. */
+  private drawStars(g: Phaser.GameObjects.Graphics, wanted: number, right: number, cy: number, tick: number): void {
+    const flashing = tick - this.wantedChangedTick < 40 && Math.floor((tick - this.wantedChangedTick) / 5) % 2 === 0;
+    const outer = 5;
+    const inner = 2;
+    const step = 12;
+    for (let i = 0; i < 5; i += 1) {
+      const cx = right - (4 - i) * step - outer;
+      const points: Phaser.Math.Vector2[] = [];
+      for (let k = 0; k < 10; k += 1) {
+        const angle = -Math.PI / 2 + (k * Math.PI) / 5;
+        const r = k % 2 === 0 ? outer : inner;
+        points.push(new Phaser.Math.Vector2(cx + Math.cos(angle) * r, cy + Math.sin(angle) * r + 0.5));
+      }
+      if (i < wanted) {
+        g.fillStyle(flashing ? 0xffffff : i >= 3 ? 0xff3a4a : 0xffb02e, 1).fillPoints(points, true);
+      } else {
+        g.lineStyle(1, 0x5a4a78, 1).strokePoints(points, true);
+      }
+    }
+  }
+
   private drawVitals(model: GameHudModel, state: MvpRunState): void {
     const g = this.bottomFrame;
     const px = 12;
@@ -351,7 +403,7 @@ export class GameHud {
       image?.setTexture(HEART_TEXTURES[heart]).setPosition(px + 96 + index * 26 + image.width / 2, py + 24 + image.height / 2);
     });
     this.text('cash', `$${model.cash}`, px + 96, py + 54, '#6aff8a', 2, true);
-    this.text('heat', `HEAT ${model.heat}`, px + 210, py + 54, model.heat > 0 ? '#ff3a4a' : MUTED, 2, true, 1, 'right');
+    this.drawStars(g, model.wanted, px + 210, py + 61, state.tick);
   }
 
   private drawHotbar(model: GameHudModel): void {
@@ -393,6 +445,12 @@ export class GameHud {
         icon.setVisible(false);
       }
       if (weapon?.fused) g.fillStyle(0x6aff8a, 1).fillRect(sx + SLOT - 9, y + 3, 6, 6);
+      if (weapon?.hot) {
+        // Stolen and unfused: a flame-coloured border and a HOT tag until the bench launders it.
+        g.lineStyle(2, 0xff7a1e, 1).strokeRect(sx + 1, y + 1, SLOT - 2, SLOT - 2);
+        g.fillStyle(0xff7a1e, 1).fillRect(sx + SLOT - 22, y + SLOT - 11, 20, 9);
+        this.text(`slot-hot-${i}`, 'HOT', sx + SLOT - 20, y + SLOT - 10, '#0b0714', 1, true);
+      }
       // Number badge in the corner: the key that equips this slot.
       g.fillStyle(selected ? CYAN : 0x3a3052, 1).fillRect(sx, y, 14, 14);
       this.text(`slot-key-${i}`, `${i + 1}`, sx + 3, y + 3, selected ? '#0b0714' : TEXT, 1, true);

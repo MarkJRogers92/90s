@@ -53,10 +53,10 @@ describe('shift card model', () => {
   });
 
   it('lists the run as label/value rows, time first', () => {
-    const card = buildShiftCardModel(ended('dead', (state) => { state.cash = 41; state.heat = 2; }))!;
+    const card = buildShiftCardModel(ended('dead', (state) => { state.cash = 41; state.heat = 45; }))!;
     expect(card.rows[0]).toEqual({ label: 'TIME', value: '1:02' });
     expect(card.rows).toContainEqual({ label: 'CASH', value: '$41' });
-    expect(card.rows).toContainEqual({ label: 'HEAT', value: '2' });
+    expect(card.rows).toContainEqual({ label: 'WANTED', value: '**' });
     expect(card.rows.find((row) => row.label === 'REACHED')?.value).toMatch(/^1\/\d+$/);
     expect(card.rows).toContainEqual({ label: 'BOUGHT', value: 'NOTHING' });
   });

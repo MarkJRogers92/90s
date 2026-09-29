@@ -13,7 +13,7 @@ export const ITEM_BLURBS: Readonly<Record<string, string>> = {
   gel_pens: 'HITS MAKE ENEMIES STICKY AND SLOW',
   wide_nozzle: 'BIGGER, SLOWER SHOTS',
   receipt_wallet: 'EVERY PURCHASE $2 CHEAPER',
-  fanny_pack: 'CARRY 2 STOLEN ITEMS, LESS HEAT',
+  fanny_pack: 'CARRY 2 STOLEN ITEMS, +1.5S ALARM',
   rc_car: 'A CAR THAT RIDES ALONG - FUSE A WEAPON TO IT',
   party_popper: 'THREE-WAY CONFETTI BURST',
   bottle_rocket_pack: 'TWO-WAY ROCKET BURST',

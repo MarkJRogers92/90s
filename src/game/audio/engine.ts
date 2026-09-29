@@ -259,13 +259,50 @@ const RECIPES: Record<AudioCue, Recipe> = {
     tones: [{ wave: 'sine', from: 300, to: 540, ms: 150, gain: 0.12 }],
     minGapMs: 200,
   },
-  confiscation: {
+  alarm: {
+    // A wailing two-tone siren, hi-lo-hi-lo over about a second.
     tones: [
-      { wave: 'sawtooth', from: 200, to: 70, ms: 400, gain: 0.26 },
-      { wave: 'square', from: 140, to: 60, ms: 300, gain: 0.14, atMs: 60 },
+      { wave: 'square', from: 880, to: 880, ms: 250, gain: 0.12 },
+      { wave: 'square', from: 640, to: 640, ms: 250, gain: 0.12, atMs: 250 },
+      { wave: 'square', from: 880, to: 880, ms: 250, gain: 0.12, atMs: 500 },
+      { wave: 'square', from: 640, to: 640, ms: 250, gain: 0.12, atMs: 750 },
     ],
-    noise: [{ ms: 260, gain: 0.12, cutoff: 700 }],
-    minGapMs: 400,
+    minGapMs: 1000,
+  },
+  shutter: {
+    // A heavy metal slam and the rattle that follows it down.
+    tones: [
+      { wave: 'sine', from: 110, to: 34, ms: 500, gain: 0.4 },
+      { wave: 'sawtooth', from: 90, to: 50, ms: 260, gain: 0.16 },
+    ],
+    noise: [
+      { ms: 40, gain: 0.24, cutoff: 6000 },
+      { ms: 420, gain: 0.26, cutoff: 3200, cutoffTo: 500, atMs: 30 },
+    ],
+    minGapMs: 500,
+  },
+  shutterLift: {
+    // The grille rattling upward: a rising chatter of noise and a groan.
+    tones: [{ wave: 'sawtooth', from: 70, to: 220, ms: 600, gain: 0.1 }],
+    noise: [{ ms: 600, gain: 0.24, cutoff: 500, cutoffTo: 4200 }],
+    minGapMs: 700,
+  },
+  wanted: {
+    // A short police-ish blip: two quick alternating notes.
+    tones: [
+      { wave: 'square', from: 1000, to: 1000, ms: 80, gain: 0.11 },
+      { wave: 'square', from: 760, to: 760, ms: 110, gain: 0.11, atMs: 90 },
+    ],
+    minGapMs: 250,
+  },
+  launder: {
+    // A cash-register ding and a clean bell: the money is nice and dry.
+    tones: [
+      { wave: 'triangle', from: 1568, to: 1568, ms: 90, gain: 0.14 },
+      { wave: 'sine', from: 2093, to: 2093, ms: 420, gain: 0.12, atMs: 80 },
+    ],
+    noise: [{ ms: 30, gain: 0.08, cutoff: 7000 }],
+    minGapMs: 300,
   },
   conduction: {
     tones: [

@@ -17,6 +17,7 @@ type RunSnapshot = {
   player: { x: number; y: number; health: number };
   enemies: Array<{ id: number; kind: string; x: number; y: number; health: number }>;
   carried: unknown[];
+  alarm: { shutter: string; ticksLeft: number } | null;
   inventory: {
     inventory: Array<{
       kind: string;
@@ -504,7 +505,7 @@ test('real keyboard purchase spends cash and records purchased provenance', asyn
   expect(errors.consoleErrors).toEqual([]);
 });
 
-test('real keyboard theft secures at the store exit and raises Heat', async ({ page }) => {
+test('real keyboard grab sounds the alarm, and running out the door secures it for a star of Heat', async ({ page }) => {
   test.setTimeout(90_000);
   const errors = collectErrors(page);
   await launchRun(page, '/?fixture=mvp-storefront&seed=0');
@@ -512,6 +513,9 @@ test('real keyboard theft secures at the store exit and raises Heat', async ({ p
   await page.keyboard.press('f');
   await expect.poll(() => runSnapshot(page).then((state) => state.carried.length)).toBe(1);
   await expect(page.locator('#mvp-run-carried')).toContainText('CARRIED');
+  const ringing = await runSnapshot(page);
+  expect(ringing.alarm).toMatchObject({ shutter: 'open' });
+  expect(ringing.enemies.some((enemy) => enemy.kind === 'shopper')).toBe(true);
 
   const heatBefore = (await runSnapshot(page)).heat;
   await page.keyboard.down('s');
@@ -521,7 +525,8 @@ test('real keyboard theft secures at the store exit and raises Heat', async ({ p
   await page.keyboard.up('s');
 
   const secured = await runSnapshot(page);
-  expect(secured.heat).toBe(heatBefore + 15);
+  expect(secured.heat).toBe(heatBefore + 20);
+  expect(secured.alarm).toBeNull();
   expect(
     secured.inventory.inventory.some((entry) => entry.acquisitionKind === 'stolen'),
   ).toBe(true);
@@ -529,6 +534,24 @@ test('real keyboard theft secures at the store exit and raises Heat', async ({ p
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
+});
+
+test('a janitor who lingers after the grab is locked in behind the shutter', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-storefront&seed=0');
+  await page.keyboard.press('f');
+  await expect.poll(() => runSnapshot(page).then((state) => state.alarm?.shutter ?? null)).toBe('open');
+  await page.waitForTimeout(1_200);
+  await page.screenshot({ path: 'artifacts/neon-overhaul/heist-alarm.png' });
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.alarm?.shutter ?? state.status), { timeout: 20_000 })
+    .toBe('closed');
+  const locked = await runSnapshot(page);
+  expect(locked.heat).toBeGreaterThanOrEqual(20);
+  expect(locked.carried).toHaveLength(1);
+  await page.screenshot({ path: 'artifacts/neon-overhaul/heist-locked.png' });
+  expect(errors.pageErrors).toEqual([]);
 });
 
 test('Continue run resumes the saved seed and boundary', async ({ page }) => {

@@ -3,6 +3,7 @@ import type { CompiledPrimary } from '../sim/items/types';
 import type { WingState } from '../sim/shop/types';
 import type { Point2D } from '../game/view/projection';
 import type { ShiftPerks } from '../sim/run/perks';
+import type { StoreAlarm } from '../sim/run/heist';
 
 export type DebugMode = 'shift' | 'lab' | 'shop' | 'bench';
 
@@ -283,6 +284,8 @@ export type MvpRunDebugSnapshot = {
   player: { x: number; y: number; health: number; dashCooldownTicks: number };
   /** The Break Room perks this shift started with. */
   perks: ShiftPerks;
+  /** The store alarm after a grab, while it runs. */
+  alarm: StoreAlarm | null;
   enemies: Array<{
     id: number;
     kind: string;
@@ -399,6 +402,7 @@ export function installMvpRunDebugBridge(
             dashCooldownTicks: state.room.combat.player.dashCooldownTicks ?? 0,
           },
           perks: { ...state.perks },
+          alarm: state.alarm ? { ...state.alarm } : null,
           enemies: state.room.combat.enemies.map((enemy) => ({
             id: enemy.id,
             kind: enemy.kind,

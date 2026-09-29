@@ -16,6 +16,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { HEAVY_HIT_DAMAGE } from '../view/combatBeats';
 import { COMBO_MILESTONE } from '../../sim/run/combo';
 import { isBossKind } from '../../sim/combat/boss';
+import { hotItemCount, wantedStars } from '../../sim/run/wanted';
 
 export type AudioCue =
   | 'swing'
@@ -46,7 +47,11 @@ export type AudioCue =
   | 'heal'
   | 'purchase'
   | 'theft'
-  | 'confiscation'
+  | 'alarm'
+  | 'shutter'
+  | 'shutterLift'
+  | 'wanted'
+  | 'launder'
   | 'conduction'
   | 'enemy_down'
   | 'boss_telegraph'
@@ -91,6 +96,11 @@ export type AudioSnapshot = {
   readonly cash: number;
   readonly carried: number;
   readonly heat: number;
+  /** The store alarm's shutter, or null while no alarm runs. */
+  readonly shutter: 'open' | 'closed' | 'lifted' | null;
+  readonly stars: number;
+  /** Stolen, unfused items held. */
+  readonly hotItems: number;
   readonly clearedRooms: number;
   readonly checkpointKey: string;
   readonly roomIndex: number;
@@ -133,6 +143,9 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     cash: state.cash,
     carried: state.carried.length,
     heat: state.heat,
+    shutter: state.alarm?.shutter ?? null,
+    stars: wantedStars(state.heat),
+    hotItems: hotItemCount(state),
     clearedRooms: state.clearedRooms.length,
     checkpointKey: state.checkpoint
       ? `${state.checkpoint.roomIndex}:${state.checkpoint.tick}`
@@ -206,9 +219,14 @@ export function deriveAudioCues(
     cues.push('conduction');
   }
 
-  if (current.carried < previous.carried && current.heat > previous.heat) {
-    cues.push('confiscation');
-  } else if (current.carried > previous.carried) {
+  // The store alarm and its shutter: wail, slam, then the guards-down lift.
+  if (previous.shutter === null && current.shutter !== null) cues.push('alarm');
+  if (previous.shutter === 'open' && current.shutter === 'closed') cues.push('shutter');
+  if (previous.shutter === 'closed' && current.shutter === 'lifted') cues.push('shutterLift');
+  if (current.stars > previous.stars) cues.push('wanted');
+  if (current.hotItems < previous.hotItems) cues.push('launder');
+
+  if (current.carried > previous.carried) {
     cues.push('theft');
   }
   if (current.cash < previous.cash) {

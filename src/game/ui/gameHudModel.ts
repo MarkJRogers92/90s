@@ -20,6 +20,7 @@ import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { COMBO_MILESTONE, COMBO_WINDOW_TICKS, comboBonusFor } from '../../sim/run/combo';
 import { blueLightOfferId } from '../../sim/run/roomEvents';
 import { alarmTicksFor } from '../../sim/run/heist';
+import { hotHeatFloor, hotItemCount, isHotNode, wantedStars } from '../../sim/run/wanted';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
@@ -27,6 +28,12 @@ import { itemBlurb } from './itemBlurbs';
 export type HeartState = 'full' | 'half' | 'empty';
 
 export type HudObjective = { readonly text: string; readonly done: boolean };
+
+export type HudAlarm = {
+  readonly secondsLeft: number;
+  readonly shutter: 'open' | 'closed' | 'lifted';
+  readonly store: string;
+};
 
 export type HudRoomCell = {
   readonly id: WingRoomId;
@@ -42,6 +49,8 @@ export type HudSlot = {
   readonly selected: boolean;
   readonly fused: boolean;
   readonly stolen: boolean;
+  /** Stolen and still unfused: +1 damage, and it keeps the janitor wanted. */
+  readonly hot: boolean;
 };
 
 export type HudWeapon = {
@@ -51,6 +60,7 @@ export type HudWeapon = {
   readonly name: string;
   readonly selected: boolean;
   readonly fused: boolean;
+  readonly hot: boolean;
 };
 
 export type HudPassive = { readonly instanceId: string; readonly itemDefinitionId: string; readonly name: string };
@@ -75,6 +85,10 @@ export type GameHudModel = {
   readonly hearts: readonly HeartState[];
   readonly cash: number;
   readonly heat: number;
+  /** Wanted stars, 0 to 5. */
+  readonly wanted: number;
+  /** The live store alarm, for the big banner. */
+  readonly alarm: HudAlarm | null;
   readonly objectives: readonly HudObjective[];
   readonly rooms: readonly HudRoomCell[];
   readonly hotbar: readonly HudSlot[];
@@ -148,7 +162,14 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     });
   } else if (room?.store) {
     const taken = room.offers.filter((offer) => (state.offerStatus[offer.id] ?? 'available') !== 'available').length;
-    objectives.push({ text: `SHOP OR SHOPLIFT  ${taken}/${room.offers.length}`, done: taken > 0 });
+    const alarm = state.alarm;
+    if (alarm?.shutter === 'open') {
+      objectives.push({ text: `GET OUT! SHUTTER IN ${(Math.ceil(alarm.ticksLeft / 6) / 10).toFixed(1)}S`, done: false });
+    } else if (alarm?.shutter === 'closed') {
+      objectives.push({ text: `LOCKED IN - TAKE DOWN SECURITY  ${living.length} LEFT`, done: false });
+    } else {
+      objectives.push({ text: `SHOP OR GRAB & RUN  ${taken}/${room.offers.length}`, done: taken > 0 });
+    }
   } else if (room?.benchKiosk) {
     objectives.push({ text: 'CHECK THE BENCH WARRANT', done: state.inventory.committedTransactions.length > 0 });
   }
@@ -156,7 +177,14 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     const worth = state.room.tokens.reduce((sum, token) => sum + token.value, 0);
     objectives.push({ text: `SWEEP UP TOKENS  $${worth}`, done: false });
   }
-  objectives.push({ text: state.heat > 0 ? `LOSE THE HEAT  ${state.heat}` : 'STAY OFF THE RADAR', done: state.heat === 0 });
+  const stars = wantedStars(state.heat);
+  objectives.push(
+    stars === 0
+      ? { text: 'STAY OFF THE RADAR', done: true }
+      : hotItemCount(state) > 0 && state.heat <= hotHeatFloor(state)
+        ? { text: 'HOT GOODS - LAUNDER AT THE BENCH', done: false }
+        : { text: `WANTED ${'*'.repeat(stars)} - CLEAR FIGHTS TO LAY LOW`, done: false },
+  );
 
   const cleared = new Set(state.clearedRooms);
   const rooms = state.wing.rooms.map((candidate, index): HudRoomCell => ({
@@ -175,6 +203,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
       selected: node.instanceId === state.inventory.selectedPrimaryInstanceId,
       fused: node.kind === 'composite',
       stolen: leaf.acquisitionKind === 'stolen',
+      hot: isHotNode(node),
     };
   });
 
@@ -182,6 +211,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     ...weapon,
     name: itemDefinitionName(weapon.itemDefinitionId).toUpperCase(),
     selected: weapon.instanceId === state.inventory.selectedPrimaryInstanceId,
+    hot: state.inventory.inventory.some((node) => node.instanceId === weapon.instanceId && isHotNode(node)),
   }));
   const equippedWeapon = weapons.find((weapon) => weapon.selected);
 
@@ -194,6 +224,8 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     hearts: heartsFor(state.room.combat.player.health, runMaxHealth(state)),
     cash: state.cash,
     heat: state.heat,
+    wanted: stars,
+    alarm: alarmFor(state),
     objectives,
     rooms,
     hotbar,
@@ -208,6 +240,16 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
       : null,
     floor: state.wing.floor === 3 ? 3 : state.wing.floor === 2 ? 2 : 1,
     enemiesLeft: living.length,
+  };
+}
+
+function alarmFor(state: MvpRunState): HudAlarm | null {
+  const alarm = state.alarm;
+  if (alarm === null) return null;
+  return {
+    secondsLeft: Math.ceil(alarm.ticksLeft / 6) / 10,
+    shutter: alarm.shutter,
+    store: (state.wing.rooms[alarm.roomIndex]?.store?.name ?? '').toUpperCase(),
   };
 }
 

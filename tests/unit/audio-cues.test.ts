@@ -101,7 +101,7 @@ describe('audio cue derivation', () => {
     expect(cuesAfter((state) => (state.cash -= 6))).toContain('purchase');
   });
 
-  it('distinguishes a theft from a confiscation', () => {
+  it('a grab is a theft, and getting it out the door is a new star, not a confiscation', () => {
     const theft = {
       itemDefinitionId: 'gel_pens',
       sourceStoreId: 'mall_mart',
@@ -110,17 +110,41 @@ describe('audio cue derivation', () => {
     };
     expect(cuesAfter((state) => state.carried.push(theft))).toContain('theft');
 
-    // Losing a carried item while Heat rises is a confiscation, not a theft.
-    // This needs two steps: carrying and then losing in one tick nets to no
-    // change at all, which is exactly what the first attempt at this test did.
+    // The shift has no confiscation any more: carried stock only ever leaves
+    // the hands by being secured at the door, which adds a wanted star. This
+    // needs two steps, since carrying and securing in one tick nets to nothing.
     const carrying = createMvpRun(9);
     carrying.carried.push(theft);
-    const confiscated = cuesBetween(carrying, (state) => {
-      state.heat += 15;
+    const secured = cuesBetween(carrying, (state) => {
+      state.heat += 20;
       state.carried = [];
     });
-    expect(confiscated).toContain('confiscation');
-    expect(confiscated).not.toContain('theft');
+    expect(secured).toContain('wanted');
+    expect(secured).not.toContain('confiscation' as never);
+    expect(secured).not.toContain('theft');
+  });
+
+  it('sounds the store alarm, the shutter slam and the lift', () => {
+    const alarm = { storeId: 'mall_mart', roomIndex: 0, ticksLeft: 300, shutter: 'open' as const };
+    expect(cuesAfter((state) => (state.alarm = { ...alarm }))).toContain('alarm');
+    const ringing = createMvpRun(9);
+    ringing.alarm = { ...alarm };
+    expect(cuesBetween(ringing, () => undefined)).toEqual([]);
+    const slammed = cuesBetween(ringing, (state) => (state.alarm = { ...alarm, ticksLeft: 0, shutter: 'closed' }));
+    expect(slammed).toContain('shutter');
+    expect(slammed).not.toContain('alarm');
+    const lifted = cuesBetween(ringing, (state) => (state.alarm = { ...alarm, ticksLeft: 0, shutter: 'lifted' }));
+    expect(lifted).toContain('shutterLift');
+    expect(lifted).not.toContain('shutter');
+  });
+
+  it('pings when the wanted level rises and chimes when a hot item is laundered', () => {
+    expect(cuesAfter((state) => (state.heat += 20))).toContain('wanted');
+    expect(cuesAfter((state) => (state.heat += 10))).not.toContain('wanted');
+    const hot = createMvpRun(9);
+    hot.inventory = { ...hot.inventory, inventory: [{ kind: 'leaf', acquisitionKind: 'stolen' } as never] };
+    expect(cuesBetween(hot, (state) => (state.inventory = { ...state.inventory, inventory: [] }))).toContain('launder');
+    expect(cuesAfter(() => undefined)).not.toContain('launder');
   });
 
   it('reports an enemy going down', () => {
