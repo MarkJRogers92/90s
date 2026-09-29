@@ -75,6 +75,11 @@ see TEST_EVIDENCE.md round 26 for the browser run.
 
 ## Needs a human playtest
 
+Switch on recording in the title screen's **Playtest stats** panel first, then
+use **Copy** after a few shifts: since round 30 the log records alarm
+outcomes (with seconds to spare), peak stars, Loss Prevention activity, store
+visits and boss-card skips, which is what the questions below need.
+
 - Grab and run:
   - Is the 4 s alarm the right length?
   - Are Hunters guarding the store door fair on Floor 1?
@@ -83,8 +88,8 @@ see TEST_EVIDENCE.md round 26 for the browser run.
     is 4 s still fair from there (the escape chevrons point the way)?
 - Loss Prevention stalker: is 150 px/s oppressive or ignorable, and is
   four stars the right threshold?
-- Boss card: is 2.6 s welcome on every retry, or should it play only on the
-  first entry?
+- Boss card: it now plays on the first entry per mall only. Is 2.6 s the
+  right length for that one showing?
 - Floor 3: Mascot Brute charge fairness and Mall Owner length (240 hp).
 - Floor 2 difficulty since round 16. The playtest log separates upstairs
   rooms and attackers.

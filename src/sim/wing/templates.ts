@@ -315,7 +315,8 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
       { itemDefinitionId: 'receipt_wallet', position: { x: 340, y: 150 }, price: 6 },
       { itemDefinitionId: 'fanny_pack', position: { x: 480, y: 150 }, price: 14 },
       { itemDefinitionId: 'rc_car', position: { x: 620, y: 150 }, price: 20 },
-      { itemDefinitionId: 'janitor_mop', position: { x: 340, y: 290 }, price: 10 },
+      // Was the janitor's own mop, which every shift already starts with (an M3 leftover).
+      { itemDefinitionId: 'bubble_bath', position: { x: 340, y: 290 }, price: 12 },
       { itemDefinitionId: 'gel_pens', position: { x: 480, y: 290 }, price: 8 },
       { itemDefinitionId: 'wide_nozzle', position: { x: 620, y: 290 }, price: 16 },
     ],

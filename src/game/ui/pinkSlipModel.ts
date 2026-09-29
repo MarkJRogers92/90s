@@ -53,6 +53,7 @@ const REASONS: Record<DamageSource, string> = {
   glob: 'SLIPPED ON AN UNREPORTED SPILL',
   slam: 'DISRESPECTING LOSS PREVENTION',
   bossShot: 'DISRESPECTING LOSS PREVENTION',
+  stalker: 'WRITTEN UP ONE TIME TOO MANY',
   other: 'GENERAL POOR ATTITUDE',
 };
 

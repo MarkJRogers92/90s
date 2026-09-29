@@ -1,5 +1,16 @@
 # Test evidence
 
+## 2026-09-29 — round 30: playtest log, boss card once, Mall Mart stock
+
+- New: `tests/unit/playtest-heist.test.ts` (6), driving the real sim tick by
+  tick through a clean getaway (seconds to spare, the visit, peak stars), a
+  lockdown fought out of, a shift ending behind the shutter, Loss Prevention
+  (arrival, shove, write-up blamed on him, pink-slip reason), boss-card
+  timings, and a summary mixing a new record with a pre-round-30 one.
+- `npx vitest run` 932 passed; build clean; browser suite 74/74.
+- Not verified in the browser: the boss card's once-per-mall rule across a
+  real retry (scene state; the key is seed, floor and room).
+
 ## 2026-09-29 — round 29: back-room props
 
 - Decoration only (no sim change). `npx vitest run` 926 passed (the asset

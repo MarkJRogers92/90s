@@ -397,6 +397,12 @@ export class MvpRunScene extends Phaser.Scene {
   private killCam: KillCam | null = null;
   /** The boss title card while it holds the fight on entering a boss room. */
   private bossIntro: BossIntro | null = null;
+  /**
+   * Boss rooms whose card has played, by mall (seed), floor and room. Kept
+   * across retries of the same mall, so the card plays on the first entry
+   * only; a new shift is a new mall and plays it again.
+   */
+  private readonly bossCardsSeen = new Set<string>();
   /** The walk out at dawn after the Mall Manager; the end card waits for it. */
   private ending: DawnEnding | null = null;
   /** The clock-in cold open over a fresh shift (it never holds the run). */
@@ -638,13 +644,20 @@ export class MvpRunScene extends Phaser.Scene {
     if (this.bossIntro || this.run.status !== 'playing') return;
     const boss = this.run.room.combat.enemies.find((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
     if (!boss || !isBossKind(boss.kind)) return;
+    const key = `${this.run.seed}:${this.run.wing.floor ?? 1}:${this.run.roomIndex}`;
+    if (this.bossCardsSeen.has(key)) return;
+    this.bossCardsSeen.add(key);
     this.bossIntro = new BossIntro(this, boss.kind, { x: boss.x, y: boss.y }, { x: 480, y: 240 });
     this.gameHud?.setHidden(true);
     this.audio?.play('stamp');
   }
 
   private endBossIntro(): void {
-    if (this.bossIntro) this.gameHud?.setHidden(false);
+    if (this.bossIntro) {
+      this.gameHud?.setHidden(false);
+      const watched = this.bossIntro.watched();
+      this.playtest.noteBossCard(this.bossIntro.kind, watched.ms, watched.skipped);
+    }
     this.bossIntro?.destroy();
     this.bossIntro = null;
     this.accumulator = 0;
