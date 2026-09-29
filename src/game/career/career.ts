@@ -108,6 +108,8 @@ export type ShiftResult = {
   readonly bestCombo: number;
   readonly seconds: number;
   readonly mall: number;
+  /** Wanted stars the shift ended with; each pays a stub. Absent means none. */
+  readonly wanted?: number;
   /** Hybrids the shift ended holding, by definition id. */
   readonly fusions?: readonly string[];
 };
@@ -122,6 +124,8 @@ export function stubsForShift(result: ShiftResult): Pay {
   if (result.floorCleared) lines.push({ label: 'FLOOR 1 CLEARED', amount: 6 });
   if (result.floorTwoCleared === true || result.won) lines.push({ label: 'FLOOR 2 CLEARED', amount: 9 });
   if (result.won) lines.push({ label: 'CLOCKED OUT', amount: 14 });
+  const wanted = Math.max(0, Math.min(5, Math.trunc(result.wanted ?? 0)));
+  if (wanted > 0) lines.push({ label: 'FIVE-FINGER BONUS', amount: wanted });
   return { total: lines.reduce((sum, line) => sum + line.amount, 0), lines };
 }
 

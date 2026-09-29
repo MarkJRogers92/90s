@@ -35,6 +35,7 @@ import {
 } from './rooms';
 import type { MvpRoomEntryFrom, MvpRunState } from './types';
 import { createRunStats } from './combo';
+import { wantedStars } from './wanted';
 import { NO_PERKS, hasPerks, sanitizePerks, type ShiftPerks } from './perks';
 
 export const MVP_CHECKPOINT_VERSION = 1;
@@ -399,6 +400,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     checkpoint.enteredFrom,
     inventory,
     checkpoint.seed,
+    wantedStars(checkpoint.heat),
   );
   combat.tick = checkpoint.tick;
   combat.player.health = checkpoint.playerHealth;
@@ -437,6 +439,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     carrier: null,
     preview: null,
     workbench: null,
+    alarm: null,
     stats: createRunStats(),
     perks: sanitizePerks(checkpoint.perks),
   };

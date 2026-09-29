@@ -9,8 +9,9 @@
  *   5. carrier update (independent seek and bump, or fused steering);
  *   6. combat tick (delegated to the shared `RunState` tick, fired from the
  *      fused carrier when the run owns one), then leash enforcement;
- *   7. store boundary evaluation (exit crossing secures carried thefts, then
- *      the security sweep updates suspicion and may confiscate);
+ *   7. store boundary evaluation (exit crossing secures carried thefts and
+ *      ends the store alarm, then the alarm counts down, drops or lifts the
+ *      shutter; see heist.ts);
  *   8. room-clear evaluation (marks the room cleared and checkpoints it);
  *   9. terminal evaluation (publishes the win or death summary).
  *
@@ -48,15 +49,15 @@ import {
 import {
   RUN_INTERACTION_RANGE,
   blockedRunReason,
-  beginRunTheft,
   buyRunOffer,
   itemDefinitionName,
   publishRunFeedback,
   runOfferPrice,
   secureRunThefts,
   storeDefinitionOf,
-  updateRunSuspicion,
 } from './economy';
+import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
+import { layLow, wantedStars } from './wanted';
 import type {
   MvpCommandResult,
   MvpInputFrame,
@@ -258,6 +259,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
     enteringFrom,
     state.inventory,
     state.seed,
+    wantedStars(state.heat),
   );
   // The wrapped room tracks the run's tick so a room boundary is exactly
   // reproducible and a restored checkpoint resumes on the same tick.
@@ -278,6 +280,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
     tokens: [],
   };
   state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
+  state.alarm = null;
   clearMvpHeldActions(state);
   // The car follows the shift through the doorway by being re-parked at the
   // destination's deterministic spot, never by carrying a position across.
@@ -330,26 +333,21 @@ function healClearedRoom(state: MvpRunState): void {
   publishRunFeedback(state, message);
 }
 
-/** Returns true when this tick's sweep confiscated carried thefts. */
-function evaluateStoreBoundary(
-  state: MvpRunState,
-  previousPosition: Vec2,
-  preserveActionFeedback: boolean,
-): boolean {
+/** Secures carried thefts at the store door, then runs the store alarm. */
+function evaluateStoreBoundary(state: MvpRunState, previousPosition: Vec2): void {
   const store: WingStoreInstance | null = currentRoom(state).store;
-  let preserve = preserveActionFeedback;
   if (store) {
     const missing = state.carried.some((theft) => theft.sourceStoreId === store.templateId);
     const player = state.room.combat.player;
     if (
       missing &&
-      crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store))
+      crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store)) &&
+      secureRunThefts(state, store, previousPosition).accepted
     ) {
-      const secured = secureRunThefts(state, store, previousPosition);
-      preserve = preserve || secured.accepted;
+      endStoreAlarm(state, store.templateId);
     }
   }
-  return updateRunSuspicion(state, preserve);
+  updateStoreAlarm(state);
 }
 
 function evaluateRoomClear(state: MvpRunState): void {
@@ -368,6 +366,9 @@ function evaluateRoomClear(state: MvpRunState): void {
     // per fight.
     if (currentRoom(state).enemySpawns.length > 0) {
       healClearedRoom(state);
+      // Laying low: a fight cleared is Heat shed, down to the hot-goods floor.
+      const shed = layLow(state);
+      if (shed > 0) publishRunFeedback(state, `Laying low: -${shed} Heat.`);
     }
     if (state.room.roomId !== 'security_office') {
       state.checkpoint = { roomIndex: state.roomIndex, tick: state.tick };
@@ -487,7 +488,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   } else if (stealPressed) {
     const offer = nearestRunOffer(state);
     if (offer) {
-      const theft = beginRunTheft(state, offer.id);
+      const theft = stealRunOffer(state, offer.id);
       preserveActionFeedback = !theft.accepted;
       if (!theft.accepted) {
         publishRunFeedback(state, theft.reason);
@@ -553,14 +554,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   collectTokens(state);
 
   // 7. Store boundary evaluation.
-  const confiscated = evaluateStoreBoundary(state, previousPosition, preserveActionFeedback);
-  if (confiscated) {
-    // A confiscation teleports the player to the store entrance. Every player
-    // teleport has to re-park the car, exactly as a doorway does: otherwise the
-    // next tick's leash correction is one large unswept step that can cross a
-    // wall instead of sliding along it.
-    parkRunCarrier(state);
-  }
+  evaluateStoreBoundary(state, previousPosition);
 
   // 8. Room-clear evaluation.
   evaluateRoomClear(state);

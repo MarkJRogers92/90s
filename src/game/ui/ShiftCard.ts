@@ -7,6 +7,7 @@
  * slides in. It draws `buildShiftCardModel` and nothing else; the DOM summary
  * stays in the page (off-screen) for assistive tech and the browser tests.
  */
+import { wantedStars } from '../../sim/run/wanted';
 import { floorOf } from '../../sim/run/floors';
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
@@ -145,6 +146,7 @@ export class ShiftCard {
       bestCombo: state.stats.bestCombo,
       seconds: model.seconds,
       mall: this.lastMallSeed,
+      wanted: wantedStars(state.heat),
       fusions: state.inventory.inventory
         .filter((node) => node.kind === 'composite' && node.recipeId === 'hybrid')
         .map(nodeDefinitionId),

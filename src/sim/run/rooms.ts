@@ -17,13 +17,10 @@ import {
 } from '../combat/boss';
 import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH, circleIntersectsRect } from '../core/geometry';
 import { createEnemyStatusState } from '../effects/statuses';
-import { projectFusionInventory } from '../fusion/inventory';
 import type { FusionInventoryState } from '../fusion/types';
-import { catalogFor } from '../items/registry';
-import { compileLoadout } from '../items/compileLoadout';
 import type { EnemyState, RunState } from '../model';
 import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
-import { runCompilerInstances } from './loadout';
+import { compileRunLoadout } from './loadout';
 import type { MvpRoomEntryFrom } from './types';
 import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
 import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
@@ -81,6 +78,39 @@ function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemySta
   };
 }
 
+/** A Mannequin standing in its pose, as the rooms and store security place them. */
+function spawnMannequin(id: number, x: number, y: number): EnemyState {
+  return {
+    id,
+    kind: 'mannequin',
+    x,
+    y,
+    health: MANNEQUIN_HEALTH,
+    radius: MANNEQUIN_RADIUS,
+    phase: 'recover',
+    phaseTicks: 0,
+    cooldownTicks: 0,
+    telegraphAimX: 0,
+    telegraphAimY: 0,
+    statuses: createEnemyStatusState(),
+  };
+}
+
+/** What mall security sends: display Mannequins and rabid Bargain Hunters. */
+export type SecurityKind = 'mannequin' | 'shopper';
+
+/**
+ * One security guard. A Bargain Hunter waits `beatTicks` before its first
+ * wind-up, so a guard that appears next to the janitor can still be read.
+ */
+export function spawnSecurityGuard(kind: SecurityKind, id: number, x: number, y: number, beatTicks = 50): EnemyState {
+  if (kind === 'mannequin') return spawnMannequin(id, x, y);
+  return { ...spawnEnemy({ slotId: `security-${id}`, kind: 'shopper', x, y }, id, false), phaseTicks: beatTicks };
+}
+
+/** The security a wanted janitor meets in a fight, by star: dummies, then hunters. */
+export const WANTED_SECURITY: readonly SecurityKind[] = ['mannequin', 'shopper', 'mannequin', 'shopper'];
+
 function spawnBoss(id: number, x: number, y: number, kind: BossKind = 'lp_manager'): EnemyState {
   const config = BOSS_CONFIGS[kind];
   return {
@@ -135,8 +165,9 @@ function displayMannequinSpots(
   seed: number,
   roomIndex: number,
   enemies: readonly EnemyState[],
+  count = mannequinCount(room, seed, roomIndex),
+  key = 'mannequin-spot',
 ): Array<{ x: number; y: number }> {
-  const count = mannequinCount(room, seed, roomIndex);
   if (count === 0) return [];
   const entries = [room.playerEntry, { x: PLAYFIELD_WIDTH - room.playerEntry.x, y: room.playerEntry.y }];
   const candidates: Array<{ x: number; y: number; key: number }> = [];
@@ -147,7 +178,7 @@ function displayMannequinSpots(
       if (room.walls.some((wall) => circleIntersectsRect(x, y, MANNEQUIN_RADIUS + 8, wall))) continue;
       if (entries.some((entry) => Math.hypot(entry.x - x, entry.y - y) < 230)) continue;
       if (enemies.some((enemy) => Math.hypot(enemy.x - x, enemy.y - y) < 80)) continue;
-      candidates.push({ x, y, key: luck(seed, 'mannequin-spot', roomIndex, index) });
+      candidates.push({ x, y, key: luck(seed, key, roomIndex, index) });
     }
   }
   candidates.sort((a, b) => a.key - b.key);
@@ -174,18 +205,16 @@ export function buildRoomCombatState(
   enteringFrom: MvpRoomEntryFrom,
   inventory: FusionInventoryState,
   seed: number,
+  /** The janitor's wanted stars: each adds a security guard to a fight. */
+  wanted = 0,
 ): RunState {
   const room = wing.rooms[roomIndex];
   if (!room) {
     throw new Error(`The M5 wing has no room at index ${String(roomIndex)}.`);
   }
 
-  const projected = projectFusionInventory(inventory);
-  const compiledLoadout = compileLoadout(
-    catalogFor(projected.instances),
-    runCompilerInstances(projected.instances, projected.selectedPrimaryInstanceId),
-    projected.selectedPrimaryInstanceId,
-  );
+  const projected = compileRunLoadout(inventory);
+  const compiledLoadout = projected.compiledLoadout;
 
   const enemies = room.enemySpawns.map((spawn, index) =>
     spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE),
@@ -195,19 +224,16 @@ export function buildRoomCombatState(
     enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, wing.floor === 3 ? 'owner' : wing.floor === 2 ? 'manager' : 'lp_manager'));
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
-    enemies.push({
-      id: enemies.length + 1,
-      kind: 'mannequin',
-      x: spot.x,
-      y: spot.y,
-      health: MANNEQUIN_HEALTH,
-      radius: MANNEQUIN_RADIUS,
-      phase: 'recover',
-      phaseTicks: 0,
-      cooldownTicks: 0,
-      telegraphAimX: 0,
-      telegraphAimY: 0,
-      statuses: createEnemyStatusState(),
+    enemies.push(spawnMannequin(enemies.length + 1, spot.x, spot.y));
+  }
+  // A wanted janitor brings mall security into every fight; safe rooms stay safe.
+  const security = room.enemySpawns.length > 0 || room.bossAnchor !== null
+    ? WANTED_SECURITY.slice(0, Math.max(0, Math.min(WANTED_SECURITY.length, wanted)))
+    : [];
+  if (security.length > 0) {
+    const spots = displayMannequinSpots(room, seed, roomIndex, enemies, security.length, 'security-spot');
+    spots.forEach((spot, index) => {
+      enemies.push(spawnSecurityGuard(security[index]!, enemies.length + 1, spot.x, spot.y, 70));
     });
   }
 

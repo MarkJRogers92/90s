@@ -1,18 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { securityFacingAtTick } from '../../src/sim/shop/security';
-import {
-  CONFISCATION_HEAT,
-  MAX_SECURITY_HEAT,
-  MAX_SUSPICION,
-  SECURED_THEFT_HEAT,
-  WING_INTERACTION_RANGE,
-} from '../../src/sim/shop/types';
+import { MAX_SECURITY_HEAT, WING_INTERACTION_RANGE } from '../../src/sim/shop/types';
+import { HEAT_PER_STAR } from '../../src/sim/run/wanted';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import {
-  RUN_CONFISCATION_HEAT,
   RUN_INTERACTION_RANGE,
   RUN_MAX_SECURITY_HEAT,
-  RUN_MAX_SUSPICION,
   RUN_SECURED_THEFT_HEAT,
   beginRunTheft,
   buyRunOffer,
@@ -21,7 +13,6 @@ import {
   runOfferPrice,
   runPurchaseDiscount,
   secureRunThefts,
-  updateRunSuspicion,
 } from '../../src/sim/run/economy';
 import { commitRunEmitterMount } from '../../src/sim/run/bench';
 import { refreshRunLoadout } from '../../src/sim/run/loadout';
@@ -116,10 +107,8 @@ function walkPastStoreExit(state: MvpRunState): void {
 }
 
 describe('authored run constants', () => {
-  it('mirrors the M3 shopping constants so the run cannot drift', () => {
-    expect(RUN_SECURED_THEFT_HEAT).toBe(SECURED_THEFT_HEAT);
-    expect(RUN_CONFISCATION_HEAT).toBe(CONFISCATION_HEAT);
-    expect(RUN_MAX_SUSPICION).toBe(MAX_SUSPICION);
+  it('mirrors the M3 Heat cap and reach; one secured theft is one wanted star', () => {
+    expect(RUN_SECURED_THEFT_HEAT).toBe(HEAT_PER_STAR);
     expect(RUN_MAX_SECURITY_HEAT).toBe(MAX_SECURITY_HEAT);
     expect(RUN_INTERACTION_RANGE).toBe(WING_INTERACTION_RANGE);
   });
@@ -243,7 +232,7 @@ describe('theft rules', () => {
 
     expect(state.carried).toEqual([]);
     expect(state.offerStatus[offer.id]).toBe('consumed');
-    expect(state.heat).toBe(SECURED_THEFT_HEAT);
+    expect(state.heat).toBe(RUN_SECURED_THEFT_HEAT);
     expect(state.inventory.revision).toBe(revisionBefore + 1);
     const stolen = state.inventory.inventory.find(
       (node) => node.kind === 'leaf' && node.acquisitionKind === 'stolen',
@@ -258,7 +247,7 @@ describe('theft rules', () => {
     expect(stolen && stolen.kind === 'leaf' ? stolen.sourceStockId : null).toBe(offer.id);
   });
 
-  it('reduces secured-theft Heat by five with the smuggle_pouch capability', () => {
+  it('secures both of the smuggle_pouch\'s thefts at once, a star each', () => {
     const state = createMvpRun(9);
     enterStorefront(state);
     grantItem(state, 'fanny_pack');
@@ -273,50 +262,11 @@ describe('theft rules', () => {
     walkPastStoreExit(state);
 
     expect(state.carried).toEqual([]);
-    expect(state.heat).toBe(2 * (SECURED_THEFT_HEAT - 5));
+    expect(state.heat).toBe(2 * RUN_SECURED_THEFT_HEAT);
     const stolen = state.inventory.inventory.filter(
       (node) => node.kind === 'leaf' && node.acquisitionKind === 'stolen',
     );
     expect(stolen).toHaveLength(2);
-  });
-
-  it('confiscates carried theft when the sweep reaches full suspicion', () => {
-    const state = createMvpRun(9);
-    enterStorefront(state);
-    const store = currentStore(state);
-    const offer = state.wing.rooms[1]!.offers[0]!;
-    expect(beginRunTheft(state, offer.id).accepted).toBe(true);
-
-    const facing = securityFacingAtTick(store.sightZone, state.tick + 1);
-    state.room.combat.player.x = store.sightZone.origin.x + Math.cos(facing) * 60;
-    state.room.combat.player.y = store.sightZone.origin.y + Math.sin(facing) * 60;
-    state.suspicion = MAX_SUSPICION - 0.25;
-
-    advance(state, 1);
-
-    expect(state.carried).toEqual([]);
-    expect(state.offerStatus[offer.id]).toBe('available');
-    expect(state.suspicion).toBe(0);
-    expect(state.heat).toBe(CONFISCATION_HEAT);
-    expect(state.room.combat.player.x).toBeCloseTo(store.resetPoint.x, 10);
-    expect(state.room.combat.player.y).toBeCloseTo(store.resetPoint.y, 10);
-  });
-
-  it('raises suspicion while a store sweep sees a carried theft', () => {
-    const state = createMvpRun(9);
-    enterStorefront(state);
-    const store = currentStore(state);
-    const offer = state.wing.rooms[1]!.offers[0]!;
-    expect(beginRunTheft(state, offer.id).accepted).toBe(true);
-
-    const facing = securityFacingAtTick(store.sightZone, state.tick);
-    state.room.combat.player.x = store.sightZone.origin.x + Math.cos(facing) * 60;
-    state.room.combat.player.y = store.sightZone.origin.y + Math.sin(facing) * 60;
-
-    updateRunSuspicion(state);
-
-    expect(state.suspicion).toBeGreaterThan(0);
-    expect(state.carried).toHaveLength(1);
   });
 
   it('refuses to bank a carried theft from inside its source store', () => {
@@ -344,40 +294,6 @@ describe('theft rules', () => {
     ).toBe(false);
   });
 
-  it('keeps sweeping a theft carried into another room so it can still be confiscated', () => {
-    const state = createMvpRun(9);
-    enterStorefront(state);
-    const sourceStore = currentStore(state);
-    const offer = state.wing.rooms[1]!.offers[0]!;
-    expect(beginRunTheft(state, offer.id).accepted).toBe(true);
-
-    walkEastTo(state, 'storefront_b');
-    expect(state.room.roomId).toBe('storefront_b');
-    expect(currentStore(state).templateId).not.toBe(sourceStore.templateId);
-
-    // Hidden from the source store's sweep, suspicion falls instead of freezing.
-    state.room.combat.player.x = 110;
-    state.room.combat.player.y = 240;
-    state.suspicion = 4;
-    advance(state, 1);
-    expect(state.suspicion).toBeLessThan(4);
-    expect(state.carried).toHaveLength(1);
-
-    // Seen by the source store's sweep, full suspicion still confiscates.
-    const facing = securityFacingAtTick(sourceStore.sightZone, state.tick + 1);
-    state.room.combat.player.x = sourceStore.sightZone.origin.x + Math.cos(facing) * 60;
-    state.room.combat.player.y = sourceStore.sightZone.origin.y + Math.sin(facing) * 60;
-    state.suspicion = MAX_SUSPICION - 0.25;
-
-    advance(state, 1);
-
-    expect(state.carried).toEqual([]);
-    expect(state.offerStatus[offer.id]).toBe('available');
-    expect(state.suspicion).toBe(0);
-    expect(state.heat).toBe(CONFISCATION_HEAT);
-    expect(state.room.combat.player.x).toBeCloseTo(sourceStore.resetPoint.x, 10);
-    expect(state.room.combat.player.y).toBeCloseTo(sourceStore.resetPoint.y, 10);
-  });
 });
 
 describe('run cash invariants', () => {
@@ -395,14 +311,6 @@ describe('run cash invariants', () => {
     expect(state.carried).toEqual([]);
     expect(state.inventory.cash).toBe(state.cash);
 
-    expect(beginRunTheft(state, offers[2]!.id).accepted).toBe(true);
-    const facing = securityFacingAtTick(store.sightZone, state.tick + 1);
-    state.room.combat.player.x = store.sightZone.origin.x + Math.cos(facing) * 60;
-    state.room.combat.player.y = store.sightZone.origin.y + Math.sin(facing) * 60;
-    state.suspicion = MAX_SUSPICION - 0.25;
-    advance(state, 1);
-    expect(state.carried).toEqual([]);
-    expect(state.inventory.cash).toBe(state.cash);
 
     grantItem(state, 'party_popper');
     grantItem(state, 'rc_car');

@@ -11,8 +11,6 @@ import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import type { MvpRunState } from '../../sim/run/types';
 import type { WingRoomId } from '../../sim/wing/types';
 import {
-  RUN_SECURED_THEFT_HEAT,
-  RUN_SMUGGLE_POUCH_HEAT_REDUCTION,
   itemDefinitionName,
   runCarryLimit,
   runOfferPrice,
@@ -21,6 +19,7 @@ import {
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { COMBO_MILESTONE, COMBO_WINDOW_TICKS, comboBonusFor } from '../../sim/run/combo';
 import { blueLightOfferId } from '../../sim/run/roomEvents';
+import { alarmTicksFor } from '../../sim/run/heist';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
@@ -232,14 +231,14 @@ function promptFor(state: MvpRunState): HudPrompt {
       const price = runOfferPrice(state, offer);
       const short = price - state.cash;
       const handsFull = state.carried.length >= runCarryLimit(state);
-      const stealHeat = Math.max(0, RUN_SECURED_THEFT_HEAT - (runOwnsCapability(state, 'smuggle_pouch') ? RUN_SMUGGLE_POUCH_HEAT_REDUCTION : 0));
+      const alarm = state.alarm !== null ? 'ALARM IS ALREADY RINGING' : `ALARM: ${Math.round(alarmTicksFor(state) / 60)}S TO THE DOOR`;
       const note = short > 0
-        ? `NEED $${short} MORE - OR STEAL IT (+${stealHeat} HEAT)`
+        ? `NEED $${short} MORE - OR GRAB & RUN (${alarm})`
         : handsFull
           ? 'HANDS FULL - CARRY YOUR LOOT OUT FIRST'
           : blueLightOfferId(state) === offer.id
-            ? `BLUE LIGHT SPECIAL: HALF PRICE - OR STEAL (+${stealHeat} HEAT)`
-            : `STEAL: FREE, +${stealHeat} HEAT AT THE EXIT`;
+            ? `BLUE LIGHT SPECIAL: HALF PRICE - OR GRAB & RUN`
+            : `GRAB & RUN: FREE, +1 STAR - ${alarm}`;
       return {
         subject,
         keys: [{ key: 'E', action: 'BUY', disabled: short > 0 }, { key: 'F', action: 'STEAL', disabled: handsFull }],

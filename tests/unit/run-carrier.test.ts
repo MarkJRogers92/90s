@@ -432,41 +432,6 @@ describe('recall and room changes', () => {
     expect(distance).toBeLessThanOrEqual(CAR_LEASH);
   });
 
-  it('re-parks the car when a security confiscation teleports the player', () => {
-    const state = createMvpRun(9);
-    grantItem(state, 'rc_car');
-    advance(state, 1);
-
-    const doorway = state.wing.rooms[0]!.doorways.find((entry) => entry.side === 'east')!;
-    state.room.combat.player.x = doorway.rect.x + doorway.rect.width / 2;
-    state.room.combat.player.y = doorway.rect.y + doorway.rect.height / 2;
-    expect(enterDoorway(state, 'east').accepted).toBe(true);
-
-    const room = state.wing.rooms[state.roomIndex]!;
-    const store = room.store!;
-    expect(beginRunTheft(state, room.offers[0]!.id).accepted).toBe(true);
-    const facing = securityFacingAtTick(store.sightZone, state.tick + 1);
-    state.room.combat.player.x = store.sightZone.origin.x + Math.cos(facing) * 60;
-    state.room.combat.player.y = store.sightZone.origin.y + Math.sin(facing) * 60;
-    state.suspicion = MAX_SUSPICION - 0.25;
-
-    advance(state, 1);
-
-    // Confiscation fired: the theft is gone and the player was teleported to
-    // the store entrance.
-    expect(state.carried).toEqual([]);
-    // The car must be parked where the player now stands. Leaving it behind made
-    // the next tick's leash correction one large unswept jump through geometry.
-    expect(state.carrier).not.toBeNull();
-    const expected = findCarrierSpawn(
-      state.room.combat.player,
-      state.room.combat.player.radius,
-      state.room.combat.walls,
-    );
-    expect(state.carrier!.x).toBeCloseTo(expected.x, 6);
-    expect(state.carrier!.y).toBeCloseTo(expected.y, 6);
-  });
-
   it('drops the car when the inventory no longer carries one', () => {
     const state = createMvpRun(7);
     grantItem(state, 'rc_car');

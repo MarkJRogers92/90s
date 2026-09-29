@@ -13,6 +13,7 @@ import { syncRunCarrier } from './carrier';
 import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
 import { createRunStats, type RunStats } from './combo';
+import { wantedStars } from './wanted';
 import { LOCKER_INSTANCE_ID, LOCKER_SOURCE_LOCATION, runMaxHealth, sanitizePerks, type ShiftPerks } from './perks';
 import { refreshRunLoadout } from './loadout';
 
@@ -25,6 +26,8 @@ export type FloorCarry = {
   readonly inventory: FusionInventoryState;
   readonly cash: number;
   readonly stats: RunStats;
+  /** The wanted level follows the janitor up the escalator. Absent means none. */
+  readonly heat?: number;
 };
 
 export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
@@ -68,7 +71,8 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
     committedTransactions: [],
   };
 
-  const combat = buildRoomCombatState(wing, 0, 'west', inventory, runSeed);
+  const heat = options.carry?.heat ?? 0;
+  const combat = buildRoomCombatState(wing, 0, 'west', inventory, runSeed, wantedStars(heat));
 
   const offerStatus: Record<string, ShopOfferRuntimeStatus> = {};
   for (const room of wing.rooms) {
@@ -97,7 +101,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
     clearedRooms: [],
     inventory,
     cash,
-    heat: 0,
+    heat,
     suspicion: 0,
     carried: [],
     offerStatus,
@@ -111,6 +115,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
     carrier: null,
     preview: null,
     workbench: null,
+    alarm: null,
     stats: options.carry ? { ...options.carry.stats, combo: 0, lastHitTick: -Infinity } : createRunStats(),
     perks,
   };

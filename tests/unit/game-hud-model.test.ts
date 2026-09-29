@@ -63,7 +63,7 @@ describe('store offer prompt', () => {
     expect(prompt.detail?.itemDefinitionId).toBe(offer.itemDefinitionId);
     expect(prompt.detail?.blurb.length).toBeGreaterThan(0);
     expect(['WEAPON', 'PASSIVE']).toContain(prompt.detail?.kind);
-    expect(prompt.detail?.note).toMatch(/HEAT/);
+    expect(prompt.detail?.note).toMatch(/GRAB & RUN: FREE, \+1 STAR - ALARM: 4S TO THE DOOR/);
     expect(prompt.detail?.canBuy).toBe(true);
   });
 
