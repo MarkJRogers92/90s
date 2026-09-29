@@ -27,7 +27,7 @@ export type FloorCarry = {
   readonly stats: RunStats;
 };
 
-export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
+export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
   // The wing RNG requires an integer, so a non-integer finite seed is
   // truncated and anything else becomes 0, exactly as the title screen already
   // sanitizes the URL seed.
@@ -104,7 +104,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2; re
     checkpoint: { roomIndex: 0, tick: 0 },
     summary: null,
     heldActions: { interact: false, steal: false, recall: false },
-    recentChange: floor === 2
+    recentChange: floor >= 2
       ? `Up the escalator: the ${startRoom.name}, with $${cash}.`
       : `Night shift begins in the ${startRoom.name} with $${cash}.`,
     behaviorTrace: [],

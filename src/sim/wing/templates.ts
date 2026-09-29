@@ -93,6 +93,16 @@ export const FLOOR_TWO_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
   security_office: 'Management Suite',
 };
 
+/** The top floor: a closed food court, arcade and service areas after hours. */
+export const FLOOR_THREE_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
+  service_corridor: 'Food Court Seating',
+  storefront_a: 'Pizza Counter',
+  food_court: 'Arcade',
+  storefront_b: 'Kitchen Back',
+  back_hall: 'Loading Dock',
+  security_office: "The Owner's Suite",
+};
+
 export const ROOM_VARIANTS: Readonly<
   Record<CombatRoomRole, readonly [AuthoredRoomVariant, AuthoredRoomVariant]>
 > = {

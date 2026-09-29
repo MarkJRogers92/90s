@@ -1,3 +1,4 @@
+import { vulnerableDamage } from '../combat/mascot';
 import type {
   AttackDelivery,
   CompiledPrimary,
@@ -143,7 +144,7 @@ function resolveDirectHit(
   descriptor: AttackDescriptor,
   statusEffects: readonly StatusModifierEffect[],
 ): void {
-  target.health -= descriptor.damage;
+  target.health -= vulnerableDamage(target, descriptor.damage);
   knockBack(state, target);
   applyWet(target, DIRECT_HIT_WET_TICKS);
   applyStatusModifierEffects(target, statusEffects);

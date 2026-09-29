@@ -35,6 +35,8 @@ export const MALL_TOKEN_VALUE: Readonly<Record<EnemyKind, number>> = {
   manager: 0,
   static: 2,
   shopper: 3,
+  mascot: 5,
+  owner: 0,
 };
 
 /** The janitor sweeps up anything within this distance of their feet. */

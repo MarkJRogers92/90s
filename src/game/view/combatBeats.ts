@@ -15,14 +15,26 @@ import {
   BOSS_SLAM_RECOVER_TICKS_PHASE3,
   BOSS_VOLLEY_TELEGRAPH_TICKS,
   bossConfigFor,
+  bossPhaseForHealth,
   isBossKind,
 } from '../../sim/combat/boss';
 import { SPITTER_RECOVER_TICKS, SPITTER_TELEGRAPH_TICKS } from '../../sim/combat/enemies';
 import { STATIC_BURST_RADIUS, STATIC_TELEGRAPH_TICKS } from '../../sim/combat/staticEnemy';
 import { SHOPPER_CHARGE_TICKS, SHOPPER_TELEGRAPH_TICKS } from '../../sim/combat/shopper';
+import { MASCOT_CHARGE_SPEED_PER_TICK, MASCOT_CHARGE_TICKS, MASCOT_TELEGRAPH_TICKS } from '../../sim/combat/mascot';
 
 /** How far a Bargain Hunter's charge carries: the lane the renderer draws. */
 const SHOPPER_CHARGE_REACH = SHOPPER_CHARGE_TICKS * 9;
+
+/** How far a Mascot Brute's charge carries. */
+const MASCOT_CHARGE_REACH = MASCOT_CHARGE_TICKS * MASCOT_CHARGE_SPEED_PER_TICK;
+
+/** True while the Mall Owner's next attack is its charge rather than a slam. */
+export function ownerChargePending(enemy: Pick<EnemyState, 'kind' | 'health' | 'bossAttacks'>): boolean {
+  if (enemy.kind !== 'owner') return false;
+  const config = bossConfigFor(enemy.kind);
+  return config.charge !== undefined && bossPhaseForHealth(enemy.health, config.maxHealth) >= 2 && (enemy.bossAttacks ?? 0) % 2 === 1;
+}
 
 /**
  * A blow this big gets the heavy treatment (bigger star, number, shake, hit
@@ -63,7 +75,9 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
   if (isBossKind(enemy.kind)) {
     const config = bossConfigFor(enemy.kind);
     const windups: Windup[] = [];
-    if (enemy.phase === 'telegraph') {
+    if (enemy.phase === 'telegraph' && ownerChargePending(enemy) && config.charge) {
+      windups.push({ kind: 'charge', progress: clamp01(1 - enemy.phaseTicks / config.slamTelegraphTicks), reach: config.charge.ticks * config.charge.speedPerTick, ...aim });
+    } else if (enemy.phase === 'telegraph') {
       windups.push({ kind: 'slam', progress: clamp01(1 - enemy.phaseTicks / config.slamTelegraphTicks), reach: config.slamReach, ...aim });
     }
     const volley = enemy.bossVolleyTelegraphTicks ?? 0;
@@ -81,6 +95,11 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
     // The crackling spot it will blink onto: the janitor's position when it locked on.
     return enemy.phase === 'telegraph'
       ? [{ kind: 'blink', progress: clamp01(1 - enemy.phaseTicks / STATIC_TELEGRAPH_TICKS), aimX: 0, aimY: 0, targetX: enemy.blinkX ?? enemy.x, targetY: enemy.blinkY ?? enemy.y, reach: STATIC_BURST_RADIUS }]
+      : [];
+  }
+  if (enemy.kind === 'mascot') {
+    return enemy.phase === 'telegraph'
+      ? [{ kind: 'charge', progress: clamp01(1 - enemy.phaseTicks / MASCOT_TELEGRAPH_TICKS), reach: MASCOT_CHARGE_REACH, ...aim }]
       : [];
   }
   if (enemy.kind === 'shopper') {
@@ -119,7 +138,8 @@ export function diffEnemyAttacks(previous: ReadonlyMap<string, TrackedAttack>, c
     const at = { id, x: enemy.x, y: enemy.y, aimX: enemy.telegraphAimX, aimY: enemy.telegraphAimY };
     if (before.phase === 'telegraph' && enemy.phase !== 'telegraph') {
       if (enemy.kind === 'spitter') landed.push({ kind: 'spit', ...at });
-      if (isBossKind(enemy.kind)) landed.push({ kind: 'slam', ...at });
+      // The Owner's charge is not a slam: it goes off as it hits the wall.
+      if (isBossKind(enemy.kind) && !((enemy.chargeTicks ?? 0) > 0)) landed.push({ kind: 'slam', ...at });
     }
     if (isBossKind(enemy.kind) && (before.volley ?? 0) > 0 && (enemy.bossVolleyTelegraphTicks ?? 0) === 0) {
       landed.push({ kind: 'volley', ...at });

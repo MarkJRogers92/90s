@@ -43,7 +43,7 @@ export const VOLLEY_ANGLE_OFFSETS_DEGREES = [-30, -15, 0, 15, 30] as const;
  * the Mall Manager on the upper floor is tougher, reaches further, volleys
  * wider from its first phase, and calls in Bargain Hunters instead of Hangers.
  */
-export type BossKind = 'lp_manager' | 'manager';
+export type BossKind = 'lp_manager' | 'manager' | 'owner';
 
 export type BossConfig = {
   readonly maxHealth: number;
@@ -61,6 +61,20 @@ export type BossConfig = {
   readonly summonKind: EnemyKind;
   readonly summonHealth: number;
   readonly summonRadius: number;
+  /**
+   * The Mall Owner's room-shaking charge: from phase two, every other attack
+   * is a straight-line charge instead of a slam. A wall stuns it (open to bonus
+   * damage) and throws a ring of trays.
+   */
+  readonly charge?: {
+    readonly speedPerTick: number;
+    readonly ticks: number;
+    readonly damage: number;
+    readonly stunTicks: number;
+    readonly shockwaveTrays: number;
+  };
+  /** How many summons a phase-two call brings (0 or absent: none). */
+  readonly summonCountPhase2?: number;
 };
 
 export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
@@ -96,10 +110,29 @@ export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
     summonHealth: 18,
     summonRadius: 16,
   },
+  owner: {
+    maxHealth: 240,
+    radius: 28,
+    pursueSpeedPerTick: 0.95,
+    slamTelegraphTicks: 36,
+    slamReach: 72,
+    slamDamage: 2,
+    slamRecoverTicks: 84,
+    slamRecoverTicksPhase3: 56,
+    // Food trays: a wide fan of plates and cups.
+    volleyAngles: [-40, -20, 0, 20, 40],
+    volleySpeedPerTick: 2.7,
+    volleyCadence: [170, 125, 95],
+    summonKind: 'mascot',
+    summonHealth: 34,
+    summonRadius: 18,
+    summonCountPhase2: 1,
+    charge: { speedPerTick: 9.5, ticks: 36, damage: 2, stunTicks: 100, shockwaveTrays: 10 },
+  },
 };
 
 export function isBossKind(kind: EnemyKind): kind is BossKind {
-  return kind === 'lp_manager' || kind === 'manager';
+  return kind === 'lp_manager' || kind === 'manager' || kind === 'owner';
 }
 
 export function isBoss(enemy: Pick<EnemyState, 'kind'>): boolean {
@@ -107,7 +140,7 @@ export function isBoss(enemy: Pick<EnemyState, 'kind'>): boolean {
 }
 
 export function bossConfigFor(kind: EnemyKind): BossConfig {
-  return kind === 'manager' ? BOSS_CONFIGS.manager : BOSS_CONFIGS.lp_manager;
+  return kind === 'owner' ? BOSS_CONFIGS.owner : kind === 'manager' ? BOSS_CONFIGS.manager : BOSS_CONFIGS.lp_manager;
 }
 
 /**
@@ -220,14 +253,14 @@ function placeSummon(
   return occupiedFallback ?? clampSummon(bossX + offsetX, bossY + offsetY);
 }
 
-function summonPhaseThreeHangers(state: RunState, enemyIndex: number): void {
+function summonPhaseThreeHangers(state: RunState, enemyIndex: number, count: number = BOSS_SUMMON_OFFSETS.length): void {
   const boss = state.enemies[enemyIndex];
   if (!boss) {
     return;
   }
   const config = bossConfigFor(boss.kind);
   const placed: { x: number; y: number }[] = [];
-  for (const offset of BOSS_SUMMON_OFFSETS) {
+  for (const offset of BOSS_SUMMON_OFFSETS.slice(0, count)) {
     const position = placeSummon(state, boss.x, boss.y, offset.x, offset.y, placed);
     placed.push(position);
     state.enemies.push({
@@ -237,15 +270,16 @@ function summonPhaseThreeHangers(state: RunState, enemyIndex: number): void {
       y: position.y,
       health: config.summonHealth,
       radius: config.summonRadius,
-      phase: 'pursue',
-      phaseTicks: 0,
+      // A called-in brute needs a beat before its first charge.
+      phase: config.summonKind === 'mascot' ? 'recover' : 'pursue',
+      phaseTicks: config.summonKind === 'mascot' ? 50 : 0,
       cooldownTicks: 0,
       telegraphAimX: 0,
       telegraphAimY: 0,
     });
     state.nextEntityId += 1;
   }
-  boss.bossSummoned = true;
+  if (count === BOSS_SUMMON_OFFSETS.length) boss.bossSummoned = true;
 }
 
 function spawnVolley(state: RunState, enemyIndex: number): void {
@@ -280,6 +314,66 @@ function spawnVolley(state: RunState, enemyIndex: number): void {
 }
 
 /**
+ * The Owner's charge and the stun that follows a wall. Returns true while it
+ * owns the tick (charging or dazed), so the rest of the boss stage waits.
+ */
+function updateOwnerCharge(
+  state: RunState,
+  boss: EnemyState,
+  charge: NonNullable<BossConfig['charge']>,
+): boolean {
+  if ((boss.stunnedTicks ?? 0) > 0) {
+    boss.stunnedTicks = (boss.stunnedTicks ?? 0) - 1;
+    boss.bossVolleyTelegraphTicks = 0;
+    if (boss.stunnedTicks === 0) {
+      boss.phase = 'recover';
+      boss.phaseTicks = 30;
+    }
+    return true;
+  }
+  if ((boss.chargeTicks ?? 0) <= 0) {
+    return false;
+  }
+  const before = { x: boss.x, y: boss.y };
+  const next = moveCircle(boss, boss.radius, boss.telegraphAimX * charge.speedPerTick, boss.telegraphAimY * charge.speedPerTick, state.walls);
+  boss.x = next.x;
+  boss.y = next.y;
+  boss.chargeTicks = (boss.chargeTicks ?? 0) - 1;
+  boss.bossVolleyTelegraphTicks = 0;
+  const touching = Math.hypot(state.player.x - boss.x, state.player.y - boss.y) <= boss.radius + state.player.radius;
+  if (touching && state.player.invulnerableTicks <= 0 && !playerDashing(state)) {
+    state.player.health -= charge.damage;
+    state.player.invulnerableTicks = PLAYER_INVULNERABILITY_TICKS;
+  }
+  if (Math.hypot(boss.x - before.x, boss.y - before.y) < charge.speedPerTick * 0.5) {
+    // Into the wall: the whole room shakes, trays fly, and the suit is open.
+    boss.chargeTicks = 0;
+    boss.stunnedTicks = charge.stunTicks;
+    for (let index = 0; index < charge.shockwaveTrays; index += 1) {
+      const angle = (index / charge.shockwaveTrays) * Math.PI * 2;
+      state.projectiles.push({
+        id: state.nextEntityId,
+        x: boss.x,
+        y: boss.y,
+        previousX: boss.x,
+        previousY: boss.y,
+        velocityX: Math.cos(angle) * 2.2,
+        velocityY: Math.sin(angle) * 2.2,
+        radius: BOSS_VOLLEY_PROJECTILE_RADIUS,
+        remainingTicks: BOSS_VOLLEY_PROJECTILE_LIFETIME_TICKS,
+        faction: 'enemy',
+        damage: BOSS_VOLLEY_PROJECTILE_DAMAGE,
+      });
+      state.nextEntityId += 1;
+    }
+  } else if (boss.chargeTicks === 0) {
+    boss.phase = 'recover';
+    boss.phaseTicks = 50;
+  }
+  return true;
+}
+
+/**
  * Deterministic Loss Prevention Manager update, called from the existing
  * enemy stage. Phase is recomputed from current health every tick, the slam
  * runs on phase/phaseTicks with its aim locked at telegraph start, and the
@@ -297,8 +391,16 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
   const config = bossConfigFor(boss.kind);
   const bossPhase = bossPhaseForHealth(boss.health, config.maxHealth);
   boss.bossPhase = bossPhase;
+  if (config.charge && bossPhase >= 2 && !boss.bossSummonedMid && (config.summonCountPhase2 ?? 0) > 0) {
+    summonPhaseThreeHangers(state, enemyIndex, config.summonCountPhase2);
+    boss.bossSummonedMid = true;
+  }
   if (bossPhase === 3 && !boss.bossSummoned) {
     summonPhaseThreeHangers(state, enemyIndex);
+    boss.bossSummonedMid = true;
+  }
+  if (config.charge && updateOwnerCharge(state, boss, config.charge)) {
+    return;
   }
 
   const phaseCadence = config.volleyCadence[bossPhase - 1] ?? null;
@@ -344,6 +446,14 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
   } else if (boss.phase === 'telegraph') {
     boss.phaseTicks -= 1;
     if (boss.phaseTicks <= 0) {
+      const attacks = boss.bossAttacks ?? 0;
+      boss.bossAttacks = attacks + 1;
+      if (config.charge && bossPhase >= 2 && attacks % 2 === 1) {
+        boss.chargeTicks = config.charge.ticks;
+        boss.phase = 'pursue';
+        boss.phaseTicks = BOSS_PURSUE_TICKS;
+        return;
+      }
       if (state.player.invulnerableTicks <= 0 && !playerDashing(state)) {
         const distance = Math.hypot(state.player.x - boss.x, state.player.y - boss.y);
         if (distance <= config.slamReach) {

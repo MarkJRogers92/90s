@@ -1,3 +1,4 @@
+import { vulnerableDamage } from '../combat/mascot';
 import { sweptCircleIntersectsCircle, sweptCircleIntersectsRect } from '../combat/collision';
 import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
 import { freezeDeep } from '../items/types';
@@ -416,7 +417,7 @@ function applyProjectileHit(
     }),
   );
 
-  target.health -= spec.damage;
+  target.health -= vulnerableDamage(target, spec.damage);
   if (spec.onHitWetTicks > 0) {
     applyWet(target, spec.onHitWetTicks);
   }

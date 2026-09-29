@@ -82,7 +82,7 @@ export type GameHudModel = {
   readonly carriedCount: number;
   readonly boss: { readonly health: number; readonly max: number; readonly phase: number; readonly name: string } | null;
   /** 1 downstairs, 2 on the upper level. */
-  readonly floor: 1 | 2;
+  readonly floor: 1 | 2 | 3;
   readonly enemiesLeft: number;
   readonly weapons: readonly HudWeapon[];
   readonly passives: readonly HudPassive[];
@@ -110,6 +110,15 @@ const UPSTAIRS_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
   security_office: 'MANAGEMENT',
 };
 
+const TOP_FLOOR_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
+  service_corridor: 'SEATING',
+  storefront_a: 'PIZZA',
+  food_court: 'ARCADE',
+  storefront_b: 'KITCHEN',
+  back_hall: 'DOCK',
+  security_office: "OWNER'S",
+};
+
 export function heartsFor(health: number, maxHealth = PLAYER_MAX_HEALTH): HeartState[] {
   const hearts: HeartState[] = [];
   for (let i = 0; i < Math.ceil(maxHealth / 2); i += 1) {
@@ -127,12 +136,12 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
 
   const objectives: HudObjective[] = [
     {
-      text: `${state.wing.floor === 2 ? 'REACH MANAGEMENT' : 'REACH SECURITY'}  ${state.roomIndex + 1}/${state.wing.rooms.length}`,
+      text: `${state.wing.floor === 3 ? 'REACH THE OWNER' : state.wing.floor === 2 ? 'REACH MANAGEMENT' : 'REACH SECURITY'}  ${state.roomIndex + 1}/${state.wing.rooms.length}`,
       done: state.status === 'won',
     },
   ];
   if (room?.id === 'security_office') {
-    objectives.push({ text: state.wing.floor === 2 ? 'FIRE THE MANAGER' : 'STOP LOSS PREVENTION', done: boss === null && state.room.cleared });
+    objectives.push({ text: state.wing.floor === 3 ? 'TAKE DOWN THE OWNER' : state.wing.floor === 2 ? 'FIRE THE MANAGER' : 'STOP LOSS PREVENTION', done: boss === null && state.room.cleared });
   } else if (fightHere) {
     objectives.push({
       text: state.room.cleared ? 'AREA SECURED' : `CLEAR THE AREA  ${living.length} LEFT`,
@@ -153,7 +162,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const cleared = new Set(state.clearedRooms);
   const rooms = state.wing.rooms.map((candidate, index): HudRoomCell => ({
     id: candidate.id,
-    short: (state.wing.floor === 2 ? UPSTAIRS_SHORT_NAMES : SHORT_NAMES)[candidate.id],
+    short: (state.wing.floor === 3 ? TOP_FLOOR_SHORT_NAMES : state.wing.floor === 2 ? UPSTAIRS_SHORT_NAMES : SHORT_NAMES)[candidate.id],
     state: index === state.roomIndex ? 'current' : cleared.has(candidate.id) || index < state.roomIndex ? 'cleared' : 'ahead',
     boss: candidate.bossAnchor != null,
     store: candidate.store !== null,
@@ -195,10 +204,10 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
         health: boss.health,
         max: bossConfigFor(boss.kind).maxHealth,
         phase: boss.bossPhase ?? bossPhaseForHealth(boss.health, bossConfigFor(boss.kind).maxHealth),
-        name: boss.kind === 'manager' ? 'MALL MANAGER' : 'LOSS PREVENTION',
+        name: boss.kind === 'owner' ? 'THE MALL OWNER' : boss.kind === 'manager' ? 'MALL MANAGER' : 'LOSS PREVENTION',
       }
       : null,
-    floor: state.wing.floor === 2 ? 2 : 1,
+    floor: state.wing.floor === 3 ? 3 : state.wing.floor === 2 ? 2 : 1,
     enemiesLeft: living.length,
   };
 }

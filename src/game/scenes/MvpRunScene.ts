@@ -25,7 +25,7 @@ import { PaTicker } from '../ui/PaTicker';
 import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
-import { ascendToFloorTwo, canAscend } from '../../sim/run/floors';
+import { ascend, canAscend, floorOf } from '../../sim/run/floors';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
@@ -375,7 +375,7 @@ export class MvpRunScene extends Phaser.Scene {
   private hud: MvpRunHud | undefined;
   private gameHud: GameHud | undefined;
   private shiftCard: ShiftCard | undefined;
-  /** The ride up to Floor 2, while it plays (the run does not tick). */
+  /** The ride up to the next floor, while it plays (the run does not tick). */
   private ride: EscalatorRide | null = null;
   /** The boss kill cam, while it plays; the end card waits for it. */
   private killCam: KillCam | null = null;
@@ -673,9 +673,10 @@ export class MvpRunScene extends Phaser.Scene {
   }
 
   /**
-   * Up the escalator: the won floor-1 run becomes a floor-2 run carrying the
-   * janitor's gear, cash and stats. The floor-1 record closes as a win; the
-   * upper level gets its own checkpoint so Continue resumes upstairs.
+   * Up the escalator: a won floor-1 (or floor-2) run becomes the next floor's
+   * run carrying the janitor's gear, cash, stats and perks. The lower record
+   * closes as a win; the new floor gets its own checkpoint so Continue resumes
+   * there.
    */
   private ascend(): void {
     if (!canAscend(this.run)) return;
@@ -683,7 +684,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.stopClockIn();
     this.endKillCam();
     this.lastStatus = 'playing';
-    this.run = ascendToFloorTwo(this.run);
+    this.run = ascend(this.run);
     this.playtest = new PlaytestRecorder();
     this.generation += 1;
     this.audio?.resetBaseline();
@@ -697,7 +698,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.syncView();
     // Ride up before the landing appears; the run waits underneath.
     this.ride?.destroy();
-    this.ride = new EscalatorRide(this);
+    this.ride = new EscalatorRide(this, floorOf(this.run) === 3 ? 3 : 2);
     this.audio?.play('escalator');
   }
 
@@ -785,7 +786,7 @@ export class MvpRunScene extends Phaser.Scene {
       const boss = this.run.room.combat.enemies.find((enemy) => isBossKind(enemy.kind) && enemy.health > 0);
       this.lastBoss = boss && isBossKind(boss.kind) ? { kind: boss.kind, x: boss.x, y: boss.y } : null;
     } else if (this.lastStatus === 'playing' && this.run.status === 'dead' && !this.pinkSlip) {
-      const reason = pinkSlipReason(this.playtest.lastDamageSource, this.run.wing.floor === 2 ? 2 : 1);
+      const reason = pinkSlipReason(this.playtest.lastDamageSource, floorOf(this.run));
       this.endBeatPlayed = true;
       this.pinkSlip = new PinkSlip(this, reason, { fall: () => this.audio?.play('paper'), stamp: () => this.audio?.play('stamp') });
     } else if (this.lastStatus === 'playing' && this.run.status === 'won' && this.lastBoss && !this.killCam) {
@@ -802,8 +803,8 @@ export class MvpRunScene extends Phaser.Scene {
     const played = this.killCam !== null;
     this.killCam?.destroy();
     this.killCam = null;
-    // Beating the Mall Manager ends the night: walk out into the sunrise first.
-    if (finished && played && this.run.status === 'won' && this.run.wing.floor === 2) {
+    // Beating the Mall Owner ends the night: walk out into the sunrise first.
+    if (finished && played && this.run.status === 'won' && this.run.wing.floor === 3) {
       this.ending = new DawnEnding(this);
       this.endingHeld = false;
       this.audio?.play('dawn');
@@ -966,10 +967,37 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-floor-three' || fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-boss' || fixture === 'mvp-floor-three-boss-win') {
+      // Straight up both escalators, optionally on to the Arcade fight or the Mall Owner.
+      state.status = 'won';
+      const upstairs = ascend(state);
+      upstairs.status = 'won';
+      const top = ascend(upstairs);
+      if (fixture !== 'mvp-floor-three') {
+        const stop = fixture === 'mvp-floor-three-lobby' ? 'food_court' : top.wing.rooms.at(-1)?.id;
+        let guard = 0;
+        while (top.wing.rooms[top.roomIndex]?.id !== stop && guard < 10) {
+          guard += 1;
+          top.room.combat.enemies = [];
+          tickMvpRun(top, { moveX: 0, moveY: 0, aimX: top.room.combat.player.x, aimY: top.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(top, 'east').accepted) break;
+        }
+      }
+      if (fixture === 'mvp-floor-three-boss-win') {
+        // One swing from the ending: the Mall Owner at a single point of health.
+        const boss = top.room.combat.enemies.find((enemy) => isBossKind(enemy.kind));
+        if (boss) {
+          boss.health = 1;
+          top.room.combat.player.x = boss.x - 80;
+          top.room.combat.player.y = boss.y;
+        }
+      }
+      return top;
+    }
     if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-boss' || fixture === 'mvp-floor-two-boss-win') {
       // Straight up the escalator, optionally on to the Cinema Lobby fight or the Mall Manager.
       state.status = 'won';
-      const upstairs = ascendToFloorTwo(state);
+      const upstairs = ascend(state);
       if (fixture !== 'mvp-floor-two') {
         const stop = fixture === 'mvp-floor-two-lobby' ? 'food_court' : upstairs.wing.rooms.at(-1)?.id;
         let guard = 0;

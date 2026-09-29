@@ -6,7 +6,7 @@ export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
 ] as const;
 export type ActorDirection = (typeof ACTOR_DIRECTION_ORDER)[number];
-export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper';
+export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner';
 
 export type ActorSnapshot = {
   readonly id: string;
@@ -73,6 +73,10 @@ export function enemySpriteSheet(
       return { idle: ENEMY_TEXTURE_KEYS.staticIdle, walk: walking ? ENEMY_TEXTURE_KEYS.staticWalk : null, attack: 'neon:enemy:static-attack', walkFrames: 8, ticksPerFrame: 4, displaySize: 72 };
     case 'shopper':
       return { idle: ENEMY_TEXTURE_KEYS.shopperIdle, walk: walking ? ENEMY_TEXTURE_KEYS.shopperWalk : null, attack: 'neon:enemy:shopper-attack', walkFrames: 6, ticksPerFrame: 4, displaySize: 76 };
+    case 'mascot':
+      return { idle: ENEMY_TEXTURE_KEYS.mascotIdle, walk: walking ? ENEMY_TEXTURE_KEYS.mascotWalk : null, attack: 'neon:enemy:mascot-attack', walkFrames: 6, ticksPerFrame: 5, displaySize: 92 };
+    case 'owner':
+      return { idle: ENEMY_TEXTURE_KEYS.ownerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.ownerWalk : null, attack: 'neon:enemy:owner-attack', walkFrames: 6, ticksPerFrame: 6, displaySize: 150 };
     case 'manager':
       return { idle: ENEMY_TEXTURE_KEYS.managerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.managerWalk : null, attack: 'neon:enemy:manager-attack', walkFrames: 8, ticksPerFrame: 6, displaySize: 128 };
     case 'mannequin':

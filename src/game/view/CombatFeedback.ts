@@ -82,6 +82,8 @@ function deathSheet(kind: EnemyState['kind']): string {
         : kind === 'static' ? ENEMY_TEXTURE_KEYS.staticDeath
           : kind === 'shopper' ? ENEMY_TEXTURE_KEYS.shopperDeath
             : kind === 'manager' ? ENEMY_TEXTURE_KEYS.managerDeath
+              : kind === 'mascot' ? ENEMY_TEXTURE_KEYS.mascotDeath
+                : kind === 'owner' ? ENEMY_TEXTURE_KEYS.ownerDeath
               : ENEMY_TEXTURE_KEYS.lpManagerDeath;
 }
 
