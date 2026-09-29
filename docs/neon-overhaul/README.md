@@ -815,3 +815,29 @@ kiosk, so no fight changes. Floors 2 and 3 inherit them through
   cabinets and a water cooler.
 - **Food court**: a tray-return station and a bank of trash cans.
 
+## Round 30: a playtest that answers the tuning questions
+
+The playtest log could not see anything from rounds 25–28. It now records,
+per run (all optional fields on version 1, so older logged runs still load):
+
+- **Loss Prevention** as a damage source (`stalker`; classified first, from
+  his own write-up count, so a Hanger beside him never takes the blame),
+  with his arrivals, write-ups and shoves. The pink slip reads WRITTEN UP ONE
+  TIME TOO MANY.
+- **Store alarms**: each one's outcome (`escaped` with the seconds left on
+  the countdown, `lockedEscaped`, `locked`, `dropped`) and the stars when it
+  went off; the **peak wanted level**.
+- **Store visits**: which shop, seconds inside, items bought and thefts
+  secured on that visit (from the inventory's `sourceLocationId`).
+- **Boss cards**: seconds watched and whether they were skipped.
+
+The title screen's playtest panel summarizes all of it (alarms with the
+average time to spare, Loss Prevention totals, stores visited, boss cards
+skipped), and Copy still exports the raw JSON.
+
+Also this round:
+- The boss card now plays on the **first entry only** per mall (seed),
+  floor and room, remembered across retries; a new shift plays it again.
+- Mall Mart no longer sells the janitor's own mop (an M3 leftover); that
+  shelf holds Bubble-Bath Concentrate.
+

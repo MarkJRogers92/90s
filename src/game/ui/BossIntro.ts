@@ -45,10 +45,11 @@ export class BossIntro {
   private readonly name: Phaser.GameObjects.Image[];
   private readonly dot: Phaser.GameObjects.Graphics;
   private elapsed = 0;
+  private skipped = false;
 
   public constructor(
     private readonly scene: Phaser.Scene,
-    kind: BossKind,
+    public readonly kind: BossKind,
     private readonly focus: { readonly x: number; readonly y: number },
     private readonly room: { readonly x: number; readonly y: number },
   ) {
@@ -139,8 +140,20 @@ export class BossIntro {
   /** Jumps to the fade, once the grace after the doorway step has passed. */
   public readonly requestSkip = (): void => {
     if (this.elapsed < BOSS_INTRO_SKIP_GRACE_MS) return;
+    if (this.elapsed < BOSS_INTRO_MS - FADE_MS) {
+      // How long it was watched before the skip, for the playtest log.
+      this.watchedMs = this.elapsed;
+      this.skipped = true;
+    }
     this.elapsed = Math.max(this.elapsed, BOSS_INTRO_MS - FADE_MS);
   };
+
+  private watchedMs: number | null = null;
+
+  /** How long the card was on screen before it was skipped or ended, and whether it was skipped. */
+  public watched(): { readonly ms: number; readonly skipped: boolean } {
+    return { ms: this.watchedMs ?? Math.min(this.elapsed, BOSS_INTRO_MS), skipped: this.skipped };
+  }
 
   private readonly onKey = (event: KeyboardEvent): void => {
     // A movement key held through the doorway auto-repeats; only a new press skips.

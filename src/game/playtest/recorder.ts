@@ -1,7 +1,12 @@
 /**
  * Playtest recorder: turns a shift into one small record of what happened —
  * time and damage per room (by source), kills, dashes, what was bought and
- * stolen, and what landed the final blow.
+ * stolen, and what landed the final blow. Since round 30 it also answers the
+ * tuning questions for the heist and the stores: how each store alarm ended
+ * and with how long to spare, the peak wanted level, Loss Prevention's
+ * arrivals, write-ups and shoves, every store visit, and how long each boss
+ * card was watched. Those fields are optional, so older logged runs stay
+ * readable.
  *
  * Like the audio cues it only compares consecutive snapshots of authoritative
  * state; it never touches the simulation. Nothing here leaves the machine:
@@ -12,8 +17,11 @@ import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
 import { STATIC_BURST_RADIUS } from '../../sim/combat/staticEnemy';
+import { activeStore } from '../../sim/run/storeInterior';
+import { wantedStars } from '../../sim/run/wanted';
+import type { BossKind } from '../../sim/combat/boss';
 
-export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -22,6 +30,34 @@ export type RoomLog = {
   leftTick: number | null;
   kills: number;
   readonly damage: Record<DamageSource, number>;
+};
+
+/** How one store alarm ended. */
+export type AlarmLog = {
+  readonly store: string;
+  /**
+   * `escaped`: out the door before the shutter; `lockedEscaped`: locked in,
+   * fought through, got out; `locked`: the shift ended behind the shutter;
+   * `dropped`: the alarm ended some other way (the room was left).
+   */
+  outcome: 'escaped' | 'lockedEscaped' | 'locked' | 'dropped';
+  /** Seconds left on the countdown when the janitor got out in time. */
+  secondsLeft: number | null;
+  /** Wanted stars when the alarm went off. */
+  readonly stars: number;
+};
+
+export type StoreVisitLog = {
+  readonly store: string;
+  seconds: number;
+  bought: number;
+  stolen: number;
+};
+
+export type BossCardLog = {
+  readonly boss: BossKind;
+  readonly seconds: number;
+  readonly skipped: boolean;
 };
 
 export type RunRecord = {
@@ -38,6 +74,12 @@ export type RunRecord = {
   readonly stolen: readonly string[];
   readonly dashes: number;
   readonly killedBy: DamageSource | null;
+  /** Round 30 fields: absent on runs logged before them. */
+  readonly peakStars?: number;
+  readonly alarms?: readonly AlarmLog[];
+  readonly stalker?: { readonly arrivals: number; readonly writeUps: number; readonly shoves: number };
+  readonly storeVisits?: readonly StoreVisitLog[];
+  readonly bossCards?: readonly BossCardLog[];
 };
 
 type Snapshot = {
@@ -47,9 +89,18 @@ type Snapshot = {
   readonly living: ReadonlySet<number>;
   readonly enemyShots: number;
   readonly dashTicks: number;
+  readonly stalkerPhase: string | null;
+  readonly writeUps: number;
+  readonly alarmOn: boolean;
+  readonly shutter: string | null;
+  readonly alarmTicksLeft: number;
+  readonly alarmStore: string;
+  readonly carried: number;
+  readonly stars: number;
+  readonly inside: string | null;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -60,13 +111,35 @@ function snapshot(state: MvpRunState): Snapshot {
     living: new Set(combat.enemies.filter((enemy) => enemy.health > 0).map((enemy) => enemy.id)),
     enemyShots: combat.projectiles.filter((shot) => shot.faction === 'enemy').length,
     dashTicks: combat.player.dashTicks ?? 0,
+    stalkerPhase: state.stalker?.phase ?? null,
+    writeUps: state.stalker?.writeUps ?? 0,
+    alarmOn: state.alarm !== null,
+    shutter: state.alarm?.shutter ?? null,
+    alarmTicksLeft: state.alarm?.ticksLeft ?? 0,
+    alarmStore: (activeStore(state)?.name ?? '').toUpperCase(),
+    carried: state.carried.length,
+    stars: wantedStars(state.heat),
+    inside: activeStore(state)?.templateId ?? null,
   };
+}
+
+/** Items from one store the janitor holds, by how they were got. */
+function heldFrom(state: MvpRunState, storeId: string, kind: 'purchased' | 'stolen'): number {
+  let count = 0;
+  for (const node of state.inventory.inventory) {
+    const leaves = node.kind === 'leaf' ? [node] : [node.primary, node.carrier];
+    for (const leaf of leaves) if (leaf.acquisitionKind === kind && leaf.sourceLocationId === storeId) count += 1;
+  }
+  return count;
 }
 
 /** What most plausibly dealt a hit, from the state around it. */
 function classify(state: MvpRunState, previous: Snapshot, amount: number): DamageSource {
   const combat = state.room.combat;
   const p = combat.player;
+  // A write-up is counted by the stalker himself, so it is never mistaken for
+  // whatever else happens to be standing next to the janitor.
+  if ((state.stalker?.writeUps ?? 0) > previous.writeUps) return 'stalker';
   const touching = combat.enemies.some(
     (enemy) => enemy.kind === 'hanger' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
   );
@@ -120,6 +193,13 @@ export class PlaytestRecorder {
   private dashes = 0;
   private killedBy: DamageSource | null = null;
   private finished = false;
+  private peakStars = 0;
+  private alarms: AlarmLog[] = [];
+  private openAlarm: (AlarmLog & { locked: boolean }) | null = null;
+  private stalker = { arrivals: 0, writeUps: 0, shoves: 0 };
+  private visits: StoreVisitLog[] = [];
+  private openVisit: { log: StoreVisitLog; storeId: string; enteredTick: number; bought: number; stolen: number } | null = null;
+  private bossCards: BossCardLog[] = [];
 
   private begin(state: MvpRunState): void {
     this.previous = snapshot(state);
@@ -129,6 +209,13 @@ export class PlaytestRecorder {
     this.dashes = 0;
     this.killedBy = null;
     this.finished = false;
+    this.peakStars = wantedStars(state.heat);
+    this.alarms = [];
+    this.openAlarm = null;
+    this.stalker = { arrivals: 0, writeUps: 0, shoves: 0 };
+    this.visits = [];
+    this.openVisit = null;
+    this.bossCards = [];
     this.openRoom(state);
   }
 
@@ -142,6 +229,64 @@ export class PlaytestRecorder {
       kills: 0,
       damage: emptyDamage(),
     });
+  }
+
+  /** The scene reports each boss card: how long it showed and whether it was skipped. */
+  public noteBossCard(boss: BossKind, ms: number, skipped: boolean): void {
+    if (this.previous === null || this.finished) return;
+    this.bossCards.push({ boss, seconds: Math.round(ms / 100) / 10, skipped });
+  }
+
+  /** Alarms, stalker, stars and store visits: the heist's side of the record. */
+  private observeHeist(state: MvpRunState, previous: Snapshot, current: Snapshot): void {
+    this.peakStars = Math.max(this.peakStars, current.stars);
+    // Store alarms: opened on the grab, closed by the door, the shutter, or leaving.
+    if (current.alarmOn && !previous.alarmOn) {
+      this.openAlarm = { store: current.alarmStore, outcome: 'dropped', secondsLeft: null, stars: previous.stars, locked: false };
+    }
+    if (this.openAlarm && current.shutter === 'closed') this.openAlarm.locked = true;
+    if (this.openAlarm && !current.alarmOn) {
+      const secured = current.carried < previous.carried;
+      this.openAlarm.outcome = secured ? (this.openAlarm.locked ? 'lockedEscaped' : 'escaped') : 'dropped';
+      this.openAlarm.secondsLeft = secured && !this.openAlarm.locked ? Math.round(previous.alarmTicksLeft / 6) / 10 : null;
+      this.closeAlarm();
+    }
+    // Loss Prevention.
+    if (previous.stalkerPhase === 'arriving' && current.stalkerPhase === 'hunting') this.stalker.arrivals += 1;
+    if (current.writeUps > previous.writeUps) this.stalker.writeUps += current.writeUps - previous.writeUps;
+    if (current.stalkerPhase === 'shoved' && previous.stalkerPhase !== 'shoved') this.stalker.shoves += 1;
+    // Store visits.
+    if (current.inside !== previous.inside) {
+      this.closeVisit(state);
+      if (current.inside !== null) {
+        const log: StoreVisitLog = { store: current.alarmStore, seconds: 0, bought: 0, stolen: 0 };
+        this.visits.push(log);
+        this.openVisit = {
+          log,
+          storeId: current.inside,
+          enteredTick: state.tick,
+          bought: heldFrom(state, current.inside, 'purchased'),
+          stolen: heldFrom(state, current.inside, 'stolen'),
+        };
+      }
+    }
+  }
+
+  private closeAlarm(): void {
+    if (!this.openAlarm) return;
+    const { locked: _locked, ...log } = this.openAlarm;
+    this.alarms.push(log);
+    this.openAlarm = null;
+  }
+
+  private closeVisit(state: MvpRunState): void {
+    const visit = this.openVisit;
+    if (!visit) return;
+    visit.log.seconds = Math.round((state.tick - visit.enteredTick) / 6) / 10;
+    visit.log.bought = heldFrom(state, visit.storeId, 'purchased') - visit.bought;
+    // A theft counts once it is secured: carried goods are not held yet.
+    visit.log.stolen = heldFrom(state, visit.storeId, 'stolen') - visit.stolen;
+    this.openVisit = null;
   }
 
   /** What landed the most recent blow on the janitor this shift, if anything. */
@@ -173,6 +318,7 @@ export class PlaytestRecorder {
       this.killedBy = source;
     }
     if (current.dashTicks > previous.dashTicks) this.dashes += 1;
+    this.observeHeist(state, previous, current);
     this.previous = current;
     if (state.status === 'won' || state.status === 'dead') return this.finish(state, state.status);
     return null;
@@ -184,6 +330,11 @@ export class PlaytestRecorder {
     this.finished = true;
     const last = this.rooms.at(-1);
     if (last && last.leftTick === null) last.leftTick = state.tick;
+    this.closeVisit(state);
+    if (this.openAlarm) {
+      this.openAlarm.outcome = this.openAlarm.locked ? 'locked' : 'dropped';
+      this.closeAlarm();
+    }
     return {
       version: 1,
       startedAt: this.startedAt,
@@ -197,6 +348,11 @@ export class PlaytestRecorder {
       stolen: namesBy(state.inventory.inventory, 'stolen'),
       dashes: this.dashes,
       killedBy: outcome === 'dead' ? this.killedBy : null,
+      peakStars: this.peakStars,
+      alarms: this.alarms.map((alarm) => ({ ...alarm })),
+      stalker: { ...this.stalker },
+      storeVisits: this.visits.map((visit) => ({ ...visit })),
+      bossCards: [...this.bossCards],
     };
   }
 }

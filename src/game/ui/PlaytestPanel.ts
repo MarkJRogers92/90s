@@ -17,6 +17,7 @@ const SOURCE_NAMES: Record<DamageSource, string> = {
   glob: 'Spitter glob',
   slam: 'Boss slam',
   bossShot: 'Boss volley',
+  stalker: 'Loss Prevention write-up',
   other: 'Other',
 };
 
@@ -98,6 +99,16 @@ export class PlaytestPanel {
     const times = Object.entries(summary.avgSecondsByRoom);
     line(this.summary, 'Average time in room', times.map(([id, s]) => `${roomName(id)} ${s}s`).join(', '));
     if (summary.topBought.length) line(this.summary, 'Most bought', summary.topBought.map((b) => `${b.name} ×${b.count}`).join(', '));
+    const { alarms, avgSecondsLeft, peakStars, stalker } = summary.heist;
+    const alarmCount = alarms.escaped + alarms.lockedEscaped + alarms.locked + alarms.dropped;
+    if (alarmCount > 0) {
+      const spare = avgSecondsLeft === null ? '' : ` (${avgSecondsLeft}s to spare on average)`;
+      line(this.summary, 'Store alarms', `${alarmCount}: out in time ${alarms.escaped}${spare}, locked in then out ${alarms.lockedEscaped}, ended locked in ${alarms.locked}, other ${alarms.dropped}`);
+    }
+    if (peakStars > 0) line(this.summary, 'Highest wanted level', `${'*'.repeat(peakStars)} (${peakStars})`);
+    if (stalker.arrivals + stalker.writeUps > 0) line(this.summary, 'Loss Prevention', `arrived ${stalker.arrivals}×, wrote you up ${stalker.writeUps}×, shoved away ${stalker.shoves}×`);
+    if (summary.stores.length) line(this.summary, 'Stores visited', summary.stores.map((s) => `${s.store} ×${s.visits} (${s.avgSeconds}s, ${s.bought} bought, ${s.stolen} stolen)`).join(', '));
+    if (summary.bossCards.shown) line(this.summary, 'Boss cards', `${summary.bossCards.shown} shown, ${summary.bossCards.skipped} skipped, ${summary.bossCards.avgSeconds}s watched on average`);
     for (const record of [...records].reverse().slice(0, 10)) this.runs.append(this.runItem(record));
   }
 
