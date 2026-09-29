@@ -21,6 +21,7 @@ import { COMBO_MILESTONE, COMBO_WINDOW_TICKS, comboBonusFor } from '../../sim/ru
 import { blueLightOfferId } from '../../sim/run/roomEvents';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { hotHeatFloor, hotItemCount, isHotNode, wantedStars } from '../../sim/run/wanted';
+import { STALKER_MIN_STARS } from '../../sim/run/stalker';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
@@ -183,7 +184,9 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
       ? { text: 'STAY OFF THE RADAR', done: true }
       : hotItemCount(state) > 0 && state.heat <= hotHeatFloor(state)
         ? { text: 'HOT GOODS - LAUNDER AT THE BENCH', done: false }
-        : { text: `WANTED ${'*'.repeat(stars)} - CLEAR FIGHTS TO LAY LOW`, done: false },
+        : stars >= STALKER_MIN_STARS
+          ? { text: `LOSS PREVENTION ON YOU - CLEAR FIGHTS TO LAY LOW`, done: false }
+          : { text: `WANTED ${'*'.repeat(stars)} - CLEAR FIGHTS TO LAY LOW`, done: false },
   );
 
   const cleared = new Set(state.clearedRooms);

@@ -16,6 +16,7 @@ import type { MallTokenPickup } from './tokens';
 import type { RunStats } from './combo';
 import type { ShiftPerks } from './perks';
 import type { StoreAlarm } from './heist';
+import type { StalkerState } from './stalker';
 
 export type MvpWorkbench = {
   readonly firstId: string | null;
@@ -142,6 +143,8 @@ export type MvpRunState = {
   stats: RunStats;
   /** The store alarm after a grab, while it runs (room-local, never checkpointed). */
   alarm: StoreAlarm | null;
+  /** Loss Prevention on a 4-star janitor's trail (room-local, never checkpointed). */
+  stalker: StalkerState | null;
   /** What the janitor's career brought to this shift (checkpointed; rides the escalator). */
   readonly perks: ShiftPerks;
 };

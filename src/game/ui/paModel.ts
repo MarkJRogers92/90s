@@ -15,6 +15,7 @@ import { roomEventFor } from '../../sim/run/roomEvents';
 import { COMBO_MILESTONE } from '../../sim/run/combo';
 import type { MvpRunState } from '../../sim/run/types';
 import { hotItemCount, wantedStars } from '../../sim/run/wanted';
+import { STALKER_MIN_STARS } from '../../sim/run/stalker';
 
 export const PA_COOLDOWN_TICKS = 60 * 12;
 export const PA_IDLE_TICKS = 60 * 45;
@@ -50,6 +51,11 @@ export const PA_LINES = {
     'THE JANITOR IS WANTED. PLEASE DO NOT ENCOURAGE.',
   ],
   launder: ['MANAGEMENT REMINDS STAFF: ALL SALES ARE FINAL.'],
+  stalker: [
+    'LOSS PREVENTION IS NOW FOLLOWING THE JANITOR. KEEP UP.',
+    'AN AGENT HAS BEEN ASSIGNED. HE DOES NOT CLOCK OUT.',
+  ],
+  stalker_lost: ['LOSS PREVENTION HAS GONE ON BREAK. FOR NOW.'],
   combo: [
     'ATTENTION: WE HAVE AN EMPLOYEE OF THE MONTH.',
     'SOMEONE GIVE THAT JANITOR A RAISE. REQUEST DENIED.',
@@ -145,6 +151,9 @@ export class PaDirector {
       this.lowHealthRoom = current.roomIndex;
       return this.say('low_health', current);
     }
+    // Four stars sets Loss Prevention on the janitor (see stalker.ts).
+    if (current.stars >= STALKER_MIN_STARS && previous.stars < STALKER_MIN_STARS) return this.say('stalker', current, true);
+    if (current.stars < STALKER_MIN_STARS && previous.stars >= STALKER_MIN_STARS) return this.say('stalker_lost', current, true);
     if (current.stars > previous.stars) return this.say(current.stars >= 3 ? 'wanted' : 'theft', current);
     if (current.hotItems < previous.hotItems) return this.say('launder', current);
     if (current.comboTier > previous.comboTier && current.comboTier >= 2) return this.say('combo', current);

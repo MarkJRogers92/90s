@@ -1079,6 +1079,11 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return upstairs;
     }
+    if (fixture === 'mvp-wanted') {
+      // Five stars in the opening corridor: Loss Prevention arrives in 3 s.
+      state.heat = 100;
+      return state;
+    }
     if (fixture === 'mvp-last-heart') {
       // Into the food court fight on the last point of health (for death flows).
       let guard = 0;

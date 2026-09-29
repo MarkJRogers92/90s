@@ -116,6 +116,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
     preview: null,
     workbench: null,
     alarm: null,
+    stalker: null,
     stats: options.carry ? { ...options.carry.stats, combo: 0, lastHitTick: -Infinity } : createRunStats(),
     perks,
   };

@@ -6,7 +6,7 @@ export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
 ] as const;
 export type ActorDirection = (typeof ACTOR_DIRECTION_ORDER)[number];
-export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner';
+export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'lp_agent';
 
 export type ActorSnapshot = {
   readonly id: string;
@@ -84,6 +84,10 @@ export function enemySpriteSheet(
       return { idle: ENEMY_TEXTURE_KEYS.mannequinIdle, walk: walking ? ENEMY_TEXTURE_KEYS.mannequinWalk : null, attack: 'neon:enemy:mannequin-attack', walkFrames: 6, ticksPerFrame: 3, displaySize: 72 };
     case 'lp_manager':
       return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, attack: ENEMY_TEXTURE_KEYS.lpManagerAttack, walkFrames: 8, ticksPerFrame: 6, displaySize: 128 };
+    case 'lp_agent':
+      // The four-star stalker: one of the Loss Prevention Manager's own men,
+      // drawn from his sheets at person size and tinted cold by the view.
+      return { idle: ENEMY_TEXTURE_KEYS.lpManagerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.lpManagerWalk : null, attack: ENEMY_TEXTURE_KEYS.lpManagerAttack, walkFrames: 8, ticksPerFrame: 5, displaySize: 80 };
     default:
       return null;
   }

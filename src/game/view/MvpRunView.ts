@@ -16,6 +16,7 @@ import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/m
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { alarmCue } from './alarmCues';
+import { stalkerCue } from './stalkerCues';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -306,6 +307,11 @@ export class MvpRunView {
       state.carrier ? opening?.actorGraphics('carrier', state.carrier.y) ?? graphics : graphics,
       state.carrier ? opening?.effectGraphics('carrier') ?? this.effectGraphics : this.effectGraphics,
     );
+    this.drawStalker(
+      state,
+      fxTick,
+      state.stalker ? opening?.effectGraphics('stalker') ?? this.effectGraphics : this.effectGraphics,
+    );
     const player = state.room.combat.player;
     const playerDelta = this.actorMovement.movementFor('player', player.x, player.y);
     const playerDepth = presentationDepth('actor', player.y);
@@ -479,6 +485,64 @@ export class MvpRunView {
 
     if (carrier.recalling) this.setLabel('carrier', 'RECALLING', carrier.x, carrier.y - 56);
     else this.clearLabel('carrier');
+  }
+
+  /**
+   * Loss Prevention on a four-star janitor's trail (see stalker.ts). While he
+   * is on his way the door he will use strobes red and blue under a
+   * countdown; once he is in, a person-sized agent in the Loss Prevention
+   * Manager's suit, tinted cold, walks the janitor down behind a flashlight.
+   */
+  private drawStalker(state: MvpRunState, fxTick: number, effects: Phaser.GameObjects.Graphics): void {
+    const stalker = state.stalker;
+    const cue = stalkerCue(stalker, state.tick);
+    if (stalker === null || cue.phase === 'none') {
+      this.clearLabel('stalker');
+      return;
+    }
+    const strobe = cue.strobeRed ? 0xff2a3a : 0x2a6aff;
+    if (cue.doorProgress !== null) {
+      // The doorway warning: a strobing floor ring that tightens as he nears.
+      const radius = 70 - 34 * cue.doorProgress;
+      effects.lineStyle(3, strobe, 0.55 + 0.4 * cue.doorProgress).strokeEllipse(stalker.x, stalker.y, radius * 2, radius);
+      effects.fillStyle(strobe, 0.08 + 0.12 * cue.doorProgress).fillEllipse(stalker.x, stalker.y, radius * 2, radius);
+      this.openingConcourse?.addLight({ x: stalker.x, y: stalker.y - 20, radius: 90 + 40 * cue.doorProgress, color: strobe, intensity: 0.7 });
+    }
+    if (cue.body) {
+      const delta = this.actorMovement.movementFor('stalker', stalker.x, stalker.y);
+      const depth = presentationDepth('actor', stalker.y);
+      const cold = glow(0x2a50c0, cue.phase === 'writing_up' ? 0.25 : 0.4);
+      this.syncActorSprite({
+        id: 'stalker', kind: 'lp_agent', x: stalker.x + cue.sway, y: stalker.y,
+        moveX: delta.x, moveY: delta.y, attackTicks: 0, damaged: cue.phase === 'shoved', phase: cue.phase,
+        faceX: stalker.facingX, faceY: stalker.facingY,
+      }, state.tick, depth, { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1, flash: false, tint: cold });
+      this.contactShadow('stalker', stalker.x, stalker.y, 1.3);
+      // Shoulder light strobes like a cruiser's bar, so he reads in a blackout.
+      this.openingConcourse?.addLight({ x: stalker.x, y: stalker.y - 30, radius: 46, color: strobe, intensity: 0.55 });
+      if (cue.flashlight) {
+        // A flashlight beam thrown ahead of him along his facing.
+        for (let step = 1; step <= 3; step += 1) {
+          const reach = 34 * step;
+          const lx = stalker.x + stalker.facingX * reach;
+          const ly = stalker.y - 16 + stalker.facingY * reach * 0.6;
+          this.openingConcourse?.addLight({ x: lx, y: ly, radius: 18 + 10 * step, color: 0xfff2c0, intensity: 0.35 });
+          effects.fillStyle(0xfff2c0, 0.06).fillEllipse(lx, ly + 16, 24 + 14 * step, 10 + 5 * step);
+        }
+      }
+      if (cue.phase === 'shoved') {
+        // Seeing stars: three little sparks orbiting his head.
+        for (let index = 0; index < 3; index += 1) {
+          const angle = fxTick / 6 + (index * Math.PI * 2) / 3;
+          effects.fillStyle(0xffe066, 0.9).fillRect(Math.round(stalker.x + Math.cos(angle) * 14) - 1, Math.round(stalker.y - 78 + Math.sin(angle) * 5) - 1, 3, 3);
+        }
+      }
+    }
+    if (cue.label) {
+      this.setLabel('stalker', cue.label, stalker.x - cue.label.length * 4, stalker.y - (cue.body ? 96 : 60));
+    } else {
+      this.clearLabel('stalker');
+    }
   }
 
   private drawStore(state: MvpRunState, templateId: string): void {
@@ -1483,6 +1547,9 @@ export class MvpRunView {
     const keep = new Set<string>(['bench']);
     if (state.carrier !== null) {
       keep.add('carrier');
+    }
+    if (state.stalker !== null) {
+      keep.add('stalker');
     }
     if (room?.store) {
       keep.add(`store:${room.store.templateId}`);

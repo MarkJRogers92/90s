@@ -8,7 +8,8 @@
  *   4. transition check;
  *   5. carrier update (independent seek and bump, or fused steering);
  *   6. combat tick (delegated to the shared `RunState` tick, fired from the
- *      fused carrier when the run owns one), then leash enforcement;
+ *      fused carrier when the run owns one), then leash enforcement, tokens,
+ *      and the Loss Prevention stalker (see stalker.ts);
  *   7. store boundary evaluation (exit crossing secures carried thefts and
  *      ends the store alarm, then the alarm counts down, drops or lifts the
  *      shutter; see heist.ts);
@@ -58,6 +59,7 @@ import {
 } from './economy';
 import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
 import { layLow, wantedStars } from './wanted';
+import { updateStalker } from './stalker';
 import type {
   MvpCommandResult,
   MvpInputFrame,
@@ -281,6 +283,8 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
   };
   state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
   state.alarm = null;
+  // Loss Prevention does not walk through the door with you; he follows.
+  state.stalker = null;
   clearMvpHeldActions(state);
   // The car follows the shift through the doorway by being re-parked at the
   // destination's deterministic spot, never by carrying a position across.
@@ -552,6 +556,8 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     stepCombo(state, { hits, kills, hurt: state.room.combat.player.health < healthBeforeCombat });
   }
   collectTokens(state);
+  // 6d. Loss Prevention: a four-star janitor is hunted from room to room.
+  updateStalker(state);
 
   // 7. Store boundary evaluation.
   evaluateStoreBoundary(state, previousPosition);

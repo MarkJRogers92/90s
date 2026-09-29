@@ -440,6 +440,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     preview: null,
     workbench: null,
     alarm: null,
+    stalker: null,
     stats: createRunStats(),
     perks: sanitizePerks(checkpoint.perks),
   };
