@@ -43,6 +43,8 @@ PROPS = [
     'bench-kiosk', 'planter-straight',
     # Round 28: concourse life once the stores moved inside.
     'gumball-stand', 'massage-chairs', 'photo-booth', 'pretzel-cart', 'sale-sign', 'seating-island',
+    # Round 29: the back hall, security office and food court.
+    'janitor-cart', 'locker-row', 'floor-buffer', 'confiscation-cage', 'filing-cabinets', 'water-cooler', 'tray-return', 'trash-bank',
 ]
 LEGACY = {
     'enemies': ['spitter-idle', 'lp-manager-idle', 'hanger-idle'],

@@ -88,6 +88,15 @@ export const PROP_TEXTURES = {
   photoBooth: { key: 'neon:prop:photo-booth', file: 'props/photo-booth.png', width: 30, height: 81 },
   gumballStand: { key: 'neon:prop:gumball-stand', file: 'props/gumball-stand.png', width: 35, height: 54 },
   saleSign: { key: 'neon:prop:sale-sign', file: 'props/sale-sign.png', width: 17, height: 62 },
+  // Round 29: the back hall, security office and food court.
+  janitorCart: { key: 'neon:prop:janitor-cart', file: 'props/janitor-cart.png', width: 36, height: 56 },
+  lockerRow: { key: 'neon:prop:locker-row', file: 'props/locker-row.png', width: 90, height: 57 },
+  floorBuffer: { key: 'neon:prop:floor-buffer', file: 'props/floor-buffer.png', width: 30, height: 57 },
+  confiscationCage: { key: 'neon:prop:confiscation-cage', file: 'props/confiscation-cage.png', width: 64, height: 75 },
+  filingCabinets: { key: 'neon:prop:filing-cabinets', file: 'props/filing-cabinets.png', width: 48, height: 46 },
+  waterCooler: { key: 'neon:prop:water-cooler', file: 'props/water-cooler.png', width: 21, height: 55 },
+  trayReturn: { key: 'neon:prop:tray-return', file: 'props/tray-return.png', width: 38, height: 54 },
+  trashBank: { key: 'neon:prop:trash-bank', file: 'props/trash-bank.png', width: 69, height: 39 },
 } as const;
 export type PropId = keyof typeof PROP_TEXTURES;
 
@@ -594,6 +603,9 @@ function foodCourt(room: WingRoomDefinition): DressingPlan {
     { id: 'bin-2', prop: 'bin', x: 840, y: 452, width: 20, height: 27 },
     { id: 'palm-s', prop: 'palm', x: 480, y: 456, width: 44, height: 67 },
     { id: 'wetfloor', prop: 'wetFloor', x: 700, y: 88, width: 20, height: 17 },
+    // Along the top wall, clear of every seeded seating layout.
+    { id: 'tray-return', prop: 'trayReturn', x: 160, y: 98, ...sized('trayReturn', 1.25) },
+    { id: 'trash-bank', prop: 'trashBank', x: 800, y: 96, ...sized('trashBank', 1.25) },
   );
   return {
     themeId: 'food_court',
@@ -627,6 +639,10 @@ function backHall(room: WingRoomDefinition): DressingPlan {
     { id: 'cart-abandoned', prop: 'cart', x: 820, y: 452, width: 40, height: 37, flipX: true },
     { id: 'wetfloor', prop: 'wetFloor', x: 130, y: 90, width: 20, height: 17 },
     { id: 'bin', prop: 'bin', x: 900, y: 80, width: 20, height: 27 },
+    // Alex's own cart by the wet-floor sign, the staff lockers, the buffer.
+    { id: 'janitor-cart', prop: 'janitorCart', x: 186, y: 104, ...sized('janitorCart', 1.3) },
+    { id: 'lockers', prop: 'lockerRow', x: 640, y: 82, ...sized('lockerRow', 1.3) },
+    { id: 'buffer', prop: 'floorBuffer', x: 832, y: 152, ...sized('floorBuffer', 1.25) },
   );
   return {
     themeId: 'back_hall',
@@ -659,6 +675,10 @@ function securityOffice(room: WingRoomDefinition): DressingPlan {
   props.push(
     { id: 'atm', prop: 'atm', x: 900, y: 110, width: 30, height: 49 },
     { id: 'bin', prop: 'bin', x: 70, y: 452, width: 20, height: 27 },
+    // Everything the janitor's colleagues ever took back, under lock and key.
+    { id: 'confiscated', prop: 'confiscationCage', x: 172, y: 116, ...sized('confiscationCage', 1.2) },
+    { id: 'files', prop: 'filingCabinets', x: 640, y: 92, ...sized('filingCabinets', 1.3) },
+    { id: 'cooler', prop: 'waterCooler', x: 72, y: 156, ...sized('waterCooler', 1.3) },
   );
   return {
     themeId: 'security_office',

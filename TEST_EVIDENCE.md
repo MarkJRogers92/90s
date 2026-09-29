@@ -1,5 +1,15 @@
 # Test evidence
 
+## 2026-09-29 — round 29: back-room props
+
+- Decoration only (no sim change). `npx vitest run` 926 passed (the asset
+  validator accepts eight new manifest entries); build clean; browser suite
+  74/74.
+- Manual: back hall (janitor cart, buffer; the lockers first sat behind the
+  Bench Warrant kiosk and were moved to x 640), food court (tray return,
+  trash bank), security office (confiscation cage, cooler, filing cabinets),
+  each clear of the fight.
+
 ## 2026-09-29 — round 28: concourse furniture
 
 - +2 unit tests: the furniture's footprints are in the storefront walls,

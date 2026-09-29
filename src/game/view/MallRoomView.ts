@@ -424,7 +424,8 @@ export class MallRoomView {
       }
     }
     if (image && (prop.prop === 'fountain' || prop.prop === 'palm' || prop.prop === 'pillar' || prop.prop === 'bunny' || prop.prop === 'crates'
-      || prop.prop === 'seatingIsland' || prop.prop === 'photoBooth' || prop.prop === 'pretzelCart' || prop.prop === 'massageChairs')) {
+      || prop.prop === 'seatingIsland' || prop.prop === 'photoBooth' || prop.prop === 'pretzelCart' || prop.prop === 'massageChairs'
+      || prop.prop === 'lockerRow' || prop.prop === 'confiscationCage' || prop.prop === 'filingCabinets')) {
       this.occluders.push({
         object: image,
         rect: { x: prop.x - width / 2, y: prop.y - height, width, height },

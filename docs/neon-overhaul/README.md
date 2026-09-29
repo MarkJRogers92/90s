@@ -800,3 +800,18 @@ game is always the pixel font. Seven generations (817 → 810 this cycle).
   script's own crop and recorded in `manifest.json`; the script's `PROPS`
   list includes them for a future full re-run.
 
+## Round 29: the back rooms
+
+Eight more PixelLab props (same recipe, eight generations, 810 → 802) for
+the rooms that had only two or three loose props. They are decoration with
+no collision, placed along the walls clear of every seeded wall layout
+(probed across 57 seeds and all three floors) and of the Bench Warrant
+kiosk, so no fight changes. Floors 2 and 3 inherit them through
+`upperFloor`/`topFloor`.
+
+- **Back hall**: Alex's own janitor cart beside the wet-floor sign, a row of
+  staff lockers, and a floor buffer.
+- **Security office**: a wire cage of confiscated shoplifted goods, filing
+  cabinets and a water cooler.
+- **Food court**: a tray-return station and a bank of trash cans.
+
