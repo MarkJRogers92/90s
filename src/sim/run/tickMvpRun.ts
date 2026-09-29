@@ -60,6 +60,7 @@ import {
 import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
 import { layLow, wantedStars } from './wanted';
 import { updateStalker } from './stalker';
+import { checkStoreEntrance, enterStore, leaveStore, nearStoreEntrance } from './storeInterior';
 import type {
   MvpCommandResult,
   MvpInputFrame,
@@ -94,6 +95,8 @@ function rejected(reason: string): MvpCommandResult {
 
 /** The nearest available offer in the current room, within interaction range. */
 export function nearestRunOffer(state: MvpRunState) {
+  // The shelves are inside the store; from the concourse only the door is.
+  if (!state.room.interior) return undefined;
   const player = state.room.combat.player;
   return currentRoom(state)
     .offers.filter(
@@ -179,6 +182,14 @@ export function nearestMvpInteraction(state: MvpRunState): MvpInteraction {
     });
   }
 
+  if (room.store && nearStoreEntrance(state, RUN_INTERACTION_RANGE)) {
+    candidates.push({
+      distance: Math.max(0, player.y - 26),
+      key: 'store',
+      interaction: { kind: 'store', label: `Enter the ${room.store.name}` },
+    });
+  }
+
   if (room.benchKiosk) {
     const distance = distanceToPoint(player, room.benchKiosk);
     if (distance <= RUN_INTERACTION_RANGE) {
@@ -218,6 +229,8 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
       return enterDoorway(state, interaction.side);
     case 'bench':
       return openRunWorkbench(state);
+    case 'store':
+      return enterStore(state);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }
@@ -280,6 +293,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
     cleared: !hasLivingEnemies(combat),
     enteredFrom: enteringFrom,
     tokens: [],
+    interior: false,
   };
   state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
   state.alarm = null;
@@ -337,18 +351,24 @@ function healClearedRoom(state: MvpRunState): void {
   publishRunFeedback(state, message);
 }
 
-/** Secures carried thefts at the store door, then runs the store alarm. */
+/**
+ * The shop door, from inside: walking out through it secures any carried
+ * thefts, ends the alarm, and puts the janitor back on the concourse. Then
+ * the alarm runs, for a janitor still inside.
+ */
 function evaluateStoreBoundary(state: MvpRunState, previousPosition: Vec2): void {
   const store: WingStoreInstance | null = currentRoom(state).store;
-  if (store) {
-    const missing = state.carried.some((theft) => theft.sourceStoreId === store.templateId);
+  if (store && state.room.interior) {
     const player = state.room.combat.player;
-    if (
-      missing &&
-      crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store)) &&
-      secureRunThefts(state, store, previousPosition).accepted
-    ) {
-      endStoreAlarm(state, store.templateId);
+    if (crossedStoreExit(previousPosition, player, player.radius, storeDefinitionOf(store))) {
+      let secured = false;
+      if (state.carried.some((theft) => theft.sourceStoreId === store.templateId) && secureRunThefts(state, store, previousPosition).accepted) {
+        endStoreAlarm(state, store.templateId);
+        secured = true;
+      }
+      // A clean getaway keeps its own message on the log.
+      leaveStore(state, !secured);
+      return;
     }
   }
   updateStoreAlarm(state);
@@ -513,8 +533,9 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   //    the car into the run on the same tick it is bought.
   syncRunCarrier(state);
 
-  // 4. Transition check.
+  // 4. Transition check: the room's doorways, and the shop door on its back wall.
   checkDoorwayCrossing(state, input);
+  checkStoreEntrance(state, input.moveY);
 
   // 5. Carrier update: independent seek and bump, or fused pointer steering.
   updateRunCarrier(state, input);

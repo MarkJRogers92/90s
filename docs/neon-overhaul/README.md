@@ -726,3 +726,43 @@ Three items from the NEXT_SESSION ideas backlog.
 - **Unplayed**: whether the stalker at 150 px/s is oppressive or ignorable,
   whether 4 stars is the right threshold, and whether 2.6 s of boss card is
   welcome on a retry (it plays on every entry; consider first-entry only).
+
+## Round 27: store interiors
+
+The owner could not read the stealing loop, and asked why items sat in the
+middle of the floor. The cause was a leftover from M3: each store was a
+rectangle on the concourse floor with no walls, items floating over it, and a
+96 px "door" on its bottom edge that was the only crossing that secured a
+theft. Walking off the side of the rug looked like leaving and did nothing.
+
+- **The stores are inside now** (`src/sim/run/storeInterior.ts`). A
+  storefront room's concourse has the shop in its back-wall art; walking into
+  its door (or E at `STORE_ENTRANCE`) sets `state.room.interior` and swaps the
+  room's walls for `interiorWalls(store)`: everything but the store floor,
+  with a gap for the door. The shelves only answer from inside
+  (`nearestRunOffer`). Walking out through the door secures carried thefts
+  (the old crossing rule), ends the alarm, drops the alarm's guards, and puts
+  the janitor back on the concourse at `STORE_EXIT_ARRIVAL`.
+- **Full-room stores**: `generateRunWing` scales every store template's
+  bounds, door and offer positions up to `INTERIOR_BOUNDS`, so the alarm,
+  guard spots, shutter and securing rules in heist.ts and economy.ts run
+  inside unchanged. Offer ids and stock are untouched; `createMvpRun` and
+  both checkpoint paths use it. The front wall sits at y = 360 so the door
+  clears the bottom HUD panels. The M3 Shoplifting Loop mode keeps its own
+  stores. `interior` is never checkpointed; a restore starts on the concourse.
+- **Each store has its own look** (`storeInterior()` and `INTERIOR_LOOKS` in
+  `roomDressing.ts`): Mall Mart grocery gondolas and carts, Cinema Snacks
+  vending machines and condiments, Arcade Annex cabinets, claw machines and a
+  kiddie ride, Department Outlet clothing racks and a bunny suit, each with
+  its floor, lights, neon name across the back wall, a display behind every
+  item, checkouts by the door, and a lit EXIT. `MallRoomView` rebuilds on
+  entering or leaving, draws solid side walls and a shop-window front wall
+  with the door, and the title card replays with the store's name.
+- **Readability**: the concourse door has a lit mat and climbing chevrons,
+  the objective reads STEP INTO <STORE>, the prompt reads E ENTER, and while
+  the alarm rings chevrons on the floor run from the janitor to the door.
+  Loss Prevention follows the janitor in through the shop door.
+- **Fixtures**: `mvp-store-front` (concourse, below the door) and
+  `mvp-storefront` (inside, at the shelf nearest the door).
+- **Unplayed**: whether 4 s is still fair from the back shelves of a
+  full-room store.

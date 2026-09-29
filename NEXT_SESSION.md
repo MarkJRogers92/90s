@@ -37,6 +37,15 @@ see TEST_EVIDENCE.md round 26 for the browser run.
   - Code: sim in `src/sim/run/heist.ts` and `wanted.ts`, visuals in
     `src/game/view/alarmCues.ts`.
   - Try it with `?fixture=mvp-storefront`, then press F.
+- **Store interiors** (round 27): the stores are inside now. On a storefront
+  concourse, walk into the shop door in the back-wall art (or press E) to go
+  in; each store fills the room in its own style, and its walls leave the
+  EXIT door as the only way out. Walking out secures stolen goods.
+  - Code: `src/sim/run/storeInterior.ts` (`generateRunWing` scales each
+    store template up to a full room), dressing in `storeInterior()` in
+    `roomDressing.ts`.
+  - Try `?fixture=mvp-store-front` (the concourse) or `mvp-storefront`
+    (inside, at the shelf nearest the door).
 - **Loss Prevention stalker** (round 26): at four stars an agent who can't
   be killed follows you room to room. A mop swing shoves him back, and
   dropping below four stars loses him.
@@ -66,6 +75,8 @@ see TEST_EVIDENCE.md round 26 for the browser run.
   - Is the 4 s alarm the right length?
   - Are Hunters guarding the store door fair on Floor 1?
   - Does +60 score per star over-reward stealing?
+  - Inside the full-room stores the door is farther from the back shelves:
+    is 4 s still fair from there (the escape chevrons point the way)?
 - Loss Prevention stalker: is 150 px/s oppressive or ignorable, and is
   four stars the right threshold?
 - Boss card: is 2.6 s welcome on every retry, or should it play only on the

@@ -1,3 +1,4 @@
+import { STORE_ENTRANCE, leaveStore } from '../../src/sim/run/storeInterior';
 import { describe, expect, it } from 'vitest';
 import { BOSS_MAX_HEALTH } from '../../src/sim/combat/boss';
 import { circleIntersectsRect, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../../src/sim/core/geometry';
@@ -394,7 +395,14 @@ describe('mvp interactions', () => {
     const state = createMvpRun(9);
     walkThrough(state, 'east');
 
+    // From the concourse the shelves are out of reach: the shop door is the interaction.
     const offer = state.wing.rooms[1]!.offers[0]!;
+    state.room.combat.player.x = STORE_ENTRANCE.x;
+    state.room.combat.player.y = STORE_ENTRANCE.y + 20;
+    expect(nearestMvpInteraction(state)).toMatchObject({ kind: 'store' });
+    expect(tryInteract(state).accepted).toBe(true);
+    expect(state.room.interior).toBe(true);
+
     state.room.combat.player.x = offer.position.x;
     state.room.combat.player.y = offer.position.y;
     expect(nearestMvpInteraction(state)).toMatchObject({ kind: 'offer', offerId: offer.id });
@@ -402,6 +410,7 @@ describe('mvp interactions', () => {
     const bought = tryInteract(state);
     expect(bought.accepted).toBe(true);
     expect(state.offerStatus[offer.id]).toBe('consumed');
+    leaveStore(state);
 
     state.room.combat.player.x = 480;
     state.room.combat.player.y = 240;

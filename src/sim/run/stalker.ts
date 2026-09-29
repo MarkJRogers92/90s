@@ -27,6 +27,7 @@ import { PLAYFIELD_WIDTH, normalizedDirection } from '../core/geometry';
 import { publishRunFeedback } from './economy';
 import type { MvpRunState } from './types';
 import { wantedStars } from './wanted';
+import { INTERIOR_ARRIVAL } from './storeInterior';
 
 /** Stars at which Loss Prevention stops sending guards and sends a man. */
 export const STALKER_MIN_STARS = 4;
@@ -73,6 +74,8 @@ function inBossRoom(state: MvpRunState): boolean {
  * room's authored entry anchor for that side, pushed back against the wall.
  */
 export function stalkerEntryPoint(state: MvpRunState): { x: number; y: number } {
+  // Inside a store he follows the janitor in through the shop door.
+  if (state.room.interior) return { ...INTERIOR_ARRIVAL };
   const room = state.wing.rooms[state.roomIndex]!;
   const fromWest = state.room.enteredFrom === 'west';
   const anchor = fromWest

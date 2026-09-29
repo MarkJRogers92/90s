@@ -46,6 +46,7 @@ import {
   swayAngle,
   type PropMotion,
 } from './propAmbience';
+import { INTERIOR_EXIT } from '../../sim/run/storeInterior';
 import { flashAllowed, gameSettings } from '../settings/settings';
 
 type Layer = Phaser.GameObjects.Container;
@@ -66,6 +67,8 @@ const WALL_EDGE = 0x4a3d62;
 
 export class MallRoomView {
   public readonly themeId: string;
+  /** Built for the inside of this room's store rather than its concourse. */
+  private readonly interior: boolean;
   public readonly plan: DressingPlan;
   public readonly lighting: LightingLayer;
   private readonly scene: Phaser.Scene;
@@ -114,7 +117,8 @@ export class MallRoomView {
     this.actors = actors;
     ensureFxTextures(scene);
     const room = state.wing.rooms[state.roomIndex]!;
-    this.plan = planRoomDressing(room, state.wing.floor ?? 1);
+    this.interior = state.room.interior;
+    this.plan = planRoomDressing(room, state.wing.floor ?? 1, this.interior);
     this.themeId = this.plan.themeId;
     this.floor = this.layer('floor');
     this.decal = this.layer('decal');
@@ -205,8 +209,10 @@ export class MallRoomView {
     this.buildStoreZone();
     this.buildNeonStrips();
     this.buildBackWall();
-    this.buildSideWalls(room);
-    this.buildRailing();
+    // Inside a store the side walls are solid and the front wall has the shop door.
+    this.buildSideWalls(this.interior ? { ...room, doorways: [] } : room);
+    if (this.interior) this.buildStoreFrontWall();
+    else this.buildRailing();
     for (const prop of this.plan.props) this.placeProp(prop);
     if (room.benchKiosk) {
       // The Bench Warrant is a repair desk you can walk up to; the older
@@ -371,6 +377,25 @@ export class MallRoomView {
         }
       }
     }
+  }
+
+  /**
+   * The store's front wall, nearest the camera: a dark shop-window band with
+   * the door gap in it, glass along its top, and EXIT lit over the door.
+   */
+  private buildStoreFrontWall(): void {
+    const door = INTERIOR_EXIT;
+    const wall = this.graphics(this.tallForeground);
+    const top = door.y;
+    for (const [x, width] of [[0, door.x], [door.x + door.width, STAGE_WIDTH - door.x - door.width]] as const) {
+      wall.fillStyle(0x0c0a14, 1).fillRect(x, top + 8, width, 480 - top - 8);
+      // Shop-window glass with the mall's glow behind it.
+      wall.fillStyle(0x1e2a3e, 0.9).fillRect(x, top - 6, width, 14);
+      wall.fillStyle(0xb8c8d8, 1).fillRect(x, top - 7, width, 2);
+    }
+    // Door frame posts.
+    wall.fillStyle(0x6a5e7a, 1).fillRect(door.x - 4, top - 10, 4, 480 - top + 10).fillRect(door.x + door.width, top - 10, 4, 480 - top + 10);
+    this.placeSign({ text: 'EXIT', color: '#6aff8a', scale: 2 }, door.x + door.width / 2, top - 26, false);
   }
 
   private buildRailing(): void {

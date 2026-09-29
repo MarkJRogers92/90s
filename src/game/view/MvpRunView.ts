@@ -12,9 +12,10 @@ import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH, isBossKind } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
-import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
+import type { EnemyState, ProjectileState, Rect, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
+import { STORE_ENTRANCE, STORE_ENTRANCE_HALF_WIDTH } from '../../sim/run/storeInterior';
 import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
 import { presentationDepth } from '../presentation/depth';
@@ -147,7 +148,8 @@ export class MvpRunView {
     if (!room) {
       return;
     }
-    const roomKey = `${state.roomIndex}:${room.id}`;
+    // Going into a store and back out rebuilds the room, like a doorway.
+    const roomKey = `${state.roomIndex}:${room.id}:${state.room.interior ? 'inside' : 'concourse'}`;
     if (this.openingConcourse && this.mallRoomKey !== roomKey) {
       this.concourseAmbience = this.openingConcourse.leaveRoom(state.tick);
       this.openingConcourse.destroy();
@@ -170,8 +172,10 @@ export class MvpRunView {
     this.usedShadows.clear();
     this.usedOfferIcons.clear();
 
-    if (room.store) {
+    if (room.store && state.room.interior) {
       this.drawStore(state, room.store.templateId);
+    } else if (room.store) {
+      this.drawStoreEntrance(state);
     }
 
     if (room.benchKiosk) {
@@ -593,6 +597,55 @@ export class MvpRunView {
     this.openingConcourse?.addLight({ x: 720, y: 30, radius: 230, color: right, intensity: 0.4 * wash.strength });
   }
 
+  /**
+   * On a storefront's concourse, the shop door in the back wall is the way in:
+   * a lit mat at its foot and chevrons climbing toward it.
+   */
+  private drawStoreEntrance(state: MvpRunState): void {
+    const cues = this.effectGraphics;
+    const floor = this.storeGraphics;
+    const x = STORE_ENTRANCE.x;
+    const pulse = 0.5 + 0.35 * Math.sin(state.tick / 10);
+    floor.fillStyle(0x1a2a30, 0.9).fillRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
+    floor.fillStyle(0x3ff0ff, 0.35 * pulse).fillRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
+    floor.lineStyle(2, 0x3ff0ff, 0.8).strokeRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
+    // Three chevrons stepping up toward the door, lit in turn.
+    for (let index = 0; index < 3; index += 1) {
+      const lit = Math.floor(state.tick / 8) % 3 === 2 - index;
+      const y = 56 + index * 16;
+      cues.lineStyle(3, 0xffd84a, lit ? 0.95 : 0.35);
+      cues.lineBetween(x - 12, y + 6, x, y - 2).lineBetween(x, y - 2, x + 12, y + 6);
+    }
+    this.openingConcourse?.addLight({ x, y: 40, radius: 70, color: 0x3ff0ff, intensity: 0.4 * pulse });
+  }
+
+  /**
+   * While the store alarm rings, chevrons on the floor run from the janitor
+   * to the door, so four seconds is never spent looking for the way out.
+   */
+  private drawEscapeChevrons(state: MvpRunState, exit: Rect, cues: Phaser.GameObjects.Graphics): void {
+    const player = state.room.combat.player;
+    const doorX = exit.x + exit.width / 2;
+    const doorY = exit.y + exit.height;
+    const dx = doorX - player.x;
+    const dy = doorY - player.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance < 40) return;
+    const ux = dx / distance;
+    const uy = dy / distance;
+    const flash = Math.floor(state.tick / 5);
+    for (let step = 40, index = 0; step < distance - 10; step += 34, index += 1) {
+      const cx = player.x + ux * step;
+      const cy = player.y + uy * step;
+      const lit = (flash - index) % 4 === 0;
+      // A chevron pointing along the way out.
+      const px = -uy * 9;
+      const py = ux * 9;
+      cues.lineStyle(3, lit ? 0xffffff : 0xff3a4a, lit ? 1 : 0.7);
+      cues.lineBetween(cx - ux * 8 + px, cy - uy * 8 + py, cx, cy).lineBetween(cx, cy, cx - ux * 8 - px, cy - uy * 8 - py);
+    }
+  }
+
   private drawStore(state: MvpRunState, templateId: string): void {
     const room = state.wing.rooms[state.roomIndex];
     const store = room?.store;
@@ -650,7 +703,7 @@ export class MvpRunView {
       this.clearLabel('store-alarm');
     }
 
-    this.setLabel(`store:${templateId}`, store.name.toUpperCase(), store.bounds.x + 6, store.bounds.y - 16);
+    if (cue.phase === 'ringing') this.drawEscapeChevrons(state, exit, cues);
 
     const player = state.room.combat.player;
     // Only the nearest available item's name grows, so neighbours never collide.
@@ -1605,8 +1658,7 @@ export class MvpRunView {
     if (state.stalker !== null) {
       keep.add('stalker');
     }
-    if (room?.store) {
-      keep.add(`store:${room.store.templateId}`);
+    if (room?.store && state.room.interior) {
       keep.add('store-alarm');
       for (const offer of room.offers) {
         keep.add(`offer:${offer.id}`);

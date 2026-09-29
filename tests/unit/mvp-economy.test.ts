@@ -17,6 +17,7 @@ import {
 import { commitRunEmitterMount } from '../../src/sim/run/bench';
 import { refreshRunLoadout } from '../../src/sim/run/loadout';
 import { enterDoorway, tickMvpRun } from '../../src/sim/run/tickMvpRun';
+import { enterStore } from '../../src/sim/run/storeInterior';
 import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
 import type { InventoryLeaf } from '../../src/sim/fusion/types';
 import type { EnemyState } from '../../src/sim/model';
@@ -49,6 +50,9 @@ function enterStorefront(state: MvpRunState): void {
   if (!result.accepted) {
     throw new Error(`Could not enter the storefront: ${result.reason}`);
   }
+  // The shelves are inside: through the shop door on the back wall.
+  const store = enterStore(state);
+  if (!store.accepted) throw new Error(`Could not enter the store: ${store.reason}`);
 }
 
 function walkThrough(state: MvpRunState, side: WingDoorSide): void {

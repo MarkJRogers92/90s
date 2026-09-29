@@ -18,6 +18,7 @@ import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
 import { BossIntro } from '../ui/BossIntro';
+import { INTERIOR_EXIT, STORE_EXIT_ARRIVAL, enterStore } from '../../sim/run/storeInterior';
 import { DawnEnding } from '../ui/DawnEnding';
 import { ClockIn } from '../ui/ClockIn';
 import { PinkSlip } from '../ui/PinkSlip';
@@ -953,14 +954,24 @@ export class MvpRunScene extends Phaser.Scene {
     }
     const fixture = new URLSearchParams(window.location.search).get('fixture');
     if (fixture === 'mvp-storefront') {
-      if (enterDoorway(state, 'east').accepted) {
-        const offer = state.wing.rooms[state.roomIndex]?.offers.find(
-          (candidate) => (state.offerStatus[candidate.id] ?? 'available') === 'available',
-        );
+      // Inside the first store, at the shelf with the straightest run to the door.
+      if (enterDoorway(state, 'east').accepted && enterStore(state).accepted) {
+        const doorX = INTERIOR_EXIT.x + INTERIOR_EXIT.width / 2;
+        const offer = [...(state.wing.rooms[state.roomIndex]?.offers ?? [])]
+          .filter((candidate) => (state.offerStatus[candidate.id] ?? 'available') === 'available')
+          .sort((first, second) => Math.abs(first.position.x - doorX) - Math.abs(second.position.x - doorX) || second.position.y - first.position.y)[0];
         if (offer) {
           state.room.combat.player.x = offer.position.x + 12;
           state.room.combat.player.y = offer.position.y;
         }
+      }
+      return state;
+    }
+    if (fixture === 'mvp-store-front') {
+      // On the first storefront's concourse, just below the shop door.
+      if (enterDoorway(state, 'east').accepted) {
+        state.room.combat.player.x = STORE_EXIT_ARRIVAL.x;
+        state.room.combat.player.y = STORE_EXIT_ARRIVAL.y + 60;
       }
       return state;
     }

@@ -168,6 +168,8 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
       objectives.push({ text: `GET OUT! SHUTTER IN ${(Math.ceil(alarm.ticksLeft / 6) / 10).toFixed(1)}S`, done: false });
     } else if (alarm?.shutter === 'closed') {
       objectives.push({ text: `LOCKED IN - TAKE DOWN SECURITY  ${living.length} LEFT`, done: false });
+    } else if (!state.room.interior) {
+      objectives.push({ text: `STEP INTO ${room.store.name.toUpperCase()}`, done: taken > 0 });
     } else {
       objectives.push({ text: `SHOP OR GRAB & RUN  ${taken}/${room.offers.length}`, done: taken > 0 });
     }
@@ -298,6 +300,8 @@ function promptFor(state: MvpRunState): HudPrompt {
     }
     case 'bench':
       return { subject: 'BENCH WARRANT KIOSK', keys: [{ key: 'E', action: 'FUSE' }] };
+    case 'store':
+      return { subject: interaction.label.toUpperCase(), keys: [{ key: 'E', action: 'ENTER' }] };
     case 'door':
       return interaction.locked ? { subject: 'DOOR LOCKED - CLEAR THE ROOM', keys: [] } : null;
     default:

@@ -1,5 +1,27 @@
 # Test evidence
 
+## 2026-09-29 — round 27: store interiors
+
+- New: `tests/unit/store-interior.test.ts` (8: full-room scaling keeps stock,
+  ids and guard spots inside; shelves out of reach from the concourse; the
+  door interaction and walking in; walls leave only the door; walking out;
+  a grab carried out is secured and the guards stay inside; not
+  checkpointed; Loss Prevention follows in).
+- Updated setup only (no assertion weakened): grab-and-run, mvp-economy,
+  game-hud-model and the mvp-run integration test now walk into the store
+  before reaching a shelf; the integration test also checks the shop-door
+  interaction.
+- `npx tsc --noEmit` clean; `npx vitest run` 83 files, 922 tests (run by the
+  owner in their terminal while the auto-mode check was down).
+- `PW_PORT=4191 npx playwright test` — 73/74; the one failure was the M1
+  `combat.spec.ts` canvas wait under 4-worker load, and `combat.spec.ts`
+  alone then passed 4/4. All storefront, grab, lockdown and heist specs
+  passed with the new fixture (inside, at the shelf nearest the door).
+- Manual: the concourse shows the Arcade Annex door with no rug or floating
+  items; walking up into it goes inside; the interior renders cabinets,
+  displays, checkouts and EXIT clear of the bottom HUD; a grab in Mall Mart
+  shows the alarm banner, shutter countdown and chevrons to the door.
+
 ## 2026-09-29 — round 26: Loss Prevention stalker, boss title cards, ambient props
 
 - New unit coverage: `tests/unit/stalker.test.ts` (11: threshold, arrival

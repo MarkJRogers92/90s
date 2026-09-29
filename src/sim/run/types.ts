@@ -41,6 +41,8 @@ export type MvpRoomState = {
   enteredFrom: MvpRoomEntryFrom;
   /** Mall Tokens dropped in this room and not yet collected. Never checkpointed. */
   tokens: MallTokenPickup[];
+  /** Inside this storefront's store rather than on its concourse (see storeInterior.ts). Never checkpointed. */
+  interior: boolean;
 };
 
 /** Renderer-neutral held input for exactly one fixed simulation tick. */
@@ -75,6 +77,7 @@ export type MvpInteraction =
       readonly lockedReason: string | null;
     }
   | { readonly kind: 'bench'; readonly label: string }
+  | { readonly kind: 'store'; readonly label: string }
   | { readonly kind: 'none'; readonly label: string };
 
 /** Every run command reports its own outcome; the HUD never infers success. */

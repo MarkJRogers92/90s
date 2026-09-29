@@ -7,6 +7,12 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 27 (2026-09-29): the stores are inside. A storefront concourse is just
+the mall, and the shop door in its back-wall art leads into a full-room store
+in that shop's own style, walled in so the EXIT door is the only way out;
+walking out secures stolen goods. Chevrons point to the door during an alarm.
+922 unit tests pass; see TEST_EVIDENCE.md round 27.
+
 Round 26 (2026-09-29): three backlog items. At four stars a Loss Prevention
 agent who cannot be put down follows the janitor room to room (a mop swing
 shoves him; laying low under four stars loses him). Walking into a boss room

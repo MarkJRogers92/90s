@@ -630,7 +630,8 @@ export class GameHud {
   }
 
   private roomKey(state: MvpRunState): string {
-    return `${state.roomIndex}:${state.wing.rooms[state.roomIndex]?.id}`;
+    // Stepping into a store is a new place: its name card plays again.
+    return `${state.roomIndex}:${state.wing.rooms[state.roomIndex]?.id}${state.room.interior ? ':inside' : ''}`;
   }
 
   private drawToast(state: MvpRunState): void {

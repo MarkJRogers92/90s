@@ -15,6 +15,7 @@
  */
 import type { Rect } from '../../../sim/model';
 import type { WingRoomDefinition } from '../../../sim/wing/types';
+import { INTERIOR_BOUNDS, INTERIOR_EXIT } from '../../../sim/run/storeInterior';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
 
@@ -144,7 +145,8 @@ export type RoomThemeId =
   | 'storefront'
   | 'food_court'
   | 'back_hall'
-  | 'security_office';
+  | 'security_office'
+  | 'store_interior';
 
 /* ------------------------------------------------------------------------ */
 /* Palette                                                                    */
@@ -405,6 +407,11 @@ function openingConcourse(room: WingRoomDefinition): DressingPlan {
   };
 }
 
+/**
+ * A storefront room's concourse. The store itself is inside, through the
+ * shop's own door in the back-wall art (see storeInterior.ts), so out here
+ * there is only the mall: planters, a bench, a cart, and that door lit up.
+ */
 function storefront(room: WingRoomDefinition): DressingPlan {
   const store = room.store;
   const look = (store && STORE_LOOKS[store.templateId]) ?? STORE_LOOKS['mall-mart']!;
@@ -416,32 +423,23 @@ function storefront(room: WingRoomDefinition): DressingPlan {
   ]);
   const props: DressingProp[] = [];
   interiorWalls(room).forEach((wall, index) => props.push(...coverWall(wall, index, 'storefront')));
-  // Fixtures stand behind each offer so the pickup reads as "on the shelf".
-  for (const offer of room.offers) {
-    const fixture = PROP_TEXTURES[look.fixture];
-    props.push({ id: `fixture-${offer.id}`, prop: look.fixture, x: offer.position.x, y: offer.position.y - 10, width: fixture.width + 6, height: fixture.height + 8 });
-  }
-  if (store) {
-    props.push(
-      { id: 'checkout', prop: 'checkout', x: store.exit.bounds.x - 30, y: store.exit.bounds.y - 4, width: 40, height: 36 },
-      { id: 'checkout-2', prop: 'checkout', x: store.exit.bounds.x + store.exit.bounds.width + 30, y: store.exit.bounds.y - 4, width: 40, height: 36, flipX: true },
-    );
-  }
   props.push(
     { id: 'palm-w', prop: 'palm', x: 70, y: 150, width: 44, height: 67 },
     { id: 'palm-e', prop: 'palm', x: 890, y: 440, width: 44, height: 67 },
+    { id: 'palm-c1', prop: 'palm', x: 330, y: 90, width: 40, height: 60 },
+    { id: 'palm-c2', prop: 'palm', x: 630, y: 90, width: 40, height: 60 },
     { id: 'bench', prop: 'bench', x: 160, y: 452, width: 64, height: 34 },
+    { id: 'bench-2', prop: 'bench', x: 480, y: 330, width: 64, height: 34 },
     { id: 'cart', prop: 'cart', x: 820, y: 76, width: 40, height: 37 },
+    { id: 'bin', prop: 'bin', x: 560, y: 452, width: 20, height: 27 },
   );
   const lights: PointLight[] = [
     ...facadeSpillLights(facades),
     ...doorwayLights(room, NEON.violet),
-    ...ceilingGrid(NEON.warm, 0.4, 150, [150, 400], [110, 850]),
+    ...ceilingGrid(NEON.warm, 0.4, 150, [150, 400], [110, 480, 850]),
+    // The open shop door throws its light out across the floor.
+    { x: 480, y: 70, radius: 150, color: look.spill, intensity: 0.8, squash: 0.6 },
   ];
-  if (store) {
-    const b = store.bounds;
-    lights.push(...ceilingGrid(look.spill, 0.62, 150, [b.y + b.height * 0.3, b.y + b.height * 0.75], [b.x + b.width * 0.25, b.x + b.width * 0.75]));
-  }
   return {
     themeId: 'storefront',
     areaName: (store?.name ?? room.name).toUpperCase(),
@@ -450,16 +448,103 @@ function storefront(room: WingRoomDefinition): DressingPlan {
     facades,
     props,
     lights,
-    neonStrips: store
-      ? [
-          { x1: store.bounds.x, y1: store.bounds.y, x2: store.bounds.x + store.bounds.width, y2: store.bounds.y, color: look.neon },
-          { x1: store.bounds.x, y1: store.bounds.y + store.bounds.height, x2: store.exit.bounds.x, y2: store.bounds.y + store.bounds.height, color: look.neon },
-          { x1: store.exit.bounds.x + store.exit.bounds.width, y1: store.bounds.y + store.bounds.height, x2: store.bounds.x + store.bounds.width, y2: store.bounds.y + store.bounds.height, color: look.neon },
-        ]
-      : [],
+    neonStrips: [],
     neonRings: [],
     floorSigns: [],
-    storeZone: store ? { bounds: store.bounds, floor: look.floor, accent: look.neon } : null,
+    storeZone: null,
+    civilians: false,
+  };
+}
+
+/** What each store stocks its walls with, beyond the shelves behind the offers. */
+type InteriorLook = {
+  /** Along the back wall, repeated. */
+  readonly wall: readonly PropId[];
+  /** Stood down both side walls. */
+  readonly sides: PropId;
+  /** A few pieces in the corners. */
+  readonly corners: readonly PropId[];
+  readonly ambient: number;
+};
+
+const INTERIOR_LOOKS: Readonly<Record<string, InteriorLook>> = {
+  'mall-mart': { wall: ['gondola'], sides: 'gondola', corners: ['cart', 'cart', 'vending', 'wetFloor'], ambient: 0x6a6878 },
+  'cinema-snacks': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['bench', 'bin', 'palm', 'drinkingFountain'], ambient: 0x5a3e4a },
+  'arcade-annex': { wall: ['arcadeCabinet', 'clawMachine'], sides: 'arcadeCabinet', corners: ['kiddieRide', 'atm', 'clawMachine', 'bin'], ambient: 0x3a2e5a },
+  'department-outlet': { wall: ['clothingRack'], sides: 'clothingRack', corners: ['bunny', 'palm', 'palm', 'directory'], ambient: 0x5e4a62 },
+};
+
+/** Draw size for a prop stood in a store: a little larger than out on the concourse. */
+function sized(prop: PropId, scale = 1.35): { width: number; height: number } {
+  const texture = PROP_TEXTURES[prop];
+  return { width: Math.round(texture.width * scale), height: Math.round(texture.height * scale) };
+}
+
+/**
+ * Inside a store: its floor wall to wall, its neon name on the back wall,
+ * the back wall and side walls stocked in the store's own style, a shelf
+ * behind every item for sale, checkouts either side of the door, and the
+ * door itself at the bottom (drawn by MallRoomView).
+ */
+function storeInterior(room: WingRoomDefinition): DressingPlan {
+  const store = room.store;
+  const look = (store && STORE_LOOKS[store.templateId]) ?? STORE_LOOKS['mall-mart']!;
+  const stock = (store && INTERIOR_LOOKS[store.templateId]) ?? INTERIOR_LOOKS['mall-mart']!;
+  const b = INTERIOR_BOUNDS;
+  const door = INTERIOR_EXIT;
+  const props: DressingProp[] = [];
+  // The back wall, stocked end to end.
+  let index = 0;
+  for (let x = b.x + 50; x <= b.x + b.width - 50; x += 78) {
+    const prop = stock.wall[index % stock.wall.length]!;
+    props.push({ id: `wall-${index}`, prop, x, y: b.y + 30, ...sized(prop) });
+    index += 1;
+  }
+  // Down both side walls.
+  for (const [side, x] of [['w', b.x + 26], ['e', b.x + b.width - 26]] as const) {
+    for (let row = 0; row < 2; row += 1) {
+      props.push({ id: `side-${side}-${row}`, prop: stock.sides, x, y: b.y + 150 + row * 100, ...sized(stock.sides), flipX: side === 'e' });
+    }
+  }
+  // A shelf behind every item for sale, so it reads as on display.
+  for (const offer of room.offers) {
+    props.push({ id: `fixture-${offer.id}`, prop: look.fixture, x: offer.position.x, y: offer.position.y - 12, ...sized(look.fixture, 1.5) });
+  }
+  // Checkouts either side of the door, and the corners.
+  props.push(
+    { id: 'checkout', prop: 'checkout', x: door.x - 50, y: door.y - 6, width: 48, height: 42 },
+    { id: 'checkout-2', prop: 'checkout', x: door.x + door.width + 50, y: door.y - 6, width: 48, height: 42, flipX: true },
+  );
+  const corners = [
+    { x: b.x + 90, y: b.y + b.height - 30 },
+    { x: b.x + 170, y: b.y + b.height - 22 },
+    { x: b.x + b.width - 170, y: b.y + b.height - 22 },
+    { x: b.x + b.width - 90, y: b.y + b.height - 30 },
+  ];
+  stock.corners.forEach((prop, i) => props.push({ id: `corner-${i}`, prop, x: corners[i]!.x, y: corners[i]!.y, ...sized(prop, 1.2) }));
+  const lights: PointLight[] = [
+    // Shop fluorescents: brighter and whiter than the concourse outside.
+    ...ceilingGrid(look.spill, 0.62, 170, [130, 320], [200, 480, 760]),
+    // The door and its EXIT sign.
+    { x: door.x + door.width / 2, y: door.y + 4, radius: 110, color: 0x6aff8a, intensity: 0.55, squash: 0.6 },
+  ];
+  return {
+    themeId: 'store_interior',
+    areaName: (store?.name ?? room.name).toUpperCase(),
+    floor: look.floor,
+    ambient: stock.ambient,
+    facades: [],
+    props,
+    lights,
+    neonStrips: [
+      { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y, color: look.neon },
+      { x1: b.x, y1: door.y, x2: door.x, y2: door.y, color: look.neon },
+      { x1: door.x + door.width, y1: door.y, x2: b.x + b.width, y2: door.y, color: look.neon },
+    ],
+    neonRings: [],
+    // The store's name in neon across its own back wall.
+    floorSigns: [{ ...sign((store?.name ?? 'STORE').toUpperCase(), look.neon, look.subtitle, NEON.yellow, 4), x: 480, y: -64 }],
+    storeZone: null,
     civilians: false,
   };
 }
@@ -754,7 +839,9 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
   }
 }
 
-export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 | 3 = 1): DressingPlan {
+export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 | 3 = 1, interior = false): DressingPlan {
+  // A shop looks like itself on any floor.
+  if (interior && room.store) return storeInterior(room);
   const plan = planFloorOneRoom(room);
   return floor === 3 ? topFloor(plan, room) : floor === 2 ? upperFloor(plan, room) : plan;
 }
