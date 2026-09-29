@@ -1,121 +1,116 @@
 # Next session
 
-## Claude neon overhaul — start here
+## Start here (updated 2026-09-29)
 
-Latest (round 24, 2026-09-29): NEW SNEAKERS and SHOP-VAC ATTACHMENT perk lines
-(`src/sim/run/perks.ts`, `PERKS` in `src/game/career/career.ts`, icons drawn by
-`docs/art/neon-overhaul/draw_perk_icons.py`). Tuning knobs: 10 ticks and 40 px
-per level in `perksFor`, 5 px/tick pull in `TOKEN_MAGNET_SPEED`.
+The repository now lives at `~/code/90s` (it moved from
+`~/Documents/Github Code/90s`). The live work is branch `claude/neon-overhaul`
+in `.worktrees/neon-overhaul`, fast-forwarded to `origin/main` at `ac58121`
+(PR #15). Rounds 18–25 reached `main` through PRs #8–#15; PR #15 came from
+`claude/jolly-pascal-cc520j`, so check `git log HEAD..origin/main` before
+starting and fast-forward if needed.
 
-Latest (round 25): grab and run, wanted level, hot goods — the owner's
-"stealing feels bolted on" rework (options A+B+C). Sim in
-`src/sim/run/heist.ts` and `src/sim/run/wanted.ts`; visuals in
-`src/game/view/alarmCues.ts` and `MvpRunView.drawStore`; HUD in
-`gameHudModel.ts`/`GameHud.ts`. Try it with `?fixture=mvp-storefront`, press F.
-Needs a human playtest: the 4 s alarm, Hunters at the door on Floor 1, and
-whether +60 score a star over-rewards stealing. Possible next: blackouts
-silence the alarm (option E), a Loss Prevention stalker at 4+ stars (G).
-
-In this cloud container, run the browser suite with a config that sets
-`launchOptions.executablePath: '/opt/pw-browsers/chromium'`; four tests fail
-here on `main` too (a console 404 and one timeout).
-
-Latest (round 22): the Break Room. Career rules and storage are in
-`src/game/career/career.ts`, the run-side perks in `src/sim/run/perks.ts`, the
-panel in `src/game/ui/BreakRoomPanel.ts`, and the art in
-`public/assets/neon/ui/breakroom/`. To try it with money, set
-`localStorage['dead-mall:career:v1'] = '{"version":1,"stubs":200}'` and reload.
-Tuning knobs: stub pay in `stubsForShift`, prices in `PERKS` / `LOCKER_ITEMS`.
-Possible next steps: more perk lines (a dash upgrade, a
-starting token magnet), Floor 3, and seasonal wall resets.
-
-Branch `claude/neon-overhaul` in `.worktrees/neon-overhaul`. Read
-[`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first.
-Round 4 added `src/game/view/combatBeats.ts` (pure rules) and reworked
-`CombatFeedback.ts`. Hit stop lives in `MvpRunScene.update`. New enemy
-animations are promoted with `docs/art/neon-overhaul/promote_anim.py`.
+Read [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first. It
+is the playbook: architecture, art pipeline, and a section per round with its
+tuning knobs.
 
     npm install
     VITE_ENABLE_DEBUG_BRIDGE=true npx vite --host 127.0.0.1 --port 4180 --strictPort
 
-Open http://127.0.0.1:4180, choose **Night Shift**. Before/after captures are
-in `artifacts/neon-overhaul/` (`before/` holds the baseline's own evidence).
-If port 5173 is taken by another worktree, run the browser gate with
+Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
+port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Latest (round 15): Floor 2 — beat Loss Prevention, take the escalator, face
-Statics, Bargain Hunters and the Mall Manager. Jump in with
-`?fixture=mvp-floor-two`, `mvp-floor-two-lobby` or `mvp-floor-two-boss`.
-Committed locally on `claude/neon-overhaul`; not pushed until the owner says so.
+Last gate (round 25): `tsc` clean, 880 unit tests, `npm run build` passes;
+browser suite 72/74 in one run, and the other two are load-sensitive and pass
+alone. See TEST_EVIDENCE.md rounds 23–25.
 
-Open follow-ups: a human playtest of Floor 2 difficulty (use the playtest
-log; it now separates upstairs rooms and attackers), a purpose-made Alex portrait, folding the duplicate DOM
-status bar into an off-canvas panel, and device/Safari performance checks.
-Nothing is pushed, merged or published.
+## What the game has now
 
-The Opening Concourse production-presentation vertical slice is implemented on
-`codex/presentation-3quarter` in `.worktrees/presentation-3quarter`. Verify the
-actual branch and working tree before trusting this note.
+- **Three floors**, six rooms each, reached by the escalator:
+  - Floor 1 ends with the Loss Prevention Manager.
+  - Floor 2 (Statics, Bargain Hunters) ends with the Mall Manager.
+  - Floor 3, Food Court After Dark (Mascot Brute), ends with the Mall Owner.
+  - Jump in with `?fixture=mvp-floor-two`, `mvp-floor-two-boss` and the
+    Floor 3 fixtures listed in the playbook.
+- **Grab and run** (round 25): press F on a shelf item to set off the alarm,
+  then get out before the shutter drops. The loop adds Heat, wanted stars and
+  hot goods, and fusing a hot item at the Bench Warrant launders it.
+  - Code: sim in `src/sim/run/heist.ts` and `wanted.ts`, visuals in
+    `src/game/view/alarmCues.ts`.
+  - Try it with `?fixture=mvp-storefront`, then press F.
+- **Void the Warranty** (round 23c): any two items fuse at the Bench Warrant.
+- **Daily Shift** (round 23a): today's seeded mall with standard-issue gear.
+  Each day's record is saved in `dead-mall:daily:v1`.
+- **Break Room** (rounds 22 and 24): Pay Stubs buy perks between shifts.
+  - Perks: Seniority, Dental Plan, Coffee Break, New Sneakers, Shop-Vac
+    Attachment. Locker weapons start in hand.
+  - Code: `src/game/career/career.ts` and `src/sim/run/perks.ts`.
+  - To test with money, set
+    `localStorage['dead-mall:career:v1'] = '{"version":1,"stubs":200}'`.
+- **Presentation**: clock-in cold open, kill cam, dawn ending, escalator ride,
+  pink slip, mall PA ticker, room events (Blackout, Blue Light Special), and an
+  adaptive synth soundtrack.
 
-The user has paused local iteration and requested a GitHub handoff for Claude
-Opus 5.5. Read [`CLAUDE_HANDOFF.md`](CLAUDE_HANDOFF.md) first. Resume only when
-the user asks. Claude is invited to review the whole project and change any
-parts needed to achieve the original 80s/90s mall roguelike vision; this
-worktree remains the untouched comparison baseline. Claude's work belongs on a
-separate branch/worktree and must remain unmerged, unpublished, undeployed, and
-unreleased unless separately approved. The handoff branch is
-`origin/codex/presentation-3quarter`.
+## Needs a human playtest
 
-For a later visual review, open the local game, choose **Night Shift**, and
-compare the playable calm, evacuation, and first-combat transition with:
+- Grab and run:
+  - Is the 4 s alarm the right length?
+  - Are Hunters guarding the store door fair on Floor 1?
+  - Does +60 score per star over-reward stealing?
+- Floor 3: Mascot Brute charge fairness and Mall Owner length (240 hp).
+- Floor 2 difficulty since round 16. The playtest log separates upstairs
+  rooms and attackers.
+- Break Room economy: stub pay against perk prices over several shifts.
 
-- `artifacts/presentation-vertical-slice/opening-busy.png`
-- `artifacts/presentation-vertical-slice/opening-evacuation.png`
-- `artifacts/presentation-vertical-slice/first-combat.png`
-- `artifacts/presentation-vertical-slice/compact-800x600.png`
+## Open follow-ups
 
-Port 5173 was occupied by another worktree during Task 8. A safe local launch is:
+- Fold the duplicate DOM status bar into an accessible off-canvas panel. The
+  browser tests still read HP, cash, room and objective from it.
+- A purpose-made Alex portrait.
+- Safari/WebKit, Windows and physical-device performance are untested.
+- Two browser specs flake under host load. Harden their waits the way round
+  23 did.
+- Checkpoint validation still accepts some hand-edited saves (see STATUS.md,
+  "Known issues carried forward").
+- `artifacts/neon-overhaul/audit/` holds 14 untracked weapon and effects
+  audit captures. Commit them as evidence or delete them.
 
-    npx vite --host 127.0.0.1 --port 4176 --strictPort
+## Ideas backlog
 
-Then open `http://127.0.0.1:4176`, choose **Night Shift**, move with WASD, aim
-with the pointer, attack with the primary mouse button, and press Escape to
-pause. The branch is pushed to GitHub for handoff, but is not merged, published,
-deployed, released, or approved for broader art rollout.
+Candidates, not commitments. Pick with the owner.
 
-The correction pass resolved the previous framing and HUD blockers: native-scale
-captures show four distinct civilians inside the initial camera; the HUD is
-entirely above the canvas at 1440x900 and 800x600; and the full room identity,
-critical values, objective/context, actions, and controls remain visible. Cyan
-and magenta signage, light bands, and floor borders are also materially stronger.
+**Heist follow-ups**
+- Blackouts silence the alarm (option E).
+- A Loss Prevention stalker who hunts you at 4+ stars (option G).
 
-Review these remaining concrete concerns before approval:
+**Content**
+- Floor 4 / the Roof or Parking Garage, or a Basement Service Tunnels
+  secret floor.
+- A second playable employee with their own starting kit.
+- More 90s items (Walkman, Tamagotchi, Super Soaker 50, Pogs, Game Boy).
+- Elite variants of enemies.
 
-- beige terrazzo is still the dominant surface, so the opening is not uniformly
-  neon-heavy even with stronger cyan/magenta accents;
-- evacuation warning/flicker remains subtle in a single still;
-- the existing Food Court remains gray/olive vector graybox. Converting it was
-  outside the original Codex slice, but Claude may change it on the separate
-  experiment branch if that helps realize the whole-game vision.
+**Meta**
+- Seasonal wall resets for Employee of the Month.
+- A daily leaderboard export (a shareable seed card).
+- Unlockable mall layouts.
 
-The first-combat capture concern is resolved in the evidence packet: the harness
-now waits for an authoritative on-screen Spitter telegraph matched to the
-renderer, and the native 1440x900 still shows two large yellow windup rings with
-long aim lines. Hanger movement streaks no longer satisfy that capture test.
+**Visuals**
+- Convert the remaining vector rooms and earlier modes to the neon kit.
+- Weather through the skylights.
+- A CRT/VHS post-process toggle.
+- Boss intro title cards.
+- Idle and ambient animations for props.
 
-This baseline records an opening-only Codex slice. The user has since authorized
-Claude to review and change other rooms or systems as needed within the original
-vision; see `CLAUDE_HANDOFF.md`. Keep Claude's experiment separate until the
-user reviews and chooses what to adopt.
+**Accessibility**
+- Colourblind-safe telegraphs.
+- Remappable keys.
+- Reduced flashing, since alarms and blackouts flash.
 
-The automated gate is clean for this scope: asset validation, typecheck, 513
-unit/integration tests, the 4-case evidence harness, 10 lifecycle cycles, local-
-request assertions, the complete 57-case Chromium suite, and the production
-build passed. The former seed test now reads the actual hidden offer text rather
-than empty `innerText`, and the resized-aim test waits for the camera projection
-to consume the resize while keeping its strict direction-cosine threshold. A
-parallel M4 origin check now samples the carrier immediately before firing and
-tightens its origin allowance rather than comparing with a later moving target.
+## Baseline for comparison
 
-WebKit, Safari, Windows, physical devices, physical-device performance, and
-human feel remain untested. Broader room rollout remains explicitly unstarted.
+`codex/presentation-3quarter` in `.worktrees/presentation-3quarter` is the
+untouched Codex opening-slice baseline; see [`CLAUDE_HANDOFF.md`](CLAUDE_HANDOFF.md)
+and the history of this file for its evidence notes. Earlier modes (Start
+shift, Lab, Shoplifting Loop, Void the Warranty) keep their original
+presentation. Night Shift is the game.
