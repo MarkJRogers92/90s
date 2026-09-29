@@ -32,6 +32,19 @@ import {
 } from '../presentation/rooms/roomDressing';
 import { croppedFrameOrigin } from './ActorSpriteView';
 import { ConcourseAmbience, type ConcourseAmbienceSnapshot, type ConcourseCivilianLane } from './ConcourseAmbience';
+import {
+  BLACKOUT_SCREEN_SCALE,
+  fountainDroplets,
+  fountainRipples,
+  propMotion,
+  propSeed,
+  rockAngle,
+  screenGlow,
+  signFlicker,
+  swayAngle,
+  type PropMotion,
+} from './propAmbience';
+import { flashAllowed, gameSettings } from '../settings/settings';
 
 type Layer = Phaser.GameObjects.Container;
 type Occluder = {
@@ -65,6 +78,21 @@ export class MallRoomView {
   private readonly effectLayer: Phaser.GameObjects.Layer;
   private readonly sortedProps: Phaser.GameObjects.Image[] = [];
   private readonly pulsing: Array<{ object: Phaser.GameObjects.Image; base: number; seed: number }> = [];
+  /** Props with ambient life (see propAmbience.ts), animated in `render`. */
+  private readonly animatedProps: Array<{
+    readonly image: Phaser.GameObjects.Image;
+    readonly prop: DressingProp['prop'];
+    readonly motion: PropMotion;
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+    readonly seed: number;
+  }> = [];
+  /** Every neon sign's tube and halo, so a dying tube can stutter both. */
+  private readonly signs: Array<{ core: Phaser.GameObjects.Image; halo: Phaser.GameObjects.Image; seed: number }> = [];
+  /** The fountain's spray and ripples, y-sorted just in front of it. */
+  private water: Phaser.GameObjects.Graphics | null = null;
   private readonly actorGraphicsById = new Map<string, { graphics: Phaser.GameObjects.Graphics; baseY: number }>();
   private readonly effectGraphicsById = new Map<string, Phaser.GameObjects.Graphics>();
   private readonly usedActorIds = new Set<string>();
@@ -289,6 +317,7 @@ export class MallRoomView {
     const core = this.scene.add.image(cx, cy, sign.core);
     this.glow.add([halo, core]);
     this.pulsing.push({ object: halo, base: 0.9, seed: this.pulsing.length });
+    this.signs.push({ core, halo, seed: propSeed(`${spec.text}@${Math.round(cx)}`) });
     this.textureKeys.add(sign.core);
     if (reflect) {
       // Polished floor: a faint, stretched, upside-down smear of the sign.
@@ -358,6 +387,13 @@ export class MallRoomView {
     const width = prop.width ?? texture.width;
     const height = prop.height ?? (texture.height * width) / texture.width;
     const image = this.placeImage(texture.key, prop.x, prop.y, width, height, true, prop.flipX);
+    const motion = propMotion(prop.prop);
+    if (image && motion) {
+      this.animatedProps.push({ image, prop: prop.prop, motion, x: prop.x, y: prop.y, width, height, seed: propSeed(prop.id) });
+      if (motion === 'fountain' && !this.water) {
+        this.water = this.scene.add.graphics().setDepth(presentationDepth('actor', prop.y + 1));
+      }
+    }
     if (image && (prop.prop === 'fountain' || prop.prop === 'palm' || prop.prop === 'pillar' || prop.prop === 'bunny' || prop.prop === 'crates')) {
       this.occluders.push({
         object: image,
@@ -408,7 +444,64 @@ export class MallRoomView {
     for (const entry of this.pulsing) {
       entry.object.setAlpha(entry.base * (0.82 + 0.18 * Math.sin((snapshot.tick + entry.seed * 41) / 17)));
     }
+    this.renderProps(snapshot.tick);
     this.renderAmbience(snapshot);
+  }
+
+  /**
+   * Ambient prop life (see propAmbience.ts): dying neon tubes, swaying palms,
+   * a rocking kiddie ride, glowing screens, and the fountain's spray.
+   */
+  private renderProps(tick: number): void {
+    // Reduced flashes: every tube holds steady.
+    const flickers = flashAllowed(gameSettings().get());
+    for (const sign of this.signs) {
+      const flicker = flickers ? signFlicker(tick, sign.seed) : 1;
+      sign.core.setAlpha(flicker);
+      if (flicker < 1) sign.halo.setAlpha(sign.halo.alpha * flicker);
+    }
+    this.water?.clear();
+    const screenScale = this.blackout ? BLACKOUT_SCREEN_SCALE : 1;
+    for (const entry of this.animatedProps) {
+      switch (entry.motion) {
+        case 'sway':
+          entry.image.setRotation(swayAngle(tick, entry.seed));
+          break;
+        case 'rock':
+          entry.image.setRotation(rockAngle(tick, entry.seed));
+          break;
+        case 'screen': {
+          const glow = screenGlow(entry.prop, tick, entry.seed);
+          if (glow) {
+            this.lighting.addDynamic({
+              x: entry.x,
+              y: entry.y - entry.height * glow.heightFraction,
+              radius: Math.max(entry.width, entry.height) * 0.9,
+              color: glow.color,
+              intensity: glow.intensity * screenScale,
+            });
+          }
+          break;
+        }
+        case 'fountain':
+          this.renderFountain(entry, tick);
+          break;
+      }
+    }
+  }
+
+  private renderFountain(entry: MallRoomView['animatedProps'][number], tick: number): void {
+    const water = this.water;
+    if (!water) return;
+    const basinY = entry.y - entry.height * 0.14;
+    for (const ring of fountainRipples(tick, entry.seed)) {
+      water.lineStyle(1, 0x9ae8ff, ring.alpha).strokeEllipse(entry.x, basinY, entry.width * 0.7 * ring.scale, entry.height * 0.14 * ring.scale);
+    }
+    for (const drop of fountainDroplets(tick, entry.seed, entry.width, entry.height)) {
+      water.fillStyle(0xc8f4ff, 0.85 * drop.alpha).fillRect(Math.round(entry.x + drop.dx) - 1, Math.round(entry.y + drop.dy) - 1, 2, 3);
+    }
+    // The lit water throws a faint cyan shimmer on the floor around it.
+    this.lighting.addDynamic({ x: entry.x, y: basinY, radius: entry.width * 0.75, color: 0x5ad8ff, intensity: 0.28 + 0.06 * Math.sin(tick / 9) });
   }
 
   /** Commits the lightmap for this frame after the caller added dynamic lights. */
@@ -581,6 +674,10 @@ export class MallRoomView {
     }
     for (const image of this.sortedProps) image.destroy();
     this.sortedProps.length = 0;
+    this.animatedProps.length = 0;
+    this.signs.length = 0;
+    this.water?.destroy();
+    this.water = null;
     this.actorGraphicsById.clear();
     this.effectGraphicsById.clear();
     for (const sprite of this.civilianSprites.values()) sprite.destroy();
