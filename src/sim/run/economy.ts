@@ -220,7 +220,7 @@ export function buyRunOffer(state: MvpRunState, offerId: string): MvpCommandResu
     instanceId: `mvp-purchased-${offer.id}`,
     itemDefinitionId: offer.itemDefinitionId,
     acquisitionKind: 'purchased',
-    sourceLocationId: room?.store?.templateId ?? offer.storeId,
+    sourceLocationId: offer.storeId,
     sourceStockId: offer.id,
     acquisitionTick: state.tick,
   };

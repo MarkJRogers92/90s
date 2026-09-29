@@ -1,4 +1,5 @@
 import { bossConfigFor, isBossKind } from '../../sim/combat/boss';
+import { roomStores } from '../../sim/run/storeInterior';
 /**
  * DOM presentation for the M5 MVP run.
  *
@@ -447,7 +448,8 @@ export class MvpRunHud {
           name.textContent = itemDefinitionName(offer.itemDefinitionId);
         }
         if (meta) {
-          meta.textContent = `${runOfferPriceLabel(state, offer)} · ${room.store.name}`;
+          const shop = roomStores(room).find((store) => store.templateId === offer.storeId);
+          meta.textContent = `${runOfferPriceLabel(state, offer)} · ${shop?.name ?? room.store.name}`;
         }
         if (status) {
           if (offerStatus === 'carried') {

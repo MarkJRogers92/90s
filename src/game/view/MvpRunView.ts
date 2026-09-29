@@ -12,10 +12,12 @@ import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH, isBossKind } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
-import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
+import type { EnemyState, ProjectileState, Rect, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
+import { STORE_ENTRANCE_HALF_WIDTH, activeStore, roomStores, storeEntrance } from '../../sim/run/storeInterior';
 import { alarmCue } from './alarmCues';
+import { policeWash, stalkerCue } from './stalkerCues';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -81,6 +83,8 @@ export class MvpRunView {
   private readonly actorMovement = new ActorMovementMemory();
   private readonly deathEffects = new ActorDeathEffectLifecycle();
   private readonly actorSprites = new Map<string, ActorSpriteView>();
+  /** Screen-fixed red/blue edge glow while Loss Prevention is in the room. */
+  private policeGlow: Phaser.GameObjects.Graphics | null = null;
   private readonly usedActorSpriteIds = new Set<string>();
   private openingConcourse: MallRoomView | undefined;
   private mallRoomKey = '';
@@ -98,6 +102,12 @@ export class MvpRunView {
   private deadSince: number | null = null;
   /** Real time the shift ended (won or dead), for the effects clock. */
   private endedAt: number | null = null;
+  /**
+   * Effect ticks that played while a cinematic held the sim (the boss title
+   * card). Added to every effects tick so spawn-ins, idles and feedback keep
+   * moving under the card, and the clock never runs backwards afterwards.
+   */
+  private heldTicks = 0;
   /** The RC car's sprite and its presentation memory (facing, dust, bump sparks). */
   private carSprite: Phaser.GameObjects.Image | null = null;
   private carLast: { x: number; y: number; bump: number } | null = null;
@@ -138,7 +148,8 @@ export class MvpRunView {
     if (!room) {
       return;
     }
-    const roomKey = `${state.roomIndex}:${room.id}`;
+    // Going into a store and back out rebuilds the room, like a doorway.
+    const roomKey = `${state.roomIndex}:${room.id}:${state.room.interior ? `inside-${state.room.storeIndex}` : 'concourse'}`;
     if (this.openingConcourse && this.mallRoomKey !== roomKey) {
       this.concourseAmbience = this.openingConcourse.leaveRoom(state.tick);
       this.openingConcourse.destroy();
@@ -161,8 +172,11 @@ export class MvpRunView {
     this.usedShadows.clear();
     this.usedOfferIcons.clear();
 
-    if (room.store) {
-      this.drawStore(state, room.store.templateId);
+    const inside = activeStore(state);
+    if (inside) {
+      this.drawStore(state, inside.templateId);
+    } else {
+      roomStores(room).forEach((_, index) => this.drawStoreEntrance(state, index));
     }
 
     if (room.benchKiosk) {
@@ -305,6 +319,11 @@ export class MvpRunView {
       state,
       state.carrier ? opening?.actorGraphics('carrier', state.carrier.y) ?? graphics : graphics,
       state.carrier ? opening?.effectGraphics('carrier') ?? this.effectGraphics : this.effectGraphics,
+    );
+    this.drawStalker(
+      state,
+      fxTick,
+      state.stalker ? opening?.effectGraphics('stalker') ?? this.effectGraphics : this.effectGraphics,
     );
     const player = state.room.combat.player;
     const playerDelta = this.actorMovement.movementFor('player', player.x, player.y);
@@ -481,12 +500,161 @@ export class MvpRunView {
     else this.clearLabel('carrier');
   }
 
-  private drawStore(state: MvpRunState, templateId: string): void {
-    const room = state.wing.rooms[state.roomIndex];
-    const store = room?.store;
-    if (!store) {
+  /**
+   * Loss Prevention on a four-star janitor's trail (see stalker.ts). While he
+   * is on his way the door he will use strobes red and blue under a
+   * countdown; once he is in, a person-sized agent in the Loss Prevention
+   * Manager's suit, tinted cold, walks the janitor down behind a flashlight.
+   */
+  private drawStalker(state: MvpRunState, fxTick: number, effects: Phaser.GameObjects.Graphics): void {
+    const stalker = state.stalker;
+    const cue = stalkerCue(stalker, state.tick);
+    this.drawPoliceWash(state);
+    if (stalker === null || cue.phase === 'none') {
+      this.clearLabel('stalker');
       return;
     }
+    // Reduced flashes: the warning holds red instead of strobing.
+    const strobe = cue.strobeRed || !flashAllowed(gameSettings().get()) ? 0xff2a3a : 0x2a6aff;
+    if (cue.doorProgress !== null) {
+      // The doorway warning: a strobing floor ring that tightens as he nears.
+      const radius = 70 - 34 * cue.doorProgress;
+      effects.lineStyle(3, strobe, 0.55 + 0.4 * cue.doorProgress).strokeEllipse(stalker.x, stalker.y, radius * 2, radius);
+      effects.fillStyle(strobe, 0.08 + 0.12 * cue.doorProgress).fillEllipse(stalker.x, stalker.y, radius * 2, radius);
+      this.openingConcourse?.addLight({ x: stalker.x, y: stalker.y - 20, radius: 90 + 40 * cue.doorProgress, color: strobe, intensity: 0.7 });
+    }
+    if (cue.body) {
+      const delta = this.actorMovement.movementFor('stalker', stalker.x, stalker.y);
+      const depth = presentationDepth('actor', stalker.y);
+      const cold = glow(0x2a50c0, cue.phase === 'writing_up' ? 0.25 : 0.4);
+      this.syncActorSprite({
+        id: 'stalker', kind: 'lp_agent', x: stalker.x + cue.sway, y: stalker.y,
+        moveX: delta.x, moveY: delta.y, attackTicks: 0, damaged: cue.phase === 'shoved', phase: cue.phase,
+        faceX: stalker.facingX, faceY: stalker.facingY,
+      }, state.tick, depth, { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1, flash: false, tint: cold });
+      this.contactShadow('stalker', stalker.x, stalker.y, 1.3);
+      // Shoulder light strobes like a cruiser's bar, so he reads in a blackout.
+      this.openingConcourse?.addLight({ x: stalker.x, y: stalker.y - 30, radius: 46, color: strobe, intensity: 0.55 });
+      if (cue.flashlight) {
+        // A flashlight beam thrown ahead of him along his facing.
+        for (let step = 1; step <= 3; step += 1) {
+          const reach = 34 * step;
+          const lx = stalker.x + stalker.facingX * reach;
+          const ly = stalker.y - 16 + stalker.facingY * reach * 0.6;
+          this.openingConcourse?.addLight({ x: lx, y: ly, radius: 18 + 10 * step, color: 0xfff2c0, intensity: 0.35 });
+          effects.fillStyle(0xfff2c0, 0.06).fillEllipse(lx, ly + 16, 24 + 14 * step, 10 + 5 * step);
+        }
+      }
+      if (cue.phase === 'shoved') {
+        // Seeing stars: three little sparks orbiting his head.
+        for (let index = 0; index < 3; index += 1) {
+          const angle = fxTick / 6 + (index * Math.PI * 2) / 3;
+          effects.fillStyle(0xffe066, 0.9).fillRect(Math.round(stalker.x + Math.cos(angle) * 14) - 1, Math.round(stalker.y - 78 + Math.sin(angle) * 5) - 1, 3, 3);
+        }
+      }
+    }
+    if (cue.label) {
+      this.setLabel('stalker', cue.label, stalker.x - cue.label.length * 4, stalker.y - (cue.body ? 96 : 60));
+    } else {
+      this.clearLabel('stalker');
+    }
+  }
+
+  /**
+   * Red and blue bleeding in at the screen's edges and spilling on the
+   * storefront wall while Loss Prevention is in the room (see policeWash).
+   */
+  private drawPoliceWash(state: MvpRunState): void {
+    const flashes = flashAllowed(gameSettings().get());
+    const wash = state.status === 'playing' ? policeWash(state.stalker, state.tick, flashes) : null;
+    if (!wash || wash.strength <= 0) {
+      this.policeGlow?.clear().setVisible(false);
+      return;
+    }
+    if (!this.policeGlow) {
+      this.policeGlow = this.scene.add.graphics()
+        .setScrollFactor(0)
+        .setBlendMode(Phaser.BlendModes.ADD)
+        .setDepth(presentationDepth('prompt', 900));
+    }
+    const RED = 0xff2a3a;
+    const BLUE = 0x2a6aff;
+    const PURPLE = 0x9a3aff;
+    const left = wash.steady ? PURPLE : wash.leftRed ? RED : BLUE;
+    const right = wash.steady ? PURPLE : wash.leftRed ? BLUE : RED;
+    const peak = (wash.steady ? 0.07 : 0.14) * wash.strength;
+    const { width, height } = this.scene.scale;
+    const g = this.policeGlow.clear().setVisible(true);
+    // A soft gradient from each side edge: stacked bands, fading inward.
+    const bands = 6;
+    const band = 16;
+    for (let index = 0; index < bands; index += 1) {
+      const alpha = peak * (1 - index / bands);
+      g.fillStyle(left, alpha).fillRect(index * band, 0, band, height);
+      g.fillStyle(right, alpha).fillRect(width - (index + 1) * band, 0, band, height);
+    }
+    // The wall catches it too: two pools on the storefronts, trading colour.
+    this.openingConcourse?.addLight({ x: 240, y: 30, radius: 230, color: left, intensity: 0.4 * wash.strength });
+    this.openingConcourse?.addLight({ x: 720, y: 30, radius: 230, color: right, intensity: 0.4 * wash.strength });
+  }
+
+  /**
+   * On a storefront's concourse, each shop's door in the back wall is a way
+   * in: a lit mat at its foot and chevrons climbing toward it.
+   */
+  private drawStoreEntrance(state: MvpRunState, index: number): void {
+    const cues = this.effectGraphics;
+    const floor = this.storeGraphics;
+    const x = storeEntrance(index).x;
+    const pulse = 0.5 + 0.35 * Math.sin(state.tick / 10);
+    floor.fillStyle(0x1a2a30, 0.9).fillRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
+    floor.fillStyle(0x3ff0ff, 0.35 * pulse).fillRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
+    floor.lineStyle(2, 0x3ff0ff, 0.8).strokeRect(x - STORE_ENTRANCE_HALF_WIDTH, 12, STORE_ENTRANCE_HALF_WIDTH * 2, 22);
+    // Three chevrons stepping up toward the door, lit in turn.
+    for (let index = 0; index < 3; index += 1) {
+      const lit = Math.floor(state.tick / 8) % 3 === 2 - index;
+      const y = 56 + index * 16;
+      cues.lineStyle(3, 0xffd84a, lit ? 0.95 : 0.35);
+      cues.lineBetween(x - 12, y + 6, x, y - 2).lineBetween(x, y - 2, x + 12, y + 6);
+    }
+    this.openingConcourse?.addLight({ x, y: 40, radius: 70, color: 0x3ff0ff, intensity: 0.4 * pulse });
+  }
+
+  /**
+   * While the store alarm rings, chevrons on the floor run from the janitor
+   * to the door, so four seconds is never spent looking for the way out.
+   */
+  private drawEscapeChevrons(state: MvpRunState, exit: Rect, cues: Phaser.GameObjects.Graphics): void {
+    const player = state.room.combat.player;
+    const doorX = exit.x + exit.width / 2;
+    const doorY = exit.y + exit.height;
+    const dx = doorX - player.x;
+    const dy = doorY - player.y;
+    const distance = Math.hypot(dx, dy);
+    if (distance < 40) return;
+    const ux = dx / distance;
+    const uy = dy / distance;
+    const flash = Math.floor(state.tick / 5);
+    for (let step = 40, index = 0; step < distance - 10; step += 34, index += 1) {
+      const cx = player.x + ux * step;
+      const cy = player.y + uy * step;
+      const lit = (flash - index) % 4 === 0;
+      // A chevron pointing along the way out.
+      const px = -uy * 9;
+      const py = ux * 9;
+      cues.lineStyle(3, lit ? 0xffffff : 0xff3a4a, lit ? 1 : 0.7);
+      cues.lineBetween(cx - ux * 8 + px, cy - uy * 8 + py, cx, cy).lineBetween(cx, cy, cx - ux * 8 - px, cy - uy * 8 - py);
+    }
+  }
+
+  private drawStore(state: MvpRunState, templateId: string): void {
+    const room = state.wing.rooms[state.roomIndex];
+    const store = activeStore(state);
+    if (!store || store.templateId !== templateId) {
+      return;
+    }
+    // Only this shop's shelves: the room's other shop is behind its own door.
+    const shelf = (room?.offers ?? []).filter((offer) => offer.storeId === store.templateId);
     const floor = this.storeGraphics;
     const cues = this.effectGraphics;
     const carriedHere = state.carried.some((theft) => theft.sourceStoreId === store.templateId);
@@ -538,13 +706,13 @@ export class MvpRunView {
       this.clearLabel('store-alarm');
     }
 
-    this.setLabel(`store:${templateId}`, store.name.toUpperCase(), store.bounds.x + 6, store.bounds.y - 16);
+    if (cue.phase === 'ringing') this.drawEscapeChevrons(state, exit, cues);
 
     const player = state.room.combat.player;
     // Only the nearest available item's name grows, so neighbours never collide.
     let nearestId: string | null = null;
     let nearestDistance = 150;
-    for (const offer of room?.offers ?? []) {
+    for (const offer of shelf) {
       if ((state.offerStatus[offer.id] ?? 'available') !== 'available') continue;
       const distance = Math.hypot(player.x - offer.position.x, player.y - offer.position.y);
       if (distance < nearestDistance) {
@@ -552,7 +720,7 @@ export class MvpRunView {
         nearestId = offer.id;
       }
     }
-    for (const offer of room?.offers ?? []) {
+    for (const offer of shelf) {
       const status = state.offerStatus[offer.id] ?? 'available';
       const weapon = ITEM_CATALOG.find((definition) => definition.id === offer.itemDefinitionId)?.base !== undefined;
       const kindColor = weapon ? 0x3ff0ff : 0x6aff8a;
@@ -1297,13 +1465,19 @@ export class MvpRunView {
    * of freezing on top of the death fall. (The pause menu still freezes.)
    */
   private effectsTick(state: MvpRunState): number {
+    const held = Math.floor(this.heldTicks);
     if (state.status === 'playing') {
       this.endedAt = null;
-      return state.tick;
+      return state.tick + held;
     }
     if (this.endedAt === null) this.endedAt = this.scene.time.now;
     const since = this.scene.time.now - this.endedAt;
-    return state.tick + Math.floor((this.timeWarp ? this.timeWarp(since) : since) / (1000 / 60));
+    return state.tick + held + Math.floor((this.timeWarp ? this.timeWarp(since) : since) / (1000 / 60));
+  }
+
+  /** Lets effects run on while a cinematic holds the sim clock. */
+  public advanceHeldEffects(elapsedMs: number): void {
+    this.heldTicks += Math.max(0, elapsedMs) / (1000 / 60);
   }
 
   /** Slow motion for the effects that play out after the shift ends; null restores real time. */
@@ -1484,10 +1658,13 @@ export class MvpRunView {
     if (state.carrier !== null) {
       keep.add('carrier');
     }
-    if (room?.store) {
-      keep.add(`store:${room.store.templateId}`);
+    if (state.stalker !== null) {
+      keep.add('stalker');
+    }
+    const inside = activeStore(state);
+    if (room && inside) {
       keep.add('store-alarm');
-      for (const offer of room.offers) {
+      for (const offer of room.offers.filter((candidate) => candidate.storeId === inside.templateId)) {
         keep.add(`offer:${offer.id}`);
       }
     }
@@ -1612,6 +1789,8 @@ export class MvpRunView {
   }
 
   public destroy(): void {
+    this.policeGlow?.destroy();
+    this.policeGlow = null;
     this.clearDashGhosts();
     this.carSprite?.destroy();
     this.carSprite = null;
@@ -1644,6 +1823,7 @@ export class MvpRunView {
 
   public resetForRun(): void {
     this.timeWarp = null;
+    this.heldTicks = 0;
     this.feedback.resetRoom('');
     this.weapon.reset();
     this.clearDashGhosts();

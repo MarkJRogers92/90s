@@ -16,6 +16,7 @@ import type { MallTokenPickup } from './tokens';
 import type { RunStats } from './combo';
 import type { ShiftPerks } from './perks';
 import type { StoreAlarm } from './heist';
+import type { StalkerState } from './stalker';
 
 export type MvpWorkbench = {
   readonly firstId: string | null;
@@ -40,6 +41,10 @@ export type MvpRoomState = {
   enteredFrom: MvpRoomEntryFrom;
   /** Mall Tokens dropped in this room and not yet collected. Never checkpointed. */
   tokens: MallTokenPickup[];
+  /** Inside this storefront's store rather than on its concourse (see storeInterior.ts). Never checkpointed. */
+  interior: boolean;
+  /** Which of the room's shops (`roomStores` order) the janitor is inside; 0 on the concourse. */
+  storeIndex: number;
 };
 
 /** Renderer-neutral held input for exactly one fixed simulation tick. */
@@ -74,6 +79,7 @@ export type MvpInteraction =
       readonly lockedReason: string | null;
     }
   | { readonly kind: 'bench'; readonly label: string }
+  | { readonly kind: 'store'; readonly storeIndex: number; readonly label: string }
   | { readonly kind: 'none'; readonly label: string };
 
 /** Every run command reports its own outcome; the HUD never infers success. */
@@ -142,6 +148,8 @@ export type MvpRunState = {
   stats: RunStats;
   /** The store alarm after a grab, while it runs (room-local, never checkpointed). */
   alarm: StoreAlarm | null;
+  /** Loss Prevention on a 4-star janitor's trail (room-local, never checkpointed). */
+  stalker: StalkerState | null;
   /** What the janitor's career brought to this shift (checkpointed; rides the escalator). */
   readonly perks: ShiftPerks;
 };

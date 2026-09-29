@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { enterDoorway, tickMvpRun } from '../../src/sim/run/tickMvpRun';
+import { enterStore } from '../../src/sim/run/storeInterior';
 import { buildRoomCombatState } from '../../src/sim/run/rooms';
 import { runOfferPrice } from '../../src/sim/run/economy';
 import { refreshRunLoadout } from '../../src/sim/run/loadout';
@@ -49,6 +50,8 @@ function walkEast(state: MvpRunState): void {
 function atShelf(seed = 9): MvpRunState {
   const state = createMvpRun(seed);
   walkEast(state);
+  // The shelves are inside: through the shop door first.
+  if (!enterStore(state).accepted) throw new Error('could not enter the store');
   const offer = state.wing.rooms[state.roomIndex]!.offers[0]!;
   state.room.combat.player.x = offer.position.x;
   state.room.combat.player.y = offer.position.y + 20;

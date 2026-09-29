@@ -8,7 +8,7 @@
 import type { FusionInventoryState } from '../fusion/types';
 import type { InventoryLeaf } from '../fusion/types';
 import type { ShopOfferRuntimeStatus } from '../shop/types';
-import { generateWing } from '../wing/generateWing';
+import { generateRunWing } from './storeInterior';
 import { syncRunCarrier } from './carrier';
 import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
@@ -36,7 +36,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
   // sanitizes the URL seed.
   const runSeed = Number.isFinite(seed) ? Math.trunc(seed) : 0;
   const floor = options.floor ?? 1;
-  const wing = generateWing(runSeed, floor);
+  const wing = generateRunWing(runSeed, floor);
   const perks = sanitizePerks(options.perks);
 
   const mop: InventoryLeaf = {
@@ -97,6 +97,8 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
       cleared: !hasLivingEnemies(combat),
       enteredFrom: 'west',
       tokens: [],
+      interior: false,
+      storeIndex: 0,
     },
     clearedRooms: [],
     inventory,
@@ -116,6 +118,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
     preview: null,
     workbench: null,
     alarm: null,
+    stalker: null,
     stats: options.carry ? { ...options.carry.stats, combo: 0, lastHitTick: -Infinity } : createRunStats(),
     perks,
   };

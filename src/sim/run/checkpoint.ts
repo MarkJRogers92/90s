@@ -23,7 +23,7 @@ import { compileLoadout } from '../items/compileLoadout';
 import { catalogFor } from '../items/registry';
 import { MAX_SECURITY_HEAT, MAX_SUSPICION } from '../shop/types';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
-import { generateWing } from '../wing/generateWing';
+import { generateRunWing } from './storeInterior';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
 import { syncRunCarrier } from './carrier';
 import { refreshRunLoadout, runCompilerInstances } from './loadout';
@@ -232,7 +232,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   }
   let wing: GeneratedWing;
   try {
-    wing = generateWing(seed, floor);
+    wing = generateRunWing(seed, floor);
   } catch {
     return fail(`Seed ${String(seed)} does not generate a valid wing.`);
   }
@@ -387,7 +387,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
  * never restored; only run-level state comes out of the checkpoint.
  */
 export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
-  const wing = generateWing(checkpoint.seed, checkpoint.floor ?? 1);
+  const wing = generateRunWing(checkpoint.seed, checkpoint.floor ?? 1);
   const room = wing.rooms[checkpoint.roomIndex];
   if (!room) {
     throw new Error(`Checkpoint room index ${String(checkpoint.roomIndex)} is out of range.`);
@@ -423,6 +423,8 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
       cleared: !hasLivingEnemies(combat),
       enteredFrom: checkpoint.enteredFrom,
       tokens: [],
+      interior: false,
+      storeIndex: 0,
     },
     clearedRooms: [...checkpoint.clearedRoomIds],
     inventory,
@@ -440,6 +442,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     preview: null,
     workbench: null,
     alarm: null,
+    stalker: null,
     stats: createRunStats(),
     perks: sanitizePerks(checkpoint.perks),
   };

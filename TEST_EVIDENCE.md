@@ -1,5 +1,104 @@
 # Test evidence
 
+## 2026-09-29 — round 29: back-room props
+
+- Decoration only (no sim change). `npx vitest run` 926 passed (the asset
+  validator accepts eight new manifest entries); build clean; browser suite
+  74/74.
+- Manual: back hall (janitor cart, buffer; the lockers first sat behind the
+  Bench Warrant kiosk and were moved to x 640), food court (tray return,
+  trash bank), security office (confiscation cage, cooler, filing cabinets),
+  each clear of the fight.
+
+## 2026-09-29 — round 28: concourse furniture
+
+- +2 unit tests: the furniture's footprints are in the storefront walls,
+  the lane between the side doors stays walkable at three heights, the
+  seating island blocks; the photo booth flashes only when flashes are
+  allowed. 926 pass; the asset validator accepts the six new manifest
+  entries.
+- `npm run build` clean; no fixture or debug-bridge strings in `dist/`.
+- `PW_PORT=4191 npx playwright test` — 74/74.
+- Manual: seeds 77 and 5150 show both shopfronts with the photo booth
+  between them, gumballs and sale signs by the doors, the seating island,
+  pretzel cart and massage chairs on the floor clear of the HUD. Fixed on
+  the way: the cart and chairs first sat behind the bottom HUD panels, and
+  the dressing covered each new footprint with a planter.
+
+## 2026-09-29 — round 27b: two shops per storefront
+
+- `tests/unit/store-interior.test.ts` rewritten for two shops (10 tests):
+  every floor of five seeds visits all four stores exactly once, four items
+  each, the wing's own first shop keeps its stock; each door enters its own
+  shop; only that shop's shelves answer; walking out returns in front of
+  that shop; a grab from either shop is secured; restores keep the shops.
+- `game-hud-model` alarm test now uses the ringing shop's real id (it faked
+  `'x'` and relied on the room having one store).
+- `npx tsc --noEmit` clean; `npx vitest run` 924 tests passed; browser suite
+  74/74.
+- Manual: the West Shops concourse shows Arcade Annex and Mall Mart side by
+  side with chevrons at each door; walking into the right one enters Mall
+  Mart with its own stock.
+
+## 2026-09-29 — round 27: store interiors
+
+- New: `tests/unit/store-interior.test.ts` (8: full-room scaling keeps stock,
+  ids and guard spots inside; shelves out of reach from the concourse; the
+  door interaction and walking in; walls leave only the door; walking out;
+  a grab carried out is secured and the guards stay inside; not
+  checkpointed; Loss Prevention follows in).
+- Updated setup only (no assertion weakened): grab-and-run, mvp-economy,
+  game-hud-model and the mvp-run integration test now walk into the store
+  before reaching a shelf; the integration test also checks the shop-door
+  interaction.
+- `npx tsc --noEmit` clean; `npx vitest run` 83 files, 922 tests (run by the
+  owner in their terminal while the auto-mode check was down).
+- `PW_PORT=4191 npx playwright test` — 73/74; the one failure was the M1
+  `combat.spec.ts` canvas wait under 4-worker load, and `combat.spec.ts`
+  alone then passed 4/4. All storefront, grab, lockdown and heist specs
+  passed with the new fixture (inside, at the shelf nearest the door).
+- Manual: the concourse shows the Arcade Annex door with no rug or floating
+  items; walking up into it goes inside; the interior renders cabinets,
+  displays, checkouts and EXIT clear of the bottom HUD; a grab in Mall Mart
+  shows the alarm banner, shutter countdown and chevrons to the door.
+
+## 2026-09-29 — round 26: Loss Prevention stalker, boss title cards, ambient props
+
+- New unit coverage: `tests/unit/stalker.test.ts` (11: threshold, arrival
+  delay and entry point, pursuit, write-up and its cooldown, mop shove,
+  doors and room clears unaffected, following through a doorway, losing the
+  trail, no boss rooms, not checkpointed, determinism),
+  `tests/unit/stalker-presentation.test.ts` (7: cues, audio, PA, HUD),
+  `tests/unit/boss-intro.test.ts` (4), `tests/unit/prop-ambience.test.ts` (8).
+- An existing test caught two new PA lines over the ticker's 56 characters;
+  they were shortened.
+- `npx tsc --noEmit` clean; `npx vitest run` 82 files, 910 tests passed.
+- `npm run build` exit 0; `dist/` holds no `mvp-wanted`, `mvp-boss-door` or
+  debug-bridge strings.
+- `PW_PORT=4191 npx playwright test` — 74/74 Chromium passed in 4.0 min.
+- Manual (in-app browser, dev server with the debug bridge):
+  `?fixture=mvp-wanted` — the agent walks in at the entry door after 3 s,
+  writes Alex up (-1 heart, WRITTEN UP!, log line), five stars in the vitals
+  panel, no console errors. `?fixture=mvp-boss-door` walking east — the card
+  holds the fight (`cinematic: true`), HUD hidden, plate and neon name
+  visible, the boss fully spawned under the card (after the effects-clock
+  fix), a key press skips to live combat. The plate was inspected with
+  `BOSS_INTRO_MS` temporarily raised to 60 s, then reverted. The opening
+  concourse renders with the fountain spray and no errors.
+- Found and fixed in manual checks: the plate's children ignored the
+  container's scroll factor (off-screen under the zoom); the boss froze at
+  spawn-in frame 0 under the hold; the HUD's old boss card would have
+  frozen under the hold (removed; its taglines moved to the new card).
+- Follow-up visuals: +4 unit tests (portrait crop, police wash x2, dust
+  motes); 914 total pass; build clean, no fixture strings in `dist/`;
+  Chromium suite 74/74 again.
+  Manual: the police wash spills red/blue on the storefronts with the
+  stalker in the room; the plaque mugshot renders. Found and fixed: adding a
+  named frame to the boss sheet made it the texture's default frame, so the
+  boss in the room drew as the mugshot; now cropped with `setCrop`.
+- Not verified: prop motion over time is only seen in stills (subtle
+  sway/flicker is hard to judge from a capture); WebKit/Safari untested.
+
 ## 2026-09-29 — round 25: grab and run, wanted level, hot goods
 
 - Red first: `tests/unit/grab-and-run.test.ts` (20 tests) failed on the missing

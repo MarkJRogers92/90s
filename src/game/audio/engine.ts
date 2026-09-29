@@ -304,6 +304,33 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 30, gain: 0.08, cutoff: 7000 }],
     minGapMs: 300,
   },
+  stalker_in: {
+    // A walkie-talkie squelch and two heavy, deliberate footfalls.
+    tones: [
+      { wave: 'sine', from: 90, to: 50, ms: 140, gain: 0.3, atMs: 220 },
+      { wave: 'sine', from: 90, to: 50, ms: 140, gain: 0.3, atMs: 560 },
+    ],
+    noise: [
+      { ms: 160, gain: 0.16, cutoff: 2600, cutoffTo: 900 },
+      { ms: 40, gain: 0.1, cutoff: 5000, atMs: 170 },
+    ],
+    minGapMs: 800,
+  },
+  write_up: {
+    // A rubber stamp coming down on a clipboard.
+    tones: [{ wave: 'sine', from: 160, to: 60, ms: 120, gain: 0.34 }],
+    noise: [{ ms: 50, gain: 0.22, cutoff: 3000 }],
+    minGapMs: 400,
+  },
+  stalker_shove: {
+    // A dull body shove and an offended grunt.
+    tones: [
+      { wave: 'sine', from: 130, to: 70, ms: 110, gain: 0.26 },
+      { wave: 'sawtooth', from: 180, to: 120, ms: 140, gain: 0.06, atMs: 60 },
+    ],
+    noise: [{ ms: 60, gain: 0.12, cutoff: 1800 }],
+    minGapMs: 250,
+  },
   conduction: {
     tones: [
       { wave: 'square', from: 600, to: 900, ms: 45, gain: 0.13 },

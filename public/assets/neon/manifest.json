@@ -1378,5 +1378,145 @@
       48
     ],
     "sha256": "9ce24cbf7c5a6d28c11601316052c2dcf29bdfc510bcae761f1306c9371c3656"
+  },
+  {
+    "path": "public/assets/neon/props/gumball-stand.png",
+    "source": "docs/art/neon-overhaul/pixellab/gumball-stand.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      35,
+      54
+    ],
+    "sha256": "bbeb96cbf8b0e43316bb96a003b0db2e8ac57a8f14638f511fbe7d380e667605"
+  },
+  {
+    "path": "public/assets/neon/props/massage-chairs.png",
+    "source": "docs/art/neon-overhaul/pixellab/massage-chairs.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      79,
+      50
+    ],
+    "sha256": "140afe3077533792f5d42aa93cb28d70f6a0ee0a1d26596e2ca15294bfd3a778"
+  },
+  {
+    "path": "public/assets/neon/props/photo-booth.png",
+    "source": "docs/art/neon-overhaul/pixellab/photo-booth.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      30,
+      81
+    ],
+    "sha256": "2bded0154653f9c035fb8f0c8a51ba63c662f17dd11fe836e8311c8a16639019"
+  },
+  {
+    "path": "public/assets/neon/props/pretzel-cart.png",
+    "source": "docs/art/neon-overhaul/pixellab/pretzel-cart.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      51,
+      56
+    ],
+    "sha256": "78ba65d917600225ada094be8f01922d304aa468212b7811f59b4dfc83004275"
+  },
+  {
+    "path": "public/assets/neon/props/sale-sign.png",
+    "source": "docs/art/neon-overhaul/pixellab/sale-sign.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      17,
+      62
+    ],
+    "sha256": "e0bdae5552293403ccac37bef4551c2c563d3d2011d1a1a7a68ba757afa5f1cb"
+  },
+  {
+    "path": "public/assets/neon/props/seating-island.png",
+    "source": "docs/art/neon-overhaul/pixellab/seating-island.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      91,
+      70
+    ],
+    "sha256": "ac1b63b14ddf1329e2e667ca10a39ce2fff4a2b04f566df16cdd671651a88964"
+  },
+  {
+    "path": "public/assets/neon/props/janitor-cart.png",
+    "source": "docs/art/neon-overhaul/pixellab/janitor-cart.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      36,
+      56
+    ],
+    "sha256": "0c4dfe0cb61c33af2a4c22e43cd95f0c69f4a824baab88002d64962c37879313"
+  },
+  {
+    "path": "public/assets/neon/props/locker-row.png",
+    "source": "docs/art/neon-overhaul/pixellab/locker-row.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      90,
+      57
+    ],
+    "sha256": "d53850501e99f4f3fc64b52ae4128770fa343455f4f48cb5888c0900e5220a30"
+  },
+  {
+    "path": "public/assets/neon/props/floor-buffer.png",
+    "source": "docs/art/neon-overhaul/pixellab/floor-buffer.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      30,
+      57
+    ],
+    "sha256": "1b3cc27f10ab53c03d00b4da77ec2ec65b9bcc40d4c1c660f7cf2992bfe08c77"
+  },
+  {
+    "path": "public/assets/neon/props/confiscation-cage.png",
+    "source": "docs/art/neon-overhaul/pixellab/confiscation-cage.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      64,
+      75
+    ],
+    "sha256": "d8964ed36834e5572094151b408e995764a059d0a0fffce713be2833268a5c28"
+  },
+  {
+    "path": "public/assets/neon/props/filing-cabinets.png",
+    "source": "docs/art/neon-overhaul/pixellab/filing-cabinets.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      48,
+      46
+    ],
+    "sha256": "11a8ae5f259bd2265bde1879c650459382edd82a781a37c45bdf8dd174f46673"
+  },
+  {
+    "path": "public/assets/neon/props/water-cooler.png",
+    "source": "docs/art/neon-overhaul/pixellab/water-cooler.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      21,
+      55
+    ],
+    "sha256": "b50782b9f14e832b80c74fcef567a99452e3b32b472b822ed99f3d07843e4a38"
+  },
+  {
+    "path": "public/assets/neon/props/tray-return.png",
+    "source": "docs/art/neon-overhaul/pixellab/tray-return.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      38,
+      54
+    ],
+    "sha256": "afde25e227a354ccdbb64c15e97d40f9f7440919ffd404e77dd954591cfd997e"
+  },
+  {
+    "path": "public/assets/neon/props/trash-bank.png",
+    "source": "docs/art/neon-overhaul/pixellab/trash-bank.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      69,
+      39
+    ],
+    "sha256": "e672c43ddf86e4e02ca1e282dd4d66026db1c804b3414506f2b20ad6e099c4fc"
   }
 ]

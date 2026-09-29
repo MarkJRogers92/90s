@@ -52,6 +52,9 @@ export type AudioCue =
   | 'shutterLift'
   | 'wanted'
   | 'launder'
+  | 'stalker_in'
+  | 'write_up'
+  | 'stalker_shove'
   | 'conduction'
   | 'enemy_down'
   | 'boss_telegraph'
@@ -101,6 +104,9 @@ export type AudioSnapshot = {
   readonly stars: number;
   /** Stolen, unfused items held. */
   readonly hotItems: number;
+  /** The Loss Prevention stalker's phase, or null while he is not coming. */
+  readonly stalkerPhase: string | null;
+  readonly stalkerWriteUps: number;
   readonly clearedRooms: number;
   readonly checkpointKey: string;
   readonly roomIndex: number;
@@ -146,6 +152,8 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     shutter: state.alarm?.shutter ?? null,
     stars: wantedStars(state.heat),
     hotItems: hotItemCount(state),
+    stalkerPhase: state.stalker?.phase ?? null,
+    stalkerWriteUps: state.stalker?.writeUps ?? 0,
     clearedRooms: state.clearedRooms.length,
     checkpointKey: state.checkpoint
       ? `${state.checkpoint.roomIndex}:${state.checkpoint.tick}`
@@ -225,6 +233,10 @@ export function deriveAudioCues(
   if (previous.shutter === 'closed' && current.shutter === 'lifted') cues.push('shutterLift');
   if (current.stars > previous.stars) cues.push('wanted');
   if (current.hotItems < previous.hotItems) cues.push('launder');
+  // Loss Prevention: the door, the write-up stamp, and a mop shove.
+  if (previous.stalkerPhase === 'arriving' && current.stalkerPhase === 'hunting') cues.push('stalker_in');
+  if (current.stalkerWriteUps > previous.stalkerWriteUps) cues.push('write_up');
+  if (current.stalkerPhase === 'shoved' && previous.stalkerPhase !== 'shoved') cues.push('stalker_shove');
 
   if (current.carried > previous.carried) {
     cues.push('theft');

@@ -673,3 +673,145 @@ Loop mode keeps its own camera rules unchanged.
 - **Unplayed**: whether 4 s is right, whether the Hunters at the door are fair
   on Floor 1 (it is the first place a Floor 1 player meets them), and whether
   +60 score a star makes stealing too attractive.
+
+## Round 26: the Loss Prevention stalker, boss title cards, ambient props
+
+Three items from the NEXT_SESSION ideas backlog.
+
+- **Loss Prevention stalker** (`src/sim/run/stalker.ts`): at four stars
+  (`STALKER_MIN_STARS`) an agent who cannot be put down follows the janitor
+  from room to room. He is run state beside the room (`state.stalker`), like
+  the car, not an enemy: he never locks a door, never blocks a room clear,
+  and is never checkpointed. Each room change clears him; three seconds later
+  (`STALKER_ARRIVAL_TICKS`) he walks in through the door the janitor used.
+  He hunts at 150 px/s (the janitor walks at 210), a touch costs one heart
+  and he steps back for `STALKER_WRITE_UP_TICKS`, and a mop swing shoves him
+  `STALKER_SHOVE_DISTANCE` and staggers him. Losing him means dropping below
+  four stars (lay low, launder). He never enters a boss room.
+  Presentation: `src/game/view/stalkerCues.ts` (strobing door warning with a
+  countdown, a cold-tinted `lp_agent` drawn from the LP Manager's sheets at
+  80 px, a flashlight beam, WRITTEN UP!, stars when shoved), PA lines
+  `stalker`/`stalker_lost`, the objective LOSS PREVENTION ON YOU, and synth
+  cues `stalker_in`, `write_up`, `stalker_shove`. Try `?fixture=mvp-wanted`.
+- **Boss title cards** (`src/game/ui/BossIntro.ts`, `bossIntroModel.ts`):
+  walking into a boss room holds the fight for `BOSS_INTRO_MS` (2.6 s) with
+  letterbox bars, a camera lean toward the boss, and a brass MALL DIRECTORY
+  plaque (floor and room, YOU ARE HERE, the neon name stuttering on, the
+  original taglines). A fresh key, click or pad button skips; auto-repeat of
+  a held movement key does not. It replaces the in-canvas HUD's tick-driven
+  boss card, which would have frozen under the hold. The view's effects clock
+  now keeps running while a cinematic holds the sim
+  (`MvpRunView.advanceHeldEffects`), so the boss finishes his spawn-in on
+  camera. Fixture-placed boss rooms get no card, so the browser specs are
+  unaffected. Try `?fixture=mvp-boss-door` and walk east.
+- **Ambient props** (`src/game/view/propAmbience.ts`, applied in
+  `MallRoomView.renderProps`): palms sway, the kiddie ride rocks now and then,
+  arcade cabinets cycle attract colours, the claw machine chases, the vending
+  machine buzzes, the ATM blinks, the CCTV desk rolls, the globe fountain
+  sprays and ripples, and about one sign in three has a dying tube. All pure
+  in (tick, seed). Screens drop to standby in a blackout, and the tube
+  stutter respects reduced flashes.
+- **Follow-up visuals (same round)**: the plaque carries a mugshot, a
+  head-and-shoulders crop of the boss's south idle frame (`portraitCrop`);
+  red and blue wash in from the screen edges and spill across the
+  storefronts while Loss Prevention is in the room (`policeWash`, steady
+  violet under reduced flashes, which now also holds the door warning red);
+  and dust motes climb through every light pool of radius 70+ (`dustMotes`).
+- **Gotcha found on the way**: `Container.setScrollFactor(0)` does not reach
+  a container's children in Phaser unless `updateChildren` is passed, which
+  matters as soon as the camera zooms or scrolls under a screen overlay.
+  And never `texture.add()` a named frame to a shared single-frame sheet:
+  the first added frame becomes the texture's default, so every sprite made
+  from it afterwards draws that crop. Use `setCrop` on the image instead.
+- **Unplayed**: whether the stalker at 150 px/s is oppressive or ignorable,
+  whether 4 stars is the right threshold, and whether 2.6 s of boss card is
+  welcome on a retry (it plays on every entry; consider first-entry only).
+
+## Round 27: store interiors
+
+The owner could not read the stealing loop, and asked why items sat in the
+middle of the floor. The cause was a leftover from M3: each store was a
+rectangle on the concourse floor with no walls, items floating over it, and a
+96 px "door" on its bottom edge that was the only crossing that secured a
+theft. Walking off the side of the rug looked like leaving and did nothing.
+
+- **The stores are inside now** (`src/sim/run/storeInterior.ts`). A
+  storefront room's concourse has the shop in its back-wall art; walking into
+  its door (or E at `STORE_ENTRANCE`) sets `state.room.interior` and swaps the
+  room's walls for `interiorWalls(store)`: everything but the store floor,
+  with a gap for the door. The shelves only answer from inside
+  (`nearestRunOffer`). Walking out through the door secures carried thefts
+  (the old crossing rule), ends the alarm, drops the alarm's guards, and puts
+  the janitor back on the concourse at `STORE_EXIT_ARRIVAL`.
+- **Full-room stores**: `generateRunWing` scales every store template's
+  bounds, door and offer positions up to `INTERIOR_BOUNDS`, so the alarm,
+  guard spots, shutter and securing rules in heist.ts and economy.ts run
+  inside unchanged. Offer ids and stock are untouched; `createMvpRun` and
+  both checkpoint paths use it. The front wall sits at y = 360 so the door
+  clears the bottom HUD panels. The M3 Shoplifting Loop mode keeps its own
+  stores. `interior` is never checkpointed; a restore starts on the concourse.
+- **Each store has its own look** (`storeInterior()` and `INTERIOR_LOOKS` in
+  `roomDressing.ts`): Mall Mart grocery gondolas and carts, Cinema Snacks
+  vending machines and condiments, Arcade Annex cabinets, claw machines and a
+  kiddie ride, Department Outlet clothing racks and a bunny suit, each with
+  its floor, lights, neon name across the back wall, a display behind every
+  item, checkouts by the door, and a lit EXIT. `MallRoomView` rebuilds on
+  entering or leaving, draws solid side walls and a shop-window front wall
+  with the door, and the title card replays with the store's name.
+- **Readability**: the concourse door has a lit mat and climbing chevrons,
+  the objective reads STEP INTO <STORE>, the prompt reads E ENTER, and while
+  the alarm rings chevrons on the floor run from the janitor to the door.
+  Loss Prevention follows the janitor in through the shop door.
+- **Fixtures**: `mvp-store-front` (concourse, below the door) and
+  `mvp-storefront` (inside, at the shelf nearest the door).
+- **Unplayed**: whether 4 s is still fair from the back shelves of a
+  full-room store.
+- **Two shops per storefront (27b)**: every floor's wing has four store
+  templates and uses two; `generateRunWing` gives each storefront room one
+  of the two left over as a second shop (`room.stores`, read through
+  `roomStores`), with its own seeded four-item window, so a shift visits all
+  four stores. The shopfronts stand left and right on the back wall, centred
+  on `STORE_ENTRANCE_XS` (240, 720); `state.room.storeIndex` says which one
+  the janitor is inside and `activeStore` reads it. Shelves, alarm banner,
+  PA, dressing and title card all follow the active shop; the concourse
+  title is now the wing's room name (WEST SHOPS), and the objective lists
+  both shops.
+
+## Round 28: a concourse worth crossing
+
+With the stores moved inside, the storefront concourses were bare. Six new
+PixelLab props (`create_map_object`, high top-down, high detail, detailed
+shading, selective outline, generated at display size): a pretzel cart, a
+seating island, a pair of massage chairs, a photo booth, a gumball stand and
+a blank sale sign. The first pretzel cart came back with generated lettering
+on its sign and was regenerated with "no text, no lettering": text in this
+game is always the pixel font. Seven generations (817 → 810 this cycle).
+
+- **Placement and collision** come from one list, `CONCOURSE_FURNITURE` in
+  `storeInterior.ts`: `generateRunWing` adds each piece's `footprint` to the
+  storefront's walls, and `storefront()` in `roomDressing.ts` places the art
+  from the same list (and does not dress those footprints with planters, as
+  it does other collision). Footprints stay out of the lane between the side
+  doors, and the cart and chairs sit above the bottom HUD panels.
+- The photo booth glows and, every eight seconds, fires four camera flashes
+  (none under reduced flashes). The big pieces fade when the janitor walks
+  behind them.
+- Sources in `docs/art/neon-overhaul/pixellab/`, promoted with the import
+  script's own crop and recorded in `manifest.json`; the script's `PROPS`
+  list includes them for a future full re-run.
+
+## Round 29: the back rooms
+
+Eight more PixelLab props (same recipe, eight generations, 810 → 802) for
+the rooms that had only two or three loose props. They are decoration with
+no collision, placed along the walls clear of every seeded wall layout
+(probed across 57 seeds and all three floors) and of the Bench Warrant
+kiosk, so no fight changes. Floors 2 and 3 inherit them through
+`upperFloor`/`topFloor`.
+
+- **Back hall**: Alex's own janitor cart beside the wet-floor sign, a row of
+  staff lockers, and a floor buffer.
+- **Security office**: a wire cage of confiscated shoplifted goods, filing
+  cabinets and a water cooler.
+- **Food court**: a tray-return station and a bank of trash cans.
+
