@@ -100,7 +100,7 @@ export const FLOOR_THREE_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
   food_court: 'Arcade',
   storefront_b: 'Kitchen Back',
   back_hall: 'Loading Dock',
-  security_office: "The Owner's Suite",
+  security_office: "Owner's Suite",
 };
 
 export const ROOM_VARIANTS: Readonly<

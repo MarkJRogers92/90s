@@ -967,14 +967,14 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
-    if (fixture === 'mvp-floor-three' || fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-boss' || fixture === 'mvp-floor-three-boss-win') {
+    if (fixture === 'mvp-floor-three' || fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-brute' || fixture === 'mvp-floor-three-boss' || fixture === 'mvp-floor-three-boss-win') {
       // Straight up both escalators, optionally on to the Arcade fight or the Mall Owner.
       state.status = 'won';
       const upstairs = ascend(state);
       upstairs.status = 'won';
       const top = ascend(upstairs);
       if (fixture !== 'mvp-floor-three') {
-        const stop = fixture === 'mvp-floor-three-lobby' ? 'food_court' : top.wing.rooms.at(-1)?.id;
+        const stop = fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-brute' ? 'food_court' : top.wing.rooms.at(-1)?.id;
         let guard = 0;
         while (top.wing.rooms[top.roomIndex]?.id !== stop && guard < 10) {
           guard += 1;
@@ -982,6 +982,14 @@ export class MvpRunScene extends Phaser.Scene {
           tickMvpRun(top, { moveX: 0, moveY: 0, aimX: top.room.combat.player.x, aimY: top.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
           if (!enterDoorway(top, 'east').accepted) break;
         }
+      }
+      if (fixture === 'mvp-floor-three-brute') {
+        // One Mascot Brute across the Arcade, about to wind up.
+        const player = top.room.combat.player;
+        top.room.combat.enemies = [{
+          id: 1, kind: 'mascot', x: player.x + 300, y: player.y, health: 34, radius: 18, phase: 'pursue',
+          phaseTicks: 0, cooldownTicks: 0, telegraphAimX: 0, telegraphAimY: 0,
+        }];
       }
       if (fixture === 'mvp-floor-three-boss-win') {
         // One swing from the ending: the Mall Owner at a single point of health.

@@ -737,7 +737,7 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
       ]);
       return {
         ...plan,
-        areaName: "THE OWNER'S SUITE",
+        areaName: "OWNER'S SUITE",
         floor: 'carpet',
         ambient: 0x2a1a2a,
         facades,

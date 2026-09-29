@@ -1298,5 +1298,65 @@
       88
     ],
     "sha256": "73b7ec91143807bd0668612250b7327d91284a6a3927767cc24706e187005f9c"
+  },
+  {
+    "path": "public/assets/neon/enemies/mascot-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-mascot-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      768,
+      96
+    ],
+    "sha256": "105937a360e90f807921cf548d03f077da726dd8d10b1f27a4822139a5294237"
+  },
+  {
+    "path": "public/assets/neon/enemies/mascot-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-mascot-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      576,
+      768
+    ],
+    "sha256": "94c6abf287eed0a44c9fd2b1f442b5a1a86df6b3c5159f25c06e74c97cdbb77b"
+  },
+  {
+    "path": "public/assets/neon/enemies/mascot-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-mascot-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      672,
+      768
+    ],
+    "sha256": "d42953d77fdfcba9de11531114a1126152f83e71d63bc8cdb6e2b3c05e6c2e99"
+  },
+  {
+    "path": "public/assets/neon/enemies/owner-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-owner-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      1024,
+      128
+    ],
+    "sha256": "5cc0b470c0cdde53ca449295c380b026218e0e83cce0412cfc6be0e6bc3b3e9f"
+  },
+  {
+    "path": "public/assets/neon/enemies/owner-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-owner-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      768,
+      1024
+    ],
+    "sha256": "ed39b0af40f2bb36b0639e69a60deceeeec3e9037dc04ae41ce65f9b40a2536a"
+  },
+  {
+    "path": "public/assets/neon/enemies/owner-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-owner-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      896,
+      1024
+    ],
+    "sha256": "da65e6991da8c9b9f317d29dfdeca42bd3492b262eb8b6dfb09db15b6aeb2074"
   }
 ]

@@ -117,11 +117,11 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
   return [{ kind: 'reach', progress: clamp01(1 - (distance - enemy.radius) / (HANGER_WARN_DISTANCE - enemy.radius)), ...unit }];
 }
 
-export type TrackedAttack = { readonly phase: EnemyState['phase']; readonly kind: EnemyState['kind']; readonly volley?: number };
+export type TrackedAttack = { readonly phase: EnemyState['phase']; readonly kind: EnemyState['kind']; readonly volley?: number; readonly stunned?: number };
 
 export type LandedAttack = {
   readonly id: string;
-  readonly kind: 'spit' | 'slam' | 'volley';
+  readonly kind: 'spit' | 'slam' | 'volley' | 'quake';
   readonly x: number;
   readonly y: number;
   readonly aimX: number;
@@ -141,6 +141,10 @@ export function diffEnemyAttacks(previous: ReadonlyMap<string, TrackedAttack>, c
       // The Owner's charge is not a slam: it goes off as it hits the wall.
       if (isBossKind(enemy.kind) && !((enemy.chargeTicks ?? 0) > 0)) landed.push({ kind: 'slam', ...at });
     }
+    // A brute (or the Owner) running into a wall: the room shakes.
+    if ((enemy.kind === 'mascot' || enemy.kind === 'owner') && (enemy.stunnedTicks ?? 0) > 0 && (before.stunned ?? 0) === 0) {
+      landed.push({ kind: 'quake', ...at });
+    }
     if (isBossKind(enemy.kind) && (before.volley ?? 0) > 0 && (enemy.bossVolleyTelegraphTicks ?? 0) === 0) {
       landed.push({ kind: 'volley', ...at });
     }
@@ -149,7 +153,7 @@ export function diffEnemyAttacks(previous: ReadonlyMap<string, TrackedAttack>, c
 }
 
 export function trackAttacks(enemies: readonly EnemyState[]): Map<string, TrackedAttack> {
-  return new Map(enemies.map((enemy) => [String(enemy.id), { phase: enemy.phase, kind: enemy.kind, volley: enemy.bossVolleyTelegraphTicks ?? 0 }]));
+  return new Map(enemies.map((enemy) => [String(enemy.id), { phase: enemy.phase, kind: enemy.kind, volley: enemy.bossVolleyTelegraphTicks ?? 0, stunned: enemy.stunnedTicks ?? 0 }]));
 }
 
 export type HitStopBeat =

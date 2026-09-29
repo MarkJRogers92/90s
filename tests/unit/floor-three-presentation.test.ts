@@ -163,7 +163,7 @@ describe('Floor 3 wind-ups and dressing', () => {
     const state = topFloor();
     const names = state.wing.rooms.map((room) => planRoomDressing(room, 3).areaName);
     expect(names).toContain('ARCADE');
-    expect(names).toContain("THE OWNER'S SUITE");
+    expect(names).toContain("OWNER'S SUITE");
     const downstairs = createMvpRun(7).wing.rooms.map((room) => planRoomDressing(room, 1).ambient);
     const up = state.wing.rooms.map((room) => planRoomDressing(room, 3).ambient);
     expect(up).not.toEqual(downstairs);
