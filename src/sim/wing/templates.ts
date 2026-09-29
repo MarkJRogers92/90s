@@ -161,7 +161,7 @@ export const ROOM_VARIANTS: Readonly<
         { slotId: 'food-court-tables-spitter-north', x: 480, y: 120, kinds: ['spitter'] },
         { slotId: 'food-court-tables-mixed-south', x: 480, y: 360, kinds: ['hanger', 'spitter'] },
       ],
-      enemyCount: { min: 2, max: 4 },
+      enemyCount: { min: 3, max: 4 },
       benchKiosk: null,
     },
     {
@@ -197,7 +197,7 @@ export const ROOM_VARIANTS: Readonly<
         { slotId: 'back-hall-pillars-hanger-southwest', x: 180, y: 360, kinds: ['hanger'] },
         { slotId: 'back-hall-pillars-mixed-southeast', x: 780, y: 360, kinds: ['hanger', 'spitter'] },
       ],
-      enemyCount: { min: 2, max: 4 },
+      enemyCount: { min: 3, max: 4 },
       benchKiosk: { x: 480, y: 60 },
     },
     {
@@ -214,7 +214,7 @@ export const ROOM_VARIANTS: Readonly<
         { slotId: 'back-hall-crates-spitter-east', x: 700, y: 120, kinds: ['spitter'] },
         { slotId: 'back-hall-crates-mixed-west', x: 260, y: 360, kinds: ['hanger', 'spitter'] },
       ],
-      enemyCount: { min: 2, max: 3 },
+      enemyCount: { min: 3, max: 3 },
       benchKiosk: { x: 480, y: 60 },
     },
   ],

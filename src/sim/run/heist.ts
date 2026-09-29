@@ -22,6 +22,7 @@ import { RUN_SECURED_THEFT_HEAT, beginRunTheft, publishRunFeedback, runOwnsCapab
 import { hasLivingEnemies, spawnSecurityGuard, type SecurityKind } from './rooms';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { applyHeatFloor, wantedStars } from './wanted';
+export { GETAWAY_CASH_PER_ITEM, GETAWAY_HAUL_BONUS, getawayBonus } from './wanted';
 import { activeStore } from './storeInterior';
 import { MAX_SECURITY_HEAT } from '../shop/types';
 

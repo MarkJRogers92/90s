@@ -8,7 +8,7 @@
  */
 import type { BossKind } from '../../sim/combat/boss';
 
-export const BOSS_INTRO_MS = 2600;
+export const BOSS_INTRO_MS = 2000;
 export const BOSS_INTRO_ZOOM = 1.25;
 /** Ignore presses for this long, so the step through the door never skips it. */
 export const BOSS_INTRO_SKIP_GRACE_MS = 350;

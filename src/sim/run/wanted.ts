@@ -25,6 +25,17 @@ export const WANTED_SURCHARGE_PER_STAR = 2;
 /** Extra damage a hot (stolen, unfused) weapon deals. */
 export const HOT_DAMAGE_BONUS = 1;
 
+/** Cash for each item carried out before the shutter drops (round 32). */
+export const GETAWAY_CASH_PER_ITEM = 4;
+/** Extra cash for getting away with two or more items in one alarm. */
+export const GETAWAY_HAUL_BONUS = 4;
+
+/** What a clean getaway with `items` stolen goods pays on top of the goods. */
+export function getawayBonus(items: number): number {
+  if (items <= 0) return 0;
+  return items * GETAWAY_CASH_PER_ITEM + (items >= 2 ? GETAWAY_HAUL_BONUS : 0);
+}
+
 type HeatHolder = { heat: number; readonly inventory: FusionInventoryState };
 
 export function wantedStars(heat: number): number {
