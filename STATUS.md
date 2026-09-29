@@ -7,6 +7,13 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 23a (Daily Shift): a title button launches today's mall (seed hashed from
+the local date, pinned so retries keep it) with standard-issue gear (no Break
+Room perks). Best score and attempts per day are kept in
+`dead-mall:daily:v1`; the title, clock-in and end card show the date. See
+TEST_EVIDENCE.md round 23a.
+
+
 Round 22 (2026-09-28): the Break Room — meta-progression between shifts. Every
 shift pays Pay Stubs (more for clearing Floor 1 and clocking out); the title's
 Break Room spends them on perks (Seniority +$5, Dental Plan +1 heart, Coffee

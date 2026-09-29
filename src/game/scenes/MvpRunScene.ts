@@ -9,6 +9,7 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import { browserCareer, perksFor } from '../career/career';
+import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
@@ -96,6 +97,9 @@ export type MvpRunLaunch = {
   readonly seedPinned?: boolean;
   readonly checkpoint: MvpCheckpoint | null;
   readonly store: CheckpointStore;
+  /** 'daily': today's pinned mall with the standard-issue kit; `date` is that day (YYYY-MM-DD). */
+  readonly mode?: 'night' | 'daily';
+  readonly date?: string;
 };
 
 let pendingLaunch: MvpRunLaunch | null = null;
@@ -366,6 +370,8 @@ export class MvpRunScene extends Phaser.Scene {
   private run: MvpRunState = createMvpRun(0);
   private seed = 0;
   private seedPinned = true;
+  /** The date of a Daily Shift (null for a normal or continued run). */
+  private dailyDate: string | null = null;
   private store: CheckpointStore = new InMemoryCheckpointStore();
   private generation = 1;
   private accumulator = 0;
@@ -430,10 +436,12 @@ export class MvpRunScene extends Phaser.Scene {
     this.store = launch?.store ?? new InMemoryCheckpointStore();
     this.seed = launch?.checkpoint ? launch.checkpoint.seed : (launch?.seed ?? 0);
     this.seedPinned = launch?.seedPinned ?? true;
+    // A restored checkpoint does not carry the daily flag, so it is never a daily run.
+    this.dailyDate = launch?.mode === 'daily' && launch.date && !launch.checkpoint ? launch.date : null;
     this.run =
       launch?.checkpoint !== null && launch?.checkpoint !== undefined
         ? restoreMvpRun(launch.checkpoint)
-        : createMvpRun(this.seed, { perks: perksFor(browserCareer().load()) });
+        : createMvpRun(this.seed, { perks: this.shiftPerks() });
     this.run = this.applyDevFixture(this.run);
     this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
@@ -656,6 +664,11 @@ export class MvpRunScene extends Phaser.Scene {
     clearMvpHeldActions(this.run);
   }
 
+  /** A Daily Shift is standard issue; any other shift takes the janitor's Break Room perks. */
+  private shiftPerks(): ShiftPerks {
+    return this.dailyDate ? NO_PERKS : perksFor(browserCareer().load());
+  }
+
   /** From the end card, a won shift clocks into a new mall; otherwise the same one. */
   private restartRun(fromEndCard = false): void {
     this.endBeatPlayed = false;
@@ -671,7 +684,7 @@ export class MvpRunScene extends Phaser.Scene {
     const cleared = this.store.clear();
     // Re-read the career: the Break Room is only open between shifts, but a
     // retry should still start with everything the janitor owns.
-    this.run = createMvpRun(this.seed, { perks: perksFor(browserCareer().load()) });
+    this.run = createMvpRun(this.seed, { perks: this.shiftPerks() });
     this.startClockIn(won ? 'new-shift' : 'retry', false);
     // A fresh run has no previous tick to compare against, so the next sync
     // would read every field as a change and fire a burst of cues.
@@ -783,7 +796,7 @@ export class MvpRunScene extends Phaser.Scene {
   private startClockIn(reason: ClockInReason, restored: boolean): void {
     this.stopClockIn();
     if (!shouldClockIn({ reason, fixture: this.devFixture(), restored })) return;
-    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'), this.run.perks);
+    this.clockIn = new ClockIn(this, this.seed, () => this.audio?.play('stamp'), this.run.perks, this.dailyDate);
   }
 
   private stopClockIn(): void {
@@ -862,7 +875,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.benchCard?.hover(pointer.x, pointer.y);
     this.benchCard?.sync(this.run);
     // The end card waits for the kill cam to finish framing the fall.
-    if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed);
+    if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed, this.dailyDate);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
     this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null && this.run.workbench === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
