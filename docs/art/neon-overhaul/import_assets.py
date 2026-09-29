@@ -46,6 +46,9 @@ PROPS = [
     # Round 29: the back hall, security office and food court.
     'janitor-cart', 'locker-row', 'floor-buffer', 'confiscation-cage', 'filing-cabinets', 'water-cooler', 'tray-return', 'trash-bank',
 ]
+# Round 31: packed 9-frame animate_image strips, copied as-is (not cropped):
+# arcade-cabinet-anim, claw-machine-anim. sale-sign above is now the wide board.
+
 LEGACY = {
     'enemies': ['spitter-idle', 'lp-manager-idle', 'hanger-idle'],
     'items': None,  # every item icon

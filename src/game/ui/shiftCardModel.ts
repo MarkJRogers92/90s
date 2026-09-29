@@ -10,6 +10,7 @@ import { formatDailyDate } from '../run/dailyShift';
 import { floorOf } from '../../sim/run/floors';
 import { wantedStars } from '../../sim/run/wanted';
 import { scoreFor } from '../score/score';
+import type { RunRecord } from '../playtest/recorder';
 
 export type ShiftCardRow = { readonly label: string; readonly value: string };
 
@@ -48,10 +49,35 @@ function namesFor(state: MvpRunState, instanceIds: readonly string[]): string {
 }
 
 /**
+ * The shift's heist in one line, from the playtest recorder's record (which
+ * watches every shift, whether or not the log is saving it): getaways and
+ * the time they had to spare, lockdowns, and Loss Prevention. Null when the
+ * shift stole nothing and never met him, so a clean shift's card stays short.
+ */
+export function heistRecap(record: RunRecord | null): string | null {
+  if (!record) return null;
+  const alarms = record.alarms ?? [];
+  const got = alarms.filter((alarm) => alarm.outcome === 'escaped' || alarm.outcome === 'lockedEscaped').length;
+  const locked = alarms.filter((alarm) => alarm.outcome === 'lockedEscaped' || alarm.outcome === 'locked').length;
+  const spare = alarms.flatMap((alarm) => (alarm.secondsLeft === null ? [] : [alarm.secondsLeft]));
+  const writeUps = record.stalker?.writeUps ?? 0;
+  const shoves = record.stalker?.shoves ?? 0;
+  const parts: string[] = [];
+  if (got > 0) {
+    const best = spare.length > 0 ? ` (${Math.min(...spare).toFixed(1)}S TO SPARE)` : '';
+    parts.push(`${got} GETAWAY${got === 1 ? '' : 'S'}${best}`);
+  }
+  if (locked > 0) parts.push(`LOCKED IN ${locked}X`);
+  if (writeUps > 0) parts.push(`WRITTEN UP ${writeUps}X`);
+  else if (shoves > 0) parts.push(`SHOVED LP ${shoves}X`);
+  return parts.length > 0 ? parts.join(' - ') : null;
+}
+
+/**
  * `mallSeed` is the seed the shift clocked in with (what `?seed=` replays);
  * upstairs the run's own seed is the derived Floor 2 one, so the scene passes it.
  */
-export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state.seed, dailyDate: string | null = null): ShiftCardModel | null {
+export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state.seed, dailyDate: string | null = null, record: RunRecord | null = null): ShiftCardModel | null {
   const summary = state.summary;
   if (state.status === 'playing' || !summary) return null;
   const won = summary.status === 'won';
@@ -90,6 +116,7 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
       { label: 'BEST COMBO', value: `X${state.stats.bestCombo}` },
       { label: 'CASH', value: `$${summary.cash}` },
       { label: 'WANTED', value: wantedStars(summary.heat) > 0 ? '*'.repeat(wantedStars(summary.heat)) : 'NONE' },
+      ...(heistRecap(record) ? [{ label: 'HEIST', value: heistRecap(record)! }] : []),
       { label: 'BOUGHT', value: namesFor(state, summary.purchasedInstanceIds) },
       { label: 'STOLEN', value: namesFor(state, summary.stolenInstanceIds) },
       { label: 'MALL', value: `#${mallSeed}` },
