@@ -841,3 +841,32 @@ Also this round:
 - Mall Mart no longer sells the janitor's own mop (an M3 leftover); that
   shelf holds Bubble-Bath Concentrate.
 
+## Round 31: stores that play differently, a heist recap, living machines
+
+- **Store twists** (`src/sim/run/storeTwists.ts`, room-local `state.room.twist`,
+  never checkpointed; each announces itself on entry via `TWIST_HINTS`):
+  - *Arcade Annex*: the first display cabinet down the east wall
+    (`ARCADE_CABINET`) takes $2 a play (E) with a 45-tick cooldown and pays by
+    `ARCADE_PRIZES` (2% $20, 10% $6, 30% $3): about $1.90 back per $2.
+  - *Cinema Snacks*: butter. The janitor's step feeds a slide velocity with
+    `BUTTER_GRIP` 0.09: it settles at walking speed, builds over a few steps
+    and glides ~35 px after letting go. Dashes are unaffected.
+  - *Department Outlet*: four mannequins stand posed in the aisle
+    (`DISPLAY_MANNEQUIN_SPOTS`, `EnemyState.dormant`): skipped by the enemy
+    tick, no health bar, no mannequin tip; the alarm (or a blow) wakes them.
+  - *Mall Mart*: three carts in the aisle (`CART_SPOTS`). Running into one
+    kicks it off at `CART_KICK_SPEED`; a rolling cart deals `CART_DAMAGE` and
+    knocks a guard back once per push. The decorative corner carts were
+    removed so a still cart never misleads.
+  - Dev fixture: `?fixture=mvp-store&store=<template id>` enters that store
+    when the mall has it.
+- **Heist recap**: the end card gains a HEIST row (`heistRecap` in
+  `shiftCardModel.ts`) from the playtest recorder's record when the shift
+  stole or met Loss Prevention; rows tighten to 23 px past ten.
+- **Art**: the sale signs are a new wide PixelLab board facing the camera
+  with SALE in the pixel font; arcade cabinets and claw machines play
+  PixelLab `animate_image` loops (9-frame strips at ~8 fps, one generation
+  each). `MallRoomView.ensureFrames` numbers a strip's frames before the image
+  is sized; the first added frame becomes the texture default, which here is
+  wanted (frame 0 is the still sprite). Three generations this round.
+

@@ -86,6 +86,9 @@ visits and boss-card skips, which is what the questions below need.
   - Does +60 score per star over-reward stealing?
   - Inside the full-room stores the door is farther from the back shelves:
     is 4 s still fair from there (the escape chevrons point the way)?
+- Store twists (round 31): is the butter fun or just annoying? Do the
+  Department Outlet displays make that store too dangerous to rob? Does the
+  arcade cabinet feel like a gamble worth taking at $2?
 - Loss Prevention stalker: is 150 px/s oppressive or ignorable, and is
   four stars the right threshold?
 - Boss card: it now plays on the first entry per mall only. Is 2.6 s the

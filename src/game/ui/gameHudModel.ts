@@ -313,6 +313,8 @@ function promptFor(state: MvpRunState): HudPrompt {
       return { subject: 'BENCH WARRANT KIOSK', keys: [{ key: 'E', action: 'FUSE' }] };
     case 'store':
       return { subject: interaction.label.toUpperCase(), keys: [{ key: 'E', action: 'ENTER' }] };
+    case 'cabinet':
+      return { subject: 'ARCADE CABINET - $2 A PLAY', keys: [{ key: 'E', action: 'PLAY', disabled: state.cash < 2 }] };
     case 'door':
       return interaction.locked ? { subject: 'DOOR LOCKED - CLEAR THE ROOM', keys: [] } : null;
     default:

@@ -18,7 +18,7 @@ import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
 import { BossIntro } from '../ui/BossIntro';
-import { INTERIOR_EXIT, enterStore } from '../../sim/run/storeInterior';
+import { INTERIOR_EXIT, enterStore, roomStores } from '../../sim/run/storeInterior';
 import { DawnEnding } from '../ui/DawnEnding';
 import { ClockIn } from '../ui/ClockIn';
 import { PinkSlip } from '../ui/PinkSlip';
@@ -985,6 +985,24 @@ export class MvpRunScene extends Phaser.Scene {
           state.room.combat.player.x = offer.position.x + 12;
           state.room.combat.player.y = offer.position.y;
         }
+      }
+      return state;
+    }
+    if (fixture === 'mvp-store') {
+      // Inside the named store (&store=arcade-annex etc.), when this mall has it.
+      const wanted = new URLSearchParams(window.location.search).get('store');
+      let guard = 0;
+      while (guard < 10) {
+        guard += 1;
+        const shops = roomStores(state.wing.rooms[state.roomIndex]!);
+        const index = shops.findIndex((shop) => shop.templateId === wanted);
+        if (index >= 0) {
+          enterStore(state, index);
+          break;
+        }
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
       }
       return state;
     }

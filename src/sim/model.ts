@@ -52,6 +52,8 @@ export type EnemyStatusState = {
 export type EnemyState = Vec2 & {
   id: number;
   kind: EnemyKind;
+  /** A posed display (Department Outlet): does nothing until woken. Optional for fixtures. */
+  dormant?: boolean;
   /** A CLEARANCE elite: double health, triple change. Optional for fixtures. */
   elite?: boolean;
   /** Static: the spot it will blink onto at the end of its wind-up. */

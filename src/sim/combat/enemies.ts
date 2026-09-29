@@ -46,7 +46,7 @@ function spawnSpitterProjectile(state: RunState, enemyIndex: number): void {
 export function updateEnemies(state: RunState): void {
   for (let index = 0; index < state.enemies.length; index += 1) {
     const enemy = state.enemies[index];
-    if (!enemy || enemy.health <= 0) {
+    if (!enemy || enemy.health <= 0 || enemy.dormant) {
       continue;
     }
 

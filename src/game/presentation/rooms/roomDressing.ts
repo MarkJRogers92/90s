@@ -508,7 +508,8 @@ type InteriorLook = {
 };
 
 const INTERIOR_LOOKS: Readonly<Record<string, InteriorLook>> = {
-  'mall-mart': { wall: ['gondola'], sides: 'gondola', corners: ['cart', 'cart', 'vending', 'wetFloor'], ambient: 0x6a6878 },
+  // No decorative carts: Mall Mart's carts roll (storeTwists.ts), so a still one would mislead.
+  'mall-mart': { wall: ['gondola'], sides: 'gondola', corners: ['bin', 'wetFloor', 'vending', 'bin'], ambient: 0x6a6878 },
   'cinema-snacks': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['bench', 'bin', 'palm', 'drinkingFountain'], ambient: 0x5a3e4a },
   'arcade-annex': { wall: ['arcadeCabinet', 'clawMachine'], sides: 'arcadeCabinet', corners: ['kiddieRide', 'atm', 'clawMachine', 'bin'], ambient: 0x3a2e5a },
   'department-outlet': { wall: ['clothingRack'], sides: 'clothingRack', corners: ['bunny', 'palm', 'palm', 'directory'], ambient: 0x5e4a62 },

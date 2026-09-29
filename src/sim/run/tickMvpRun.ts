@@ -60,6 +60,7 @@ import {
 import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
 import { layLow, wantedStars } from './wanted';
 import { updateStalker } from './stalker';
+import { nearArcadeCabinet, playArcadeCabinet, updateStoreTwist } from './storeTwists';
 import { activeStore, checkStoreEntrance, enterStore, leaveStore, roomStores, storeEntranceNear } from './storeInterior';
 import type {
   MvpCommandResult,
@@ -194,6 +195,10 @@ export function nearestMvpInteraction(state: MvpRunState): MvpInteraction {
     });
   }
 
+  if (nearArcadeCabinet(state)) {
+    candidates.push({ distance: 0, key: 'cabinet', interaction: { kind: 'cabinet', label: 'Arcade cabinet' } });
+  }
+
   if (room.benchKiosk) {
     const distance = distanceToPoint(player, room.benchKiosk);
     if (distance <= RUN_INTERACTION_RANGE) {
@@ -235,6 +240,8 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
       return openRunWorkbench(state);
     case 'store':
       return enterStore(state, interaction.storeIndex);
+    case 'cabinet':
+      return playArcadeCabinet(state);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }
@@ -299,6 +306,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
     tokens: [],
     interior: false,
     storeIndex: 0,
+    twist: null,
   };
   state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
   state.alarm = null;
@@ -582,7 +590,9 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     stepCombo(state, { hits, kills, hurt: state.room.combat.player.health < healthBeforeCombat });
   }
   collectTokens(state);
-  // 6d. Loss Prevention: a four-star janitor is hunted from room to room.
+  // 6d. The store's twist: butter, rolling carts, waking displays.
+  updateStoreTwist(state, previousPosition);
+  // 6e. Loss Prevention: a four-star janitor is hunted from room to room.
   updateStalker(state);
 
   // 7. Store boundary evaluation.

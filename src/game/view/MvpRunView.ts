@@ -16,8 +16,10 @@ import type { EnemyState, ProjectileState, Rect, SurfacePatchState } from '../..
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { STORE_ENTRANCE_HALF_WIDTH, activeStore, roomStores, storeEntrance } from '../../sim/run/storeInterior';
+import { ARCADE_CABINET, ARCADE_PLAY_COST } from '../../sim/run/storeTwists';
 import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
+import { PROP_TEXTURES } from '../presentation/rooms/roomDressing';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -93,6 +95,8 @@ export class MvpRunView {
   private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
   private readonly offerNames = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedOfferIcons = new Set<string>();
+  /** Mall Mart's carts, one image each, by cart id. */
+  private readonly cartImages = new Map<number, Phaser.GameObjects.Image>();
   private readonly storeGraphics: Phaser.GameObjects.Graphics;
   private readonly tokenSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly shadows = new Map<string, Phaser.GameObjects.Image>();
@@ -178,6 +182,8 @@ export class MvpRunView {
     } else {
       roomStores(room).forEach((_, index) => this.drawStoreEntrance(state, index));
     }
+    // Every frame, so a store's carts and labels go away with the store.
+    this.drawStoreTwist(state);
 
     if (room.benchKiosk) {
       const pulse = 0.35 + 0.25 * Math.sin(state.tick / 12);
@@ -647,6 +653,66 @@ export class MvpRunView {
     }
   }
 
+  /**
+   * What makes each store play differently (see storeTwists.ts): Mall Mart's
+   * carts, the Arcade Annex's lit cabinet, and Cinema Snacks' buttered floor.
+   */
+  private drawStoreTwist(state: MvpRunState): void {
+    const twist = state.room.twist;
+    const effects = this.effectGraphics;
+    const floor = this.storeGraphics;
+    const seen = new Set<number>();
+    for (const cart of twist?.carts ?? []) {
+      seen.add(cart.id);
+      let image = this.cartImages.get(cart.id);
+      if (!image) {
+        const key = usableTextureKey(this.scene.textures, PROP_TEXTURES.cart.key);
+        if (!key) continue;
+        image = this.scene.add.image(0, 0, key).setOrigin(0.5, 1).setDisplaySize(44, 41);
+        this.cartImages.set(cart.id, image);
+      }
+      const rolling = Math.hypot(cart.vx, cart.vy) > 0.5;
+      image.setPosition(Math.round(cart.x), Math.round(cart.y + 12)).setDepth(presentationDepth('actor', cart.y)).setVisible(true)
+        .setFlipX(cart.vx < 0);
+      this.contactShadow(`cart:${cart.id}`, cart.x, cart.y + 10, 1);
+      if (rolling) {
+        // Speed lines behind a rolling cart.
+        const back = Math.atan2(-cart.vy, -cart.vx);
+        for (let i = 1; i <= 3; i += 1) {
+          effects.lineStyle(2, 0xffffff, 0.5 - i * 0.12)
+            .lineBetween(cart.x + Math.cos(back + 0.3 * (i - 2)) * 18, cart.y + Math.sin(back + 0.3 * (i - 2)) * 10, cart.x + Math.cos(back + 0.3 * (i - 2)) * 32, cart.y + Math.sin(back + 0.3 * (i - 2)) * 18);
+        }
+      }
+    }
+    for (const [id, image] of this.cartImages) {
+      if (!seen.has(id)) {
+        image.destroy();
+        this.cartImages.delete(id);
+      }
+    }
+    if (twist?.storeId === 'arcade-annex') {
+      // The one lit cabinet that takes coins: a pulsing ring and a PLAY sign.
+      const pulse = 0.5 + 0.4 * Math.sin(state.tick / 9);
+      const busy = twist.cabinetCooldown > 0;
+      floor.lineStyle(2, busy ? 0xffd84a : 0x3ff0ff, pulse).strokeEllipse(ARCADE_CABINET.x - 20, ARCADE_CABINET.y + 4, 70, 24);
+      this.setLabel('arcade-play', busy ? 'PLAYING...' : `PLAY $${ARCADE_PLAY_COST}`, ARCADE_CABINET.x - 70, ARCADE_CABINET.y - 96);
+      this.openingConcourse?.addLight({ x: ARCADE_CABINET.x, y: ARCADE_CABINET.y - 40, radius: 70, color: busy ? 0xffd84a : 0x3ff0ff, intensity: 0.5 + 0.4 * (busy ? pulse : 0) });
+    } else {
+      this.clearLabel('arcade-play');
+    }
+    if (twist?.storeId === 'cinema-snacks') {
+      // Butter: greasy yellow sheen streaks across the floor, drawn above the
+      // lightmap so the room's darkness does not swallow it.
+      for (let i = 0; i < 7; i += 1) {
+        const x = 110 + i * 125 + ((i * 37) % 50);
+        const y = 120 + ((i * 53) % 200);
+        const shimmer = 0.16 + 0.08 * Math.sin(state.tick / 20 + i);
+        effects.fillStyle(0xffe27a, shimmer).fillEllipse(x, y, 96, 16);
+        effects.fillStyle(0xffffff, shimmer * 0.8).fillEllipse(x - 18, y - 2, 30, 4);
+      }
+    }
+  }
+
   private drawStore(state: MvpRunState, templateId: string): void {
     const room = state.wing.rooms[state.roomIndex];
     const store = activeStore(state);
@@ -799,6 +865,8 @@ export class MvpRunView {
       }
     }
     this.drawEnemyStatuses(enemy, effects);
+    // A posed display has no health bar: it should read as a mannequin, not a foe.
+    if (enemy.dormant) return;
     const barY = enemy.y - 60;
     effects.fillStyle(0x12060c, 0.9);
     effects.fillRect(enemy.x - 14, barY, 28, 4);
@@ -1664,6 +1732,7 @@ export class MvpRunView {
     const inside = activeStore(state);
     if (room && inside) {
       keep.add('store-alarm');
+      keep.add('arcade-play');
       for (const offer of room.offers.filter((candidate) => candidate.storeId === inside.templateId)) {
         keep.add(`offer:${offer.id}`);
       }
@@ -1789,6 +1858,8 @@ export class MvpRunView {
   }
 
   public destroy(): void {
+    for (const image of this.cartImages.values()) image.destroy();
+    this.cartImages.clear();
     this.policeGlow?.destroy();
     this.policeGlow = null;
     this.clearDashGhosts();

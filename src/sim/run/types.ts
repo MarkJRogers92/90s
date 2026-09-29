@@ -17,6 +17,7 @@ import type { RunStats } from './combo';
 import type { ShiftPerks } from './perks';
 import type { StoreAlarm } from './heist';
 import type { StalkerState } from './stalker';
+import type { StoreTwistState } from './storeTwists';
 
 export type MvpWorkbench = {
   readonly firstId: string | null;
@@ -45,6 +46,8 @@ export type MvpRoomState = {
   interior: boolean;
   /** Which of the room's shops (`roomStores` order) the janitor is inside; 0 on the concourse. */
   storeIndex: number;
+  /** The store's twist while inside (see storeTwists.ts). Never checkpointed. */
+  twist: StoreTwistState | null;
 };
 
 /** Renderer-neutral held input for exactly one fixed simulation tick. */
@@ -80,6 +83,7 @@ export type MvpInteraction =
     }
   | { readonly kind: 'bench'; readonly label: string }
   | { readonly kind: 'store'; readonly storeIndex: number; readonly label: string }
+  | { readonly kind: 'cabinet'; readonly label: string }
   | { readonly kind: 'none'; readonly label: string };
 
 /** Every run command reports its own outcome; the HUD never infers success. */
