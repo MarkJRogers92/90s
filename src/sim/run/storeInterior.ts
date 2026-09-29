@@ -239,6 +239,7 @@ export function enterStore(state: MvpRunState, index = 0): MvpCommandResult {
   const combat = state.room.combat;
   state.room.interior = true;
   state.room.storeIndex = index;
+  state.room.twist = null;
   combat.walls = interiorWalls(store);
   combat.player.x = INTERIOR_ARRIVAL.x;
   combat.player.y = INTERIOR_ARRIVAL.y;
@@ -260,6 +261,7 @@ export function leaveStore(state: MvpRunState, announce = true): void {
   const room = state.wing.rooms[state.roomIndex]!;
   const door = storeEntrance(state.room.storeIndex);
   state.room.interior = false;
+  state.room.twist = null;
   combat.walls = room.walls.map((wall) => ({ ...wall }));
   combat.enemies = [];
   combat.player.x = door.x;

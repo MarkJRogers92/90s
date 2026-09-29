@@ -99,6 +99,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3
       tokens: [],
       interior: false,
       storeIndex: 0,
+      twist: null,
     },
     clearedRooms: [],
     inventory,

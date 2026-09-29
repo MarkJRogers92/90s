@@ -18,7 +18,7 @@ import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
 import { BossIntro } from '../ui/BossIntro';
-import { INTERIOR_EXIT, enterStore } from '../../sim/run/storeInterior';
+import { INTERIOR_EXIT, enterStore, roomStores } from '../../sim/run/storeInterior';
 import { DawnEnding } from '../ui/DawnEnding';
 import { ClockIn } from '../ui/ClockIn';
 import { PinkSlip } from '../ui/PinkSlip';
@@ -33,7 +33,7 @@ import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
 import { GamepadReader, firstGamepad, type PadFrame } from '../input/gamepad';
-import { PlaytestRecorder } from '../playtest/recorder';
+import { PlaytestRecorder, type RunRecord } from '../playtest/recorder';
 import { PlaytestLog } from '../playtest/log';
 
 function playtestStorage(): Storage | null {
@@ -383,6 +383,8 @@ export class MvpRunScene extends Phaser.Scene {
   /** Local, opt-in playtest log (off until switched on from the title). */
   private readonly playtestLog = new PlaytestLog(playtestStorage());
   private playtest = new PlaytestRecorder();
+  /** The finished shift's record, for the end card's heist line. */
+  private lastRecord: RunRecord | null = null;
   private lastRoomIndex = 0;
   private lastCheckpointKey: string | null = null;
   private checkpointStatus = 'none yet';
@@ -731,6 +733,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.seed = nextShiftSeed({ seed: this.seed, pinned: this.seedPinned }, won);
     this.recordQuit();
     this.playtest = new PlaytestRecorder();
+    this.lastRecord = null;
     this.generation += 1;
     const cleared = this.store.clear();
     // Re-read the career: the Break Room is only open between shifts, but a
@@ -768,6 +771,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.lastStatus = 'playing';
     this.run = ascend(this.run);
     this.playtest = new PlaytestRecorder();
+    this.lastRecord = null;
     this.generation += 1;
     this.audio?.resetBaseline();
     this.accumulator = 0;
@@ -928,7 +932,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.benchCard?.hover(pointer.x, pointer.y);
     this.benchCard?.sync(this.run);
     // The end card waits for the kill cam to finish framing the fall.
-    if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed, this.dailyDate);
+    if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed, this.dailyDate, this.run.status === 'playing' ? null : this.lastRecord);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
     this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null && this.run.workbench === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
@@ -938,7 +942,10 @@ export class MvpRunScene extends Phaser.Scene {
 
   private recordPlaytest(): void {
     const record = this.playtest.observe(this.run);
-    if (record) this.playtestLog.append(record);
+    if (record) {
+      this.lastRecord = record;
+      this.playtestLog.append(record);
+    }
   }
 
   /** A shift abandoned mid-run still belongs in the playtest log. */
@@ -978,6 +985,24 @@ export class MvpRunScene extends Phaser.Scene {
           state.room.combat.player.x = offer.position.x + 12;
           state.room.combat.player.y = offer.position.y;
         }
+      }
+      return state;
+    }
+    if (fixture === 'mvp-store') {
+      // Inside the named store (&store=arcade-annex etc.), when this mall has it.
+      const wanted = new URLSearchParams(window.location.search).get('store');
+      let guard = 0;
+      while (guard < 10) {
+        guard += 1;
+        const shops = roomStores(state.wing.rooms[state.roomIndex]!);
+        const index = shops.findIndex((shop) => shop.templateId === wanted);
+        if (index >= 0) {
+          enterStore(state, index);
+          break;
+        }
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
       }
       return state;
     }

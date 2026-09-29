@@ -1,5 +1,23 @@
 # Test evidence
 
+## 2026-09-29 — round 31: store twists, heist recap, living machines
+
+- New: `tests/unit/store-twists.test.ts` (8): the arcade cabinet's cost,
+  payouts, cooldown and refusal when broke, with the house edge checked from
+  the prize table; butter never outruns walking and glides >20 px after
+  release; posed displays stay put next to the janitor and all wake on the
+  alarm; a kicked cart rolls and hurts a guard once; twists drop on leaving;
+  the heist recap's text for a clean and a busy shift.
+- `npx vitest run` 940 passed; build clean with no fixture strings in
+  `dist/`; browser suite 74/74 (storefront specs pass through whichever store
+  the fixture picks, twists and all).
+- Manual (isolated worktree, port 4182): Mall Mart carts in the aisle,
+  Arcade Annex's lit PLAY $2 cabinet and animated machines, Department
+  Outlet's posed displays, Cinema Snacks' butter sheen, the lettered sale
+  signs. Fixed on the way: decorative carts that looked pushable, the
+  mannequin tip firing for displays that cannot move, and a butter sheen
+  hidden under the lightmap.
+
 ## 2026-09-29 — round 30: playtest log, boss card once, Mall Mart stock
 
 - New: `tests/unit/playtest-heist.test.ts` (6), driving the real sim tick by

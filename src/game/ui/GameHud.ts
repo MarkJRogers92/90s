@@ -592,7 +592,7 @@ export class GameHud {
   private trackMannequins(state: MvpRunState): void {
     if (state.tick === 0) this.mannequinHintShown = false;
     if (this.mannequinHintShown) return;
-    if (!state.room.combat.enemies.some((enemy) => enemy.kind === 'mannequin' && enemy.health > 0)) return;
+    if (!state.room.combat.enemies.some((enemy) => enemy.kind === 'mannequin' && enemy.health > 0 && !enemy.dormant)) return;
     this.mannequinHintShown = true;
     this.toast = {
       title: 'MANNEQUINS',

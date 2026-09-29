@@ -64,8 +64,9 @@ export const PROP_TEXTURES = {
   booth: { key: 'neon:prop:booth-row', file: 'props/booth-row.png', width: 143, height: 38 },
   pillar: { key: 'neon:prop:concrete-pillar', file: 'props/concrete-pillar.png', width: 24, height: 99 },
   cart: { key: 'neon:prop:shopping-cart', file: 'legacy-props/shopping-cart.png', width: 36, height: 33 },
-  arcadeCabinet: { key: 'neon:prop:arcade-cabinet', file: 'legacy-props/arcade-cabinet.png', width: 27, height: 59 },
-  clawMachine: { key: 'neon:prop:claw-machine', file: 'legacy-props/claw-machine.png', width: 32, height: 57 },
+  // Round 31: PixelLab animate_image strips (9 frames, frame 0 the original sprite).
+  arcadeCabinet: { key: 'neon:prop:arcade-cabinet-anim', file: 'props/arcade-cabinet-anim.png', width: 27, height: 59, frames: 9 },
+  clawMachine: { key: 'neon:prop:claw-machine-anim', file: 'props/claw-machine-anim.png', width: 32, height: 57, frames: 9 },
   vending: { key: 'neon:prop:vending-machine', file: 'legacy-props/vending-machine.png', width: 22, height: 38 },
   payphone: { key: 'neon:prop:payphone', file: 'legacy-props/payphone.png', width: 31, height: 63 },
   atm: { key: 'neon:prop:atm', file: 'legacy-props/atm.png', width: 29, height: 47 },
@@ -87,7 +88,7 @@ export const PROP_TEXTURES = {
   massageChairs: { key: 'neon:prop:massage-chairs', file: 'props/massage-chairs.png', width: 79, height: 50 },
   photoBooth: { key: 'neon:prop:photo-booth', file: 'props/photo-booth.png', width: 30, height: 81 },
   gumballStand: { key: 'neon:prop:gumball-stand', file: 'props/gumball-stand.png', width: 35, height: 54 },
-  saleSign: { key: 'neon:prop:sale-sign', file: 'props/sale-sign.png', width: 17, height: 62 },
+  saleSign: { key: 'neon:prop:sale-sign-board', file: 'props/sale-sign.png', width: 36, height: 60 },
   // Round 29: the back hall, security office and food court.
   janitorCart: { key: 'neon:prop:janitor-cart', file: 'props/janitor-cart.png', width: 36, height: 56 },
   lockerRow: { key: 'neon:prop:locker-row', file: 'props/locker-row.png', width: 90, height: 57 },
@@ -463,7 +464,7 @@ function storefront(room: WingRoomDefinition): DressingPlan {
   for (const piece of CONCOURSE_FURNITURE) {
     const texture = PROP_TEXTURES[piece.kind];
     const scale = piece.kind === 'saleSign' ? 1.15 : 1.3;
-    props.push({ id: `concourse-${piece.id}`, prop: piece.kind, x: piece.x, y: piece.y, width: Math.round(texture.width * scale), height: Math.round(texture.height * scale), flipX: piece.id === 'sale-e' });
+    props.push({ id: `concourse-${piece.id}`, prop: piece.kind, x: piece.x, y: piece.y, width: Math.round(texture.width * scale), height: Math.round(texture.height * scale) });
   }
   const lights: PointLight[] = [
     ...facadeSpillLights(facades),
@@ -507,7 +508,8 @@ type InteriorLook = {
 };
 
 const INTERIOR_LOOKS: Readonly<Record<string, InteriorLook>> = {
-  'mall-mart': { wall: ['gondola'], sides: 'gondola', corners: ['cart', 'cart', 'vending', 'wetFloor'], ambient: 0x6a6878 },
+  // No decorative carts: Mall Mart's carts roll (storeTwists.ts), so a still one would mislead.
+  'mall-mart': { wall: ['gondola'], sides: 'gondola', corners: ['bin', 'wetFloor', 'vending', 'bin'], ambient: 0x6a6878 },
   'cinema-snacks': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['bench', 'bin', 'palm', 'drinkingFountain'], ambient: 0x5a3e4a },
   'arcade-annex': { wall: ['arcadeCabinet', 'clawMachine'], sides: 'arcadeCabinet', corners: ['kiddieRide', 'atm', 'clawMachine', 'bin'], ambient: 0x3a2e5a },
   'department-outlet': { wall: ['clothingRack'], sides: 'clothingRack', corners: ['bunny', 'palm', 'palm', 'directory'], ambient: 0x5e4a62 },

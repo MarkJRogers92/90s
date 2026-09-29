@@ -17,7 +17,7 @@ import { usableTextureKey } from '../presentation/assetFallback';
 import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, NEON_CIVILIAN_KEYS, characterFrameSize, type CivilianTextureKey } from '../presentation/assets';
 import { presentationDepth } from '../presentation/depth';
 import { GLOW_DEPTH, LightingLayer, type PointLight } from '../presentation/lighting/LightingLayer';
-import { FX_TEXTURES, ensureFxTextures, ensureNeonSign, floorTextureKey, type NeonSignSpec } from '../presentation/neon/proceduralTextures';
+import { FX_TEXTURES, ensureFxTextures, ensureNeonSign, ensurePixelLabel, floorTextureKey, type NeonSignSpec } from '../presentation/neon/proceduralTextures';
 import {
   FACADE_BASE_Y,
   FACADE_HEIGHT,
@@ -94,6 +94,8 @@ export class MallRoomView {
     readonly height: number;
     readonly seed: number;
   }> = [];
+  /** Props drawn from an animated strip (arcade screens, claw machines). */
+  private readonly framedProps: Array<{ image: Phaser.GameObjects.Image; frames: number; seed: number }> = [];
   /** Every neon sign's tube and halo, so a dying tube can stutter both. */
   private readonly signs: Array<{ core: Phaser.GameObjects.Image; halo: Phaser.GameObjects.Image; seed: number }> = [];
   /** The fountain's spray and ripples, y-sorted just in front of it. */
@@ -415,7 +417,12 @@ export class MallRoomView {
     const texture = PROP_TEXTURES[prop.prop];
     const width = prop.width ?? texture.width;
     const height = prop.height ?? (texture.height * width) / texture.width;
-    const image = this.placeImage(texture.key, prop.x, prop.y, width, height, true, prop.flipX);
+    // An animated strip is split into numbered frames before the image is
+    // sized, so its display size is a frame's, not the whole strip's.
+    const frames = 'frames' in texture ? this.ensureFrames(texture.key, texture.width, texture.height, texture.frames) : 0;
+    const image = this.placeImage(texture.key, prop.x, prop.y, width, height, true, prop.flipX, frames > 0 ? '0' : undefined);
+    if (image && frames > 0) this.framedProps.push({ image, frames, seed: propSeed(prop.id) });
+    if (image && prop.prop === 'saleSign') this.letterSaleSign(prop.x, prop.y, width, height);
     const motion = propMotion(prop.prop);
     if (image && motion) {
       this.animatedProps.push({ image, prop: prop.prop, motion, x: prop.x, y: prop.y, width, height, seed: propSeed(prop.id) });
@@ -434,8 +441,33 @@ export class MallRoomView {
     }
   }
 
+  /**
+   * Numbers a strip's frames '0'..'n-1' once per texture. The first frame
+   * added becomes the texture's default, which here is exactly right: frame
+   * 0 is the original still sprite. Returns the frame count, or 0 without art.
+   */
+  private ensureFrames(key: string, frameWidth: number, frameHeight: number, count: number): number {
+    const usable = usableTextureKey(this.scene.textures, key);
+    if (!usable) return 0;
+    const texture = this.scene.textures.get(usable);
+    for (let index = 0; index < count; index += 1) {
+      if (!texture.has(String(index))) texture.add(String(index), 0, index * frameWidth, 0, frameWidth, frameHeight);
+    }
+    return count;
+  }
+
+  /** SALE across the sign board, in the pixel font like every sign in the mall. */
+  private letterSaleSign(x: number, y: number, width: number, height: number): void {
+    const label = ensurePixelLabel(this.scene, 'SALE', '#fff27a', 1, '#8a1048');
+    const text = this.scene.add.image(Math.round(x), Math.round(y - height * 0.66), label.key)
+      .setDepth(presentationDepth('actor', y + 0.5));
+    // Keep it inside the board even if the sign is drawn narrower.
+    if (label.width > width * 0.8) text.setScale((width * 0.8) / label.width);
+    this.sortedProps.push(text);
+  }
+
   /** Places an image by its base centre, y-sorted against the actors. */
-  private placeImage(key: string, x: number, y: number, width: number, height: number, sorted: boolean, flipX = false): Phaser.GameObjects.Image | null {
+  private placeImage(key: string, x: number, y: number, width: number, height: number, sorted: boolean, flipX = false, frame?: string): Phaser.GameObjects.Image | null {
     const usable = usableTextureKey(this.scene.textures, key);
     if (!usable) {
       this.fallbackCount += 1;
@@ -448,7 +480,7 @@ export class MallRoomView {
       .setDisplaySize(Math.round(width * 1.05), Math.max(6, Math.round(height * 0.16)))
       .setAlpha(0.8);
     this.lowProp.add(shadow);
-    const image = this.scene.add.image(Math.round(x), Math.round(y), usable)
+    const image = this.scene.add.image(Math.round(x), Math.round(y), usable, frame)
       .setOrigin(0.5, 1)
       .setDisplaySize(Math.round(width), Math.round(height))
       .setFlipX(flipX);
@@ -492,6 +524,11 @@ export class MallRoomView {
       if (flicker < 1) sign.halo.setAlpha(sign.halo.alpha * flicker);
     }
     this.renderDust(tick);
+    // Animated strips at about 8 fps, each machine out of step with the next.
+    for (const entry of this.framedProps) {
+      const frame = String(Math.floor((tick + (entry.seed % 97)) / 7) % entry.frames);
+      if (entry.image.frame.name !== frame) entry.image.setFrame(frame, false, false);
+    }
     this.water?.clear();
     const screenScale = this.blackout ? BLACKOUT_SCREEN_SCALE : 1;
     for (const entry of this.animatedProps) {
@@ -725,6 +762,7 @@ export class MallRoomView {
     for (const image of this.sortedProps) image.destroy();
     this.sortedProps.length = 0;
     this.animatedProps.length = 0;
+    this.framedProps.length = 0;
     this.signs.length = 0;
     this.water?.destroy();
     this.water = null;
