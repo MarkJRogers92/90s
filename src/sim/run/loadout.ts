@@ -7,10 +7,12 @@
  * behaviour while shots already in flight keep their spawn-time specification.
  */
 import { projectFusionInventory } from '../fusion/inventory';
+import type { FusionInventoryState } from '../fusion/types';
 import { catalogFor } from '../items/registry';
 import { compileLoadout } from '../items/compileLoadout';
-import type { ItemInstance } from '../items/types';
+import { freezeDeep, type CompiledLoadout, type ItemInstance } from '../items/types';
 import type { MvpRunState } from './types';
+import { HOT_DAMAGE_BONUS, isHotNode } from './wanted';
 
 /**
  * The compile input for one fusion projection.
@@ -42,14 +44,49 @@ export function runCompilerInstances(
   return order.map((itemId) => byDefinition.get(itemId)!);
 }
 
-/** Projects the run inventory and writes the compiled behaviour into the room. */
-export function refreshRunLoadout(state: MvpRunState): void {
-  const projected = projectFusionInventory(state.inventory);
-  state.room.combat.inventory = projected.instances.map((instance) => ({ ...instance }));
-  state.room.combat.selectedPrimaryInstanceId = projected.selectedPrimaryInstanceId;
-  state.room.combat.compiledLoadout = compileLoadout(
+/**
+ * Hot goods: an equipped stolen item that has not been fused hits harder, on
+ * the swing and on its own shots. The bonus is applied to the compiled output
+ * so the authored item definitions stay the same for bought and stolen stock.
+ */
+function withHotBonus(loadout: CompiledLoadout, inventory: FusionInventoryState, selectedId: string): CompiledLoadout {
+  const selected = inventory.inventory.find((node) => node.instanceId === selectedId);
+  if (!selected || !isHotNode(selected)) return loadout;
+  const definitionId = loadout.primary.definitionId;
+  return freezeDeep({
+    ...loadout,
+    primary: { ...loadout.primary, damage: loadout.primary.damage + HOT_DAMAGE_BONUS },
+    effects: loadout.effects.map((effect) =>
+      effect.kind === 'projectile_payload' && effect.sourceItemId === definitionId
+        ? { ...effect, damage: effect.damage + HOT_DAMAGE_BONUS }
+        : effect,
+    ),
+  });
+}
+
+/** The run's one way to turn its inventory into room combat inventory and behaviour. */
+export function compileRunLoadout(inventory: FusionInventoryState): {
+  readonly instances: ItemInstance[];
+  readonly selectedPrimaryInstanceId: string;
+  readonly compiledLoadout: CompiledLoadout;
+} {
+  const projected = projectFusionInventory(inventory);
+  const compiled = compileLoadout(
     catalogFor(projected.instances),
     runCompilerInstances(projected.instances, projected.selectedPrimaryInstanceId),
     projected.selectedPrimaryInstanceId,
   );
+  return {
+    instances: projected.instances.map((instance) => ({ ...instance })),
+    selectedPrimaryInstanceId: projected.selectedPrimaryInstanceId,
+    compiledLoadout: withHotBonus(compiled, inventory, projected.selectedPrimaryInstanceId),
+  };
+}
+
+/** Projects the run inventory and writes the compiled behaviour into the room. */
+export function refreshRunLoadout(state: MvpRunState): void {
+  const compiled = compileRunLoadout(state.inventory);
+  state.room.combat.inventory = compiled.instances;
+  state.room.combat.selectedPrimaryInstanceId = compiled.selectedPrimaryInstanceId;
+  state.room.combat.compiledLoadout = compiled.compiledLoadout;
 }

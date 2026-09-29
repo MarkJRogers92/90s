@@ -15,6 +15,7 @@ import type { GeneratedWing, WingRoomId } from '../wing/types';
 import type { MallTokenPickup } from './tokens';
 import type { RunStats } from './combo';
 import type { ShiftPerks } from './perks';
+import type { StoreAlarm } from './heist';
 
 export type MvpWorkbench = {
   readonly firstId: string | null;
@@ -112,6 +113,7 @@ export type MvpRunState = {
   inventory: FusionInventoryState;
   cash: number;
   heat: number;
+  /** Kept at 0: the M3 camera sweep no longer runs in the shift (checkpoint compatibility). */
   suspicion: number;
   carried: CarriedTheft[];
   offerStatus: Record<string, ShopOfferRuntimeStatus>;
@@ -138,6 +140,8 @@ export type MvpRunState = {
   workbench: MvpWorkbench | null;
   /** Cleanup Combo and kill count for this session (not checkpointed). */
   stats: RunStats;
+  /** The store alarm after a grab, while it runs (room-local, never checkpointed). */
+  alarm: StoreAlarm | null;
   /** What the janitor's career brought to this shift (checkpointed; rides the escalator). */
   readonly perks: ShiftPerks;
 };

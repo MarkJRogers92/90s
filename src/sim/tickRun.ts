@@ -28,6 +28,7 @@ export function tickRun(
   state: RunState,
   input: InputFrame,
   attackContext: PrimaryAttackContext = {},
+  rules: { readonly dashCooldownTicks?: number } = {},
 ): void {
   if (state.paused || state.status !== 'playing') {
     return;
@@ -50,7 +51,7 @@ export function tickRun(
     );
   }
   resolvePrimaryAttack(state, input, attackContext);
-  startDash(state, input);
+  startDash(state, input, rules.dashCooldownTicks);
   if (!advanceDash(state)) movePlayer(state, input.moveX, input.moveY);
   updateEnemies(state);
   resolveEnemyDamage(state);

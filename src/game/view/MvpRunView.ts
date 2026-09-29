@@ -7,14 +7,15 @@
  * state and never mutates it; damage, movement, economy, and transitions
  * stay in `src/sim`.
  */
-import { runMaxHealth } from '../../sim/run/perks';
+import { runDashCooldown, runMaxHealth } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH, isBossKind } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import type { EnemyState, ProjectileState, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
-import { securityFacingAtTick } from '../../sim/shop/security';
+import { alarmTicksFor } from '../../sim/run/heist';
+import { alarmCue } from './alarmCues';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -504,30 +505,38 @@ export class MvpRunView {
       cues.fillStyle(carriedHere ? 0xff3a4a : 0x6aff8a, 1).fillRect(px, exit.y - 26, 4, 3);
     }
 
-    // The ceiling camera's sweep: a searchlight the player must read to steal.
-    const zone = store.sightZone;
-    const facing = securityFacingAtTick(zone, state.tick);
-    const halfArc = ((zone.arcDegrees * Math.PI) / 180) / 2;
-    const firstX = zone.origin.x + Math.cos(facing - halfArc) * zone.range;
-    const firstY = zone.origin.y + Math.sin(facing - halfArc) * zone.range;
-    const secondX = zone.origin.x + Math.cos(facing + halfArc) * zone.range;
-    const secondY = zone.origin.y + Math.sin(facing + halfArc) * zone.range;
-    cues.fillStyle(0xffd45d, 0.13);
-    cues.fillTriangle(zone.origin.x, zone.origin.y, firstX, firstY, secondX, secondY);
-    cues.lineStyle(1, 0xffd45d, 0.75);
-    cues.lineBetween(zone.origin.x, zone.origin.y, firstX, firstY);
-    cues.lineBetween(zone.origin.x, zone.origin.y, secondX, secondY);
-    cues.fillStyle(0x1a1422, 1).fillCircle(zone.origin.x, zone.origin.y, 6);
-    cues.fillStyle(state.tick % 40 < 20 ? 0xff3a4a : 0x6a1a22, 1).fillCircle(zone.origin.x, zone.origin.y, 3);
-    const reach = zone.range * 0.62;
-    this.openingConcourse?.addLight({
-      x: zone.origin.x + Math.cos(facing) * reach,
-      y: zone.origin.y + Math.sin(facing) * reach,
-      radius: 120,
-      color: 0xffe08a,
-      intensity: 0.5,
-      squash: 0.8,
-    });
+    // The store alarm after a grab: beacons, the countdown over the door, and
+    // the shutter creeping down across it (see alarmCues.ts).
+    const alarmHere = state.alarm !== null && state.alarm.storeId === store.templateId ? state.alarm : null;
+    const cue = alarmCue(alarmHere, alarmTicksFor(state), state.tick);
+    if (cue.phase === 'ringing' || cue.phase === 'locked') {
+      const red = cue.flash ? 0xff2a3a : 0x6a1a22;
+      floor.lineStyle(3, red, 0.9).strokeRect(store.bounds.x, store.bounds.y, store.bounds.width, store.bounds.height);
+      for (const bx of [store.bounds.x + 14, store.bounds.x + store.bounds.width - 14]) {
+        const by = store.bounds.y + 14;
+        cues.fillStyle(0x1a1422, 1).fillCircle(bx, by, 7);
+        cues.fillStyle(red, 1).fillCircle(bx, by, 4);
+        this.openingConcourse?.addLight({ x: bx, y: by + 40, radius: 150, color: 0xff2a3a, intensity: cue.flash ? 0.9 : 0.25 });
+      }
+      this.openingConcourse?.addLight({ x: exit.x + exit.width / 2, y: exit.y - 30, radius: 110, color: 0xff2a3a, intensity: cue.flash ? 0.7 : 0.3 });
+    }
+    if (cue.shutterDrop > 0) {
+      // A roll-down security grille, hanging from the door header.
+      const full = 46;
+      const height = Math.max(3, Math.round(full * cue.shutterDrop));
+      const top = exit.y + exit.height - full;
+      cues.fillStyle(0x4a5560, 0.95).fillRect(exit.x, top, exit.width, height);
+      for (let y = top + 2; y < top + height; y += 5) {
+        cues.fillStyle(0x9aa8b4, 0.9).fillRect(exit.x, y, exit.width, 2);
+      }
+      cues.fillStyle(0x1a2028, 1).fillRect(exit.x, top + height - 3, exit.width, 3);
+    }
+    if (cue.countdown !== null) {
+      const text = cue.phase === 'locked' ? 'LOCKED IN' : `SHUTTER ${cue.countdown}`;
+      this.setLabel('store-alarm', text, exit.x + exit.width / 2 - text.length * 4, exit.y - 70);
+    } else {
+      this.clearLabel('store-alarm');
+    }
 
     this.setLabel(`store:${templateId}`, store.name.toUpperCase(), store.bounds.x + 6, store.bounds.y - 16);
 
@@ -1209,7 +1218,7 @@ export class MvpRunView {
   private drawDashReadiness(state: MvpRunState, effects: Phaser.GameObjects.Graphics, fxTick: number): void {
     const player = state.room.combat.player;
     const live = state.status === 'playing' && !state.paused;
-    const readiness = dashReadiness(player);
+    const readiness = dashReadiness(player, runDashCooldown(state));
     if ((player.dashTicks ?? 0) === DASH_TICKS) this.dashesThisRun += 1;
     if (readiness >= 1 && this.lastReadiness < 1) this.readyFlashTick = fxTick;
     this.lastReadiness = readiness;
@@ -1477,6 +1486,7 @@ export class MvpRunView {
     }
     if (room?.store) {
       keep.add(`store:${room.store.templateId}`);
+      keep.add('store-alarm');
       for (const offer of room.offers) {
         keep.add(`offer:${offer.id}`);
       }

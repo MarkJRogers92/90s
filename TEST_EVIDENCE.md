@@ -1,5 +1,63 @@
 # Test evidence
 
+## 2026-09-29 — round 25: grab and run, wanted level, hot goods
+
+- Red first: `tests/unit/grab-and-run.test.ts` (20 tests) failed on the missing
+  `heist`/`wanted` modules; it covers the alarm and its guards, guard spots
+  inside every store template, escaping for one star, no suspicion, the
+  shutter (a real wall), lockdown wave and Heat, the lift and late securing,
+  the shutter never closing on the doorway, the Fanny Pack's +90 ticks, a
+  second grab not restarting, star maths, wanted security in fights (none in
+  safe rooms, none when clean), security on doorway entry and checkpoint
+  restore, laying low, the surcharge, Heat up the escalator, score and stub
+  pay per star, hot +1 damage (melee and shots, surviving a room change), the
+  hot floor, and laundering at the Bench Warrant. `alarm-cues.test.ts` (4) was
+  red on the missing view module. The audio-cue test for the removed
+  confiscation cue was rewritten and seen red before the dead branch went.
+  Sonnet subagents wrote the PA/audio and HUD-model changes test-first (6 and
+  ~9 new tests); both diffs were reviewed here.
+- Old sweep tests removed deliberately (confiscation, suspicion rise, sweep in
+  another room, car re-park on confiscation); the M3 Shoplifting Loop's own
+  camera tests are untouched and pass.
+- Unit: 80 files / 880 tests pass. `npx tsc --noEmit -p .` clean;
+  `npm run build` OK; no debug bridge symbols in `dist/assets/*.js`.
+- Real browser: `night-shift.spec.ts` grab test (alarm open, a Hunter present,
+  run out the door, +20 Heat, alarm cleared) and a lingering test (shutter
+  closes, carried item kept, Heat at least 20). Captures:
+  `artifacts/neon-overhaul/heist-alarm.png`, `heist-locked.png`,
+  `heist-hot-slot.png` (HOT slot, HOT GOODS objective, +$2 prices at one star).
+  The first capture showed the alarm banner hidden under the PA ticker; it was
+  moved below it and recaptured.
+- Full suite (scratch config with `executablePath: /opt/pw-browsers/chromium`),
+  `--workers=2`: 72/74. `night-shift.spec.ts:230` and
+  `presentation-evidence.spec.ts:269` both pass in isolation (load-sensitive,
+  as in rounds 23-24). The console 404 that failed three tests in round 24 was
+  `/favicon.ico` requested by full Chromium; `index.html` now declares an empty
+  inline icon.
+
+## 2026-09-29 — round 24: New Sneakers and the Shop-Vac Attachment
+
+- Red first: `tests/unit/sneakers-shopvac.test.ts` (15 tests) failed on the
+  missing `dashCooldownCut`/`tokenMagnet` perk fields, `runDashCooldown`, the
+  Break Room lines and the clock-in names; a real `tickMvpRun` dash set 57
+  cooldown ticks where the sneakers expect 47. `player-cues.test.ts` gained a
+  readiness case over a shortened cooldown, red before `dashReadiness` took it.
+- Unit: 76 files / 849 tests pass. `npx tsc --noEmit -p .` clean;
+  `npm run build` OK.
+- Real browser: new `break-room.spec.ts` test enrolls in both perks through the
+  panel, starts a shift, reads `dashCooldownCut: 10, tokenMagnet: 40` from the
+  run and a real Space dash leaves at most 47 cooldown ticks. Capture:
+  `artifacts/neon-overhaul/break-room-perks-6.png`.
+- Full suite (this container, Chromium 1194 via a scratch config pointing
+  `executablePath` at `/opt/pw-browsers/chromium`, because the installed
+  Playwright wants a headless shell this image does not have), `--workers=2`:
+  68/73 passed. Four failures reproduce identically on an untouched `main`
+  worktree in the same container: `break-room.spec.ts:43`, `night-shift.spec.ts:300`
+  and `:350` fail only on a console "404 (Not Found)" error, and
+  `night-shift.spec.ts:229` times out its wait. The fifth,
+  `presentation-evidence.spec.ts:269` (ten restart cycles), passes in isolation
+  on this branch, as round 23 recorded.
+
 ## 2026-09-28 — round 23a: Daily Shift
 
 - Red first: `tests/unit/daily-shift.test.ts` failed on the missing

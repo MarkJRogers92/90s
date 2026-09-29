@@ -33,12 +33,59 @@ describe('game HUD model', () => {
     expect(selected[0]?.instanceId).toBe(run.inventory.selectedPrimaryInstanceId);
   });
 
-  it('never reports a done objective for heat while the shift is hot', () => {
+  it('stays off the radar at zero stars', () => {
     const run = createMvpRun(7);
-    run.heat = 3;
     const heat = buildGameHudModel(run).objectives.at(-1)!;
-    expect(heat.done).toBe(false);
-    expect(heat.text).toContain('3');
+    expect(heat).toEqual({ text: 'STAY OFF THE RADAR', done: true });
+    expect(buildGameHudModel(run).wanted).toBe(0);
+  });
+
+  it('shows the wanted stars and how to lay low, never done while wanted', () => {
+    const run = createMvpRun(7);
+    run.heat = 45;
+    const model = buildGameHudModel(run);
+    expect(model.wanted).toBe(2);
+    expect(model.objectives.at(-1)).toEqual({ text: 'WANTED ** - CLEAR FIGHTS TO LAY LOW', done: false });
+  });
+
+  it('asks for a launder when hot goods hold the heat at its floor', () => {
+    const run = createMvpRun(7);
+    run.inventory = {
+      ...run.inventory,
+      inventory: [...run.inventory.inventory, { kind: 'leaf', instanceId: 'hot-1', itemDefinitionId: 'box_cutter', acquisitionKind: 'stolen', sourceLocationId: 't', sourceStockId: 'hot-1', acquisitionTick: 0 }],
+    };
+    run.heat = 20;
+    const model = buildGameHudModel(run);
+    expect(model.objectives.at(-1)).toEqual({ text: 'HOT GOODS - LAUNDER AT THE BENCH', done: false });
+    expect(model.hotbar.find((slot) => slot.instanceId === 'hot-1')?.hot).toBe(true);
+    expect(model.hotbar.filter((slot) => slot.instanceId !== 'hot-1').every((slot) => !slot.hot)).toBe(true);
+    run.heat = 60;
+    expect(buildGameHudModel(run).objectives.at(-1)!.text).toMatch(/^WANTED \*\*\* /);
+  });
+
+  it('reports no alarm until a grab, then the countdown, shutter and store', () => {
+    const run = createMvpRun(7);
+    expect(buildGameHudModel(run).alarm).toBeNull();
+    run.alarm = { storeId: 'x', roomIndex: run.roomIndex, ticksLeft: 192, shutter: 'open' };
+    expect(buildGameHudModel(run).alarm).toEqual({ secondsLeft: 3.2, shutter: 'open', store: '' });
+  });
+
+  it('rewrites the store objective for an open alarm and for a lockdown', () => {
+    const run = createMvpRun(7);
+    run.room.combat.enemies = [];
+    for (let guard = 0; guard < 6 && !run.wing.rooms[run.roomIndex]?.store; guard += 1) {
+      run.room.combat.enemies = [];
+      enterDoorway(run, 'east');
+    }
+    run.room.combat.enemies = [];
+    const storeName = run.wing.rooms[run.roomIndex]!.store!.name.toUpperCase();
+    run.alarm = { storeId: 'x', roomIndex: run.roomIndex, ticksLeft: 192, shutter: 'open' };
+    const open = buildGameHudModel(run);
+    expect(open.alarm?.store).toBe(storeName);
+    expect(open.objectives.some((objective) => objective.text === 'GET OUT! SHUTTER IN 3.2S')).toBe(true);
+    run.alarm = { storeId: 'x', roomIndex: run.roomIndex, ticksLeft: 0, shutter: 'closed' };
+    const guards = buildGameHudModel(run).enemiesLeft;
+    expect(buildGameHudModel(run).objectives.some((objective) => objective.text === `LOCKED IN - TAKE DOWN SECURITY  ${guards} LEFT`)).toBe(true);
   });
 });
 
@@ -63,7 +110,7 @@ describe('store offer prompt', () => {
     expect(prompt.detail?.itemDefinitionId).toBe(offer.itemDefinitionId);
     expect(prompt.detail?.blurb.length).toBeGreaterThan(0);
     expect(['WEAPON', 'PASSIVE']).toContain(prompt.detail?.kind);
-    expect(prompt.detail?.note).toMatch(/HEAT/);
+    expect(prompt.detail?.note).toMatch(/GRAB & RUN: FREE, \+1 STAR - ALARM: 4S TO THE DOOR/);
     expect(prompt.detail?.canBuy).toBe(true);
   });
 
@@ -121,5 +168,12 @@ describe('the top HUD gets out of the way of the shop art', () => {
   it('keeps the current objective in the collapsed chip', () => {
     const model = buildGameHudModel(createMvpRun(7));
     expect(collapsedObjective(model)).toBe(model.objectives.find((objective) => !objective.done)?.text);
+  });
+});
+
+describe('item blurbs', () => {
+  it('the fanny pack buys alarm time now, not less heat', async () => {
+    const { itemBlurb } = await import('../../src/game/ui/itemBlurbs');
+    expect(itemBlurb('fanny_pack')).toBe('CARRY 2 STOLEN ITEMS, +1.5S ALARM');
   });
 });

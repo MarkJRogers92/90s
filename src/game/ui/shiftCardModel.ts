@@ -8,6 +8,7 @@ import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
 import { formatDailyDate } from '../run/dailyShift';
 import { floorOf } from '../../sim/run/floors';
+import { wantedStars } from '../../sim/run/wanted';
 import { scoreFor } from '../score/score';
 
 export type ShiftCardRow = { readonly label: string; readonly value: string };
@@ -88,7 +89,7 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
       { label: 'KILLS', value: `${state.stats.kills}` },
       { label: 'BEST COMBO', value: `X${state.stats.bestCombo}` },
       { label: 'CASH', value: `$${summary.cash}` },
-      { label: 'HEAT', value: `${summary.heat}` },
+      { label: 'WANTED', value: wantedStars(summary.heat) > 0 ? '*'.repeat(wantedStars(summary.heat)) : 'NONE' },
       { label: 'BOUGHT', value: namesFor(state, summary.purchasedInstanceIds) },
       { label: 'STOLEN', value: namesFor(state, summary.stolenInstanceIds) },
       { label: 'MALL', value: `#${mallSeed}` },

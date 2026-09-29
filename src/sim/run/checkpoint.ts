@@ -35,6 +35,7 @@ import {
 } from './rooms';
 import type { MvpRoomEntryFrom, MvpRunState } from './types';
 import { createRunStats } from './combo';
+import { wantedStars } from './wanted';
 import { NO_PERKS, hasPerks, sanitizePerks, type ShiftPerks } from './perks';
 
 export const MVP_CHECKPOINT_VERSION = 1;
@@ -271,8 +272,9 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     if (!isRecord(value.perks)) return fail('Checkpoint perks must be an object.');
     const raw = value.perks;
     perks = sanitizePerks(raw as Partial<ShiftPerks>);
-    // A save that needed clamping was not written by this game.
-    if (perks.bonusCash !== raw.bonusCash || perks.bonusHealth !== raw.bonusHealth || perks.clearHealBonus !== raw.clearHealBonus || perks.lockerItemId !== raw.lockerItemId) {
+    // A save that needed clamping was not written by this game. Saves from
+    // before New Sneakers and the Shop-Vac simply lack those two fields.
+    if (perks.bonusCash !== raw.bonusCash || perks.bonusHealth !== raw.bonusHealth || perks.clearHealBonus !== raw.clearHealBonus || perks.dashCooldownCut !== (raw.dashCooldownCut ?? 0) || perks.tokenMagnet !== (raw.tokenMagnet ?? 0) || perks.lockerItemId !== raw.lockerItemId) {
       return fail('Checkpoint perks are out of range.');
     }
   }
@@ -398,6 +400,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     checkpoint.enteredFrom,
     inventory,
     checkpoint.seed,
+    wantedStars(checkpoint.heat),
   );
   combat.tick = checkpoint.tick;
   combat.player.health = checkpoint.playerHealth;
@@ -436,6 +439,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     carrier: null,
     preview: null,
     workbench: null,
+    alarm: null,
     stats: createRunStats(),
     perks: sanitizePerks(checkpoint.perks),
   };

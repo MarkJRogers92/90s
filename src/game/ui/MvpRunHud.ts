@@ -19,6 +19,7 @@ import {
 import { canOpenRunFusionPreview } from '../../sim/run/bench';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import type { MvpRunState } from '../../sim/run/types';
+import { MAX_STARS, wantedStars } from '../../sim/run/wanted';
 import type { EnemyState } from '../../sim/model';
 
 const TERMINAL_PROMPT = 'RUN COMPLETE — RESTART OR RETURN';
@@ -220,7 +221,7 @@ export class MvpRunHud {
     this.health.textContent = `${health} / ${runMaxHealth(state)}`;
     this.cash.textContent = `$${state.cash}`;
     this.heat.textContent = `HEAT ${state.heat}`;
-    this.suspicion.textContent = `SUSPICION ${Math.floor(state.suspicion)}`;
+    this.suspicion.textContent = `WANTED ${wantedStars(state.heat)}/${MAX_STARS}`;
 
     this.syncBoss(state);
     this.syncInteraction(state);

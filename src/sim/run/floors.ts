@@ -2,7 +2,7 @@
  * The escalator: beating a floor's boss opens the next one up.
  *
  * Going up is a new run on the next floor (its own seeded wing) that carries
- * the janitor's gear, cash, shift stats and perks, with health restored as the
+ * the janitor's gear, cash, shift stats, perks and wanted level (Heat), with health restored as the
  * reward for the floor. Floor 2 (Statics, Bargain Hunters, the Mall Manager)
  * follows Loss Prevention; Floor 3 (Food Court After Dark: Mascot Brutes and
  * the Mall Owner) follows the Mall Manager. Each floor's wing seed is derived
@@ -39,7 +39,7 @@ export function ascend(state: MvpRunState): MvpRunState {
   const floor = floorOf(state) === 1 ? 2 : 3;
   const next = createMvpRun(floor === 2 ? floorTwoSeed(state.seed) : floorThreeSeed(state.seed), {
     floor,
-    carry: { inventory: cloneFusionInventory(state.inventory), cash: state.cash, stats: { ...state.stats } },
+    carry: { inventory: cloneFusionInventory(state.inventory), cash: state.cash, stats: { ...state.stats }, heat: state.heat },
     perks: state.perks,
   });
   refreshRunLoadout(next);

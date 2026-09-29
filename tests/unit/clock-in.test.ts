@@ -46,7 +46,7 @@ describe('clock-in benefits line', () => {
   });
 
   it('lists what the Break Room bought, in plain words', () => {
-    expect(benefitsLine({ bonusCash: 10, bonusHealth: 4, clearHealBonus: 1, lockerItemId: 'pump_soaker' }))
+    expect(benefitsLine({ bonusCash: 10, bonusHealth: 4, clearHealBonus: 1, dashCooldownCut: 0, tokenMagnet: 0, lockerItemId: 'pump_soaker' }))
       .toBe('BENEFITS: +$10 FLOAT - +2 HEARTS - COFFEE BREAK - PUMP-ACTION SOAKER');
     expect(benefitsLine({ ...NO_PERKS, bonusHealth: 2 })).toBe('BENEFITS: +1 HEART');
   });

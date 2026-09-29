@@ -4,14 +4,17 @@
  * `PaDirector` compares consecutive run states the way the audio cues do and
  * decides when an announcement plays: the boss room, the upper level, a
  * blackout or Blue Light Special, a first drop to the last heart in a room,
- * rising heat, a big combo, room entries now and then, and an idle line in a
- * long quiet stretch. A cooldown keeps it from talking over itself (the boss,
- * upstairs and room-event lines cut in regardless), and lines are picked from
- * the mall seed, so the same mall says the same things. Pure: no Phaser.
+ * the store alarm and its shutter, rising wanted stars, laundering, a big
+ * combo, room entries now and then, and an idle line in a long quiet stretch.
+ * A cooldown keeps it from talking over itself (the boss, upstairs,
+ * room-event, alarm and shutter lines cut in regardless), and lines are
+ * picked from the mall seed, so the same mall says the same things. Pure: no
+ * Phaser.
  */
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { COMBO_MILESTONE } from '../../sim/run/combo';
 import type { MvpRunState } from '../../sim/run/types';
+import { hotItemCount, wantedStars } from '../../sim/run/wanted';
 
 export const PA_COOLDOWN_TICKS = 60 * 12;
 export const PA_IDLE_TICKS = 60 * 45;
@@ -37,6 +40,16 @@ export const PA_LINES = {
     'ATTENTION: A JANITOR IS CONCEALING MERCHANDISE.',
     'SHOPLIFTING IS A CRIME. IT IS ALSO A LIFESTYLE.',
   ],
+  alarm: [
+    'FIVE-FINGER DISCOUNT IN PROGRESS: {STORE}.',
+    'CODE FIVE-FINGER: {STORE}. THE DEAL IS YOURS.',
+  ],
+  shutter: ['SECURITY TO {STORE}. NOBODY LEAVES.'],
+  wanted: [
+    'WOULD THE JANITOR PLEASE RETURN THE MERCHANDISE.',
+    'THE JANITOR IS WANTED. PLEASE DO NOT ENCOURAGE.',
+  ],
+  launder: ['MANAGEMENT REMINDS STAFF: ALL SALES ARE FINAL.'],
   combo: [
     'ATTENTION: WE HAVE AN EMPLOYEE OF THE MONTH.',
     'SOMEONE GIVE THAT JANITOR A RAISE. REQUEST DENIED.',
@@ -68,7 +81,11 @@ type Snapshot = {
   readonly floor: 1 | 2 | 3;
   readonly roomIndex: number;
   readonly health: number;
-  readonly heat: number;
+  readonly stars: number;
+  readonly hotItems: number;
+  readonly alarm: boolean;
+  readonly shutter: string | null;
+  readonly store: string;
   readonly comboTier: number;
   readonly quiet: boolean;
 };
@@ -80,7 +97,11 @@ function snapshot(state: MvpRunState): Snapshot {
     floor: state.wing.floor === 3 ? 3 : state.wing.floor === 2 ? 2 : 1,
     roomIndex: state.roomIndex,
     health: state.room.combat.player.health,
-    heat: state.heat,
+    stars: wantedStars(state.heat),
+    hotItems: hotItemCount(state),
+    alarm: state.alarm !== null,
+    shutter: state.alarm?.shutter ?? null,
+    store: (state.wing.rooms[state.roomIndex]?.store?.name ?? 'the store').toUpperCase(),
     comboTier: Math.floor((state.stats?.combo ?? 0) / COMBO_MILESTONE),
     quiet: !state.room.combat.enemies.some((enemy) => enemy.health > 0),
   };
@@ -109,6 +130,8 @@ export class PaDirector {
       if (current.floor === 3 && previous.floor !== 3) return this.say('topfloor', current, true);
       return current.floor === 2 && previous.floor !== 2 ? this.say('upstairs', current, true) : null;
     }
+    if (current.alarm && !previous.alarm) return this.say('alarm', current, true);
+    if (current.shutter === 'closed' && previous.shutter !== 'closed') return this.say('shutter', current, true);
     if (current.roomIndex !== previous.roomIndex) {
       const room = state.wing.rooms[current.roomIndex];
       if (room?.bossAnchor != null) return this.say(current.floor === 3 ? 'boss_floor_three' : current.floor === 2 ? 'boss_floor_two' : 'boss_floor_one', current, true);
@@ -122,7 +145,8 @@ export class PaDirector {
       this.lowHealthRoom = current.roomIndex;
       return this.say('low_health', current);
     }
-    if (current.heat > previous.heat) return this.say('theft', current);
+    if (current.stars > previous.stars) return this.say(current.stars >= 3 ? 'wanted' : 'theft', current);
+    if (current.hotItems < previous.hotItems) return this.say('launder', current);
     if (current.comboTier > previous.comboTier && current.comboTier >= 2) return this.say('combo', current);
     if (current.quiet && current.tick - this.lastSpoke >= PA_IDLE_TICKS) return this.say('idle', current);
     return null;
@@ -139,7 +163,7 @@ export class PaDirector {
     const pick = Math.abs(Math.imul(current.seed + 17, 31) + this.spoken * 7) % lines.length;
     this.lastSpoke = current.tick;
     this.spoken += 1;
-    return lines[pick] ?? lines[0]!;
+    return (lines[pick] ?? lines[0]!).replace('{STORE}', current.store);
   }
 }
 

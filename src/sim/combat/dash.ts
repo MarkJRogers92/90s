@@ -29,9 +29,9 @@ export function tickDashCooldown(state: RunState): void {
 /**
  * Starts a dash on a fresh press when one is not running or cooling down. It
  * goes along the held movement direction, or toward the aim when standing
- * still.
+ * still. A run's perks may shorten the cooldown that follows.
  */
-export function startDash(state: RunState, input: InputFrame): void {
+export function startDash(state: RunState, input: InputFrame, cooldownTicks = DASH_COOLDOWN_TICKS): void {
   if (!input.dash || playerDashing(state) || (state.player.dashCooldownTicks ?? 0) > 0) return;
   const moving = input.moveX !== 0 || input.moveY !== 0;
   const direction = moving
@@ -39,7 +39,7 @@ export function startDash(state: RunState, input: InputFrame): void {
     : normalizedDirection(state.player.facing.x, state.player.facing.y);
   if (direction.x === 0 && direction.y === 0) return;
   state.player.dashTicks = DASH_TICKS;
-  state.player.dashCooldownTicks = DASH_TICKS + DASH_COOLDOWN_TICKS;
+  state.player.dashCooldownTicks = DASH_TICKS + cooldownTicks;
   state.player.dashX = direction.x;
   state.player.dashY = direction.y;
 }

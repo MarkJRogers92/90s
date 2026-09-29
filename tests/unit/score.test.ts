@@ -25,9 +25,10 @@ describe('score', () => {
     expect(fast).toBeGreaterThan(slow);
   });
 
-  it('costs a little for heat and never goes negative', () => {
-    expect(scoreFor({ ...base, heat: 40 })).toBeLessThan(scoreFor(base));
-    expect(scoreFor({ won: false, roomsReached: 0, kills: 0, bestCombo: 0, cash: 0, heat: 999, seconds: 0 })).toBe(0);
+  it('pays for each wanted star and never goes negative', () => {
+    expect(scoreFor({ ...base, heat: 40 })).toBeGreaterThan(scoreFor(base));
+    expect(scoreFor({ won: false, roomsReached: 0, kills: 0, bestCombo: 0, cash: 0, heat: 0, seconds: 0 })).toBe(0);
+    expect(scoreFor({ ...base, heat: 999 })).toBe(scoreFor({ ...base, heat: 100 }));
   });
 });
 

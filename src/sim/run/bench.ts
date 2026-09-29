@@ -14,6 +14,7 @@ import type { FusionProposal, InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import { syncRunCarrier } from './carrier';
 import { blockedRunReason, publishRunFeedback } from './economy';
+import { hotItemCount } from './wanted';
 import { refreshRunLoadout } from './loadout';
 import { hasLivingEnemies } from './rooms';
 import type { MvpCommandResult, MvpRunState, MvpWorkbench } from './types';
@@ -231,6 +232,7 @@ export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
   if (state.status !== 'playing') {
     return rejected('The shift is over.');
   }
+  const hotBefore = hotItemCount(state);
   const committed = commitFusion(state.inventory, preview, state.tick);
   if (!committed.committed) {
     // Publish the refusal so the player sees why the click did nothing; the
@@ -250,6 +252,9 @@ export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
   const message = preview.recipeId === 'emitter_mount'
     ? `Emitter Mount complete: ${preview.primaryName} + ${preview.carrierName} for $${committed.record.fee}. The car now carries the shots.`
     : `Fused ${preview.primaryName} + ${preview.carrierName} into the ${preview.resultName} for $${committed.record.fee}.`;
-  publishRunFeedback(state, message);
-  return { accepted: true, message };
+  // Hot goods fused into something new can no longer be traced: laundered.
+  const laundered = hotBefore - hotItemCount(state);
+  const fullMessage = laundered > 0 ? `${message} Laundered ${laundered === 1 ? 'a hot item' : `${laundered} hot items`}.` : message;
+  publishRunFeedback(state, fullMessage);
+  return { accepted: true, message: fullMessage };
 }

@@ -1358,5 +1358,25 @@
       1024
     ],
     "sha256": "da65e6991da8c9b9f317d29dfdeca42bd3492b262eb8b6dfb09db15b6aeb2074"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-sneakers.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-perk-sneakers.png",
+    "generator": "Procedural Pillow pixel-drawn 48x48 high-top sneaker icon (draw_perk_icons.py)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "adf561952b7723da4e73c9314834746b3f481846aa5b4746644c12fd5d1861e1"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-shopvac.png",
+    "source": "docs/art/neon-overhaul/pixellab/ui-breakroom-perk-shopvac.png",
+    "generator": "Procedural Pillow pixel-drawn 48x48 shop-vac icon (draw_perk_icons.py)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "9ce24cbf7c5a6d28c11601316052c2dcf29bdfc510bcae761f1306c9371c3656"
   }
 ]

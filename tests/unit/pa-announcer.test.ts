@@ -57,18 +57,60 @@ describe('the mall PA', () => {
     const state = createMvpRun(7);
     const director = watching(state);
     state.tick += PA_COOLDOWN_TICKS;
-    state.heat += 15;
+    state.heat += 20;
     expect(PA_LINES.theft).toContain(director.observe(state));
+  });
+
+  it('announces the store alarm by name, over the cooldown', () => {
+    const state = createMvpRun(7);
+    const director = watching(state);
+    state.tick += 10;
+    director.observe(state);
+    const name = state.wing.rooms[state.roomIndex]?.store?.name ?? 'THE STORE';
+    state.alarm = { storeId: 'x', roomIndex: state.roomIndex, ticksLeft: 300, shutter: 'open' };
+    const line = director.observe(state);
+    expect(PA_LINES.alarm.map((l) => l.replace('{STORE}', name.toUpperCase()))).toContain(line);
+    expect(line).not.toContain('{STORE}');
+  });
+
+  it('locks the shutter with a security page', () => {
+    const state = createMvpRun(7);
+    state.alarm = { storeId: 'x', roomIndex: state.roomIndex, ticksLeft: 300, shutter: 'open' };
+    const director = watching(state);
+    state.tick += 10;
+    state.alarm = { storeId: 'x', roomIndex: state.roomIndex, ticksLeft: 0, shutter: 'closed' };
+    const line = director.observe(state);
+    expect(line).toMatch(/^SECURITY TO .*\. NOBODY LEAVES\.$/);
+  });
+
+  it('asks for the merchandise back at three stars, and stays quiet below', () => {
+    const state = createMvpRun(7);
+    const director = watching(state);
+    state.tick += PA_COOLDOWN_TICKS;
+    state.heat = 60;
+    expect(PA_LINES.wanted).toContain(director.observe(state));
+    state.tick += PA_COOLDOWN_TICKS;
+    state.heat = 70;
+    expect(director.observe(state)).toBeNull();
+  });
+
+  it('reminds staff that all sales are final when a hot item is laundered', () => {
+    const state = createMvpRun(7);
+    state.inventory = { ...state.inventory, inventory: [{ kind: 'leaf', acquisitionKind: 'stolen' } as never] };
+    const director = watching(state);
+    state.tick += PA_COOLDOWN_TICKS;
+    state.inventory = { ...state.inventory, inventory: [] };
+    expect(PA_LINES.launder).toContain(director.observe(state));
   });
 
   it('never talks over itself: a second event inside the cooldown waits', () => {
     const state = createMvpRun(7);
     const director = watching(state);
     state.tick += PA_COOLDOWN_TICKS;
-    state.heat += 15;
+    state.heat += 20;
     expect(director.observe(state)).not.toBeNull();
     state.tick += 10;
-    state.heat += 15;
+    state.heat += 20;
     expect(director.observe(state)).toBeNull();
   });
 
@@ -81,7 +123,7 @@ describe('the mall PA', () => {
   });
 
   it('keeps every line short enough for the ticker', () => {
-    for (const lines of Object.values(PA_LINES)) for (const line of lines) expect(line.length).toBeLessThanOrEqual(56);
+    for (const lines of Object.values(PA_LINES)) for (const line of lines) expect(line.replace('{STORE}', 'DEPARTMENT OUTLET').length).toBeLessThanOrEqual(56);
   });
 
   it('chimes, types the line out, holds it, and fades', () => {
@@ -102,7 +144,7 @@ describe('the mall PA after a quiet start', () => {
     const director = new PaDirector();
     director.observe(state);
     state.tick += PA_START_GRACE_TICKS;
-    state.heat += 15;
+    state.heat += 20;
     expect(PA_LINES.theft).toContain(director.observe(state));
   });
 });

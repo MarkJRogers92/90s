@@ -12,7 +12,8 @@ type Snapshot = {
   tick: number;
   cash: number;
   roomIndex: number;
-  player: { health: number };
+  player: { health: number; dashCooldownTicks: number };
+  perks: { dashCooldownCut: number; tokenMagnet: number };
   enemies: Array<{ kind: string }>;
   inventory: { inventory: Array<{ instanceId: string; itemDefinitionId: string }>; selectedPrimaryInstanceId?: string };
 };
@@ -78,6 +79,32 @@ test('the Dental Plan adds a heart to the run', async ({ page }) => {
   await page.goto('/?seed=11');
   await startShift(page);
   expect((await snapshot(page)).player.health).toBe(8);
+});
+
+test('New Sneakers and the Shop-Vac are bought, carried into the shift, and the dash comes back sooner', async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.addInitScript((key) => {
+    if (!localStorage.getItem(key)) localStorage.setItem(key, JSON.stringify({ version: 1, stubs: 22 }));
+  }, CAREER_KEY);
+  await page.goto('/?seed=11');
+  await page.getByRole('button', { name: /Break Room/ }).click();
+  const room = page.getByRole('dialog', { name: 'Break Room' });
+  await room.getByRole('button', { name: /Enroll in NEW SNEAKERS for 12 pay stubs/ }).click();
+  await room.getByRole('button', { name: /Enroll in SHOP-VAC ATTACHMENT for 10 pay stubs/ }).click();
+  expect(await career(page)).toMatchObject({ stubs: 0, perks: { sneakers: 1, shopvac: 1 } });
+  await page.keyboard.press('Escape');
+  await expect(room).toBeHidden();
+
+  await startShift(page);
+  expect((await snapshot(page)).perks).toMatchObject({ dashCooldownCut: 10, tokenMagnet: 40 });
+  await page.locator('canvas').click({ position: { x: 20, y: 20 } });
+  await page.keyboard.down('d');
+  await page.keyboard.press('Space');
+  await page.keyboard.up('d');
+  // A plain dash sets 12 + 45 cooldown ticks; the sneakers take ten off.
+  await expect.poll(() => snapshot(page).then((state) => state.player.dashCooldownTicks)).toBeGreaterThan(0);
+  expect((await snapshot(page)).player.dashCooldownTicks).toBeLessThanOrEqual(47);
+  expect(errors.pageErrors).toEqual([]);
 });
 
 test('a shift that dies still gets paid, with no photo', async ({ page }) => {

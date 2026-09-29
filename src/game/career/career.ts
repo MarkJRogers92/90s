@@ -11,7 +11,7 @@ import { itemDefinitionName } from '../../sim/run/economy';
 import { LOCKER_ITEM_IDS, NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 import { hybridParts, isHybridPair, signatureFusions } from '../../sim/fusion/hybrid';
 
-export type PerkId = 'seniority' | 'dental' | 'coffee';
+export type PerkId = 'seniority' | 'dental' | 'coffee' | 'sneakers' | 'shopvac';
 
 export type PerkDefinition = {
   readonly id: PerkId;
@@ -26,6 +26,8 @@ export const PERKS: readonly PerkDefinition[] = [
   { id: 'seniority', name: 'SENIORITY', perLevel: 'Start every shift with +$5 in the float.', costs: [6, 14, 26] },
   { id: 'dental', name: 'DENTAL PLAN', perLevel: '+1 heart of maximum health.', costs: [18, 40] },
   { id: 'coffee', name: 'COFFEE BREAK', perLevel: 'Every cleared room patches you up an extra half heart.', costs: [22] },
+  { id: 'sneakers', name: 'NEW SNEAKERS', perLevel: 'Your dash comes back a sixth of a second sooner.', costs: [12, 28] },
+  { id: 'shopvac', name: 'SHOP-VAC ATTACHMENT', perLevel: 'Loose change slides to you from further away.', costs: [10, 24] },
 ];
 
 export type LockerDefinition = { readonly itemId: string; readonly name: string; readonly cost: number; readonly blurb: string };
@@ -85,7 +87,7 @@ export function newCareer(): Career {
     clockOuts: 0,
     kills: 0,
     bestCombo: 0,
-    perks: { seniority: 0, dental: 0, coffee: 0 },
+    perks: { seniority: 0, dental: 0, coffee: 0, sneakers: 0, shopvac: 0 },
     lockerOwned: [],
     lockerEquipped: null,
     wall: [],
@@ -106,6 +108,8 @@ export type ShiftResult = {
   readonly bestCombo: number;
   readonly seconds: number;
   readonly mall: number;
+  /** Wanted stars the shift ended with; each pays a stub. Absent means none. */
+  readonly wanted?: number;
   /** Hybrids the shift ended holding, by definition id. */
   readonly fusions?: readonly string[];
 };
@@ -120,6 +124,8 @@ export function stubsForShift(result: ShiftResult): Pay {
   if (result.floorCleared) lines.push({ label: 'FLOOR 1 CLEARED', amount: 6 });
   if (result.floorTwoCleared === true || result.won) lines.push({ label: 'FLOOR 2 CLEARED', amount: 9 });
   if (result.won) lines.push({ label: 'CLOCKED OUT', amount: 14 });
+  const wanted = Math.max(0, Math.min(5, Math.trunc(result.wanted ?? 0)));
+  if (wanted > 0) lines.push({ label: 'FIVE-FINGER BONUS', amount: wanted });
   return { total: lines.reduce((sum, line) => sum + line.amount, 0), lines };
 }
 
@@ -245,11 +251,13 @@ export function equipLocker(career: Career, itemId: string | null): Career {
 }
 
 export function perksFor(career: Career): ShiftPerks {
-  if (career.perks.seniority === 0 && career.perks.dental === 0 && career.perks.coffee === 0 && career.lockerEquipped === null) return NO_PERKS;
+  if (Object.values(career.perks).every((level) => level === 0) && career.lockerEquipped === null) return NO_PERKS;
   return {
     bonusCash: career.perks.seniority * 5,
     bonusHealth: career.perks.dental * 2,
     clearHealBonus: career.perks.coffee,
+    dashCooldownCut: career.perks.sneakers * 10,
+    tokenMagnet: career.perks.shopvac * 40,
     lockerItemId: career.lockerEquipped,
   };
 }
@@ -306,6 +314,8 @@ export function parseCareer(raw: string | null): Career {
       seniority: count(perks.seniority, perkDefinition('seniority').costs.length),
       dental: count(perks.dental, perkDefinition('dental').costs.length),
       coffee: count(perks.coffee, perkDefinition('coffee').costs.length),
+      sneakers: count(perks.sneakers, perkDefinition('sneakers').costs.length),
+      shopvac: count(perks.shopvac, perkDefinition('shopvac').costs.length),
     },
     lockerOwned,
     lockerEquipped: equipped,

@@ -2,6 +2,24 @@
 
 ## Claude neon overhaul — start here
 
+Latest (round 24, 2026-09-29): NEW SNEAKERS and SHOP-VAC ATTACHMENT perk lines
+(`src/sim/run/perks.ts`, `PERKS` in `src/game/career/career.ts`, icons drawn by
+`docs/art/neon-overhaul/draw_perk_icons.py`). Tuning knobs: 10 ticks and 40 px
+per level in `perksFor`, 5 px/tick pull in `TOKEN_MAGNET_SPEED`.
+
+Latest (round 25): grab and run, wanted level, hot goods — the owner's
+"stealing feels bolted on" rework (options A+B+C). Sim in
+`src/sim/run/heist.ts` and `src/sim/run/wanted.ts`; visuals in
+`src/game/view/alarmCues.ts` and `MvpRunView.drawStore`; HUD in
+`gameHudModel.ts`/`GameHud.ts`. Try it with `?fixture=mvp-storefront`, press F.
+Needs a human playtest: the 4 s alarm, Hunters at the door on Floor 1, and
+whether +60 score a star over-rewards stealing. Possible next: blackouts
+silence the alarm (option E), a Loss Prevention stalker at 4+ stars (G).
+
+In this cloud container, run the browser suite with a config that sets
+`launchOptions.executablePath: '/opt/pw-browsers/chromium'`; four tests fail
+here on `main` too (a console 404 and one timeout).
+
 Latest (round 22): the Break Room. Career rules and storage are in
 `src/game/career/career.ts`, the run-side perks in `src/sim/run/perks.ts`, the
 panel in `src/game/ui/BreakRoomPanel.ts`, and the art in

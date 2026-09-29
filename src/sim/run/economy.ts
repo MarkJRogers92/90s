@@ -8,35 +8,28 @@
  * player untouched.
  */
 import { definitionFor } from '../items/registry';
-import { hasLineOfSight } from '../combat/collision';
 import type { InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import type { ItemCapability, ItemDefinition, ItemId } from '../items/types';
 import type { Vec2 } from '../model';
-import { isPointInSightCone, securityFacingAtTick } from '../shop/security';
 import { crossedStoreExit } from '../shop/tickWingRun';
 import {
-  CONFISCATION_HEAT,
   MAX_SECURITY_HEAT,
-  MAX_SUSPICION,
-  SECURED_THEFT_HEAT,
   WING_INTERACTION_RANGE,
   clampSecurityHeat,
-  clampSuspicion,
 } from '../shop/types';
 import type { CarriedTheft, StoreDefinition } from '../shop/types';
 import type { WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/types';
 import { refreshRunLoadout } from './loadout';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { blueLightOfferId } from './roomEvents';
+import { HEAT_PER_STAR, WANTED_SURCHARGE_PER_STAR, applyHeatFloor, wantedStars } from './wanted';
 
 /**
- * The run's authored numbers, imported from M3 rather than re-declared. The
- * unit suite asserts each one still equals its M3 definition.
+ * One secured theft is one wanted star. The run's theft no longer mirrors the
+ * M3 camera loop (see heist.ts); the Heat cap and interaction range still do.
  */
-export const RUN_SECURED_THEFT_HEAT = SECURED_THEFT_HEAT;
-export const RUN_CONFISCATION_HEAT = CONFISCATION_HEAT;
-export const RUN_MAX_SUSPICION = MAX_SUSPICION;
+export const RUN_SECURED_THEFT_HEAT = HEAT_PER_STAR;
 export const RUN_MAX_SECURITY_HEAT = MAX_SECURITY_HEAT;
 export const RUN_INTERACTION_RANGE = WING_INTERACTION_RANGE;
 
@@ -44,8 +37,6 @@ export const RUN_INTERACTION_RANGE = WING_INTERACTION_RANGE;
 export const RUN_SHOP_DISCOUNT = 2;
 /** No lawful purchase ever costs less than this. */
 export const RUN_PRICE_FLOOR = 1;
-/** Reinforced Fanny Pack: secures this much less Heat per theft. */
-export const RUN_SMUGGLE_POUCH_HEAT_REDUCTION = 5;
 /** Unsecured thefts a player may carry without the pouch. */
 export const RUN_BASE_CARRY_LIMIT = 1;
 /** Extra concurrent thefts the smuggle_pouch capability allows. */
@@ -145,7 +136,8 @@ export function runCarryLimit(state: MvpRunState): number {
 
 /** The discounted price of one authored offer, never below the floor. */
 export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
-  const price = offer.price - runPurchaseDiscount(state);
+  // A wanted janitor pays a surcharge: two dollars a star.
+  const price = offer.price + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state);
   // BLUE LIGHT SPECIAL: this shift's one half-price item.
   const special = blueLightOfferId(state) === offer.id;
   return Math.max(RUN_PRICE_FLOOR, special ? Math.ceil(price / 2) : price);
@@ -190,16 +182,6 @@ export function storeDefinitionOf(store: WingStoreInstance): StoreDefinition {
   };
 }
 
-/** The generated storefront that authored a theft's source store, anywhere in the wing. */
-function wingStoreFor(state: MvpRunState, templateId: string): WingStoreInstance | null {
-  for (const room of state.wing.rooms) {
-    if (room.store !== null && room.store.templateId === templateId) {
-      return room.store;
-    }
-  }
-  return null;
-}
-
 function withInventory(
   state: MvpRunState,
   inventory: MvpRunState['inventory']['inventory'],
@@ -211,13 +193,6 @@ function withInventory(
     revision: state.inventory.revision + 1,
   };
   refreshRunLoadout(state);
-}
-
-/** Keeps the wrapped fusion inventory's cash equal to the run's authoritative cash. */
-function syncInventoryCash(state: MvpRunState): void {
-  if (state.inventory.cash !== state.cash) {
-    state.inventory = { ...state.inventory, cash: state.cash };
-  }
 }
 
 /** Buys one available offer when the discounted price is affordable. */
@@ -291,8 +266,8 @@ export function beginRunTheft(state: MvpRunState, offerId: string): MvpCommandRe
 
 /**
  * Secures every carried theft from one store as a `stolen` leaf once the
- * player has crossed that store's public exit. The smuggle_pouch capability
- * shaves five Heat off each secured theft, and Heat never drops below zero.
+ * player has crossed that store's public exit. Each is one wanted star, and
+ * each stolen item held keeps the janitor at least that wanted (hot goods).
  *
  * Securing mirrors the M3 `secureTheft` rule: the player must have physically
  * crossed that theft's source store exit this tick, so a carried theft can
@@ -333,126 +308,16 @@ export function secureRunThefts(
   }
   state.carried = state.carried.filter((theft) => theft.sourceStoreId !== store.templateId);
 
-  const heatPerTheft = Math.max(
-    0,
-    RUN_SECURED_THEFT_HEAT -
-      (runOwnsCapability(state, 'smuggle_pouch') ? RUN_SMUGGLE_POUCH_HEAT_REDUCTION : 0),
-  );
+  const heatPerTheft = RUN_SECURED_THEFT_HEAT;
   state.heat = clampSecurityHeat(state.heat + held.length * heatPerTheft);
   state.suspicion = 0;
   withInventory(state, [...state.inventory.inventory, ...leaves]);
+  // Hot goods: each stolen item now held keeps the janitor a star wanted.
+  applyHeatFloor(state);
 
   const message = `Secured ${held.length} item${held.length === 1 ? '' : 's'} past the ${store.name} exit (+${held.length * heatPerTheft} Heat).`;
   publishRunFeedback(state, message);
   return { accepted: true, message };
-}
-
-/**
- * Sweep contact: every carried theft from the sweeping store goes back to its
- * shelf, Heat rises, held input clears, and the player is placed at the store
- * reset point.
- */
-export function confiscateRunThefts(
-  state: MvpRunState,
-  store: WingStoreInstance,
-): MvpCommandResult {
-  const blocked = blockedRunReason(state);
-  if (blocked) {
-    return rejected(blocked);
-  }
-
-  const held = state.carried.filter((theft) => theft.sourceStoreId === store.templateId);
-  if (held.length === 0) {
-    return rejected(NOT_CARRYING_REASON);
-  }
-
-  for (const theft of held) {
-    state.offerStatus[theft.sourceOfferId] = 'available';
-  }
-  state.carried = state.carried.filter((theft) => theft.sourceStoreId !== store.templateId);
-  state.suspicion = 0;
-  state.heat = clampSecurityHeat(state.heat + RUN_CONFISCATION_HEAT);
-  state.heldActions = { interact: false, steal: false, recall: false };
-  state.room.combat.player.x = store.resetPoint.x;
-  state.room.combat.player.y = store.resetPoint.y;
-  syncInventoryCash(state);
-
-  const message = `Confiscated ${held.length} item${held.length === 1 ? '' : 's'} back to ${store.name} (+${RUN_CONFISCATION_HEAT} Heat).`;
-  publishRunFeedback(state, message);
-  return { accepted: true, message };
-}
-
-/** True only when the current store sweep contains an unobstructed player. */
-export function canRunSecuritySeePlayer(
-  state: MvpRunState,
-  store: WingStoreInstance,
-): boolean {
-  const facingRadians = securityFacingAtTick(store.sightZone, state.tick);
-  const { origin, range, arcDegrees } = store.sightZone;
-  const player = state.room.combat.player;
-
-  return (
-    isPointInSightCone(origin, facingRadians, player, range, arcDegrees) &&
-    hasLineOfSight(
-      origin.x,
-      origin.y,
-      player.x,
-      player.y,
-      state.room.combat.walls,
-    )
-  );
-}
-
-/**
- * Mirrors the M3 sweep inside the run: a seen carried theft raises suspicion
- * toward the authored cap, hiding from the sweep lowers it, and full suspicion
- * confiscates everything the sweeping store is missing.
- *
- * Like M3, the sweep is resolved from the carried theft's source store rather
- * than from the room the player happens to stand in, so a theft carried into
- * another room keeps rising, falling, and confiscating instead of freezing.
- */
-/**
- * Advances the security sweep for one tick.
- *
- * Returns true exactly when this tick confiscated carried thefts, because a
- * confiscation teleports the player back to the store entrance and every
- * teleport has to be paired with re-parking the car (the caller does that; the
- * carrier module is imported by the run, not by the economy, so the signal
- * travels outward rather than the economy reaching into the carrier).
- */
-export function updateRunSuspicion(
-  state: MvpRunState,
-  preserveActionFeedback = false,
-): boolean {
-  if (state.carried.length === 0) {
-    state.suspicion = 0;
-    return false;
-  }
-  const currentStore = state.wing.rooms[state.roomIndex]?.store ?? null;
-  const store =
-    currentStore !== null &&
-    state.carried.some((theft) => theft.sourceStoreId === currentStore.templateId)
-      ? currentStore
-      : wingStoreFor(state, state.carried[0]!.sourceStoreId);
-  if (!store) {
-    return false;
-  }
-
-  if (canRunSecuritySeePlayer(state, store)) {
-    const gain = 0.5 * (1 + state.heat / 100);
-    state.suspicion = clampSuspicion(state.suspicion + gain);
-    publishRunFeedback(state, 'Seen by security.', !preserveActionFeedback);
-  } else {
-    state.suspicion = clampSuspicion(state.suspicion - 0.75);
-    publishRunFeedback(state, 'Hidden from security.', !preserveActionFeedback);
-  }
-
-  if (state.suspicion >= RUN_MAX_SUSPICION) {
-    confiscateRunThefts(state, store);
-    return true;
-  }
-  return false;
 }
 
 /** The carried thefts a store is missing, for summaries and HUDs. */
