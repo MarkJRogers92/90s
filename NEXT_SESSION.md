@@ -31,7 +31,7 @@ twists, sell and drop, reduced flashing). What is left:
 1. ~~Icon redos~~ (done, round 38). Look at them in play at 1x; redo any that still
    do not read.
 2. Playtest rounds 32-37 (questions below) and tune.
-2b. Browser gate: `night-shift.spec.ts:463` flakes under 2-4 workers (passes alone).
+2b. ~~Browser gate flake~~ (fixed, round 41).
 
 ## Round 39 (the Roof) playtest questions
 
@@ -157,12 +157,6 @@ visits and boss-card skips, which is what the questions below need.
   browser tests still read HP, cash, room and objective from it.
 - A purpose-made Alex portrait.
 - Safari/WebKit, Windows and physical-device performance are untested.
-- Two browser specs flake under host load. Harden their waits the way round
-  23 did.
-- Checkpoint validation still accepts some hand-edited saves (see STATUS.md,
-  "Known issues carried forward").
-- `artifacts/neon-overhaul/audit/` holds 14 untracked weapon and effects
-  audit captures. Commit them as evidence or delete them.
 
 ## Ideas backlog
 

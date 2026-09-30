@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { CANVAS_START_MS } from './timing';
 
 test('starts a real Phaser canvas from the accessible shift action', async ({ page }) => {
   const pageErrors: string[] = [];
@@ -7,7 +8,7 @@ test('starts a real Phaser canvas from the accessible shift action', async ({ pa
   await page.goto('/');
   await page.getByRole('button', { name: 'Start shift', exact: true }).click();
 
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.getByText('Initialization failed')).toHaveCount(0);
   expect(pageErrors).toEqual([]);
 });

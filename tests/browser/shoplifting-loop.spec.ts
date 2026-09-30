@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { CANVAS_START_MS } from './timing';
 
 type WingSnapshot = {
   mode: string;
@@ -48,8 +49,8 @@ async function wingSnapshot(page: Page): Promise<WingSnapshot> {
 async function launchShop(page: Page, path = '/'): Promise<void> {
   await page.goto(path);
   await page.getByRole('button', { name: 'Shoplifting Loop', exact: true }).click();
-  await expect(page.locator('canvas')).toHaveCount(1);
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => wingSnapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
 }
@@ -60,8 +61,8 @@ test('launches the shoplifting loop with one canvas, one HUD, two stores, eight 
   const errors = collectErrors(page);
   await page.goto('/');
   await page.getByRole('button', { name: 'Shoplifting Loop', exact: true }).click();
-  await expect(page.locator('canvas')).toHaveCount(1);
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.getByTestId('wing-hud')).toHaveCount(1);
   await expect(page.getByTestId('wing-hud')).toContainText('$30');
   await expect(page.getByTestId('wing-hud')).toContainText('HEAT 0');
@@ -208,7 +209,7 @@ test('800 by 600 has no overflow and keeps the loop readable', async ({ page }) 
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 800, height: 600 });
   await launchShop(page);
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.getByTestId('wing-hud')).toBeVisible();
   await expect(page.getByText('Homestyle', { exact: true })).toBeVisible();
   await expect(page.getByText('Future Hobby', { exact: true })).toBeVisible();
@@ -268,7 +269,7 @@ test('return to title restores the start screen with all actions enabled', async
 test('M1 Start shift still launches its preserved room', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Start shift', exact: true }).click();
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.getByTestId('run-hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
 });
@@ -276,7 +277,7 @@ test('M1 Start shift still launches its preserved room', async ({ page }) => {
 test('M2 Interaction Lab still launches its preserved panel', async ({ page }) => {
   await page.goto('/');
   await page.getByRole('button', { name: 'Interaction Lab', exact: true }).click();
-  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await expect(page.getByTestId('run-hud')).toHaveCount(1);
   await expect(page.getByRole('region', { name: 'Interaction Lab' })).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));

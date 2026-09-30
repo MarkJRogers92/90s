@@ -7,6 +7,12 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 41 (2026-09-30): the small things. The depth-sort browser test no
+longer flakes under load (it judged a second, later snapshot), start-up
+canvas waits get 20 s instead of 5, and checkpoint validation closes the
+three hand-edited-save holes from the 2026-09-19 review. 1055 unit and 76
+browser tests pass (4 workers); see TEST_EVIDENCE.md round 41.
+
 Round 40 (2026-09-30): the Developer wears the cream power suit he was
 briefed with (navy vanished on the night roof), and Flashes: Reduced now also
 steadies the HUD alarm banner and wanted stars, the white end of every
@@ -280,7 +286,7 @@ Wing generation, run state, economy, transitions, the car, the boss, and checkpo
 - Production preview smoke at 1440x900 — one canvas, one visible HUD, the bench panel present and hidden, `CAR: none owned`, no debug bridge, no horizontal overflow, zero page errors, zero console errors, and only local-origin requests. No 800x600 production screenshot was retaken after this change.
 - Independent review round — Muse reviewed the simulation half and DeepSeek the presentation and test half, read-only and in parallel. Six confirmed defects were repaired with two of them proven red-before-green (the preview's pause guard and the confiscation re-park), one reported regression was refuted by diffing the pre-extraction file, and three checkpoint validation gaps were recorded as known issues rather than fixed. See TEST_EVIDENCE.md.
 
-**Known issues carried forward (found by review, not yet fixed):** checkpoint validation accepts hand-edited saves whose inventory does not agree with its offer status, whose cleared-room list names rooms ahead of the current room, or whose `nextCompositeId` collides with an existing transaction. All require editing `localStorage` by hand.
+**Known issues carried forward:** none from the 2026-09-19 review. The three hand-edited-save holes were closed in round 41 (a fight room skipped, a ground-floor item owned from an offer still on sale, a fusion id reused); "cleared rooms ahead of the current room" turned out to be legal (the janitor can walk back west), so only skipped fights are rejected.
 
 **Also repaired on 2026-09-19 (presentation):** every projectile was drawn with one
 shared colour, so the boss's five-shot volley was indistinguishable from the
