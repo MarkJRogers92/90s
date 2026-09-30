@@ -157,8 +157,6 @@ visits and boss-card skips, which is what the questions below need.
   browser tests still read HP, cash, room and objective from it.
 - A purpose-made Alex portrait.
 - Safari/WebKit, Windows and physical-device performance are untested.
-- `artifacts/neon-overhaul/audit/` holds 14 untracked weapon and effects
-  audit captures. Commit them as evidence or delete them.
 
 ## Ideas backlog
 
