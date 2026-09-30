@@ -27,6 +27,7 @@ import { activeStore, roomStores } from '../../sim/run/storeInterior';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
+import { floorNumberOf, type FloorNumber } from '../../sim/wing/floorSpecs';
 
 export type HeartState = 'full' | 'half' | 'empty';
 
@@ -97,8 +98,8 @@ export type GameHudModel = {
   readonly hotbar: readonly HudSlot[];
   readonly carriedCount: number;
   readonly boss: { readonly health: number; readonly max: number; readonly phase: number; readonly name: string } | null;
-  /** 1 downstairs, 2 on the upper level. */
-  readonly floor: 1 | 2 | 3;
+  /** Which floor of the night (1 is the ground floor). */
+  readonly floor: FloorNumber;
   readonly enemiesLeft: number;
   readonly weapons: readonly HudWeapon[];
   readonly passives: readonly HudPassive[];
@@ -108,7 +109,7 @@ export type GameHudModel = {
   readonly combo: { readonly count: number; readonly remaining: number; readonly nextBonusAt: number; readonly nextBonus: number } | null;
 };
 
-const SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
+const GROUND_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
   service_corridor: 'CONCOURSE',
   storefront_a: 'WEST SHOPS',
   food_court: 'FOOD COURT',
@@ -135,6 +136,13 @@ const TOP_FLOOR_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
   security_office: "OWNER'S",
 };
 
+/** Each floor's map names and its two objectives: reach the boss, then beat it. */
+const FLOOR_HUD: Readonly<Record<FloorNumber, { readonly short: Readonly<Record<WingRoomId, string>>; readonly reach: string; readonly boss: string }>> = {
+  1: { short: GROUND_SHORT_NAMES, reach: 'REACH SECURITY', boss: 'STOP LOSS PREVENTION' },
+  2: { short: UPSTAIRS_SHORT_NAMES, reach: 'REACH MANAGEMENT', boss: 'FIRE THE MANAGER' },
+  3: { short: TOP_FLOOR_SHORT_NAMES, reach: 'REACH THE OWNER', boss: 'TAKE DOWN THE OWNER' },
+};
+
 export function heartsFor(health: number, maxHealth = PLAYER_MAX_HEALTH): HeartState[] {
   const hearts: HeartState[] = [];
   for (let i = 0; i < Math.ceil(maxHealth / 2); i += 1) {
@@ -150,14 +158,16 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const boss = living.find((enemy) => isBossKind(enemy.kind)) ?? null;
   const fightHere = (room?.enemySpawns.length ?? 0) > 0 || room?.bossAnchor != null;
 
+  const floor = floorNumberOf(state.wing);
+  const floorHud = FLOOR_HUD[floor];
   const objectives: HudObjective[] = [
     {
-      text: `${state.wing.floor === 3 ? 'REACH THE OWNER' : state.wing.floor === 2 ? 'REACH MANAGEMENT' : 'REACH SECURITY'}  ${state.roomIndex + 1}/${state.wing.rooms.length}`,
+      text: `${floorHud.reach}  ${state.roomIndex + 1}/${state.wing.rooms.length}`,
       done: state.status === 'won',
     },
   ];
   if (room?.id === 'security_office') {
-    objectives.push({ text: state.wing.floor === 3 ? 'TAKE DOWN THE OWNER' : state.wing.floor === 2 ? 'FIRE THE MANAGER' : 'STOP LOSS PREVENTION', done: boss === null && state.room.cleared });
+    objectives.push({ text: floorHud.boss, done: boss === null && state.room.cleared });
   } else if (fightHere) {
     objectives.push({
       text: state.room.cleared ? 'AREA SECURED' : `CLEAR THE AREA  ${living.length} LEFT`,
@@ -200,7 +210,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const cleared = new Set(state.clearedRooms);
   const rooms = state.wing.rooms.map((candidate, index): HudRoomCell => ({
     id: candidate.id,
-    short: (state.wing.floor === 3 ? TOP_FLOOR_SHORT_NAMES : state.wing.floor === 2 ? UPSTAIRS_SHORT_NAMES : SHORT_NAMES)[candidate.id],
+    short: floorHud.short[candidate.id],
     state: index === state.roomIndex ? 'current' : cleared.has(candidate.id) || index < state.roomIndex ? 'cleared' : 'ahead',
     boss: candidate.bossAnchor != null,
     store: candidate.store !== null,
@@ -249,7 +259,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
         name: boss.kind === 'owner' ? 'THE MALL OWNER' : boss.kind === 'manager' ? 'MALL MANAGER' : 'LOSS PREVENTION',
       }
       : null,
-    floor: state.wing.floor === 3 ? 3 : state.wing.floor === 2 ? 2 : 1,
+    floor,
     enemiesLeft: living.length,
   };
 }

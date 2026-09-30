@@ -13,6 +13,28 @@ import { FACADE_TEXTURES, type FacadeId } from '../presentation/rooms/roomDressi
 import { PLAYER_TEXTURE_KEYS } from '../presentation/assets';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { ESCALATOR, rideFrame, rideSkippable, type RideFrame } from './escalatorRideModel';
+import type { FloorNumber } from '../../sim/wing/floorSpecs';
+
+/** Every floor the escalator rides up to. */
+export type RideFloor = Exclude<FloorNumber, 1>;
+
+/** What the ride shows: the floor left behind, the floor arrived at, and its sign. */
+const RIDES: Readonly<Record<RideFloor, {
+  readonly lowerRow: readonly FacadeId[];
+  readonly upperRow: readonly FacadeId[];
+  readonly sign: { readonly text: string; readonly color: string; readonly subtitle: string; readonly subtitleColor: string };
+}>> = {
+  2: {
+    lowerRow: ['video', 'electronics', 'music'],
+    upperRow: ['cinema', 'arcade', 'cinema'],
+    sign: { text: 'UPPER LEVEL', color: '#3ff0ff', subtitle: 'CINEMA - ARCADE - MANAGEMENT', subtitleColor: '#ff3fc8' },
+  },
+  3: {
+    lowerRow: ['cinema', 'arcade', 'cinema'],
+    upperRow: ['pizza', 'burger', 'wok'],
+    sign: { text: 'FOOD COURT', color: '#ff8a3a', subtitle: 'AFTER DARK - ARCADE - THE OWNER', subtitleColor: '#3ff0ff' },
+  },
+};
 
 const DEPTH = 20_700;
 const W = 960;
@@ -37,18 +59,15 @@ export class EscalatorRide {
   private elapsed = 0;
   private skip = false;
 
-  /** `toFloor` is the floor being ridden to: 2 (cinema and arcade) or 3 (the food court). */
-  public constructor(private readonly scene: Phaser.Scene, toFloor: 2 | 3 = 2) {
+  /** `toFloor` is the floor being ridden to (see RIDES). */
+  public constructor(private readonly scene: Phaser.Scene, toFloor: RideFloor = 2) {
     this.back = scene.add.graphics();
-    const lowerRow: FacadeId[] = toFloor === 3 ? ['cinema', 'arcade', 'cinema'] : ['video', 'electronics', 'music'];
-    const upperRow: FacadeId[] = toFloor === 3 ? ['pizza', 'burger', 'wok'] : ['cinema', 'arcade', 'cinema'];
-    this.shopRow(lowerRow, this.lowerShops, 0x9a8ab0);
-    this.shopRow(upperRow, this.upperShops, 0xffffff);
+    const ride = RIDES[toFloor];
+    this.shopRow(ride.lowerRow, this.lowerShops, 0x9a8ab0);
+    this.shopRow(ride.upperRow, this.upperShops, 0xffffff);
     this.escalator = scene.add.graphics();
     this.rider = this.makeRider();
-    const sign = toFloor === 3
-      ? ensureNeonSign(scene, { text: 'FOOD COURT', color: '#ff8a3a', scale: 5, subtitle: 'AFTER DARK - ARCADE - THE OWNER', subtitleColor: '#3ff0ff' })
-      : ensureNeonSign(scene, { text: 'UPPER LEVEL', color: '#3ff0ff', scale: 5, subtitle: 'CINEMA - ARCADE - MANAGEMENT', subtitleColor: '#ff3fc8' });
+    const sign = ensureNeonSign(scene, { scale: 5, ...ride.sign });
     this.title = [
       scene.add.image(W / 2, 64, sign.halo).setBlendMode(Phaser.BlendModes.ADD),
       scene.add.image(W / 2, 64, sign.core),
@@ -56,7 +75,7 @@ export class EscalatorRide {
     const hint = ensurePixelLabel(scene, 'ANY KEY: SKIP', '#8a7aa8', 1, '#05030a');
     this.hint = scene.add.image(W - 16, H - 14, hint.key).setOrigin(1, 1);
     this.front = scene.add.graphics();
-    const level = ensurePixelLabel(scene, toFloor === 3 ? 'LEVEL 3 >' : 'LEVEL 2 >', '#3ff0ff', 2, '#05030a');
+    const level = ensurePixelLabel(scene, `LEVEL ${toFloor} >`, '#3ff0ff', 2, '#05030a');
     this.levelSign = scene.add.image(0, 0, level.key);
     this.curtain = scene.add.graphics();
     this.root = scene.add

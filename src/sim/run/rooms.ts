@@ -20,6 +20,7 @@ import { createEnemyStatusState } from '../effects/statuses';
 import type { FusionInventoryState } from '../fusion/types';
 import type { EnemyState, RunState } from '../model';
 import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
+import { floorNumberOf, floorSpec } from '../wing/floorSpecs';
 import { compileRunLoadout } from './loadout';
 import type { MvpRoomEntryFrom } from './types';
 import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
@@ -221,7 +222,7 @@ export function buildRoomCombatState(
   );
   if (room.bossAnchor) {
     // Loss Prevention downstairs; the Mall Manager runs the upper level; the Mall Owner owns the roof.
-    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, wing.floor === 3 ? 'owner' : wing.floor === 2 ? 'manager' : 'lp_manager'));
+    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, floorSpec(floorNumberOf(wing)).bossKind));
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
     enemies.push(spawnMannequin(enemies.length + 1, spot.x, spot.y));

@@ -18,7 +18,7 @@ import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { nextShiftSeed } from '../run/shiftSeed';
-import { EscalatorRide } from '../ui/EscalatorRide';
+import { EscalatorRide, type RideFloor } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
 import { BossIntro } from '../ui/BossIntro';
 import { INTERIOR_EXIT, enterStore, roomStores } from '../../sim/run/storeInterior';
@@ -32,6 +32,7 @@ import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
 import { ascend, canAscend, floorOf } from '../../sim/run/floors';
+import { FINAL_FLOOR } from '../../sim/wing/floorSpecs';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
@@ -819,7 +820,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.syncView();
     // Ride up before the landing appears; the run waits underneath.
     this.ride?.destroy();
-    this.ride = new EscalatorRide(this, floorOf(this.run) === 3 ? 3 : 2);
+    this.ride = new EscalatorRide(this, floorOf(this.run) as RideFloor);
     this.audio?.play('escalator');
   }
 
@@ -924,8 +925,8 @@ export class MvpRunScene extends Phaser.Scene {
     const played = this.killCam !== null;
     this.killCam?.destroy();
     this.killCam = null;
-    // Beating the Mall Owner ends the night: walk out into the sunrise first.
-    if (finished && played && this.run.status === 'won' && this.run.wing.floor === 3) {
+    // Beating the final boss ends the night: walk out into the sunrise first.
+    if (finished && played && this.run.status === 'won' && floorOf(this.run) === FINAL_FLOOR) {
       this.ending = new DawnEnding(this);
       this.endingHeld = false;
       this.audio?.play('dawn');

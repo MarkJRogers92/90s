@@ -9,6 +9,7 @@ import type { FusionInventoryState } from '../fusion/types';
 import type { InventoryLeaf } from '../fusion/types';
 import type { ShopOfferRuntimeStatus } from '../shop/types';
 import { generateRunWing } from './storeInterior';
+import type { FloorNumber } from '../wing/floorSpecs';
 import { syncRunCarrier } from './carrier';
 import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
@@ -30,7 +31,7 @@ export type FloorCarry = {
   readonly heat?: number;
 };
 
-export function createMvpRun(seed: number, options: { readonly floor?: 1 | 2 | 3; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
+export function createMvpRun(seed: number, options: { readonly floor?: FloorNumber; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
   // The wing RNG requires an integer, so a non-integer finite seed is
   // truncated and anything else becomes 0, exactly as the title screen already
   // sanitizes the URL seed.

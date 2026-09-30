@@ -4,6 +4,7 @@ import type { WingState } from '../sim/shop/types';
 import type { Point2D } from '../game/view/projection';
 import type { ShiftPerks } from '../sim/run/perks';
 import type { StoreAlarm } from '../sim/run/heist';
+import type { FloorNumber } from '../sim/wing/floorSpecs';
 
 export type DebugMode = 'shift' | 'lab' | 'shop' | 'bench';
 
@@ -276,8 +277,8 @@ export type MvpRunDebugSnapshot = {
   seed: number;
   roomIndex: number;
   roomId: string;
-  /** 1 ground floor, 2 the upper level, 3 Food Court After Dark. */
-  floor: 1 | 2 | 3;
+  /** Which floor of the night (see sim/wing/floorSpecs.ts); 1 is the ground floor. */
+  floor: FloorNumber;
   cash: number;
   heat: number;
   suspicion: number;

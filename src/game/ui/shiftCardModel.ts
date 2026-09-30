@@ -9,6 +9,7 @@ import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
 import { formatDailyDate } from '../run/dailyShift';
 import { floorOf } from '../../sim/run/floors';
+import { FINAL_FLOOR } from '../../sim/wing/floorSpecs';
 import { wantedStars } from '../../sim/run/wanted';
 import { scoreFor } from '../score/score';
 import type { RunRecord } from '../playtest/recorder';
@@ -80,13 +81,13 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
   if (state.status === 'playing' || !summary) return null;
   const won = summary.status === 'won';
   const floor = floorOf(state);
-  const ascend = won && floor !== 3;
+  const ascend = won && floor < FINAL_FLOOR;
   const room = state.wing.rooms[summary.roomIndex];
   const where = (room?.store?.name ?? room?.name ?? 'THE MALL').toUpperCase();
   const seconds = Math.floor(summary.tick / TICKS_PER_SECOND);
   const score = scoreFor({
-    // A clear below the top floor is not yet the win: its bonus waits for the Owner.
-    won: won && floor === 3,
+    // A clear below the final floor is not yet the win: its bonus waits for the last boss.
+    won: won && floor === FINAL_FLOOR,
     roomsReached: summary.roomIndex + 1 + (floor - 1) * state.wing.rooms.length,
     kills: state.stats.kills,
     bestCombo: state.stats.bestCombo,

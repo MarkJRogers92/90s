@@ -19,6 +19,7 @@ import { CONCOURSE_FURNITURE, INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_XS,
 import type { WingStoreInstance } from '../../../sim/wing/types';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
+import type { FloorNumber } from '../../../sim/wing/floorSpecs';
 
 /* ------------------------------------------------------------------------ */
 /* Stage geometry                                                             */
@@ -924,12 +925,18 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
   }
 }
 
-export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 | 3 = 1, insideStore: number | null = null): DressingPlan {
+/** How each floor re-dresses the ground floor's plan for a room. */
+const FLOOR_DRESSING: Readonly<Record<FloorNumber, (plan: DressingPlan, room: WingRoomDefinition) => DressingPlan>> = {
+  1: (plan) => plan,
+  2: (plan, room) => upperFloor(plan, room),
+  3: (plan, room) => topFloor(plan, room),
+};
+
+export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null): DressingPlan {
   // A shop looks like itself on any floor.
   const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
   if (shop) return storeInterior(room, shop);
-  const plan = planFloorOneRoom(room);
-  return floor === 3 ? topFloor(plan, room) : floor === 2 ? upperFloor(plan, room) : plan;
+  return FLOOR_DRESSING[floor](planFloorOneRoom(room), room);
 }
 
 function planFloorOneRoom(room: WingRoomDefinition): DressingPlan {

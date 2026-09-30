@@ -9,6 +9,7 @@
  */
 import { wantedStars } from '../../sim/run/wanted';
 import { floorOf } from '../../sim/run/floors';
+import { FINAL_FLOOR } from '../../sim/wing/floorSpecs';
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
@@ -147,7 +148,7 @@ export class ShiftCard {
     const floor = floorOf(state);
     this.record = recordShift(this.career.load(), {
       score: model.score,
-      won: model.won && floor === 3,
+      won: model.won && floor === FINAL_FLOOR,
       floorCleared: floor > 1 || model.ascend,
       floorTwoCleared: floor === 3 || (floor === 2 && model.ascend),
       kills: state.stats.kills,

@@ -14,6 +14,7 @@
 import { roomEventFor } from '../../sim/run/roomEvents';
 import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
+import { floorNumberOf, type FloorNumber } from '../../sim/wing/floorSpecs';
 
 export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout' | 'upstairs' | 'manager' | 'topfloor' | 'owner';
 
@@ -31,14 +32,15 @@ export type MusicCue = {
 
 const LAST_HEART = 2;
 
+/** Each floor's fight music (bosses have their own tracks, by boss). */
+const FIGHT_TRACKS: Readonly<Record<FloorNumber, MusicTrackId>> = { 1: 'combat', 2: 'upstairs', 3: 'topfloor' };
+
 export function musicCue(state: MvpRunState): MusicCue {
   if (state.status !== 'playing') return { track: 'silent', tempoScale: 1, volume: 0, intensity: 0, tension: false };
   const volume = state.paused ? 0.35 : 1;
   const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
   const tension = living.some((enemy) => enemy.kind === 'mannequin' && enemy.phase === 'pursue');
   const danger = state.room.combat.player.health <= LAST_HEART ? 0.3 : 0;
-  const upstairs = state.wing.floor === 2;
-  const topFloor = state.wing.floor === 3;
   const boss = living.find((enemy) => isBossKind(enemy.kind));
   if (boss) {
     const phase = boss.bossPhase ?? 1;
@@ -52,7 +54,7 @@ export function musicCue(state: MvpRunState): MusicCue {
   }
   if (living.length > 0) {
     const intensity = Math.min(1, 0.25 + living.length * 0.18 + danger);
-    const track = roomEventFor(state, state.roomIndex) === 'blackout' ? 'blackout' : topFloor ? 'topfloor' : upstairs ? 'upstairs' : 'combat';
+    const track = roomEventFor(state, state.roomIndex) === 'blackout' ? 'blackout' : FIGHT_TRACKS[floorNumberOf(state.wing)];
     return { track, tempoScale: 1, volume, intensity, tension };
   }
   return { track: 'muzak', tempoScale: 1, volume, intensity: 0.5, tension: false };
