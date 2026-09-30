@@ -6,6 +6,7 @@
  * Pure, derived from the simulation's own workbench and proposal, so the card
  * can never promise something the fusion will not do.
  */
+import { compositeLeaves, fusionPartCount, isCleanPart } from '../../sim/fusion/inventory';
 import { shortItemName } from '../../sim/fusion/hybrid';
 import { nodeDefinitionId } from '../../sim/fusion/inventory';
 import { itemDefinitionName } from '../../sim/run/economy';
@@ -21,6 +22,10 @@ export type BenchTile = {
   readonly iconDefinitionId: string;
   readonly name: string;
   readonly fused: boolean;
+  /** How many items it holds: 1, or 2-4 for a fusion (round 32). */
+  readonly parts: number;
+  /** False only for an Emitter Mount, which cannot go back on the bench. */
+  readonly fusable: boolean;
   readonly stolen: boolean;
   readonly pick: 'first' | 'second' | null;
 };
@@ -46,8 +51,8 @@ export type BenchCardModel = {
   readonly hint: string;
 };
 
-/** The most tiles the card shows (the number keys 1-9). */
-export const BENCH_TILE_LIMIT = 9;
+/** The most tiles the card shows; the number keys pick the first nine, a click any. */
+export const BENCH_TILE_LIMIT = 16;
 
 function ingredient(itemDefinitionId: string, provenance: string): BenchIngredient {
   return { itemDefinitionId, name: itemDefinitionName(itemDefinitionId).toUpperCase(), provenance: provenance.toUpperCase() };
@@ -61,14 +66,16 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
   const secondId = bench?.secondId ?? preview?.carrierInstanceId ?? null;
 
   const tiles = state.inventory.inventory.slice(0, BENCH_TILE_LIMIT).map((node, index): BenchTile => {
-    const leaf = node.kind === 'leaf' ? node : node.primary;
+    const leaf = compositeLeaves(node)[0]!;
     return {
       key: index + 1,
       instanceId: node.instanceId,
       iconDefinitionId: leaf.itemDefinitionId,
       name: shortItemName(nodeDefinitionId(node)).toUpperCase(),
       fused: node.kind === 'composite',
-      stolen: leaf.acquisitionKind === 'stolen',
+      parts: fusionPartCount(node),
+      fusable: node.kind === 'leaf' || node.recipeId === 'hybrid',
+      stolen: !isCleanPart(node),
       pick: node.instanceId === firstId ? 'first' : node.instanceId === secondId ? 'second' : null,
     };
   });
@@ -99,8 +106,8 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
   }
 
   const composite = preview.compositePreview;
-  const primary = ingredient(composite.primary.itemDefinitionId, preview.primaryProvenance);
-  const carrier = ingredient(composite.carrier.itemDefinitionId, preview.carrierProvenance);
+  const primary = ingredient(nodeDefinitionId(composite.primary), preview.primaryProvenance);
+  const carrier = ingredient(nodeDefinitionId(composite.carrier), preview.carrierProvenance);
   const feeNote = preview.cleanDiscount > 0 ? `BASE $${preview.baseFee} - $${preview.cleanDiscount} CLEAN DISCOUNT` : `BASE $${preview.baseFee}`;
   const affordable = state.cash >= preview.fee;
   if (preview.recipeId === 'emitter_mount') {

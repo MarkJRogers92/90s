@@ -870,3 +870,49 @@ Also this round:
   is sized; the first added frame becomes the texture default, which here is
   wanted (frame 0 is the still sprite). Three generations this round.
 
+## Round 32: fuse anything with anything, a mall full of stores, drops
+
+From the first real playtest log (21 shifts) and the owner's direction that
+"a dumb amount of items and fusions" is the game's gimmick.
+
+- **Tuning** (`tests/unit/playtest-tuning-round32.test.ts`): Floor 1 food
+  court and back hall fights start at three enemies; the Mall Manager volleys
+  five prongs at 2.6 (was seven at 2.9, and he hit in every Floor 2 boss
+  fight); the Mall Owner has 210 hp (was 240); the boss card plays for
+  `BOSS_INTRO_MS` 2000 (players skipped it at ~1.9 s); a clean getaway pays
+  `getawayBonus` ($4 an item, +$4 for two or more) on top of the goods. The
+  SPACE DASH hint already existed (`shouldHintDash`).
+- **Deep fusion** (`fusion/hybrid.ts`, `fusion/inventory.ts`): a hybrid goes
+  back on the Bench Warrant with an item or another hybrid, up to
+  `MAX_FUSION_PARTS` (4). `HybridComposite.primary/carrier` are `FusionPart`
+  (a leaf or a hybrid). Nested ids bracket hybrid parts,
+  `hybrid__(hybrid__a__b)__c`, so two-item ids and old saves are unchanged.
+  `build()` keeps everything the base already did (`carried`), merges two
+  shots into one volley (`combinedPayload`) and stacks the fused damage.
+  Fee: `hybridFee(parts, clean)` = $5 + $3 per item past the second, -$2 when
+  nothing is stolen. An Emitter Mount cannot be fused again, and the RC car
+  only carries a single unfused shooter. Helpers: `compositeLeaves`,
+  `fusionPartCount`, `isCleanPart`, `rootItemId` (icons and shot looks use
+  the root item).
+- **Store roster** (`items/storeRoster.ts`): one list is an item's whole
+  content (definition from existing effect kinds, fusion noun and adjective,
+  blurb, price band). 54 store items plus 10 rares; the catalog is 88.
+  `STORE_STOCK` says who sells what; `wing/templates.ts` `themedStore()`
+  shelves them (`shelve`: six spots, any four in a row on distinct spots,
+  priced mid-band). Seven new stores: Sports Locker, Hardware Hut, Toy Box,
+  Radio Shed, Spiral Records, Slice Station, Video World; a shift visits four
+  of the eleven. Mall Mart is now the general store: twelve items at the
+  bottom of each band. 24 new signature fusions.
+- **Drops** (`run/drops.ts`): a kill leaves an item `ITEM_DROP_CHANCE` 4% of
+  the time, an elite 30% (a quarter of those rare), as a `kind: 'item'`
+  pickup in `room.tokens` (not checkpointed). Every boss hands a rare
+  straight into the inventory. Picked-up goods are `acquisitionKind: 'found'`
+  (clean). Rares (`RARE_ROSTER`) are never sold.
+- **Bench card**: up to 16 tiles (smaller past nine; keys pick 1-9, clicks
+  any); a fusion tile shows `xN` parts.
+- **Art**: shopfronts and interiors for the new stores reuse the existing kit
+  (`STORE_LOOKS`, `INTERIOR_LOOKS`). The 64 new item icons are placeholders
+  from `scripts/placeholder-icons.mjs` (16x16 silhouettes doubled, per-item
+  colours), marked `PLACEHOLDER` in the manifest. PixelLab was not connected
+  in this cloud session. Screens: `artifacts/neon-overhaul/round32/`.
+

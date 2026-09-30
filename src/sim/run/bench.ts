@@ -10,7 +10,7 @@
  */
 import { resolveEmitterMount } from '../fusion/emitterMount';
 import { commitEmitterMount } from '../fusion/transaction';
-import type { FusionProposal, InventoryLeaf } from '../fusion/types';
+import type { FusionInventoryNode, FusionProposal, InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import { syncRunCarrier } from './carrier';
 import { blockedRunReason, publishRunFeedback } from './economy';
@@ -22,6 +22,11 @@ import { commitFusion, resolveFusion } from '../fusion/fuse';
 
 function rejected(reason: string): MvpCommandResult {
   return { accepted: false, reason };
+}
+
+/** Anything the bench can put in a fusion: an item or a hybrid, never an Emitter Mount. */
+function isFusable(node: FusionInventoryNode): boolean {
+  return node.kind === 'leaf' || node.recipeId === 'hybrid';
 }
 
 function definitionIsEmitterCarrier(itemDefinitionId: string): boolean {
@@ -120,14 +125,14 @@ export function commitRunEmitterMount(
 }
 
 /**
- * Whether the kiosk has anything to fuse, without opening it: two standalone
- * items are enough, since almost any pair fuses. The HUD uses this so it never
+ * Whether the kiosk has anything to fuse, without opening it: two items or
+ * hybrids are enough, since almost any pair fuses. The HUD uses this so it never
  * advertises the bench where the sim would refuse to open it.
  */
 export function canOpenRunFusionPreview(state: MvpRunState): boolean {
   if (state.status !== 'playing' || state.preview !== null || state.workbench !== null) return false;
   if (hasLivingEnemies(state.room.combat)) return false;
-  return state.inventory.inventory.filter((node) => node.kind === 'leaf').length >= 2;
+  return state.inventory.inventory.filter(isFusable).length >= 2;
 }
 
 function recompute(state: MvpRunState, bench: MvpWorkbench): void {
@@ -158,9 +163,8 @@ export function openRunWorkbench(state: MvpRunState): MvpCommandResult {
   if (state.preview !== null || state.workbench !== null) return rejected('The Bench Warrant is already open.');
   // A bench is not a pause button: it opens once the room is safe.
   if (hasLivingEnemies(state.room.combat)) return rejected('Clear the room before using the Bench Warrant.');
-  const leaves = state.inventory.inventory.filter((node): node is InventoryLeaf => node.kind === 'leaf');
-  if (leaves.length < 2) {
-    return rejected('Nothing to fuse: the Bench Warrant needs two items that are not already fused.');
+  if (state.inventory.inventory.filter(isFusable).length < 2) {
+    return rejected('Nothing to fuse: the Bench Warrant needs two things to fuse.');
   }
   const primary = selectedPrimaryLeaf(state);
   const carrier = findRunCarrierLeaf(state);
@@ -190,8 +194,8 @@ export function pickWorkbenchItem(state: MvpRunState, instanceId: string): MvpCo
   if (bench === null) return rejected('The Bench Warrant is not open.');
   const node = state.inventory.inventory.find((candidate) => candidate.instanceId === instanceId);
   if (!node) return rejected('That item is not owned.');
-  if (node.kind !== 'leaf') {
-    state.workbench = { ...bench, message: 'Already fused: a fused item cannot be fused again.' };
+  if (!isFusable(node)) {
+    state.workbench = { ...bench, message: 'The RC car is already carrying the shot: an Emitter Mount cannot be fused again.' };
     return rejected(state.workbench.message);
   }
   let next: MvpWorkbench;

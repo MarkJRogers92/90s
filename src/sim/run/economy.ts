@@ -7,6 +7,7 @@
  * a rejected command leaves cash, Heat, suspicion, offers, inventory, and the
  * player untouched.
  */
+import { compositeLeaves } from '../fusion/inventory';
 import { definitionFor } from '../items/registry';
 import type { InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
@@ -23,7 +24,7 @@ import type { WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/t
 import { refreshRunLoadout } from './loadout';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { blueLightOfferId } from './roomEvents';
-import { HEAT_PER_STAR, WANTED_SURCHARGE_PER_STAR, applyHeatFloor, wantedStars } from './wanted';
+import { HEAT_PER_STAR, WANTED_SURCHARGE_PER_STAR, applyHeatFloor, getawayBonus, wantedStars } from './wanted';
 
 /**
  * One secured theft is one wanted star. The run's theft no longer mirrors the
@@ -91,12 +92,7 @@ export function itemDefinitionName(itemDefinitionId: ItemId): string {
 function ownedDefinitionIds(state: MvpRunState): Set<ItemId> {
   const ids = new Set<ItemId>();
   for (const node of state.inventory.inventory) {
-    if (node.kind === 'leaf') {
-      ids.add(node.itemDefinitionId);
-      continue;
-    }
-    ids.add(node.primary.itemDefinitionId);
-    ids.add(node.carrier.itemDefinitionId);
+    for (const leaf of compositeLeaves(node)) ids.add(leaf.itemDefinitionId);
   }
   return ids;
 }
@@ -105,7 +101,7 @@ function ownedDefinitionIds(state: MvpRunState): Set<ItemId> {
 function hybridOwns(state: MvpRunState, itemDefinitionId: ItemId): boolean {
   return state.inventory.inventory.some(
     (node) => node.kind === 'composite' && node.recipeId === 'hybrid'
-      && (node.primary.itemDefinitionId === itemDefinitionId || node.carrier.itemDefinitionId === itemDefinitionId),
+      && compositeLeaves(node).some((leaf) => leaf.itemDefinitionId === itemDefinitionId),
   );
 }
 
@@ -185,11 +181,13 @@ export function storeDefinitionOf(store: WingStoreInstance): StoreDefinition {
 function withInventory(
   state: MvpRunState,
   inventory: MvpRunState['inventory']['inventory'],
+  cash: number = state.cash,
 ): void {
+  state.cash = cash;
   state.inventory = {
     ...state.inventory,
     inventory,
-    cash: state.cash,
+    cash,
     revision: state.inventory.revision + 1,
   };
   refreshRunLoadout(state);
@@ -311,11 +309,14 @@ export function secureRunThefts(
   const heatPerTheft = RUN_SECURED_THEFT_HEAT;
   state.heat = clampSecurityHeat(state.heat + held.length * heatPerTheft);
   state.suspicion = 0;
-  withInventory(state, [...state.inventory.inventory, ...leaves]);
+  // Out before the shutter dropped: a clean getaway pays on top of the goods.
+  const getaway = state.alarm?.storeId === store.templateId && state.alarm.shutter === 'open' ? getawayBonus(held.length) : 0;
+  withInventory(state, [...state.inventory.inventory, ...leaves], state.cash + getaway);
   // Hot goods: each stolen item now held keeps the janitor a star wanted.
   applyHeatFloor(state);
 
-  const message = `Secured ${held.length} item${held.length === 1 ? '' : 's'} past the ${store.name} exit (+${held.length * heatPerTheft} Heat).`;
+  const message = `Secured ${held.length} item${held.length === 1 ? '' : 's'} past the ${store.name} exit (+${held.length * heatPerTheft} Heat)` +
+    (getaway > 0 ? `, getaway bonus +$${getaway}.` : '.');
   publishRunFeedback(state, message);
   return { accepted: true, message };
 }

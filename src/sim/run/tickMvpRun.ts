@@ -21,9 +21,11 @@
  * input. Room-local enemies, projectiles, surfaces, and the car are rebuilt
  * from the seed whenever the room changes and never carry across a doorway.
  */
+import { compositeLeaves } from '../fusion/inventory';
 import { circleIntersectsRect } from '../core/geometry';
 import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
+import { collectItemDrops, dropItemsForDeaths } from './drops';
 import { stepCombo } from './combo';
 import { freezeDeep } from '../items/types';
 import { LOCKER_SOURCE_LOCATION, roomClearHeal, runDashCooldown, runMaxHealth } from './perks';
@@ -418,7 +420,7 @@ function evaluateRoomClear(state: MvpRunState): void {
 
 function publishSummary(state: MvpRunState, status: 'won' | 'dead'): void {
   const leaves = state.inventory.inventory.flatMap((node) =>
-    node.kind === 'leaf' ? [node] : [node.primary, node.carrier],
+    compositeLeaves(node),
   );
   state.status = status;
   state.summary = freezeDeep({
@@ -577,6 +579,8 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
 
   // 6b. Mall Tokens: fallen monsters drop change; the janitor sweeps it up.
   dropTokensForDeaths(state, livingBeforeCombat);
+  // Round 32: now and then an item, and from every boss a rare.
+  dropItemsForDeaths(state, livingBeforeCombat);
   // 6c. Cleanup Combo: blows landed, kills, and whether the janitor was hurt.
   {
     const after = new Map(state.room.combat.enemies.map((enemy) => [enemy.id, enemy.health]));
@@ -590,6 +594,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     stepCombo(state, { hits, kills, hurt: state.room.combat.player.health < healthBeforeCombat });
   }
   collectTokens(state);
+  collectItemDrops(state);
   // 6d. The store's twist: butter, rolling carts, waking displays.
   updateStoreTwist(state, previousPosition);
   // 6e. Loss Prevention: a four-star janitor is hunted from room to room.

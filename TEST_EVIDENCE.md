@@ -1,5 +1,26 @@
 # Test evidence
 
+## 2026-09-30 — round 32: deep fusion, themed stores, drops, tuning
+
+- New tests: `playtest-tuning-round32` (6), `deep-fusion` (8),
+  `store-roster` (8), `item-drops` (6). Each was run red first for the
+  intended reason (missing export, old value) before the change.
+- `npx tsc --noEmit` clean; `npx vitest run` 968 passed (86 files);
+  `npm run build` clean.
+- Browser suite (cloud container, Chromium 1194 via a local config that sets
+  `executablePath`, since the pinned headless shell is not installed): 72 of
+  74 pass. One real update: the Owner spec now expects `HP 210/210`. The two
+  failures (`night-shift.spec.ts:230` cold open never leaves `cinematic`, and
+  `presentation-evidence.spec.ts:269` restart cycles) fail identically on
+  untouched `origin/main` in this container, so they are environmental, not
+  from this round. Worth re-running on the owner's Mac.
+- Manual: `?fixture=mvp-store&store=sports-locker&seed=9` and
+  `slice-station&seed=5` at 1440x900: store sign, floor, themed stock and
+  placeholder icons render, no page errors. Screens in
+  `artifacts/neon-overhaul/round32/`.
+- Not verified in a browser: the 16-tile bench card, floor drops and a boss's
+  rare handover (covered by unit tests only).
+
 ## 2026-09-29 — round 31: store twists, heist recap, living machines
 
 - New: `tests/unit/store-twists.test.ts` (8): the arcade cabinet's cost,

@@ -75,8 +75,8 @@ function compile(instances: readonly ItemInstance[], selected: string) {
 }
 
 describe('item catalog', () => {
-  it('defines the twenty-four-item M5 roster in author order', () => {
-    expect(ITEM_CATALOG.map((definition) => definition.id)).toEqual(M5_ITEM_IDS);
+  it('keeps the twenty-four-item M5 roster first, in author order, before the round-32 store roster', () => {
+    expect(ITEM_CATALOG.slice(0, 24).map((definition) => definition.id)).toEqual(M5_ITEM_IDS);
   });
 
   it('keeps unique definition IDs with the M4 roster first in stable order', () => {

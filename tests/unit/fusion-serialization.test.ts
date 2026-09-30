@@ -286,7 +286,7 @@ describe('restoreFusionState validation', () => {
   it('rejects a composite whose primary is not a catalog projectile primary', () => {
     const state = committedState();
     const inventory = state.inventory.map((node) => {
-      if (node.kind !== 'composite') {
+      if (node.kind !== 'composite' || node.recipeId !== 'emitter_mount') {
         return node;
       }
       return {
@@ -301,7 +301,7 @@ describe('restoreFusionState validation', () => {
   it('rejects a composite whose carrier lacks emitter_carrier capability', () => {
     const state = committedState();
     const inventory = state.inventory.map((node) => {
-      if (node.kind !== 'composite') {
+      if (node.kind !== 'composite' || node.recipeId !== 'emitter_mount') {
         return node;
       }
       return {

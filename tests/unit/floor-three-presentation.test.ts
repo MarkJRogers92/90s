@@ -92,8 +92,8 @@ describe('Floor 3 HUD, PA, pink slip, kill cam', () => {
     expect(hud.floor).toBe(3);
     expect(hud.rooms.map((cell) => cell.short)).toContain('ARCADE');
     expect(hud.objectives[0]!.text).toContain('OWNER');
-    state.room.combat.enemies = [enemy({ kind: 'owner', health: 240, radius: 28 })];
-    expect(buildGameHudModel(state).boss).toMatchObject({ name: 'THE MALL OWNER', max: 240 });
+    state.room.combat.enemies = [enemy({ kind: 'owner', health: 210, radius: 28 })];
+    expect(buildGameHudModel(state).boss).toMatchObject({ name: 'THE MALL OWNER', max: 210 });
   });
 
   it('welcomes the janitor to the food court and warns of the Owner', () => {

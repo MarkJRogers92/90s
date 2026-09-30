@@ -129,7 +129,7 @@ describe('bench run full loop', () => {
     confirmFusion(state);
     expect(state.fusion.cash).toBe(4);
     const composite = state.fusion.inventory.find((node) => node.kind === 'composite');
-    if (composite?.kind !== 'composite') {
+    if (composite?.kind !== 'composite' || composite.recipeId !== 'emitter_mount') {
       throw new Error('Expected a fused composite.');
     }
     expect(composite.primary.acquisitionKind).toBe('stolen');

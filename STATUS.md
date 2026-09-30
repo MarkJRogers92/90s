@@ -7,6 +7,20 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 32 (2026-09-30): the fusion game. Anything fuses with anything,
+including things already fused, up to four items in one ($3 more per extra
+item). Seven new themed stores (Sports Locker, Hardware Hut, Toy Box, Radio
+Shed, Spiral Records, Slice Station, Video World) stock 54 new items that
+fit them; Mall Mart is now the cheap general store. Enemies sometimes drop
+items and every boss drops one of ten rares. Playtest tuning: harder Floor 1
+fights, a fairer Mall Manager, a 210 hp Owner, a 2 s boss card, and a
+getaway cash bonus. New item icons are placeholders pending PixelLab.
+968 unit tests pass; see TEST_EVIDENCE.md round 32.
+
+Rounds 28-31 (2026-09-29, recorded in TEST_EVIDENCE.md and the playbook):
+concourse furniture, back-room props, the heist playtest log, store twists,
+the heist recap and animated machines.
+
 Round 27 (2026-09-29): the stores are inside. A storefront concourse is just
 the mall, and the shop door in its back-wall art leads into a full-room store
 in that shop's own style, walled in so the EXIT door is the only way out;

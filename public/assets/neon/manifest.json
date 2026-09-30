@@ -1538,5 +1538,645 @@
       60
     ],
     "sha256": "ace730fb832e53f14112c7a7cc1ec268a8543e50adb4a765a229c17f544fd9a2"
+  },
+  {
+    "path": "public/assets/neon/items/aluminum-bat.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (bat silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "860c5a5fe6ef0b6d9820c3a980ca9d22b013795c7c218cc0dcefb537d79cf7fe"
+  },
+  {
+    "path": "public/assets/neon/items/hockey-stick.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "b22593e918ee36c7284fc649423e46b2503005e545ea7ab3704866953b65cb77"
+  },
+  {
+    "path": "public/assets/neon/items/golf-club.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "3de5785cd34bb88730e160418e547f479bf3031f32c49b3c69a143fd04acb920"
+  },
+  {
+    "path": "public/assets/neon/items/tennis-ball-launcher.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "31934cc213c0951a281ea468c6dfe911ce2f2c285b2690d2694ca681ac2dde53"
+  },
+  {
+    "path": "public/assets/neon/items/dodgeball.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "bcbd343aeefb08f56b87bfd4ca5cbd644191f60e0add3b521e4fd3c102844753"
+  },
+  {
+    "path": "public/assets/neon/items/sweatband.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "af50869e0a8cb009fd7cc2f78c66995870e6d45269b9248b1c5da41a1289a3c1"
+  },
+  {
+    "path": "public/assets/neon/items/lacrosse-stick.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "94414da9e114d2ba25a2883d78abdc61f0c0e0247dc334fe7c4a67360ce33afc"
+  },
+  {
+    "path": "public/assets/neon/items/football.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "d3a293cf0a86253f4a4a4255b1f20a880833cef830c9134af72359009162d4fb"
+  },
+  {
+    "path": "public/assets/neon/items/nail-gun.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gun silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "9b05e843291d605801c2b12d683d5c46796ba9f24aa65db630b400e5acd1db7f"
+  },
+  {
+    "path": "public/assets/neon/items/pipe-wrench.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (hammer silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6049d164072b28e0c73bee1fb25e83d85a7dd9cbcbf79efe48001b76e8eaeeac"
+  },
+  {
+    "path": "public/assets/neon/items/duct-tape.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "bcfa23e52eb3c101c7f635a4527fb8c1a5db9d74237f1b4124cb932bf4889554"
+  },
+  {
+    "path": "public/assets/neon/items/leaf-blower.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f8c007abede642e0125f5020bbd07842f6e660e067502bf1f24473e62f5c1335"
+  },
+  {
+    "path": "public/assets/neon/items/staple-gun.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gun silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "74cd5b147a3671c86738772478c7f451670d823455e8a4d7bf7899dfd6ea9cdf"
+  },
+  {
+    "path": "public/assets/neon/items/claw-hammer.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (hammer silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f0584b6d10dfaff4d133fa9d8243bbd620793fcdd37c0c9b7ef5537682881057"
+  },
+  {
+    "path": "public/assets/neon/items/garden-hose.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "910ec8bb76a15c1738d4acff2f10b5eb8c25c5aeef38a86079d28316655e4342"
+  },
+  {
+    "path": "public/assets/neon/items/jumper-cables.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (battery silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "753ba527321a149781b1f8de86c446bfd62460d592a410467c529bcd107d9ec5"
+  },
+  {
+    "path": "public/assets/neon/items/super-soaker-50.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "4fca5b8ce4195734b90065a16822527b4a384a045a8e615ba09530c09daf0649"
+  },
+  {
+    "path": "public/assets/neon/items/yo-yo.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "15c021fffadebf170577e018d4fdeb5be38846b58de19bea3221ad9e73251685"
+  },
+  {
+    "path": "public/assets/neon/items/slingshot.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "bbaf68602ff735b49ee16e35f99d3d8297d1b79e687802771a04d8a50470e623"
+  },
+  {
+    "path": "public/assets/neon/items/slime-tub.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "53d70ccef1b3fc50e13bf19385ed7dc78c8255405f7c54ae9382725959637f4b"
+  },
+  {
+    "path": "public/assets/neon/items/pog-slammer.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "09a91bb1566419b1183599a7c45ebcf7405441948e0b0bbee1e9a8bdac9485b4"
+  },
+  {
+    "path": "public/assets/neon/items/water-balloons.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "45e843dd54c1add7677981d4c54db5e9ca3889e915facb9e029c49688c97d55e"
+  },
+  {
+    "path": "public/assets/neon/items/foam-sword.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blade silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1feb5113d458e0b847fe3d597850776616151c135670cfb1188353efa5a8419d"
+  },
+  {
+    "path": "public/assets/neon/items/slinky.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "aad8a1950d581f2197a381d59d2094ab456b4c5f0fb5fb5fd29b5b9ff4325fe1"
+  },
+  {
+    "path": "public/assets/neon/items/laser-pointer.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "0e560043b36826f80cf1208de15574f4b4e4670f7ae85994e1b4ad8c31f9866b"
+  },
+  {
+    "path": "public/assets/neon/items/walkman.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (cassette silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f6fed2389b2df2e1c42a8c5531d2f6e87c2cf68765cf46974855b2febad50d56"
+  },
+  {
+    "path": "public/assets/neon/items/nine-volt-pack.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (battery silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1460d8a76eea9f67722b8d1b704c025dece9b597d3f9d787f0f85655119e601f"
+  },
+  {
+    "path": "public/assets/neon/items/boombox.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "117babe3aa268932d932a7a78ddc2e56b50ce1d0d4ad927ed368ec860fc02eb4"
+  },
+  {
+    "path": "public/assets/neon/items/rc-blimp-remote.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "70fbdbef09586cf0c91e9e6b60bb758d500883f001cfd7607c80da738a96d155"
+  },
+  {
+    "path": "public/assets/neon/items/satellite-dish.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "76008cf6b12ff868d1162817507dad390f6470440248013081d2ac847b33fd17"
+  },
+  {
+    "path": "public/assets/neon/items/tesla-coil-kit.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (battery silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "abb31694806628dc788cf3166103ac53abeb8bd75038c1b8d6095967e4a08ad1"
+  },
+  {
+    "path": "public/assets/neon/items/camcorder.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "2de4bca556d7d70db1b7858bb07f1931e66cb7da9f42379b93b179923565eaba"
+  },
+  {
+    "path": "public/assets/neon/items/electric-guitar.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (guitar silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "531603c7685a76e1d7565d95497251dca89f146d8bf3bc4ad55ac02ebdd82247"
+  },
+  {
+    "path": "public/assets/neon/items/record-toss.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "d5c3161c271019949b875dd7da98eed3b1a216cb372bdd23fac2e52616be8597"
+  },
+  {
+    "path": "public/assets/neon/items/mic-stand.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (mic silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "4d16ac299aee8decf63229f4e346b3fea7fcf8780eb728a62113606c9a258993"
+  },
+  {
+    "path": "public/assets/neon/items/drumsticks.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "01508595197209fba8af1d34843abb72e1dd00c152e0c6959b46dbf873be66cf"
+  },
+  {
+    "path": "public/assets/neon/items/mixtape.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (cassette silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "ffba9ab9c2346b5bfe45cef5adbb5bb9ee1216fbb8e204dd2e330b6b49939db7"
+  },
+  {
+    "path": "public/assets/neon/items/cd-shuriken.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "57febbee43b98cd0c2c2cb5b048624707859ada99eb0a67ab693fb771e9231fb"
+  },
+  {
+    "path": "public/assets/neon/items/fog-machine.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "511f44d1683988a43d33c010361e853a22daba65514bd86249a14c56964ac871"
+  },
+  {
+    "path": "public/assets/neon/items/keytar.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (guitar silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "99a5ac3cd03a6e6e735c64da28998aa8e9af03ec31376ff29a534be948169598"
+  },
+  {
+    "path": "public/assets/neon/items/pizza-cutter.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (wheel silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "ae0e5303084f2f105e3fd6a35125e8c66663e06c20e6fafd1598bcb9dece0602"
+  },
+  {
+    "path": "public/assets/neon/items/pizza-peel.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "ddd8119bbd4db85df5c037eef90caa4d4724723c0c6ee9681c0e3a965190d91d"
+  },
+  {
+    "path": "public/assets/neon/items/cheese-pump.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "7ae369f713612237ec35f1bdb86f0db829a7c3cd759fd9b2052884ab61494800"
+  },
+  {
+    "path": "public/assets/neon/items/soda-gun.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gun silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "c418a3e529404a36efb28254767194538ff6a1488b8a584dc2fb3a749ef1312b"
+  },
+  {
+    "path": "public/assets/neon/items/dough-roller.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (bat silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "057b21da6200dc7f76c27f4bb3f3ddf18d553e7e68ca8b73bae980f8d196cb80"
+  },
+  {
+    "path": "public/assets/neon/items/pepperoni-launcher.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "053b22e135bb7b6b1a5f4ee5c97fd5047bbc0204e689b145265c590e70c378f5"
+  },
+  {
+    "path": "public/assets/neon/items/hot-sauce.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "8cbac028a9d79b58166a9924e152778b5428c0fca6029a613457765270ea0967"
+  },
+  {
+    "path": "public/assets/neon/items/ketchup-bottle.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "136ec3e1a467a98fee3bea5c987c0ed5a13cd96f19d07395bd77b7733044bb73"
+  },
+  {
+    "path": "public/assets/neon/items/vhs-tape.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (cassette silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "7c2a994e1bd32c64fe16b50a0b647b83fac2464a1eec6f2a9c011517d3cd084a"
+  },
+  {
+    "path": "public/assets/neon/items/cardboard-standee.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "7cec711c7c2f57216d7fd9ccaa72de1ac930c6c25f7a75569d359e666fcc9564"
+  },
+  {
+    "path": "public/assets/neon/items/popcorn-bucket.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "c065762cfc968f4d281fb99b58e64d21dd447446d81a735e97fcb03ad112f8a0"
+  },
+  {
+    "path": "public/assets/neon/items/rewind-button.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "ae877399d7c8518418740cbf5b0bf6dec27832a1b73b7e88cf93ae0b9873b6a0"
+  },
+  {
+    "path": "public/assets/neon/items/laserdisc.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "2ff12057470dae09378eb4b88cf19e3a06b32114c2686c990974885d347a40ce"
+  },
+  {
+    "path": "public/assets/neon/items/late-fee-stamp.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (hammer silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "e2d5447c02e42250c2d9ddf68900454a1ab2d3683ded6ff0862a0f976fbc8d9c"
+  },
+  {
+    "path": "public/assets/neon/items/golden-mop.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1dbbc19aea552a6c3aa15ae8540f1424612c1843e46310cac6dd6f2e5c02b6b6"
+  },
+  {
+    "path": "public/assets/neon/items/power-glove.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "67d50136e19588a5dc0c6288ab8397250eb0390095c06a91923c4eb816c5b79b"
+  },
+  {
+    "path": "public/assets/neon/items/super-soaker-cps.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "24e76d1db8d41e2f978fe025d94867d0882ab6337945429ff4f92987264d31a1"
+  },
+  {
+    "path": "public/assets/neon/items/game-brick.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f3436399b49b43d767db1ec001cb2fccf6497344b990062b61e2c85f85db8a1f"
+  },
+  {
+    "path": "public/assets/neon/items/laser-tag-rifle.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "25062dc424d1c693194dea3c6d7fe67794eca6ab9adf3fa47778172b0993e64a"
+  },
+  {
+    "path": "public/assets/neon/items/virtual-pet.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "11264ed6454b3b714b84b9bce5f8e5eea476d91b34c3bb85597bca4f279778fb"
+  },
+  {
+    "path": "public/assets/neon/items/trapper-keeper.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "bbddaebd93c65dc1871dd418895fccf8b9909df6a77d90124af9afc5b36faf96"
+  },
+  {
+    "path": "public/assets/neon/items/moon-shoes.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "8459c48fff012a780ba6553681d6d4213f2ded8e45d2f8930b0cc2a314d925bc"
+  },
+  {
+    "path": "public/assets/neon/items/pager.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "3695edd3cd087d2126d1ca313f43dbe5dbaefa1ef98e6a50fbc40f349c15d40e"
+  },
+  {
+    "path": "public/assets/neon/items/lightsaber-toy.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blade silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6b071772b22072e9e488667f1741b229a6f12cb8bd3ebc26fdfc469ec879ba56"
   }
 ]

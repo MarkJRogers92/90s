@@ -35,7 +35,9 @@ describe('the Mall Manager', () => {
     tickRun(state, frame());
     const shots = state.projectiles.filter((shot) => shot.faction === 'enemy');
     expect(shots).toHaveLength(M.volleyAngles.length);
-    expect(M.volleyAngles.length).toBeGreaterThan(BOSS_CONFIGS.lp_manager.volleyAngles.length);
+    // Round 32 trimmed it to five prongs, but its fan is still wider.
+    const span = (angles: readonly number[]) => Math.max(...angles) - Math.min(...angles);
+    expect(span(M.volleyAngles)).toBeGreaterThan(span(BOSS_CONFIGS.lp_manager.volleyAngles));
   });
 
   it('calls in Bargain Hunters when it hits its last phase', () => {

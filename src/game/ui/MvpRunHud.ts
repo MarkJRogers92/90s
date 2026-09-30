@@ -1,3 +1,4 @@
+import { compositeLeaves } from '../../sim/fusion/inventory';
 import { bossConfigFor, isBossKind } from '../../sim/combat/boss';
 import { roomStores } from '../../sim/run/storeInterior';
 /**
@@ -377,7 +378,7 @@ export class MvpRunHud {
     let stolen = 0;
     for (const node of state.inventory.inventory) {
       if (node.kind === 'leaf') {
-        if (node.acquisitionKind === 'purchased') {
+        if (node.acquisitionKind !== 'stolen') {
           purchased += 1;
         } else {
           stolen += 1;
@@ -386,18 +387,13 @@ export class MvpRunHud {
           `${itemDefinitionName(node.itemDefinitionId)} (${node.acquisitionKind} · ${node.sourceLocationId})`,
         );
       } else {
-        if (node.primary.acquisitionKind === 'purchased') {
-          purchased += 1;
-        } else {
-          stolen += 1;
-        }
-        if (node.carrier.acquisitionKind === 'purchased') {
-          purchased += 1;
-        } else {
-          stolen += 1;
+        const leaves = compositeLeaves(node);
+        for (const leaf of leaves) {
+          if (leaf.acquisitionKind === 'stolen') stolen += 1;
+          else purchased += 1;
         }
         parts.push(
-          `${itemDefinitionName(node.primary.itemDefinitionId)} + ${itemDefinitionName(node.carrier.itemDefinitionId)} (fused ${node.primary.acquisitionKind}/${node.carrier.acquisitionKind})`,
+          `${leaves.map((leaf) => itemDefinitionName(leaf.itemDefinitionId)).join(' + ')} (fused ${leaves.map((leaf) => leaf.acquisitionKind).join('/')})`,
         );
       }
     }
@@ -518,11 +514,9 @@ export class MvpRunHud {
             }
             continue;
           }
-          if (node.primary.instanceId === instanceId) {
-            return itemDefinitionName(node.primary.itemDefinitionId);
-          }
-          if (node.carrier.instanceId === instanceId) {
-            return itemDefinitionName(node.carrier.itemDefinitionId);
+          const match = compositeLeaves(node).find((leaf) => leaf.instanceId === instanceId);
+          if (match) {
+            return itemDefinitionName(match.itemDefinitionId);
           }
         }
         return instanceId;

@@ -5,7 +5,8 @@
  * one-level composites. Gameplay rules live here; Phaser only presents them.
  */
 
-export type FusionAcquisitionKind = 'purchased' | 'stolen';
+/** `found`: dropped by an enemy or a boss (round 32); clean, like a purchase. */
+export type FusionAcquisitionKind = 'purchased' | 'stolen' | 'found';
 
 export type InventoryLeaf = {
   readonly kind: 'leaf';
@@ -39,9 +40,13 @@ export type HybridComposite = {
   readonly recipeId: 'hybrid';
   readonly createdTick: number;
   readonly transactionId: string;
-  readonly primary: InventoryLeaf;
-  readonly carrier: InventoryLeaf;
+  /** Since round 32 either part may itself be a hybrid (up to four items in all). */
+  readonly primary: FusionPart;
+  readonly carrier: FusionPart;
 };
+
+/** What a hybrid is made of: an item, or an earlier hybrid. */
+export type FusionPart = InventoryLeaf | HybridComposite;
 
 export type FusionComposite = EmitterMountComposite | HybridComposite;
 export type FusionRecipeId = FusionComposite['recipeId'];

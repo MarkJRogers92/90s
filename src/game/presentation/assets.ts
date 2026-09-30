@@ -1,4 +1,5 @@
-import { hybridParts } from '../../sim/fusion/hybrid';
+import { rootItemId } from '../../sim/fusion/hybrid';
+import { ALL_ROSTER } from '../../sim/items/storeRoster';
 export interface PresentationAsset {
   key: string;
   url: string;
@@ -170,12 +171,13 @@ export const ITEM_ICON_FILES: Readonly<Record<string, string>> = {
   car_battery: 'car-battery',
   needle_nozzle: 'needle-nozzle',
   heavy_duty_spring: 'heavy-duty-spring',
+  // Round 32: placeholder icons until the PixelLab pass (see docs/neon-overhaul).
+  ...Object.fromEntries(ALL_ROSTER.map((entry) => [entry.definition.id, entry.definition.id.replace(/_/g, '-')])),
 };
 
 export function itemIconKey(itemDefinitionId: string): string | null {
   // A fused item shows its base's icon (the HUD marks it as fused).
-  const parts = hybridParts(itemDefinitionId);
-  const file = ITEM_ICON_FILES[parts?.baseId ?? itemDefinitionId];
+  const file = ITEM_ICON_FILES[rootItemId(itemDefinitionId)];
   return file ? `neon:item:${file}` : null;
 }
 
