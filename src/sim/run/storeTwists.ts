@@ -12,6 +12,16 @@
  * - Mall Mart: shopping carts stand in the aisle. Running into one sends it
  *   rolling; a rolling cart knocks a guard back and hurts it.
  *
+ * Round 35, the seven themed stores:
+ * - Sports Locker: a pitching machine winds up and fires balls down the aisle.
+ * - Hardware Hut: paint spills in the aisle: slide on them, dry floor grips.
+ * - Toy Box: wind-up toys waddle the aisle and shove the janitor aside.
+ * - Radio Shed: a band of TV static comes and goes, hiding who stands in it.
+ * - Spiral Records: a listening booth puts the janitor in the groove (attacks
+ *   recharge twice as fast) once a visit.
+ * - Slice Station: the oven warns, then blasts heat along the east wall.
+ * - Video World: a rewind tile undoes the last hit taken in the store, once.
+ *
  * The twist is room-local like the store alarm: set up on entering a store,
  * dropped on leaving, and never checkpointed. Pure rules over run data.
  */
@@ -24,10 +34,13 @@ import { createEnemyStatusState } from '../effects/statuses';
 import type { EnemyState, Vec2 } from '../model';
 import { publishRunFeedback } from './economy';
 import { luck } from './luck';
+import { runMaxHealth } from './perks';
 import { activeStore, INTERIOR_BOUNDS } from './storeInterior';
 import type { MvpCommandResult, MvpRunState } from './types';
 
 export type RollingCart = { id: number; x: number; y: number; vx: number; vy: number; hit: number[] };
+export type PitchedBall = { id: number; x: number; y: number; vx: number };
+export type WindUpToy = { id: number; x: number; y: number; vx: number; bumpCooldown: number };
 
 export type StoreTwistState = {
   /** The store this twist belongs to; a different store starts a fresh one. */
@@ -39,6 +52,23 @@ export type StoreTwistState = {
   /** Arcade Annex: plays this visit, and ticks until the cabinet takes another coin. */
   plays: number;
   cabinetCooldown: number;
+  /** Ticks since the janitor walked in: the clock the cycling twists run on. */
+  age: number;
+  /** Sports Locker: balls in flight. */
+  balls: PitchedBall[];
+  nextBallId: number;
+  /** Toy Box: the wind-up toys. */
+  toys: WindUpToy[];
+  /** Spiral Records: ticks spent in the booth, the groove left, and whether it was had. */
+  listenTicks: number;
+  grooveTicks: number;
+  grooveUsed: boolean;
+  /** Video World: health last tick, the size of the last hit, and whether the tile was used. */
+  lastHealth: number;
+  lastHit: number;
+  rewindUsed: boolean;
+  /** Slice Station: the blast that last burned the janitor (one burn a blast). */
+  burnedBlast: number;
 };
 
 /** The aisle between the two rows of shelves, where the twists stand. */
@@ -78,12 +108,72 @@ export const CART_FRICTION = 0.965;
 export const CART_DAMAGE = 4;
 export const CART_KNOCKBACK = 30;
 
+const PLAYER_INVULNERABILITY_TICKS = 60;
+
+// Sports Locker.
+export const PITCHING_MACHINE: Vec2 = { x: INTERIOR_BOUNDS.x + 30, y: AISLE_Y };
+export const PITCH_INTERVAL_TICKS = 150;
+/** The machine hums and its lane lights up this long before each pitch. */
+export const PITCH_WINDUP_TICKS = 40;
+export const BALL_SPEED = 6.5;
+export const BALL_RADIUS = 7;
+export const BALL_DAMAGE_ENEMY = 3;
+
+// Hardware Hut.
+export const PAINT_SPILLS: ReadonlyArray<{ readonly x: number; readonly y: number; readonly rx: number; readonly ry: number; readonly color: number }> = [
+  { x: 250, y: AISLE_Y, rx: 64, ry: 24, color: 0x3a8aff },
+  { x: 480, y: AISLE_Y + 26, rx: 58, ry: 22, color: 0xff6a3a },
+  { x: 715, y: AISLE_Y - 6, rx: 64, ry: 24, color: 0xffd84a },
+];
+/** Grip on wet paint: a little more than butter, so a spill is a stumble, not a rink. */
+export const PAINT_GRIP = 0.12;
+
+// Toy Box.
+export const TOY_RADIUS = 10;
+export const TOY_SPEED = 0.8;
+export const TOY_SHOVE = 18;
+export const TOY_BUMP_COOLDOWN_TICKS = 30;
+const TOY_SPOTS: readonly number[] = [150, 360, 600, 810];
+
+// Radio Shed.
+/** Two bands of static in the gaps between the shelf columns, so no shelf is ever hidden. */
+export const STATIC_ZONES: ReadonlyArray<{ readonly x: number; readonly y: number; readonly width: number; readonly height: number }> = [
+  { x: 280, y: 130, width: 160, height: 120 },
+  { x: 540, y: 130, width: 140, height: 120 },
+];
+export const STATIC_OFF_TICKS = 110;
+export const STATIC_ON_TICKS = 140;
+
+// Spiral Records.
+export const LISTENING_BOOTH: Vec2 & { readonly radius: number } = { x: 830, y: 330, radius: 30 };
+export const LISTEN_TICKS = 90;
+export const GROOVE_TICKS = 600;
+
+// Slice Station.
+export const OVEN_ZONE = { x: 810, y: 140, width: 100, height: 110 } as const;
+const OVEN_IDLE_TICKS = 135;
+const OVEN_WARN_TICKS = 45;
+const OVEN_BLAST_TICKS = 60;
+const OVEN_CYCLE_TICKS = OVEN_IDLE_TICKS + OVEN_WARN_TICKS + OVEN_BLAST_TICKS;
+export const OVEN_ENEMY_DAMAGE = 2;
+const OVEN_ENEMY_EVERY = 20;
+
+// Video World.
+export const REWIND_TILE: Vec2 & { readonly radius: number } = { x: 150, y: 335, radius: 26 };
+
 /** What the log says on walking in, so a twist never ambushes the janitor. */
 export const TWIST_HINTS: Readonly<Record<string, string>> = {
   'arcade-annex': 'One cabinet still takes coins: $2 a play.',
   'cinema-snacks': 'The floor is buttered: expect to slide.',
   'department-outlet': 'The display mannequins are very still. For now.',
   'mall-mart': 'Carts in the aisle: run into one to send it rolling.',
+  'sports-locker': 'The pitching machine is still on. Mind the aisle.',
+  'hardware-hut': 'Wet paint in the aisle: it is slippery.',
+  'toy-box': 'Wind-up toys on the loose. They will get underfoot.',
+  'radio-shed': 'The TVs are on the fritz: static can hide anyone.',
+  'spiral-records': 'Stand in the listening booth to get in the groove.',
+  'slice-station': 'The oven by the east wall runs hot. Watch for the glow.',
+  'video-world': 'A REWIND tile by the door: it undoes your last hit here.',
 };
 
 /** The twist for the store the janitor is in, created on first use. */
@@ -94,13 +184,33 @@ function twistFor(state: MvpRunState): StoreTwistState | null {
     return null;
   }
   if (state.room.twist?.storeId === store.templateId) return state.room.twist;
-  const twist: StoreTwistState = { storeId: store.templateId, slide: { x: 0, y: 0 }, carts: [], plays: 0, cabinetCooldown: 0 };
+  const twist: StoreTwistState = {
+    storeId: store.templateId,
+    slide: { x: 0, y: 0 },
+    carts: [],
+    plays: 0,
+    cabinetCooldown: 0,
+    age: 0,
+    balls: [],
+    nextBallId: 1,
+    toys: [],
+    listenTicks: 0,
+    grooveTicks: 0,
+    grooveUsed: false,
+    lastHealth: state.room.combat.player.health,
+    lastHit: 0,
+    rewindUsed: false,
+    burnedBlast: -1,
+  };
   state.room.twist = twist;
   const hint = TWIST_HINTS[store.templateId];
   if (hint) publishRunFeedback(state, hint);
   if (store.templateId === 'department-outlet') poseMannequins(state);
   if (store.templateId === 'mall-mart') {
     twist.carts = CART_SPOTS.map((spot, index) => ({ id: index + 1, x: spot.x, y: spot.y, vx: 0, vy: 0, hit: [] }));
+  }
+  if (store.templateId === 'toy-box') {
+    twist.toys = TOY_SPOTS.map((x, index) => ({ id: index + 1, x, y: AISLE_Y + (index % 2 === 0 ? -8 : 8), vx: index % 2 === 0 ? TOY_SPEED : -TOY_SPEED, bumpCooldown: 0 }));
   }
   return twist;
 }
@@ -161,9 +271,28 @@ export function updateStoreTwist(state: MvpRunState, previousPosition: Vec2): vo
   const twist = twistFor(state);
   if (twist === null) return;
   if (twist.cabinetCooldown > 0) twist.cabinetCooldown -= 1;
+  twist.age += 1;
   switch (twist.storeId) {
     case 'cinema-snacks':
       slideOnButter(state, twist, previousPosition);
+      break;
+    case 'sports-locker':
+      pitchBalls(state, twist);
+      break;
+    case 'hardware-hut':
+      slipOnPaint(state, twist, previousPosition);
+      break;
+    case 'toy-box':
+      waddleToys(state, twist);
+      break;
+    case 'spiral-records':
+      listenInTheBooth(state, twist);
+      break;
+    case 'slice-station':
+      runTheOven(state, twist);
+      break;
+    case 'video-world':
+      rewindTheTape(state, twist);
       break;
     case 'department-outlet':
       wakeTheDisplays(state);
@@ -180,7 +309,7 @@ export function updateStoreTwist(state: MvpRunState, previousPosition: Vec2): vo
  * Butter: the step the janitor meant to take only nudges a slide, and the
  * slide is what actually moves them. A dash still goes where it points.
  */
-function slideOnButter(state: MvpRunState, twist: StoreTwistState, previous: Vec2): void {
+function slideOnButter(state: MvpRunState, twist: StoreTwistState, previous: Vec2, grip = BUTTER_GRIP): void {
   const combat = state.room.combat;
   const player = combat.player;
   if (playerDashing(combat)) {
@@ -189,8 +318,8 @@ function slideOnButter(state: MvpRunState, twist: StoreTwistState, previous: Vec
   }
   const meant = { x: player.x - previous.x, y: player.y - previous.y };
   twist.slide = {
-    x: twist.slide.x * (1 - BUTTER_GRIP) + meant.x * BUTTER_GRIP,
-    y: twist.slide.y * (1 - BUTTER_GRIP) + meant.y * BUTTER_GRIP,
+    x: twist.slide.x * (1 - grip) + meant.x * grip,
+    y: twist.slide.y * (1 - grip) + meant.y * grip,
   };
   if (Math.hypot(twist.slide.x, twist.slide.y) < 0.05) twist.slide = { x: 0, y: 0 };
   const next = moveCircle(previous, player.radius, twist.slide.x, twist.slide.y, combat.walls);
@@ -250,4 +379,137 @@ function rollCarts(state: MvpRunState, twist: StoreTwistState, previous: Vec2): 
       cart.vy *= 0.5;
     }
   }
+}
+
+/** Lands a hazard's hit on the janitor unless a dash or fresh invulnerability covers them. */
+function hurtJanitor(state: MvpRunState): boolean {
+  const combat = state.room.combat;
+  if (combat.player.invulnerableTicks > 0 || playerDashing(combat)) return false;
+  combat.player.health -= 1;
+  combat.player.invulnerableTicks = PLAYER_INVULNERABILITY_TICKS;
+  return true;
+}
+
+/** Sports Locker: whether the machine is winding up for its next pitch (the lane lights). */
+export function pitchWindingUp(twist: StoreTwistState): boolean {
+  return twist.storeId === 'sports-locker' && twist.age % PITCH_INTERVAL_TICKS >= PITCH_INTERVAL_TICKS - PITCH_WINDUP_TICKS;
+}
+
+function pitchBalls(state: MvpRunState, twist: StoreTwistState): void {
+  const combat = state.room.combat;
+  if (twist.age % PITCH_INTERVAL_TICKS === 0) {
+    twist.balls.push({ id: twist.nextBallId, x: PITCHING_MACHINE.x + 20, y: PITCHING_MACHINE.y, vx: BALL_SPEED });
+    twist.nextBallId += 1;
+  }
+  const right = INTERIOR_BOUNDS.x + INTERIOR_BOUNDS.width - BALL_RADIUS;
+  twist.balls = twist.balls.filter((ball) => {
+    ball.x += ball.vx;
+    if (ball.x >= right) return false;
+    const player = combat.player;
+    if (circlesOverlap(ball.x, ball.y, BALL_RADIUS, player.x, player.y, player.radius) && hurtJanitor(state)) return false;
+    const enemy = combat.enemies.find((candidate) => candidate.health > 0 && circlesOverlap(ball.x, ball.y, BALL_RADIUS, candidate.x, candidate.y, candidate.radius));
+    if (enemy) {
+      enemy.health = Math.max(0, enemy.health - BALL_DAMAGE_ENEMY);
+      return false;
+    }
+    return true;
+  });
+}
+
+function inSpill(point: Vec2): boolean {
+  return PAINT_SPILLS.some((spill) => ((point.x - spill.x) / spill.rx) ** 2 + ((point.y - spill.y) / spill.ry) ** 2 <= 1);
+}
+
+/** Hardware Hut: wet paint is butter; dry floor grips at once. */
+function slipOnPaint(state: MvpRunState, twist: StoreTwistState, previous: Vec2): void {
+  if (!inSpill(previous) && !inSpill(state.room.combat.player)) {
+    twist.slide = { x: 0, y: 0 };
+    return;
+  }
+  slideOnButter(state, twist, previous, PAINT_GRIP);
+}
+
+function waddleToys(state: MvpRunState, twist: StoreTwistState): void {
+  const combat = state.room.combat;
+  const player = combat.player;
+  const left = INTERIOR_BOUNDS.x + 30;
+  const right = INTERIOR_BOUNDS.x + INTERIOR_BOUNDS.width - 30;
+  for (const toy of twist.toys) {
+    if (toy.bumpCooldown > 0) toy.bumpCooldown -= 1;
+    const next = moveCircle(toy, TOY_RADIUS, toy.vx, 0, combat.walls);
+    if (next.x === toy.x || next.x <= left || next.x >= right) toy.vx = -toy.vx;
+    toy.x = Math.max(left, Math.min(right, next.x));
+    if (toy.bumpCooldown > 0 || playerDashing(combat)) continue;
+    if (!circlesOverlap(toy.x, toy.y, TOY_RADIUS, player.x, player.y, player.radius)) continue;
+    // Underfoot: the toy shoves the janitor aside and waddles off the other way.
+    const away = player.x === toy.x && player.y === toy.y ? { x: -Math.sign(toy.vx) || 1, y: 0 } : normalizedDirection(player.x - toy.x, player.y - toy.y);
+    const shoved = moveCircle(player, player.radius, away.x * TOY_SHOVE, away.y * TOY_SHOVE, combat.walls);
+    player.x = shoved.x;
+    player.y = shoved.y;
+    toy.vx = -toy.vx;
+    toy.bumpCooldown = TOY_BUMP_COOLDOWN_TICKS;
+  }
+}
+
+/** Radio Shed: whether the static is up and covers this point (the view hides enemies there). */
+export function staticHides(state: MvpRunState, point: Vec2): boolean {
+  const twist = state.room.twist;
+  if (!twist || twist.storeId !== 'radio-shed') return false;
+  if (twist.age % (STATIC_OFF_TICKS + STATIC_ON_TICKS) < STATIC_OFF_TICKS) return false;
+  return STATIC_ZONES.some((zone) => point.x >= zone.x && point.x <= zone.x + zone.width && point.y >= zone.y && point.y <= zone.y + zone.height);
+}
+
+function listenInTheBooth(state: MvpRunState, twist: StoreTwistState): void {
+  const player = state.room.combat.player;
+  if (twist.grooveTicks > 0) {
+    twist.grooveTicks -= 1;
+    // In the groove: attacks recharge twice as fast.
+    if (player.attackCooldownTicks > 0) player.attackCooldownTicks -= 1;
+    return;
+  }
+  const inBooth = Math.hypot(player.x - LISTENING_BOOTH.x, player.y - LISTENING_BOOTH.y) <= LISTENING_BOOTH.radius;
+  if (!inBooth || twist.grooveUsed) {
+    twist.listenTicks = 0;
+    return;
+  }
+  twist.listenTicks += 1;
+  if (twist.listenTicks >= LISTEN_TICKS) {
+    twist.grooveTicks = GROOVE_TICKS;
+    twist.grooveUsed = true;
+    publishRunFeedback(state, 'IN THE GROOVE: attacks recharge twice as fast for 10 seconds.');
+  }
+}
+
+/** Slice Station: where the oven is in its cycle. */
+export function ovenPhase(twist: StoreTwistState): 'idle' | 'warn' | 'blast' {
+  const at = twist.age % OVEN_CYCLE_TICKS;
+  return at < OVEN_IDLE_TICKS ? 'idle' : at < OVEN_IDLE_TICKS + OVEN_WARN_TICKS ? 'warn' : 'blast';
+}
+
+function inOvenZone(point: Vec2): boolean {
+  return point.x >= OVEN_ZONE.x && point.x <= OVEN_ZONE.x + OVEN_ZONE.width && point.y >= OVEN_ZONE.y && point.y <= OVEN_ZONE.y + OVEN_ZONE.height;
+}
+
+function runTheOven(state: MvpRunState, twist: StoreTwistState): void {
+  if (ovenPhase(twist) !== 'blast') return;
+  const combat = state.room.combat;
+  const blast = Math.floor(twist.age / OVEN_CYCLE_TICKS);
+  if (twist.burnedBlast !== blast && inOvenZone(combat.player) && hurtJanitor(state)) twist.burnedBlast = blast;
+  if (twist.age % OVEN_ENEMY_EVERY !== 0) return;
+  for (const enemy of combat.enemies) {
+    if (enemy.health > 0 && inOvenZone(enemy)) enemy.health = Math.max(0, enemy.health - OVEN_ENEMY_DAMAGE);
+  }
+}
+
+function rewindTheTape(state: MvpRunState, twist: StoreTwistState): void {
+  const player = state.room.combat.player;
+  if (player.health < twist.lastHealth) twist.lastHit = twist.lastHealth - player.health;
+  const onTile = Math.hypot(player.x - REWIND_TILE.x, player.y - REWIND_TILE.y) <= REWIND_TILE.radius;
+  if (onTile && !twist.rewindUsed && twist.lastHit > 0 && player.health > 0) {
+    player.health = Math.min(runMaxHealth(state), player.health + twist.lastHit);
+    twist.rewindUsed = true;
+    twist.lastHit = 0;
+    publishRunFeedback(state, 'REWOUND: that last hit never happened.');
+  }
+  twist.lastHealth = player.health;
 }

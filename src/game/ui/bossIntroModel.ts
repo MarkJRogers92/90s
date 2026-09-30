@@ -8,18 +8,19 @@
  */
 import type { BossKind } from '../../sim/combat/boss';
 
-export const BOSS_INTRO_MS = 2000;
+/** Round 35: players skipped the 2 s card at 1.2-1.3 s, so it now runs about that long. */
+export const BOSS_INTRO_MS = 1400;
 export const BOSS_INTRO_ZOOM = 1.25;
 /** Ignore presses for this long, so the step through the door never skips it. */
 export const BOSS_INTRO_SKIP_GRACE_MS = 350;
 const BARS = 64;
 const IN_MS = 380;
-const OUT_MS = 380;
+const OUT_MS = 300;
 const PLATE_AT_MS = 180;
-const PLATE_SLIDE_MS = 320;
-const NAME_AT_MS = 520;
+const PLATE_SLIDE_MS = 260;
+const NAME_AT_MS = 380;
 /** The tube stutters on over this long before it holds. */
-const FLICKER_MS = 420;
+const FLICKER_MS = 300;
 
 export type BossIntroCopy = {
   /** The directory line: floor and room, like the board by the escalator. */

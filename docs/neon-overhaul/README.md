@@ -970,3 +970,38 @@ From the first real playtest log (21 shifts) and the owner's direction that
   events, so fire the key from `javascript_tool` and `await` a fixed delay
   before the screenshot. Screens: `artifacts/neon-overhaul/round34/`.
 
+## Round 35: every store plays differently, fusion logging, a shorter boss card
+
+- **Store twists** (`sim/run/storeTwists.ts`, room-local like round 31's; the
+  twist's `age` is the clock the cycling ones run on; hazards respect dashes
+  and invulnerability through `hurtJanitor`):
+  - *Sports Locker*: `PITCHING_MACHINE` on the west wall fires every
+    `PITCH_INTERVAL_TICKS` (150) after a `PITCH_WINDUP_TICKS` (40) wind-up
+    that lights the lane; a ball hurts the janitor 1 or a guard
+    `BALL_DAMAGE_ENEMY` (3).
+  - *Hardware Hut*: `PAINT_SPILLS` are butter at `PAINT_GRIP` 0.12; dry floor
+    grips at once.
+  - *Toy Box*: four toys waddle the aisle at `TOY_SPEED`; a bump shoves the
+    janitor `TOY_SHOVE` (18 px), no damage, then that toy waits 30 ticks.
+  - *Radio Shed*: `STATIC_ZONES` (two bands between the shelf columns, so a
+    shelf is never hidden) are on 140 of every 250 ticks; `staticHides`. The
+    view draws opaque snow above the actors, which hides wind-ups too.
+  - *Spiral Records*: `LISTEN_TICKS` (90) in `LISTENING_BOOTH` gives
+    `GROOVE_TICKS` (600) of double-speed attack recharge, once a visit.
+  - *Slice Station*: `OVEN_ZONE` cycles idle 135 / warn 45 / blast 60 ticks;
+    one burn a blast, `OVEN_ENEMY_DAMAGE` 2 to guards every 20 ticks.
+  - *Video World*: `REWIND_TILE` restores the last hit taken in the store,
+    once a visit; stepping on it unhurt does not spend it.
+- **Art**: PixelLab props `pitching-machine`, `wind-up-toy`,
+  `listening-booth`, `pizza-oven` (`create_map_object`, high top-down, four
+  generations). Paint, static and the tile are drawn.
+- **Playtest log**: `RunRecord.fusions` (name, parts, signature, first time,
+  from the scene's `noteFusion`) and `recipeHints` (a store entered with a
+  pair on the shelf, and whether both halves left with the janitor). The
+  summary and the Playtest panel show both. `shelvedSignaturePair` moved to
+  `recipeHints.ts` and is shared by the PA and the recorder.
+- **Boss card**: `BOSS_INTRO_MS` 1400 (was 2000); the name lights at 380 ms
+  and holds to the 300 ms fade.
+- Browser pane gotcha: a hidden pane throttles rAF to ~1 fps, so the game
+  looks broken. Check `document.hidden` before chasing a frame-rate bug.
+
