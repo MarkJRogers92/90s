@@ -6,6 +6,7 @@ import {
 } from '../core/geometry';
 import type { RunState } from '../model';
 import type { Rect, Vec2 } from '../model';
+import { TAR_SLOW, inTar } from './tar';
 
 const PLAYER_SPEED_PER_SECOND = 210;
 const TICKS_PER_SECOND = 60;
@@ -37,11 +38,12 @@ export function moveCircle(
 
 export function movePlayer(state: RunState, moveX: number, moveY: number): void {
   const direction = normalizedDirection(moveX, moveY);
+  const speed = PLAYER_SPEED_PER_TICK * (inTar(state, state.player) ? TAR_SLOW : 1);
   const next = moveCircle(
     state.player,
     state.player.radius,
-    direction.x * PLAYER_SPEED_PER_TICK,
-    direction.y * PLAYER_SPEED_PER_TICK,
+    direction.x * speed,
+    direction.y * speed,
     state.walls,
   );
   state.player.x = next.x;

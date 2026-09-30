@@ -8,6 +8,8 @@ import { updateMannequin } from './mannequin';
 import { updateShopper } from './shopper';
 import { updateMascot } from './mascot';
 import { updateStatic } from './staticEnemy';
+import { updateRoofer } from './roofer';
+import { dryTar } from './tar';
 import {
   circlesOverlap,
   sweptCircleIntersectsCircle,
@@ -44,6 +46,7 @@ function spawnSpitterProjectile(state: RunState, enemyIndex: number): void {
 }
 
 export function updateEnemies(state: RunState): void {
+  dryTar(state);
   for (let index = 0; index < state.enemies.length; index += 1) {
     const enemy = state.enemies[index];
     if (!enemy || enemy.health <= 0 || enemy.dormant) {
@@ -67,6 +70,11 @@ export function updateEnemies(state: RunState): void {
 
     if (enemy.kind === 'mascot') {
       updateMascot(state, enemy);
+      continue;
+    }
+
+    if (enemy.kind === 'roofer') {
+      updateRoofer(state, enemy);
       continue;
     }
 
