@@ -26,19 +26,10 @@ see TEST_EVIDENCE.md round 37.
 Rounds 33-37 finished the owner's list (art pass, fusion spectacle, store
 twists, sell and drop, reduced flashing). What is left:
 
-1. Icon redos, on a machine that can reach `api.pixellab.ai` (the cloud
-   container's proxy returns 403): staple gun
-   `bbc92a1e-6f3e-4371-a471-208e384a55f4`, mic stand
-   `284c02d0-5925-4ae5-9f4e-fb0663313214`, and the better leaf blower of
-   `400602cc-639b-4bc2-af1c-4e67f9e1199d` (backpack) /
-   `962b3ee2-b74e-4385-8d31-4fb4cc5e18ec` (handheld); keep the current icon
-   if neither reads. Download with
-   `curl -o x.png https://api.pixellab.ai/mcp/images/<job>/download`, then
-   promote like round 33: source in `docs/art/neon-overhaul/pixellab/items/`,
-   runtime copy in `public/assets/neon/items/` with binary alpha (>=128 is
-   255), and the manifest sha256 and generator note.
+1. ~~Icon redos~~ (done, round 38). Look at them in play at 1x; redo any that still
+   do not read.
 2. Playtest rounds 32-37 (questions below) and tune.
-3. Browser gate: `night-shift.spec.ts:463` flakes under 2-4 workers (passes alone).
+2b. Browser gate: `night-shift.spec.ts:463` flakes under 2-4 workers (passes alone).
 
 ## Round 35 playtest questions
 

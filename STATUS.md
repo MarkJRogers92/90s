@@ -7,6 +7,13 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 38 (2026-09-30): the staple gun, mic stand and leaf blower icons are
+redone (PixelLab, 32x32, palette forced from the earlier icons). The 14
+candidate icons came from a fresh PixelLab run, since the round-36 jobs had
+expired (`404 Result not found`). Picked: a stapler silhouette, the classic
+mic on a stand filling the tile, and a handheld blower with a tube nozzle.
+Before and after: `artifacts/neon-overhaul/round38-icon-redos.png`.
+
 Round 37 (2026-09-30): the Flashes: Reduced setting now covers the newer
 effects. Store alarm beacons hold lit instead of alternating, the Radio Shed
 snow freezes, the fusion reveal bursts a third as many sparks and its stamp

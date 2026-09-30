@@ -1,5 +1,18 @@
 # Test evidence
 
+## 2026-09-30 — round 38: icon redos
+
+- The round-36 PixelLab jobs returned `404 Result not found` (results expire),
+  so the icons were regenerated through the REST API
+  (`POST /v1/generate-image-pixflux`, key from the environment, 14
+  generations, 32x32, `high top-down`, single black outline, detailed
+  shading, palette image built from the 85 other item icons).
+- Promoted as in round 33: sources in `docs/art/neon-overhaul/pixellab/items/`,
+  runtime copies with binary alpha, manifest sha256 and generator note.
+- `npx tsc --noEmit` clean; `npx vitest run` 1021 passed (the store-roster
+  manifest and placeholder checks included); `npm run build` clean. Not
+  checked in a running game at 1x; the before/after is at 6x.
+
 ## 2026-09-30 — round 37b: browser gate under load
 
 - Corrects the round-36 note below. The cold open is not what starved: under
