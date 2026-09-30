@@ -7,6 +7,17 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 35 (2026-09-30): every store plays differently. The seven themed
+stores get twists: Sports Locker's pitching machine fires down the aisle,
+Hardware Hut's paint spills are slippery, Toy Box's wind-up toys shove the
+janitor aside, Radio Shed's TV static hides whoever stands in it, Spiral
+Records' listening booth doubles attack speed for 10 s once a visit, Slice
+Station's oven blasts heat along the east wall, and Video World's rewind tile
+undoes the last hit taken in the store. PixelLab props for the machine, toys,
+booth and oven. The playtest log now records fusions and recipe hints, and
+the boss card is 1.4 s (players skipped the 2 s card at 1.2-1.3 s). 1006
+unit tests pass; see TEST_EVIDENCE.md round 35.
+
 Round 34 (2026-09-30): fusions are a spectacle. A fused item's icon stacks
 every part on the base with a glow that grows green, cyan, gold with the part
 count. Fusing at the Bench Warrant raises the new icon out of a spark burst

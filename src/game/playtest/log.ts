@@ -84,6 +84,15 @@ export type RunSummary = {
   };
   readonly stores: ReadonlyArray<{ readonly store: string; readonly visits: number; readonly avgSeconds: number; readonly bought: number; readonly stolen: number }>;
   readonly bossCards: { readonly shown: number; readonly skipped: number; readonly avgSeconds: number | null };
+  /** Round 35: the bench, and the recipe hints on the shelves. */
+  readonly fusions: {
+    readonly made: number;
+    readonly signatures: number;
+    readonly discoveries: number;
+    readonly avgParts: number | null;
+    readonly recipeHintsSeen: number;
+    readonly recipeHintsTaken: number;
+  };
 };
 
 export function summarizeRuns(records: readonly RunRecord[]): RunSummary {
@@ -145,7 +154,17 @@ export function summarizeRuns(records: readonly RunRecord[]): RunSummary {
     }
   }
   const tenths = (value: number): number => Math.round(value * 10) / 10;
+  const fused = records.flatMap((record) => record.fusions ?? []);
+  const hints = records.flatMap((record) => record.recipeHints ?? []);
   return {
+    fusions: {
+      made: fused.length,
+      signatures: fused.filter((fusion) => fusion.signature).length,
+      discoveries: fused.filter((fusion) => fusion.firstTime).length,
+      avgParts: fused.length ? tenths(fused.reduce((sum, fusion) => sum + fusion.parts, 0) / fused.length) : null,
+      recipeHintsSeen: hints.length,
+      recipeHintsTaken: hints.filter((hint) => hint.tookBoth).length,
+    },
     heist: {
       alarms,
       avgSecondsLeft: getaways.length ? tenths(getaways.reduce((sum, value) => sum + value, 0) / getaways.length) : null,

@@ -48,7 +48,8 @@ describe('round 32 playtest tuning', () => {
   });
 
   it('the boss card plays for two seconds', () => {
-    expect(BOSS_INTRO_MS).toBe(2000);
+    // Round 35 shortened it again (playtest-round35.test.ts).
+    expect(BOSS_INTRO_MS).toBeLessThanOrEqual(2000);
   });
 
   it('a getaway pays per item, with a bonus for a bigger haul', () => {

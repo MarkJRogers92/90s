@@ -108,6 +108,9 @@ export class PlaytestPanel {
     if (peakStars > 0) line(this.summary, 'Highest wanted level', `${'*'.repeat(peakStars)} (${peakStars})`);
     if (stalker.arrivals + stalker.writeUps > 0) line(this.summary, 'Loss Prevention', `arrived ${stalker.arrivals}×, wrote you up ${stalker.writeUps}×, shoved away ${stalker.shoves}×`);
     if (summary.stores.length) line(this.summary, 'Stores visited', summary.stores.map((s) => `${s.store} ×${s.visits} (${s.avgSeconds}s, ${s.bought} bought, ${s.stolen} stolen)`).join(', '));
+    const f = summary.fusions;
+    if (f.made) line(this.summary, 'Fusions', `${f.made} made (${f.signatures} signature, ${f.discoveries} new), ${f.avgParts} items on average`);
+    if (f.recipeHintsSeen) line(this.summary, 'Recipe hints', `${f.recipeHintsSeen} seen on the shelf, both halves taken ${f.recipeHintsTaken} times`);
     if (summary.bossCards.shown) line(this.summary, 'Boss cards', `${summary.bossCards.shown} shown, ${summary.bossCards.skipped} skipped, ${summary.bossCards.avgSeconds}s watched on average`);
     for (const record of [...records].reverse().slice(0, 10)) this.runs.append(this.runItem(record));
   }

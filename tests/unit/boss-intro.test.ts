@@ -28,12 +28,13 @@ describe('boss title card', () => {
   });
 
   it('stutters the neon name on before it holds', () => {
-    const lit = Array.from({ length: 30 }, (_, index) => bossIntroFrame(500 + index * 16).nameLit);
+    const lit = Array.from({ length: 30 }, (_, index) => bossIntroFrame(360 + index * 12).nameLit);
     expect(lit.includes(true)).toBe(true);
     // At least one off-beat after first lighting: a flicker, not a switch.
     const first = lit.indexOf(true);
     expect(lit.slice(first).includes(false)).toBe(true);
-    expect(bossIntroFrame(1400).nameLit).toBe(true);
+    // Held on through the middle of the (round 35, 1.4 s) card.
+    expect(bossIntroFrame(900).nameLit).toBe(true);
   });
 
   it('only ever moves toward done', () => {

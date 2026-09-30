@@ -16,7 +16,22 @@ import type { EnemyState, ProjectileState, Rect, SurfacePatchState } from '../..
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { STORE_ENTRANCE_HALF_WIDTH, activeStore, roomStores, storeEntrance } from '../../sim/run/storeInterior';
-import { ARCADE_CABINET, ARCADE_PLAY_COST } from '../../sim/run/storeTwists';
+import {
+  ARCADE_CABINET,
+  ARCADE_PLAY_COST,
+  BALL_RADIUS,
+  LISTENING_BOOTH,
+  LISTEN_TICKS,
+  OVEN_ZONE,
+  PAINT_SPILLS,
+  PITCHING_MACHINE,
+  REWIND_TILE,
+  STATIC_ZONES,
+  ovenPhase,
+  pitchWindingUp,
+  staticHides,
+  type StoreTwistState,
+} from '../../sim/run/storeTwists';
 import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
 import { PROP_TEXTURES } from '../presentation/rooms/roomDressing';
@@ -99,6 +114,9 @@ export class MvpRunView {
   private readonly usedOfferIcons = new Set<string>();
   /** Mall Mart's carts, one image each, by cart id. */
   private readonly cartImages = new Map<number, Phaser.GameObjects.Image>();
+  /** Round 35: the themed stores' twist props (machine, toys, booth, oven), by id. */
+  private readonly twistImages = new Map<string, Phaser.GameObjects.Image>();
+  private readonly usedTwistImages = new Set<string>();
   private readonly storeGraphics: Phaser.GameObjects.Graphics;
   private readonly tokenSprites = new Map<string, Phaser.GameObjects.Image>();
   private readonly shadows = new Map<string, Phaser.GameObjects.Image>();
@@ -702,6 +720,7 @@ export class MvpRunView {
     } else {
       this.clearLabel('arcade-play');
     }
+    this.drawThemedTwist(state, twist);
     if (twist?.storeId === 'cinema-snacks') {
       // Butter: greasy yellow sheen streaks across the floor, drawn above the
       // lightmap so the room's darkness does not swallow it.
@@ -713,6 +732,166 @@ export class MvpRunView {
         effects.fillStyle(0xffffff, shimmer * 0.8).fillEllipse(x - 18, y - 2, 30, 4);
       }
     }
+  }
+
+  /** A twist prop image, kept by id and dropped once a frame stops drawing it. */
+  private twistProp(id: string, texture: { readonly key: string }, x: number, y: number, scale: number, flipX = false): Phaser.GameObjects.Image | null {
+    this.usedTwistImages.add(id);
+    let image = this.twistImages.get(id);
+    if (!image) {
+      const key = usableTextureKey(this.scene.textures, texture.key);
+      if (!key) return null;
+      image = this.scene.add.image(0, 0, key).setOrigin(0.5, 1);
+      this.twistImages.set(id, image);
+    }
+    image.setPosition(Math.round(x), Math.round(y)).setScale(scale).setFlipX(flipX).setDepth(presentationDepth('actor', y)).setVisible(true);
+    return image;
+  }
+
+  /** Round 35: the seven themed stores' twists (see storeTwists.ts). */
+  private drawThemedTwist(state: MvpRunState, twist: StoreTwistState | null): void {
+    const effects = this.effectGraphics;
+    const light = (x: number, y: number, radius: number, color: number, intensity: number): void =>
+      this.openingConcourse?.addLight({ x, y, radius, color, intensity });
+    const labels = ['twist-listen', 'twist-rewind'];
+    const shown = new Set<string>();
+    switch (twist?.storeId) {
+      case 'sports-locker': {
+        const winding = pitchWindingUp(twist);
+        const shake = winding ? ((state.tick % 4) - 1.5) : 0;
+        this.twistProp('machine', PROP_TEXTURES.pitchingMachine, PITCHING_MACHINE.x + shake, PITCHING_MACHINE.y + 14, 1.7);
+        this.contactShadow('twist:machine', PITCHING_MACHINE.x, PITCHING_MACHINE.y + 12, 1.2);
+        light(PITCHING_MACHINE.x + 6, PITCHING_MACHINE.y - 50, 56, 0xb8ffc8, 0.7);
+        if (winding) {
+          // The lane lights up before each pitch, so the ball is never a surprise.
+          const pulse = 0.18 + 0.14 * Math.sin(state.tick / 3);
+          const right = 920;
+          effects.fillStyle(0xff5a3a, pulse).fillRect(PITCHING_MACHINE.x + 20, PITCHING_MACHINE.y - BALL_RADIUS - 3, right - PITCHING_MACHINE.x - 20, BALL_RADIUS * 2 + 6);
+          light(PITCHING_MACHINE.x + 20, PITCHING_MACHINE.y - 10, 60, 0xff5a3a, 0.8);
+        }
+        for (const ball of twist.balls) {
+          effects.fillStyle(0x000000, 0.3).fillEllipse(ball.x, ball.y + 10, 14, 5);
+          effects.fillStyle(0xf4f0e0, 1).fillCircle(ball.x, ball.y - 6, BALL_RADIUS);
+          effects.lineStyle(1, 0xd02030, 1).beginPath().arc(ball.x - 3, ball.y - 6, 5, -1.1, 1.1).strokePath();
+          effects.beginPath().arc(ball.x + 3, ball.y - 6, 5, Math.PI - 1.1, Math.PI + 1.1).strokePath();
+          effects.lineStyle(2, 0xffffff, 0.35).lineBetween(ball.x - 10, ball.y - 6, ball.x - 26, ball.y - 6);
+        }
+        break;
+      }
+      case 'hardware-hut':
+        // Wet paint: glossy puddles with a highlight, drawn above the lightmap.
+        PAINT_SPILLS.forEach((spill, index) => {
+          const sheen = 0.5 + 0.08 * Math.sin(state.tick / 25 + index);
+          effects.fillStyle(spill.color, sheen).fillEllipse(spill.x, spill.y, spill.rx * 2, spill.ry * 2);
+          effects.fillStyle(spill.color, sheen * 0.8).fillEllipse(spill.x + spill.rx * 0.7, spill.y + spill.ry * 0.5, spill.rx * 0.5, spill.ry * 0.6);
+          effects.fillStyle(0xffffff, 0.35).fillEllipse(spill.x - spill.rx * 0.35, spill.y - spill.ry * 0.35, spill.rx * 0.5, 5);
+        });
+        break;
+      case 'toy-box':
+        for (const toy of twist.toys) {
+          const bob = Math.abs(Math.sin((state.tick + toy.id * 11) / 5)) * 3;
+          const tilt = Math.sin((state.tick + toy.id * 11) / 5) * 6;
+          const image = this.twistProp(`toy:${toy.id}`, PROP_TEXTURES.windUpToy, toy.x, toy.y + 8 - bob, 1.5, toy.vx < 0);
+          image?.setAngle(tilt);
+          this.contactShadow(`twist:toy:${toy.id}`, toy.x, toy.y + 8, 0.6);
+          light(toy.x, toy.y - 6, 30, 0xfff09a, 0.6);
+        }
+        break;
+      case 'radio-shed': {
+        const on = staticHides(state, { x: STATIC_ZONES[0]!.x + 1, y: STATIC_ZONES[0]!.y + 1 });
+        STATIC_ZONES.forEach((z, index) => {
+          // The band reaches above the floor zone so a hidden enemy's whole body is covered.
+          const top = z.y - 50;
+          const height = z.height + 50;
+          if (!on) {
+            effects.lineStyle(1, 0x9ab4ff, 0.25).strokeRect(z.x, top, z.width, height);
+            return;
+          }
+          // Snow: a dark band full of flickering pixels that hides whoever is in it.
+          effects.fillStyle(0x12121a, 0.9).fillRect(z.x, top, z.width, height);
+          for (let i = 0; i < 140; i += 1) {
+            const n = Math.imul(i * 7919 + index * 31 + state.tick * 104729, 2654435761) >>> 0;
+            const grey = (n >>> 24) & 0xff;
+            effects.fillStyle((grey << 16) | (grey << 8) | grey, 0.9).fillRect(z.x + (n % z.width), top + ((n >>> 12) % height), 3, 2);
+          }
+          for (let y = top; y < z.y + z.height; y += 6) effects.fillStyle(0xffffff, 0.05).fillRect(z.x, y, z.width, 1);
+          light(z.x + z.width / 2, z.y + z.height / 2, 100, 0x9ab4ff, 0.5);
+        });
+        break;
+      }
+      case 'spiral-records': {
+        const b = LISTENING_BOOTH;
+        this.twistProp('booth', PROP_TEXTURES.listeningBooth, b.x, b.y - 6, 1.3);
+        const grooving = twist.grooveTicks > 0;
+        const ring = twist.grooveUsed ? 0x6a5a8a : 0xff3fc8;
+        effects.lineStyle(2, ring, twist.grooveUsed ? 0.4 : 0.6 + 0.3 * Math.sin(state.tick / 10)).strokeEllipse(b.x, b.y + 4, b.radius * 2.4, b.radius * 1.1);
+        if (twist.listenTicks > 0) {
+          const t = twist.listenTicks / LISTEN_TICKS;
+          effects.lineStyle(4, 0xffd84a, 1).beginPath().arc(b.x, b.y - 90, 12, -Math.PI / 2, -Math.PI / 2 + t * Math.PI * 2).strokePath();
+        }
+        if (!twist.grooveUsed) {
+          this.setLabel('twist-listen', 'LISTEN', b.x - 30, b.y - 110);
+          shown.add('twist-listen');
+        }
+        light(b.x, b.y - 30, 70, 0xff3fc8, grooving ? 0.9 : 0.5);
+        if (grooving) {
+          // In the groove: notes bob round the janitor and a pink ring pulses.
+          const player = state.room.combat.player;
+          effects.lineStyle(2, 0xff3fc8, 0.5 + 0.3 * Math.sin(state.tick / 4)).strokeEllipse(player.x, player.y + 2, 46, 18);
+          for (let i = 0; i < 3; i += 1) {
+            const a = state.tick / 14 + (i * Math.PI * 2) / 3;
+            const nx = player.x + Math.cos(a) * 24;
+            const ny = player.y - 40 + Math.sin(a * 2) * 6;
+            effects.fillStyle(0xff9ae6, 1).fillCircle(nx, ny, 3).fillRect(nx + 2, ny - 10, 2, 10);
+          }
+        }
+        break;
+      }
+      case 'slice-station': {
+        const phase = ovenPhase(twist);
+        const z = OVEN_ZONE;
+        this.twistProp('oven', PROP_TEXTURES.pizzaOven, z.x + z.width / 2 + 10, z.y + 10, 1.1);
+        const heat = phase === 'blast' ? 1 : phase === 'warn' ? 0.35 + 0.3 * Math.abs(Math.sin(state.tick / 5)) : 0.12;
+        effects.fillStyle(phase === 'blast' ? 0xff4a1a : 0xff9a3a, heat * 0.45).fillRect(z.x, z.y, z.width, z.height);
+        effects.lineStyle(2, 0xff7a2a, 0.3 + heat * 0.6).strokeRect(z.x, z.y, z.width, z.height);
+        if (phase === 'blast') {
+          for (let i = 0; i < 6; i += 1) {
+            const x = z.x + 10 + i * 16;
+            const wave = Math.sin(state.tick / 3 + i) * 4;
+            effects.lineStyle(2, 0xffd08a, 0.6).lineBetween(x + wave, z.y + z.height - 10, x - wave, z.y + 20);
+          }
+        }
+        light(z.x + z.width / 2, z.y + z.height / 2, 90 + heat * 60, 0xff6a2a, 0.3 + heat * 0.8);
+        break;
+      }
+      case 'video-world': {
+        const t = REWIND_TILE;
+        const ready = !twist.rewindUsed;
+        const primed = ready && twist.lastHit > 0;
+        const glow = primed ? 0.7 + 0.3 * Math.sin(state.tick / 5) : ready ? 0.45 : 0.15;
+        effects.fillStyle(0x0a1a2a, 0.8).fillRoundedRect(t.x - t.radius, t.y - t.radius * 0.6, t.radius * 2, t.radius * 1.2, 6);
+        effects.lineStyle(2, 0x3ff0ff, glow).strokeRoundedRect(t.x - t.radius, t.y - t.radius * 0.6, t.radius * 2, t.radius * 1.2, 6);
+        effects.fillStyle(0x3ff0ff, glow);
+        effects.fillTriangle(t.x - 2, t.y - 8, t.x - 2, t.y + 8, t.x - 14, t.y);
+        effects.fillTriangle(t.x + 12, t.y - 8, t.x + 12, t.y + 8, t.x, t.y);
+        if (ready) {
+          this.setLabel('twist-rewind', primed ? 'REWIND!' : 'REWIND', t.x - 34, t.y - 46);
+          shown.add('twist-rewind');
+          light(t.x, t.y, 50, 0x3ff0ff, glow);
+        }
+        break;
+      }
+      default:
+        break;
+    }
+    for (const id of labels) if (!shown.has(id)) this.clearLabel(id);
+    for (const [id, image] of this.twistImages) {
+      if (!this.usedTwistImages.has(id)) {
+        image.destroy();
+        this.twistImages.delete(id);
+      }
+    }
+    this.usedTwistImages.clear();
   }
 
   private drawStore(state: MvpRunState, templateId: string): void {

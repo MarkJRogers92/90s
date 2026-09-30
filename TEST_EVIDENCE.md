@@ -1,5 +1,25 @@
 # Test evidence
 
+## 2026-09-30 — round 35: store twists, fusion logging, boss card
+
+- New tests, run red first: `store-twists-round35` (9: a hint for all eleven
+  stores, and each twist's rule), `playtest-round35` (3: fusions and recipe
+  hints in the record and summary, the 1.4 s boss card). `boss-intro` flicker
+  test re-anchored to the shorter timeline.
+- `npx tsc --noEmit` clean; `npx vitest run` 1006 passed (94 files);
+  `npm run build` clean.
+- Browser, serially: night-shift, restart, shoplifting-loop, fusion and
+  break-room specs, 48 of 49 pass; the one failure (escalator ride, :652)
+  passes alone.
+- Manual (app browser pane): each of the seven stores via
+  `?fixture=mvp-store&store=<id>&seed=<n>` (sports 10, hardware 19, toy 28,
+  radio 10, spiral 3, slice 5, video 2): props, spills, static and tile draw,
+  hints show in the log, no page errors. Screens in
+  `artifacts/neon-overhaul/round35/`.
+- A scare worth recording: the pane measured 1-2 fps in stores. It was the
+  pane being hidden (rAF throttles to ~1 fps); with it visible the branch
+  runs 60-61 fps like `main`, measured on both from a baseline worktree.
+
 ## 2026-09-30 — round 34: fusions as a spectacle
 
 - New tests, each run red first for the intended reason: `career` (6,

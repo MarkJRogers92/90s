@@ -47,6 +47,8 @@ PROPS = [
     'gumball-stand', 'massage-chairs', 'photo-booth', 'pretzel-cart', 'sale-sign', 'seating-island',
     # Round 29: the back hall, security office and food court.
     'janitor-cart', 'locker-row', 'floor-buffer', 'confiscation-cage', 'filing-cabinets', 'water-cooler', 'tray-return', 'trash-bank',
+    # Round 35: the themed stores' twists.
+    'pitching-machine', 'wind-up-toy', 'listening-booth', 'pizza-oven',
 ]
 # Round 31: packed 9-frame animate_image strips, copied as-is (not cropped):
 # arcade-cabinet-anim, claw-machine-anim. sale-sign above is now the wide board.

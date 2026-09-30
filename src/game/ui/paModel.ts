@@ -17,6 +17,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { hotItemCount, wantedStars } from '../../sim/run/wanted';
 import { STALKER_MIN_STARS } from '../../sim/run/stalker';
 import { activeStore } from '../../sim/run/storeInterior';
+import { shelvedSignaturePair } from '../../sim/run/recipeHints';
 import { itemDefinitionName } from '../../sim/run/economy';
 import { shortItemName } from '../../sim/fusion/hybrid';
 
@@ -110,15 +111,6 @@ type Snapshot = {
   readonly pair: readonly [string, string] | null;
 };
 
-function shelvedPair(state: MvpRunState): readonly [string, string] | null {
-  const store = activeStore(state);
-  if (!store) return null;
-  const offers = state.wing.rooms[state.roomIndex]?.offers.filter((offer) => offer.storeId === store.templateId) ?? [];
-  const onShelf = (id: string) => offers.some((offer) => offer.itemDefinitionId === id && (state.offerStatus[offer.id] ?? 'available') === 'available');
-  const offer = offers.find((candidate) => candidate.pairedWith && onShelf(candidate.itemDefinitionId) && onShelf(candidate.pairedWith));
-  return offer ? [offer.itemDefinitionId, offer.pairedWith!] : null;
-}
-
 /** A recipe line with both items named, falling back to their short nouns when it would not fit the ticker. */
 export function recipeLine(line: string, a: string, b: string): string {
   const full = line.replace('{A}', itemDefinitionName(a).toUpperCase()).replace('{B}', itemDefinitionName(b).toUpperCase());
@@ -141,7 +133,7 @@ function snapshot(state: MvpRunState): Snapshot {
     comboTier: Math.floor((state.stats?.combo ?? 0) / COMBO_MILESTONE),
     quiet: !state.room.combat.enemies.some((enemy) => enemy.health > 0),
     interior: state.room.interior === true,
-    pair: shelvedPair(state),
+    pair: activeStore(state) ? shelvedSignaturePair(state, activeStore(state)!.templateId) : null,
   };
 }
 

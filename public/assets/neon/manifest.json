@@ -2218,5 +2218,45 @@
       160
     ],
     "sha256": "430762f248cf9459588c47b1eb6d08f693a93bda3b5b0cb11f3af12c2ae846eb"
+  },
+  {
+    "path": "public/assets/neon/props/pitching-machine.png",
+    "source": "docs/art/neon-overhaul/pixellab/pitching-machine.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      30,
+      56
+    ],
+    "sha256": "1f7e1a07858d22b983731b540f4f8ed8381f774cd867e00b9e22458c51dba55f"
+  },
+  {
+    "path": "public/assets/neon/props/wind-up-toy.png",
+    "source": "docs/art/neon-overhaul/pixellab/wind-up-toy.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      19,
+      26
+    ],
+    "sha256": "fe8ad8f435b8cf414fc9745647fedbad4f8676e046ca59ed040b6a852eed2774"
+  },
+  {
+    "path": "public/assets/neon/props/listening-booth.png",
+    "source": "docs/art/neon-overhaul/pixellab/listening-booth.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      44,
+      69
+    ],
+    "sha256": "19bcd68bc39b8598df159a6f45a3efaf9565fd1a8c3f5da38c1e09f2e6884cd4"
+  },
+  {
+    "path": "public/assets/neon/props/pizza-oven.png",
+    "source": "docs/art/neon-overhaul/pixellab/pizza-oven.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      72,
+      67
+    ],
+    "sha256": "ebabe521d1789246f1772aa47a05f912c3e02a44aeb255beddadbff8131b8305"
   }
 ]

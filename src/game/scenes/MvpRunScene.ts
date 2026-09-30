@@ -693,7 +693,11 @@ export class MvpRunScene extends Phaser.Scene {
     const result = confirmRunFusionPreview(this.run);
     if (result.accepted && preview) {
       this.audio?.play('fuse');
-      const reveal = fusionRevealModel(preview, preview.recipeId === 'hybrid' ? this.discoverFusion(preview.resultDefinitionId) : null);
+      const discovery = preview.recipeId === 'hybrid' ? this.discoverFusion(preview.resultDefinitionId) : null;
+      const reveal = fusionRevealModel(preview, discovery);
+      if (preview.recipeId === 'hybrid') {
+        this.playtest.noteFusion({ name: preview.resultName, parts: reveal.parts, signature: preview.signature, firstTime: discovery?.firstTime ?? false });
+      }
       this.runView?.celebrateFusion(reveal);
       if (reveal.banner) playFusionBanner(this, reveal.banner, reveal.color, this.run.room.combat.player.y - this.cameras.main.scrollY);
       this.resumeAfterPreview();

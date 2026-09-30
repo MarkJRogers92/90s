@@ -11,6 +11,7 @@
 import { signatureFusions } from '../fusion/hybrid';
 import { STORE_TEMPLATES } from '../wing/templates';
 import type { WingOffer, WingStoreInstance } from '../wing/types';
+import type { MvpRunState } from './types';
 
 export const RECIPE_HINT_ODDS = 3;
 
@@ -64,4 +65,12 @@ export function pairUpStock(
     store: { ...store, offerIds: store.offerIds.map((id) => (id === replaced.id ? swapped.id : id)) },
     offers: mark(kept, added, next),
   };
+}
+
+/** The signature pair on a store's shelf in the current room, both halves still for sale, by item id. */
+export function shelvedSignaturePair(state: MvpRunState, storeId: string): readonly [string, string] | null {
+  const offers = state.wing.rooms[state.roomIndex]?.offers.filter((offer) => offer.storeId === storeId) ?? [];
+  const onShelf = (id: string) => offers.some((offer) => offer.itemDefinitionId === id && (state.offerStatus[offer.id] ?? 'available') === 'available');
+  const offer = offers.find((candidate) => candidate.pairedWith && onShelf(candidate.itemDefinitionId) && onShelf(candidate.pairedWith));
+  return offer ? [offer.itemDefinitionId, offer.pairedWith!] : null;
 }

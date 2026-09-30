@@ -18,24 +18,28 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 34): `tsc` clean, 994 unit tests, `npm run build` passes;
-see TEST_EVIDENCE.md round 34 for the browser run.
+Last gate (round 35): `tsc` clean, 1006 unit tests, `npm run build` passes;
+see TEST_EVIDENCE.md round 35.
 
 ## Next up
 
-Rounds 33-34 did the PixelLab art pass and made fusions a spectacle (fused
-icons, stamp and discovery banner, the Break Room catalog, recipe hints). In
-the owner's order, what is left:
+Rounds 33-35 did the art pass, the fusion spectacle and every store's twist.
+What is left from the owner's list:
 
-1. **Store twists for the seven new stores** (pitching machine, paint
-   spills, wind-up toys, TV static, listening booth, oven zone, rewind tile).
-2. Smaller: drop or sell items; a reduced-flashing toggle (the reveal adds a
-   camera shake and sparks; include it); fix
-   `presentation-evidence.spec.ts:269` (ten restart cycles), which fails on
-   `main` too. Under 4 workers on the Mac a dozen browser specs time out;
-   they pass serially (round 34 evidence).
-3. Optional art: redo the staple gun, leaf blower and mic stand icons;
-   interior props (weight bench, paint cans, record bins, pizza oven).
+1. Drop or sell items (the inventory grows with fusing and drops).
+2. A reduced-flashing toggle: alarms, blackouts, the fusion reveal's shake
+   and sparks, the Radio Shed static.
+3. Fix `presentation-evidence.spec.ts:269` (fails on `main` too).
+4. Optional art: redo the staple gun, leaf blower and mic stand icons.
+
+## Round 35 playtest questions
+
+- Store twists: which ones are fun and which are just in the way? The
+  playtest log's store visits show time spent in each.
+- Is the pitching machine's wind-up long enough to dodge? Is the oven worth
+  luring guards into?
+- Does the 1.4 s boss card still get skipped?
+- Fusions and recipe hints are in the log now: are hints followed?
 
 ## Round 34 playtest questions
 

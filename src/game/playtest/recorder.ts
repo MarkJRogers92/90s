@@ -19,6 +19,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
 import { STATIC_BURST_RADIUS } from '../../sim/combat/staticEnemy';
 import { activeStore } from '../../sim/run/storeInterior';
+import { shelvedSignaturePair } from '../../sim/run/recipeHints';
 import { wantedStars } from '../../sim/run/wanted';
 import type { BossKind } from '../../sim/combat/boss';
 
@@ -55,6 +56,24 @@ export type StoreVisitLog = {
   stolen: number;
 };
 
+/** Round 35: one fusion the bench made. */
+export type FusionLog = {
+  readonly name: string;
+  readonly parts: number;
+  readonly signature: boolean;
+  /** The career had never made it before (the discovery banner played). */
+  readonly firstTime: boolean;
+};
+
+/** Round 35: a store entered with a signature pair on the shelf. */
+export type RecipeHintLog = {
+  readonly store: string;
+  /** The pair's item names. */
+  readonly pair: readonly [string, string];
+  /** Both halves left the store with the janitor (bought or stolen) that visit. */
+  tookBoth: boolean;
+};
+
 export type BossCardLog = {
   readonly boss: BossKind;
   readonly seconds: number;
@@ -81,6 +100,9 @@ export type RunRecord = {
   readonly stalker?: { readonly arrivals: number; readonly writeUps: number; readonly shoves: number };
   readonly storeVisits?: readonly StoreVisitLog[];
   readonly bossCards?: readonly BossCardLog[];
+  /** Round 35 fields: absent on runs logged before them. */
+  readonly fusions?: readonly FusionLog[];
+  readonly recipeHints?: readonly RecipeHintLog[];
 };
 
 type Snapshot = {
@@ -132,6 +154,11 @@ function heldFrom(state: MvpRunState, storeId: string, kind: 'purchased' | 'stol
     for (const leaf of leaves) if (leaf.acquisitionKind === kind && leaf.sourceLocationId === storeId) count += 1;
   }
   return count;
+}
+
+/** Whether the janitor holds this item from this store, fused or not. */
+function heldItemFrom(state: MvpRunState, storeId: string, itemId: string): boolean {
+  return state.inventory.inventory.some((node) => compositeLeaves(node).some((leaf) => leaf.sourceLocationId === storeId && leaf.itemDefinitionId === itemId));
 }
 
 /** What most plausibly dealt a hit, from the state around it. */
@@ -201,6 +228,9 @@ export class PlaytestRecorder {
   private visits: StoreVisitLog[] = [];
   private openVisit: { log: StoreVisitLog; storeId: string; enteredTick: number; bought: number; stolen: number } | null = null;
   private bossCards: BossCardLog[] = [];
+  private fusions: FusionLog[] = [];
+  private recipeHints: RecipeHintLog[] = [];
+  private openHint: { log: RecipeHintLog; storeId: string; itemIds: readonly [string, string] } | null = null;
 
   private begin(state: MvpRunState): void {
     this.previous = snapshot(state);
@@ -217,6 +247,9 @@ export class PlaytestRecorder {
     this.visits = [];
     this.openVisit = null;
     this.bossCards = [];
+    this.fusions = [];
+    this.recipeHints = [];
+    this.openHint = null;
     this.openRoom(state);
   }
 
@@ -236,6 +269,12 @@ export class PlaytestRecorder {
   public noteBossCard(boss: BossKind, ms: number, skipped: boolean): void {
     if (this.previous === null || this.finished) return;
     this.bossCards.push({ boss, seconds: Math.round(ms / 100) / 10, skipped });
+  }
+
+  /** The scene reports each fusion the bench makes. */
+  public noteFusion(fusion: FusionLog): void {
+    if (this.previous === null || this.finished) return;
+    this.fusions.push({ ...fusion });
   }
 
   /** Alarms, stalker, stars and store visits: the heist's side of the record. */
@@ -269,6 +308,12 @@ export class PlaytestRecorder {
           bought: heldFrom(state, current.inside, 'purchased'),
           stolen: heldFrom(state, current.inside, 'stolen'),
         };
+        const pair = shelvedSignaturePair(state, current.inside);
+        if (pair) {
+          const hint: RecipeHintLog = { store: current.alarmStore, pair: [itemDefinitionName(pair[0]).toUpperCase(), itemDefinitionName(pair[1]).toUpperCase()], tookBoth: false };
+          this.recipeHints.push(hint);
+          this.openHint = { log: hint, storeId: current.inside, itemIds: pair };
+        }
       }
     }
   }
@@ -288,6 +333,11 @@ export class PlaytestRecorder {
     // A theft counts once it is secured: carried goods are not held yet.
     visit.log.stolen = heldFrom(state, visit.storeId, 'stolen') - visit.stolen;
     this.openVisit = null;
+    const hint = this.openHint;
+    if (hint) {
+      hint.log.tookBoth = hint.itemIds.every((id) => heldItemFrom(state, hint.storeId, id));
+      this.openHint = null;
+    }
   }
 
   /** What landed the most recent blow on the janitor this shift, if anything. */
@@ -354,6 +404,8 @@ export class PlaytestRecorder {
       stalker: { ...this.stalker },
       storeVisits: this.visits.map((visit) => ({ ...visit })),
       bossCards: [...this.bossCards],
+      fusions: this.fusions.map((fusion) => ({ ...fusion })),
+      recipeHints: this.recipeHints.map((hint) => ({ ...hint })),
     };
   }
 }

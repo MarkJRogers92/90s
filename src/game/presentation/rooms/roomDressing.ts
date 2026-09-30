@@ -68,6 +68,11 @@ export const PROP_TEXTURES = {
   booth: { key: 'neon:prop:booth-row', file: 'props/booth-row.png', width: 143, height: 38 },
   pillar: { key: 'neon:prop:concrete-pillar', file: 'props/concrete-pillar.png', width: 24, height: 99 },
   cart: { key: 'neon:prop:shopping-cart', file: 'legacy-props/shopping-cart.png', width: 36, height: 33 },
+  // Round 35: the themed stores' twists.
+  pitchingMachine: { key: 'neon:prop:pitching-machine', file: 'props/pitching-machine.png', width: 30, height: 56 },
+  windUpToy: { key: 'neon:prop:wind-up-toy', file: 'props/wind-up-toy.png', width: 19, height: 26 },
+  listeningBooth: { key: 'neon:prop:listening-booth', file: 'props/listening-booth.png', width: 44, height: 69 },
+  pizzaOven: { key: 'neon:prop:pizza-oven', file: 'props/pizza-oven.png', width: 72, height: 67 },
   // Round 31: PixelLab animate_image strips (9 frames, frame 0 the original sprite).
   arcadeCabinet: { key: 'neon:prop:arcade-cabinet-anim', file: 'props/arcade-cabinet-anim.png', width: 27, height: 59, frames: 9 },
   clawMachine: { key: 'neon:prop:claw-machine-anim', file: 'props/claw-machine-anim.png', width: 32, height: 57, frames: 9 },
