@@ -7,6 +7,12 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 40 (2026-09-30): the Developer wears the cream power suit he was
+briefed with (navy vanished on the night roof), and Flashes: Reduced now also
+steadies the HUD alarm banner and wanted stars, the white end of every
+wind-up, the hurt blink, the boss card name, the clock-in flash and the
+fusion banner. 1048 unit tests pass; see TEST_EVIDENCE.md round 40.
+
 Round 39 (2026-09-30): Floor 4, the Roof, is the new finale. Beating the
 Mall Owner now offers the escalator once more, to six rooms out under the
 night sky (Roof Access, Skylight Walk, HVAC Yard, Billboard Deck, Water

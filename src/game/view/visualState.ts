@@ -17,11 +17,13 @@ export function actorVisualState(input: {
   readonly phase: string;
   readonly isHanger: boolean;
   readonly tick: number;
+  /** false (reduced flashing): a hurt actor is steadily see-through instead of blinking. */
+  readonly flashes?: boolean;
 }): { walking: boolean; attackLean: number; damageFlicker: boolean; damageFeedback: boolean; bobY: number; lunge: number; mopArc: boolean } {
   return {
     walking: input.moving,
     attackLean: input.attackTicks > 0 ? 3 : 0,
-    damageFlicker: input.invulnerableTicks > 0 && Math.floor(input.tick / 4) % 2 === 1,
+    damageFlicker: input.invulnerableTicks > 0 && (input.flashes === false || Math.floor(input.tick / 4) % 2 === 1),
     damageFeedback: input.invulnerableTicks > 0,
     bobY: input.isHanger ? Math.sin(input.tick / 5) * 2 : 0,
     // Hangers have no authored telegraph phase. Their economical lunge is a

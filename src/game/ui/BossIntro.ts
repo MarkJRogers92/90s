@@ -15,6 +15,7 @@ import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/procedura
 import { ENEMY_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { BOSS_INTRO_MS, BOSS_INTRO_SKIP_GRACE_MS, bossIntroCopy, bossIntroFrame, portraitCrop } from './bossIntroModel';
+import { flashAllowed, gameSettings } from '../settings/settings';
 
 const DEPTH = 20_640;
 const W = 960;
@@ -91,7 +92,7 @@ export class BossIntro {
   /** Advances the card; returns true once it has finished or been skipped. */
   public update(elapsedMs: number): boolean {
     this.elapsed += Math.max(0, elapsedMs);
-    const frame = bossIntroFrame(this.elapsed);
+    const frame = bossIntroFrame(this.elapsed, flashAllowed(gameSettings().get()));
     const camera = this.scene.cameras.main;
     camera.setZoom(frame.zoom);
     const lean = (frame.zoom - 1) / 0.25;

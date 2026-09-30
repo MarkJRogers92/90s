@@ -75,7 +75,8 @@ const easeInOut = (t: number): number => t * t * (3 - 2 * t);
 /** A fixed stutter: on, off, on, on, off, then held on. */
 const FLICKER = [true, false, true, true, false, true, false, true];
 
-export function bossIntroFrame(ms: number): BossIntroFrame {
+/** `flicker` false (reduced flashing): the name comes on once instead of stuttering. */
+export function bossIntroFrame(ms: number, flicker = true): BossIntroFrame {
   const into = easeOut(clamp01(ms / IN_MS));
   const out = easeInOut(clamp01((ms - (BOSS_INTRO_MS - OUT_MS)) / OUT_MS));
   const presence = into * (1 - out);
@@ -86,7 +87,7 @@ export function bossIntroFrame(ms: number): BossIntroFrame {
     bars: Math.round(BARS * presence),
     plate: easeOut(clamp01((ms - PLATE_AT_MS) / PLATE_SLIDE_MS)) * (1 - out),
     plateAlpha: 1 - out,
-    nameLit: nameAge >= 0 && (flickerIndex >= FLICKER.length || FLICKER[flickerIndex] === true) && out < 1,
+    nameLit: nameAge >= 0 && (!flicker || flickerIndex >= FLICKER.length || FLICKER[flickerIndex] === true) && out < 1,
     done: ms >= BOSS_INTRO_MS,
   };
 }
