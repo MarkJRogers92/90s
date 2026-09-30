@@ -1,3 +1,5 @@
+import { STORE_ROSTER } from '../../sim/items/storeRoster';
+
 /**
  * Player-facing one-liners for every item, short enough for a HUD toast.
  * The catalog `summary` strings are precise design notes; these say what the
@@ -28,6 +30,7 @@ export const ITEM_BLURBS: Readonly<Record<string, string>> = {
   car_battery: 'LONGER, SAFER LIGHTNING CHAINS',
   needle_nozzle: 'NARROWER, FASTER SHOTS',
   heavy_duty_spring: 'BIGGER, SLOWER SHOTS',
+  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, entry.blurb])),
 };
 
 export function itemBlurb(itemDefinitionId: string): string {

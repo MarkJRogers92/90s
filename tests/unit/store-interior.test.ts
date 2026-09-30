@@ -54,13 +54,14 @@ function walkOut(state: MvpRunState): void {
 const SEEDS = [9, 77, 5150, 1, 424242];
 
 describe('store interiors', () => {
-  it('gives every storefront two shops, so a floor visits all four stores', () => {
+  it('gives every storefront two shops, so a floor visits four different stores', () => {
     for (const seed of SEEDS) {
       for (const floor of [1, 2, 3] as const) {
         const wing = generateRunWing(seed, floor);
         const shops = wing.rooms.flatMap((room) => roomStores(room).map((store) => store.templateId));
         expect(new Set(shops).size).toBe(shops.length);
-        expect([...shops].sort()).toEqual(STORE_TEMPLATES.map((template) => template.id).sort());
+        expect(shops).toHaveLength(4);
+        for (const shop of shops) expect(STORE_TEMPLATES.some((template) => template.id === shop)).toBe(true);
         for (const room of wing.rooms) {
           if (!room.store) continue;
           expect(roomStores(room)[0]).toBe(room.store);

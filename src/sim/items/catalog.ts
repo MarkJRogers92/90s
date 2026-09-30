@@ -15,6 +15,7 @@ import type {
   TrajectoryReplayEffect,
 } from './types';
 import { freezeDeep } from './types';
+import { STORE_ROSTER } from './storeRoster';
 
 /** Wet and Sticky durations are authored content, identical for every source. */
 export const WET_TICKS = 180;
@@ -492,6 +493,8 @@ export const ITEM_CATALOG: readonly ItemDefinition[] = freezeDeep([
     summary: 'Widens and slows compatible projectiles without touching the player hitbox.',
     effects: [springGeometry],
   } satisfies ItemDefinition,
+  // Round 32: the store-themed roster, appended so the frozen subsets below never change.
+  ...STORE_ROSTER.map((entry) => entry.definition),
 ]);
 
 /**
@@ -512,5 +515,5 @@ export const M4_ITEM_CATALOG: readonly ItemDefinition[] = freezeDeep(
   ITEM_CATALOG.slice(0, 12),
 );
 
-/** The full M5 roster: all twenty-four definitions in catalog order. */
+/** The full roster: the twenty-four M5 definitions, then the round-32 store roster. */
 export const M5_ITEM_CATALOG: readonly ItemDefinition[] = ITEM_CATALOG;

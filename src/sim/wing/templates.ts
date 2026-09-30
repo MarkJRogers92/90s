@@ -8,6 +8,7 @@
 import type { Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
 import type { WingRoomRole } from './types';
+import { STORE_ROSTER, STORE_STOCK } from '../items/storeRoster';
 
 export const ROOM_WIDTH = 960;
 export const ROOM_HEIGHT = 480;
@@ -264,6 +265,7 @@ export const AUTHORED_OFFER_BANDS: Readonly<Record<string, AuthoredPriceBand>> =
   car_battery: { min: 20, max: 30 },
   needle_nozzle: { min: 12, max: 22 },
   heavy_duty_spring: { min: 10, max: 20 },
+  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, { ...entry.band }])),
 };
 
 const DEGREES_TO_RADIANS = Math.PI / 180;
@@ -299,6 +301,50 @@ export type AuthoredStoreTemplate = {
   readonly offers: readonly AuthoredStoreOffer[];
 };
 
+/**
+ * Six shelf spots, three across and two deep, inside a store's bounds. Offers
+ * take them in turn, so any four in a row (a shift's window of stock) stand
+ * on four different spots.
+ */
+function shelfSpots(bounds: Rect): Vec2[] {
+  const xs = [0.22, 0.5, 0.78].map((f) => Math.round(bounds.x + bounds.width * f));
+  const ys = [0.27, 0.73].map((f) => Math.round(bounds.y + bounds.height * f));
+  return ys.flatMap((y) => xs.map((x) => ({ x, y })));
+}
+
+/** Prices each item in its band: mid-band, or its floor for the general store. */
+function shelve(bounds: Rect, items: readonly string[], price: 'mid' | 'min' = 'mid'): AuthoredStoreOffer[] {
+  const spots = shelfSpots(bounds);
+  return items.map((itemDefinitionId, index) => {
+    const band = AUTHORED_OFFER_BANDS[itemDefinitionId];
+    if (!band) throw new Error(`No price band for ${itemDefinitionId}.`);
+    return {
+      itemDefinitionId,
+      position: { ...spots[index % spots.length]! },
+      price: price === 'min' ? band.min : Math.round((band.min + band.max) / 2),
+    };
+  });
+}
+
+const THEMED_BOUNDS: Rect = { x: 240, y: 70, width: 480, height: 300 };
+
+/** A round-32 themed store: the standard shop shape, stocked from STORE_STOCK. */
+function themedStore(id: string, name: string): AuthoredStoreTemplate {
+  return {
+    id,
+    name,
+    bounds: { ...THEMED_BOUNDS },
+    resetPoint: { x: 480, y: 410 },
+    exit: {
+      id: `${id}-exit`,
+      label: `${name} door`,
+      bounds: { x: 432, y: 360, width: DOORWAY_WIDTH, height: WALL_THICKNESS },
+    },
+    sightZone: sightZone(THEMED_BOUNDS),
+    offers: shelve(THEMED_BOUNDS, STORE_STOCK[id] ?? []),
+  };
+}
+
 export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
   {
     id: 'mall-mart',
@@ -311,15 +357,12 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
       bounds: { x: 432, y: 360, width: DOORWAY_WIDTH, height: WALL_THICKNESS },
     },
     sightZone: sightZone({ x: 250, y: 70, width: 460, height: 300 }),
-    offers: [
-      { itemDefinitionId: 'receipt_wallet', position: { x: 340, y: 150 }, price: 6 },
-      { itemDefinitionId: 'fanny_pack', position: { x: 480, y: 150 }, price: 14 },
-      { itemDefinitionId: 'rc_car', position: { x: 620, y: 150 }, price: 20 },
-      // Was the janitor's own mop, which every shift already starts with (an M3 leftover).
-      { itemDefinitionId: 'bubble_bath', position: { x: 340, y: 290 }, price: 12 },
-      { itemDefinitionId: 'gel_pens', position: { x: 480, y: 290 }, price: 8 },
-      { itemDefinitionId: 'wide_nozzle', position: { x: 620, y: 290 }, price: 16 },
-    ],
+    // Round 32: the general store. A little of everything, always at the
+    // bottom of its price band, so it is worth a stop (the playtest skipped it).
+    offers: shelve({ x: 250, y: 70, width: 460, height: 300 }, [
+      'receipt_wallet', 'fanny_pack', 'rc_car', 'bubble_bath', 'gel_pens', 'wide_nozzle',
+      'dodgeball', 'duct_tape', 'yo_yo', 'ketchup_bottle', 'claw_hammer', 'water_balloons',
+    ], 'min'),
   },
   {
     id: 'cinema-snacks',
@@ -381,4 +424,11 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
       { itemDefinitionId: 'heavy_duty_spring', position: { x: 610, y: 290 }, price: 15 },
     ],
   },
+  themedStore('sports-locker', 'Sports Locker'),
+  themedStore('hardware-hut', 'Hardware Hut'),
+  themedStore('toy-box', 'Toy Box'),
+  themedStore('radio-shed', 'Radio Shed'),
+  themedStore('spiral-records', 'Spiral Records'),
+  themedStore('slice-station', 'Slice Station'),
+  themedStore('video-world', 'Video World'),
 ];

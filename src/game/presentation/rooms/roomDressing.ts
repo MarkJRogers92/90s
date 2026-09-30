@@ -367,7 +367,20 @@ const STORE_LOOKS: Readonly<Record<string, StoreLook>> = {
   'cinema-snacks': { facade: 'cinema', neon: NEON.red, subtitle: 'NOW SHOWING', floor: 'carpet', spill: 0xffc070, fixture: 'vending' },
   'arcade-annex': { facade: 'arcade', neon: NEON.cyan, subtitle: 'INSERT COIN', floor: 'carpet', spill: 0x9a7cff, fixture: 'arcadeCabinet' },
   'department-outlet': { facade: 'boutique', neon: NEON.pink, subtitle: 'FASHION FOR LESS', floor: 'carpet', spill: 0xff9ad8, fixture: 'clothingRack' },
+  // Round 32: the themed stores, dressed from the existing kit until they get PixelLab shopfronts.
+  'sports-locker': { facade: 'boutique', neon: NEON.green, subtitle: 'GAME ON', floor: 'linoleum', spill: 0xb8ffc8, fixture: 'gondola' },
+  'hardware-hut': { facade: 'electronics', neon: NEON.orange, subtitle: 'DO IT YOURSELF', floor: 'concrete', spill: 0xffc08a, fixture: 'gondola' },
+  'toy-box': { facade: 'arcade', neon: NEON.yellow, subtitle: 'KIDS RULE', floor: 'checker', spill: 0xfff09a, fixture: 'gondola' },
+  'radio-shed': { facade: 'electronics', neon: NEON.red, subtitle: "YOU'VE GOT QUESTIONS", floor: 'linoleum', spill: 0xff9a9a, fixture: 'vhsShelf' },
+  'spiral-records': { facade: 'music', neon: NEON.magenta, subtitle: 'MUSIC · MOVIES · MORE', floor: 'carpet', spill: 0xff9ae6, fixture: 'vhsShelf' },
+  'slice-station': { facade: 'pizza', neon: NEON.orange, subtitle: 'HOT N READY', floor: 'checker', spill: 0xffd08a, fixture: 'condiments' },
+  'video-world': { facade: 'video', neon: NEON.cyan, subtitle: 'BE KIND REWIND', floor: 'carpet', spill: 0xffd9a0, fixture: 'vhsShelf' },
 };
+
+/** Whether a store template has its own dressing (rather than Mall Mart's fallback). */
+export function hasStoreLook(templateId: string): boolean {
+  return templateId in STORE_LOOKS && templateId in INTERIOR_LOOKS;
+}
 
 function openingConcourse(room: WingRoomDefinition): DressingPlan {
   const facades = facadeRow([
@@ -513,6 +526,13 @@ const INTERIOR_LOOKS: Readonly<Record<string, InteriorLook>> = {
   'cinema-snacks': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['bench', 'bin', 'palm', 'drinkingFountain'], ambient: 0x5a3e4a },
   'arcade-annex': { wall: ['arcadeCabinet', 'clawMachine'], sides: 'arcadeCabinet', corners: ['kiddieRide', 'atm', 'clawMachine', 'bin'], ambient: 0x3a2e5a },
   'department-outlet': { wall: ['clothingRack'], sides: 'clothingRack', corners: ['bunny', 'palm', 'palm', 'directory'], ambient: 0x5e4a62 },
+  'sports-locker': { wall: ['gondola', 'clothingRack'], sides: 'clothingRack', corners: ['bin', 'palm', 'waterCooler', 'bench'], ambient: 0x3e5a4a },
+  'hardware-hut': { wall: ['gondola', 'crates'], sides: 'gondola', corners: ['floorBuffer', 'crates', 'wetFloor', 'janitorCart'], ambient: 0x5a4a3a },
+  'toy-box': { wall: ['clawMachine', 'gondola'], sides: 'gondola', corners: ['kiddieRide', 'bunny', 'gumballStand', 'kiddieRide'], ambient: 0x5a5a3a },
+  'radio-shed': { wall: ['vhsShelf', 'atm'], sides: 'gondola', corners: ['atm', 'payphone', 'bin', 'waterCooler'], ambient: 0x4a3a3e },
+  'spiral-records': { wall: ['vhsShelf'], sides: 'vhsShelf', corners: ['palm', 'photoBooth', 'bench', 'bin'], ambient: 0x4a2e52 },
+  'slice-station': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'trayReturn', 'trashBank', 'drinkingFountain'], ambient: 0x5a3e2e },
+  'video-world': { wall: ['vhsShelf'], sides: 'vhsShelf', corners: ['saleSign', 'bin', 'palm', 'directory'], ambient: 0x2e3e5a },
 };
 
 /** Draw size for a prop stood in a store: a little larger than out on the concourse. */

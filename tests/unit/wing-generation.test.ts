@@ -212,7 +212,8 @@ describe('seeded wing generation', () => {
   it('authors at least four complete store templates and two variants per combat role', () => {
     expect(STORE_TEMPLATES.length).toBeGreaterThanOrEqual(4);
     for (const template of STORE_TEMPLATES) {
-      expect(template.offers).toHaveLength(6);
+      // Six spots on the shelves; round 32's themed stores stock more than six things.
+      expect(template.offers.length).toBeGreaterThanOrEqual(6);
       for (const offer of template.offers) {
         expect(CATALOG_DEFINITION_IDS.has(offer.itemDefinitionId)).toBe(true);
         const band = AUTHORED_OFFER_BANDS[offer.itemDefinitionId];

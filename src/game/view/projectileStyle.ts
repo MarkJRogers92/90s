@@ -37,6 +37,28 @@ const BASE: Record<string, Pick<ProjectileStyle, 'shape' | 'color' | 'accent' | 
   paint_marker: { shape: 'dart', color: 0x6aff8a, accent: 0x1a5a2a, trail: 'ink', scale: 1.2 },
   foam_ball_blaster: { shape: 'ball', color: 0xffb040, accent: 0x3a6aff, trail: 'none', scale: 1.3 },
   slushie_cup: { shape: 'slush', color: 0xb06aff, accent: 0xff6ab0, trail: 'ice', scale: 1.3 },
+  // Round 32: the store roster's shooters.
+  tennis_ball_launcher: { shape: 'ball', color: 0xd8f040, accent: 0xf0f0f0, trail: 'none', scale: 1.2 },
+  dodgeball: { shape: 'ball', color: 0xe03a3a, accent: 0xa01a2a, trail: 'none', scale: 1.1 },
+  football: { shape: 'rocket', color: 0xff7a2a, accent: 0xf0f0f0, trail: 'none', scale: 1.2 },
+  nail_gun: { shape: 'dart', color: 0xc8d0dc, accent: 0x606870, trail: 'none', scale: 1.1 },
+  staple_gun: { shape: 'dart', color: 0xd8dce4, accent: 0x2a5ab0, trail: 'none', scale: 1.0 },
+  garden_hose: { shape: 'droplet', color: 0x5ad8ff, accent: 0xd8f6ff, trail: 'droplets', scale: 1.1 },
+  super_soaker_50: { shape: 'droplet', color: 0x3ad0ff, accent: 0xffd84a, trail: 'droplets', scale: 1.5 },
+  slingshot: { shape: 'ball', color: 0x9aa0a8, accent: 0x505058, trail: 'none', scale: 1.0 },
+  pog_slammer: { shape: 'confetti', color: 0xffd84a, accent: 0x3a3a8a, trail: 'none', scale: 1.1 },
+  water_balloons: { shape: 'ball', color: 0x4ac8ff, accent: 0xff6fa8, trail: 'droplets', scale: 1.2 },
+  laser_pointer: { shape: 'bolt', color: 0xff3a4a, accent: 0xffb0b0, trail: 'none', scale: 1.0 },
+  boombox: { shape: 'bubble', color: 0xa46bff, accent: 0x3ff0ff, trail: 'none', scale: 1.0 },
+  rc_blimp_remote: { shape: 'bolt', color: 0x6aff8a, accent: 0xd8ffd8, trail: 'none', scale: 1.0 },
+  camcorder: { shape: 'cloud', color: 0xfff6d0, accent: 0xff3fc8, trail: 'none', scale: 1.0 },
+  record_toss: { shape: 'ball', color: 0x202028, accent: 0xff6fa8, trail: 'none', scale: 1.2 },
+  cd_shuriken: { shape: 'ball', color: 0xc8e8ff, accent: 0xb06aff, trail: 'none', scale: 1.1 },
+  soda_gun: { shape: 'droplet', color: 0x8a4a2a, accent: 0xffe0b0, trail: 'droplets', scale: 1.1 },
+  pepperoni_launcher: { shape: 'ball', color: 0xb02a2a, accent: 0xffd84a, trail: 'none', scale: 1.2 },
+  ketchup_bottle: { shape: 'droplet', color: 0xd02020, accent: 0xff8080, trail: 'ink', scale: 1.1 },
+  vhs_tape: { shape: 'rocket', color: 0x202028, accent: 0xf0f0f0, trail: 'none', scale: 1.2 },
+  laserdisc: { shape: 'ball', color: 0xd8e8ff, accent: 0xffd84a, trail: 'none', scale: 1.4 },
 };
 
 const BOLT = { shape: 'bolt' as const, color: 0xf0e6d2, accent: 0x9ad8ff, trail: 'none' as const, scale: 1 };

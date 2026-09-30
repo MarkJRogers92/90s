@@ -27,6 +27,7 @@
  * apply at every depth, and whatever the base already did is kept.
  */
 import { ITEM_CATALOG } from '../items/catalog';
+import { STORE_ROSTER } from '../items/storeRoster';
 import type {
   ItemBaseAttack,
   ItemDefinition,
@@ -157,6 +158,31 @@ const SIGNATURES: Readonly<Record<string, string>> = {
   'plasma_globe+slushie_cup': 'Electric Slush',
   'slushie_cup+wide_nozzle': 'Brain Freeze',
   'box_cutter+broken_broom_handle': 'Box Broom',
+  // Round 32: the store roster's named combinations.
+  'aluminum_bat+tennis_ball_launcher': 'Home Run Derby',
+  'dodgeball+slingshot': 'Dodge This',
+  'car_battery+electric_guitar': 'Power Chord',
+  'boombox+electric_guitar': 'Wall of Sound',
+  'nail_gun+pipe_wrench': "Plumber's Revenge",
+  'laser_pointer+plasma_globe': 'Laser Light Show',
+  'pizza_cutter+pizza_peel': 'Pizza Party',
+  'pump_soaker+super_soaker_50': 'Super Soaker 100',
+  'walkman+yo_yo': 'Walk the Dog',
+  'boombox+drumsticks': 'Drum Solo',
+  'bubble_bath+leaf_blower': 'Bubble Storm',
+  'duct_tape+janitor_mop': 'MacGyver Mop',
+  'dodgeball+golf_club': 'Fore!',
+  'boombox+mic_stand': 'Feedback Loop',
+  'foam_ball_blaster+pog_slammer': 'Slammer Jammer',
+  'cheese_pump+dough_roller': 'Deep Dish',
+  'mixtape+record_toss': 'Greatest Hits',
+  'hockey_stick+slime_tub': 'Slime Time',
+  'garden_hose+jumper_cables': 'Live Hose',
+  'foam_sword+keytar': 'Rock Opera',
+  'popcorn_bucket+vhs_tape': 'Movie Night',
+  'fog_machine+super_soaker_50': 'Smoke Show',
+  'claw_hammer+nail_gun': 'Handyman Special',
+  'soda_gun+slushie_cup': 'Free Refills',
 };
 
 const NOUNS: Readonly<Record<string, string>> = {
@@ -166,6 +192,7 @@ const NOUNS: Readonly<Record<string, string>> = {
   vhs_rewinder: 'Rewinder', extension_cord: 'Cord', gel_pens: 'Pens', wide_nozzle: 'Nozzle',
   receipt_wallet: 'Wallet', fanny_pack: 'Fanny Pack', grease_gun: 'Grease Gun', anti_static_strap: 'Strap',
   car_battery: 'Battery', needle_nozzle: 'Needle', heavy_duty_spring: 'Spring',
+  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, entry.noun])),
 };
 
 const ADJECTIVES: Readonly<Record<string, string>> = {
@@ -175,6 +202,7 @@ const ADJECTIVES: Readonly<Record<string, string>> = {
   vhs_rewinder: 'Rewinding', extension_cord: 'Wired', gel_pens: 'Sticky', wide_nozzle: 'Wide-Bore',
   receipt_wallet: 'Discount', fanny_pack: 'Smuggling', grease_gun: 'Greasy', anti_static_strap: 'Grounded',
   car_battery: 'Supercharged', needle_nozzle: 'Needle', heavy_duty_spring: 'Spring-Loaded',
+  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, entry.adjective])),
 };
 
 function pairKey(a: string, b: string): string {
