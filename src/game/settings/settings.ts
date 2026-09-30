@@ -39,6 +39,9 @@ export const flashAllowed = (settings: GameSettings): boolean => settings.flashe
 /** Multiplier for full-screen red washes (hurt vignette, heartbeat pulse). */
 export const washScale = (settings: GameSettings): number => (settings.flashes === 'full' ? 1 : 0.45);
 
+/** The tick that noise effects (Radio Shed snow) draw from: frozen when flashes are reduced. */
+export const flickerTick = (settings: GameSettings, tick: number): number => (settings.flashes === 'full' ? tick : 0);
+
 const volume = (value: unknown, fallback: number): number =>
   typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : fallback;
 

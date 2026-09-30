@@ -1,5 +1,16 @@
 # Test evidence
 
+## 2026-09-30 — round 37: reduced flashing
+
+- New `tests/unit/reduced-flashing.test.ts` (4), red first (missing exports):
+  `alarmCue` steady flag, `flickerTick`, `revealSparkCount`,
+  `stepBlackoutMix`. `npx tsc --noEmit` clean; `npx vitest run` 1020 passed.
+- Browser (throwaway spec, deleted): with `flashes: reduced, shake: off` saved,
+  the workbench fusion (Storm Soaker reveal) and the Radio Shed store fixture
+  load and run with no page errors. Screens `artifacts/neon-overhaul/round37-*.png`.
+  Not eyeballed frame by frame: the alarm hold and blackout fade (covered by
+  unit tests only).
+
 ## 2026-09-30 — round 36: sell and drop
 
 - `tests/unit/sell-drop.test.ts` (from b10067a, written red first).
