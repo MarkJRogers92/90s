@@ -1,5 +1,5 @@
 import { rootItemId } from '../../sim/fusion/hybrid';
-import { STORE_ROSTER } from '../../sim/items/storeRoster';
+import { ALL_ROSTER } from '../../sim/items/storeRoster';
 export interface PresentationAsset {
   key: string;
   url: string;
@@ -172,7 +172,7 @@ export const ITEM_ICON_FILES: Readonly<Record<string, string>> = {
   needle_nozzle: 'needle-nozzle',
   heavy_duty_spring: 'heavy-duty-spring',
   // Round 32: placeholder icons until the PixelLab pass (see docs/neon-overhaul).
-  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, entry.definition.id.replace(/_/g, '-')])),
+  ...Object.fromEntries(ALL_ROSTER.map((entry) => [entry.definition.id, entry.definition.id.replace(/_/g, '-')])),
 };
 
 export function itemIconKey(itemDefinitionId: string): string | null {

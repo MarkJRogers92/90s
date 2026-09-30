@@ -8,7 +8,7 @@
 import type { Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
 import type { WingRoomRole } from './types';
-import { STORE_ROSTER, STORE_STOCK } from '../items/storeRoster';
+import { ALL_ROSTER, STORE_STOCK } from '../items/storeRoster';
 
 export const ROOM_WIDTH = 960;
 export const ROOM_HEIGHT = 480;
@@ -265,7 +265,7 @@ export const AUTHORED_OFFER_BANDS: Readonly<Record<string, AuthoredPriceBand>> =
   car_battery: { min: 20, max: 30 },
   needle_nozzle: { min: 12, max: 22 },
   heavy_duty_spring: { min: 10, max: 20 },
-  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, { ...entry.band }])),
+  ...Object.fromEntries(ALL_ROSTER.map((entry) => [entry.definition.id, { ...entry.band }])),
 };
 
 const DEGREES_TO_RADIANS = Math.PI / 180;

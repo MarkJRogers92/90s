@@ -112,8 +112,10 @@ export class BenchCard {
     return slot + 1;
   }
 
-  private tileWell(slot: number, tile: BenchTile, x: number, y: number, now: number): number {
+  private tileWell(slot: number, tile: BenchTile, x: number, y: number, now: number, TILE: number): number {
     const g = this.g;
+    const small = TILE < 64;
+    const locked = !tile.fusable;
     const edge = tile.pick === 'first' ? CYAN : tile.pick === 'second' ? YELLOW : tile.fused ? 0x3a3450 : 0x6a5a8a;
     const hot = this.hovered !== null && typeof this.hovered === 'object' && this.hovered.pick === tile.instanceId;
     g.fillStyle(tile.pick ? edge : 0x140d22, tile.pick ? 0.22 : 1).fillRect(x, y, TILE, TILE);
@@ -123,15 +125,22 @@ export class BenchCard {
     if (usable) {
       const icon = this.image(slot++, usable, x + TILE / 2, y + TILE / 2 + 2);
       const bob = tile.pick ? Math.sin(now / 180) * 1.5 : 0;
-      icon.setScale(40 / (Math.max(icon.width, icon.height) || 1)).setY(Math.round(y + TILE / 2 + 2 + bob)).setAlpha(tile.fused ? 0.45 : 1);
+      icon.setScale((TILE - 24) / (Math.max(icon.width, icon.height) || 1)).setY(Math.round(y + TILE / 2 + 2 + bob)).setAlpha(locked ? 0.45 : 1);
     }
-    // A key cap in the corner: the number key that picks this tile.
-    g.fillStyle(0xf4ecff, 1).fillRect(x + 3, y + 3, 16, 16);
-    this.image(slot++, ensurePixelLabel(this.scene, String(tile.key), '#0b0714', 2, '#f4ecff').key, x + 11, y + 11);
-    if (tile.fused) this.label(slot++, 'FUSED', '#9a8fb4', x + TILE / 2, y + TILE - 8, 1);
+    // A key cap in the corner: the number key that picks this tile (1-9 only).
+    if (tile.key <= 9) {
+      g.fillStyle(0xf4ecff, 1).fillRect(x + 3, y + 3, 16, 16);
+      this.image(slot++, ensurePixelLabel(this.scene, String(tile.key), '#0b0714', 2, '#f4ecff').key, x + 11, y + 11);
+    }
+    // A fusion says how many items it holds (four is the limit).
+    if (tile.fused) this.label(slot++, `x${tile.parts}`, tile.parts >= 4 ? '#ffd84a' : '#6aff8a', x + TILE - 10, y + TILE - 8, 1);
     if (tile.stolen && !tile.fused) this.label(slot++, 'HOT', '#ff5a6a', x + TILE - 12, y + 9, 1);
-    const name = tile.name.length > 12 ? `${tile.name.slice(0, 11)}.` : tile.name;
-    this.label(slot++, name, tile.pick ? '#f4ecff' : '#9a8fb4', x + TILE / 2, y + TILE + 10, 1);
+    // Small tiles only name the picked ones, so the row stays readable.
+    if (!small || tile.pick) {
+      const limit = small ? 9 : 12;
+      const name = tile.name.length > limit ? `${tile.name.slice(0, limit - 1)}.` : tile.name;
+      this.label(slot++, name, tile.pick ? '#f4ecff' : '#9a8fb4', x + TILE / 2, y + TILE + 10, 1);
+    }
     this.targets.push({ x, y, w: TILE, h: TILE, action: { pick: tile.instanceId } });
     return slot;
   }
@@ -155,11 +164,13 @@ export class BenchCard {
     this.label(slot++, 'VOID THE WARRANTY - FUSE ANY TWO ITEMS', '#9a8fb4', W / 2, top + 64, 1);
 
     // Your items: numbered tiles, picked ones lit cyan (first) and yellow (second).
-    const gap = 10;
-    const rowW = model.tiles.length * TILE + Math.max(0, model.tiles.length - 1) * gap;
+    // More than nine things: smaller tiles, so up to sixteen fit on one row.
+    const tileSize = model.tiles.length > 9 ? 40 : TILE;
+    const gap = model.tiles.length > 9 ? 6 : 10;
+    const rowW = model.tiles.length * tileSize + Math.max(0, model.tiles.length - 1) * gap;
     const tilesY = top + 84;
     model.tiles.forEach((tile, index) => {
-      slot = this.tileWell(slot, tile, W / 2 - rowW / 2 + index * (TILE + gap), tilesY, now);
+      slot = this.tileWell(slot, tile, W / 2 - rowW / 2 + index * (tileSize + gap), tilesY, now, tileSize);
     });
 
     // The pair and what it makes.

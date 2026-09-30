@@ -73,7 +73,7 @@ function isValidLeaf(node: FusionInventoryNode): node is InventoryLeaf {
   return (
     isNonEmptyString(node.instanceId) &&
     DEFINITIONS_BY_ID.has(node.itemDefinitionId) &&
-    (node.acquisitionKind === 'purchased' || node.acquisitionKind === 'stolen') &&
+    (node.acquisitionKind === 'purchased' || node.acquisitionKind === 'stolen' || node.acquisitionKind === 'found') &&
     typeof node.sourceLocationId === 'string' &&
     typeof node.sourceStockId === 'string' &&
     isNonNegativeInteger(node.acquisitionTick)

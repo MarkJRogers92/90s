@@ -18,8 +18,12 @@ import type { MvpRunState } from './types';
 
 export type MallTokenPickup = {
   readonly id: string;
-  /** A pretzel heals instead of paying. Absent means a token. */
-  readonly kind?: 'token' | 'snack';
+  /** A pretzel heals instead of paying; an item is a drop (drops.ts). Absent means a token. */
+  readonly kind?: 'token' | 'snack' | 'item';
+  /** What a dropped item is. */
+  readonly itemDefinitionId?: string;
+  /** A rare drop glints. */
+  readonly rare?: boolean;
   readonly x: number;
   readonly y: number;
   readonly value: number;
@@ -88,6 +92,7 @@ function vacuumTokens(state: MvpRunState): void {
   const hungry = player.health < runMaxHealth(state);
   state.room.tokens = state.room.tokens.map((token) => {
     if (token.kind === 'snack' && !hungry) return token;
+    if (token.kind === 'item') return token;
     const dx = player.x - token.x;
     const dy = player.y - token.y;
     const distance = Math.hypot(dx, dy);
@@ -105,6 +110,7 @@ export function collectTokens(state: MvpRunState): void {
   let collected = 0;
   let healed = 0;
   state.room.tokens = state.room.tokens.filter((token) => {
+    if (token.kind === 'item') return true;
     if (Math.hypot(token.x - player.x, token.y - player.y) > TOKEN_PICKUP_RADIUS) return true;
     if (token.kind === 'snack') {
       // A pretzel waits on the floor until the janitor actually needs it.

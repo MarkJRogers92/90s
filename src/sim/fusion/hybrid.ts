@@ -27,7 +27,7 @@
  * apply at every depth, and whatever the base already did is kept.
  */
 import { ITEM_CATALOG } from '../items/catalog';
-import { STORE_ROSTER } from '../items/storeRoster';
+import { ALL_ROSTER } from '../items/storeRoster';
 import type {
   ItemBaseAttack,
   ItemDefinition,
@@ -192,7 +192,7 @@ const NOUNS: Readonly<Record<string, string>> = {
   vhs_rewinder: 'Rewinder', extension_cord: 'Cord', gel_pens: 'Pens', wide_nozzle: 'Nozzle',
   receipt_wallet: 'Wallet', fanny_pack: 'Fanny Pack', grease_gun: 'Grease Gun', anti_static_strap: 'Strap',
   car_battery: 'Battery', needle_nozzle: 'Needle', heavy_duty_spring: 'Spring',
-  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, entry.noun])),
+  ...Object.fromEntries(ALL_ROSTER.map((entry) => [entry.definition.id, entry.noun])),
 };
 
 const ADJECTIVES: Readonly<Record<string, string>> = {
@@ -202,7 +202,7 @@ const ADJECTIVES: Readonly<Record<string, string>> = {
   vhs_rewinder: 'Rewinding', extension_cord: 'Wired', gel_pens: 'Sticky', wide_nozzle: 'Wide-Bore',
   receipt_wallet: 'Discount', fanny_pack: 'Smuggling', grease_gun: 'Greasy', anti_static_strap: 'Grounded',
   car_battery: 'Supercharged', needle_nozzle: 'Needle', heavy_duty_spring: 'Spring-Loaded',
-  ...Object.fromEntries(STORE_ROSTER.map((entry) => [entry.definition.id, entry.adjective])),
+  ...Object.fromEntries(ALL_ROSTER.map((entry) => [entry.definition.id, entry.adjective])),
 };
 
 function pairKey(a: string, b: string): string {

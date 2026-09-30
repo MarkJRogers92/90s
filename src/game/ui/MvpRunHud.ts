@@ -378,7 +378,7 @@ export class MvpRunHud {
     let stolen = 0;
     for (const node of state.inventory.inventory) {
       if (node.kind === 'leaf') {
-        if (node.acquisitionKind === 'purchased') {
+        if (node.acquisitionKind !== 'stolen') {
           purchased += 1;
         } else {
           stolen += 1;

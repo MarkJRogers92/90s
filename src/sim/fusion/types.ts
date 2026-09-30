@@ -5,7 +5,8 @@
  * one-level composites. Gameplay rules live here; Phaser only presents them.
  */
 
-export type FusionAcquisitionKind = 'purchased' | 'stolen';
+/** `found`: dropped by an enemy or a boss (round 32); clean, like a purchase. */
+export type FusionAcquisitionKind = 'purchased' | 'stolen' | 'found';
 
 export type InventoryLeaf = {
   readonly kind: 'leaf';

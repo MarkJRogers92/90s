@@ -1761,11 +1761,23 @@ export class MvpRunView {
       live.add(token.id);
       let sprite = this.tokenSprites.get(token.id);
       const snack = token.kind === 'snack';
+      // Round 32: a dropped item shows as itself, bobbing in a glow (gold for a rare).
+      const itemKey = token.kind === 'item' && token.itemDefinitionId ? itemIconKey(token.itemDefinitionId) : null;
+      const itemTexture = itemKey ? usableTextureKey(this.scene.textures, itemKey) : null;
       if (!sprite) {
-        sprite = this.scene.add.image(token.x, token.y, snack ? FX_TEXTURES.pretzel : FX_TEXTURES.token).setDepth(presentationDepth('actor', token.y - 1));
+        sprite = this.scene.add.image(token.x, token.y, itemTexture ?? (snack ? FX_TEXTURES.pretzel : FX_TEXTURES.token)).setDepth(presentationDepth('actor', token.y - 1));
         this.tokenSprites.set(token.id, sprite);
       }
       const age = state.tick - token.droppedTick;
+      if (token.kind === 'item') {
+        const hop = age < 20 ? Math.sin((age / 20) * Math.PI) * 22 : 0;
+        const bob = Math.sin((state.tick + token.x) / 12) * 2;
+        const pulse = token.rare ? 1 + 0.08 * Math.sin(state.tick / 5) : 1;
+        sprite.setPosition(Math.round(token.x), Math.round(token.y - 12 - hop + bob)).setScale((token.rare ? 1.25 : 1) * pulse);
+        this.contactShadow(`token:${token.id}`, token.x, token.y, 0.5);
+        this.openingConcourse?.addLight({ x: token.x, y: token.y - 10, radius: token.rare ? 64 : 40, color: token.rare ? 0xffd84a : 0x6aff8a, intensity: token.rare ? 1 : 0.7 });
+        continue;
+      }
       if (snack) {
         // A pretzel sits still and glows warm; it pulses when the janitor is hurt.
         const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 18 : 0;

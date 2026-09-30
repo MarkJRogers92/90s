@@ -2078,5 +2078,105 @@
       32
     ],
     "sha256": "e2d5447c02e42250c2d9ddf68900454a1ab2d3683ded6ff0862a0f976fbc8d9c"
+  },
+  {
+    "path": "public/assets/neon/items/golden-mop.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1dbbc19aea552a6c3aa15ae8540f1424612c1843e46310cac6dd6f2e5c02b6b6"
+  },
+  {
+    "path": "public/assets/neon/items/power-glove.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "67d50136e19588a5dc0c6288ab8397250eb0390095c06a91923c4eb816c5b79b"
+  },
+  {
+    "path": "public/assets/neon/items/super-soaker-cps.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "24e76d1db8d41e2f978fe025d94867d0882ab6337945429ff4f92987264d31a1"
+  },
+  {
+    "path": "public/assets/neon/items/game-brick.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f3436399b49b43d767db1ec001cb2fccf6497344b990062b61e2c85f85db8a1f"
+  },
+  {
+    "path": "public/assets/neon/items/laser-tag-rifle.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "25062dc424d1c693194dea3c6d7fe67794eca6ab9adf3fa47778172b0993e64a"
+  },
+  {
+    "path": "public/assets/neon/items/virtual-pet.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "11264ed6454b3b714b84b9bce5f8e5eea476d91b34c3bb85597bca4f279778fb"
+  },
+  {
+    "path": "public/assets/neon/items/trapper-keeper.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "bbddaebd93c65dc1871dd418895fccf8b9909df6a77d90124af9afc5b36faf96"
+  },
+  {
+    "path": "public/assets/neon/items/moon-shoes.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "8459c48fff012a780ba6553681d6d4213f2ded8e45d2f8930b0cc2a314d925bc"
+  },
+  {
+    "path": "public/assets/neon/items/pager.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "3695edd3cd087d2126d1ca313f43dbe5dbaefa1ef98e6a50fbc40f349c15d40e"
+  },
+  {
+    "path": "public/assets/neon/items/lightsaber-toy.png",
+    "source": "scripts/placeholder-icons.mjs",
+    "generator": "PLACEHOLDER (blade silhouette): replace with PixelLab",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6b071772b22072e9e488667f1741b229a6f12cb8bd3ebc26fdfc469ec879ba56"
   }
 ]

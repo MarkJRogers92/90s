@@ -6,7 +6,7 @@
  * Pure, derived from the simulation's own workbench and proposal, so the card
  * can never promise something the fusion will not do.
  */
-import { compositeLeaves, isCleanPart } from '../../sim/fusion/inventory';
+import { compositeLeaves, fusionPartCount, isCleanPart } from '../../sim/fusion/inventory';
 import { shortItemName } from '../../sim/fusion/hybrid';
 import { nodeDefinitionId } from '../../sim/fusion/inventory';
 import { itemDefinitionName } from '../../sim/run/economy';
@@ -22,6 +22,10 @@ export type BenchTile = {
   readonly iconDefinitionId: string;
   readonly name: string;
   readonly fused: boolean;
+  /** How many items it holds: 1, or 2-4 for a fusion (round 32). */
+  readonly parts: number;
+  /** False only for an Emitter Mount, which cannot go back on the bench. */
+  readonly fusable: boolean;
   readonly stolen: boolean;
   readonly pick: 'first' | 'second' | null;
 };
@@ -47,8 +51,8 @@ export type BenchCardModel = {
   readonly hint: string;
 };
 
-/** The most tiles the card shows (the number keys 1-9). */
-export const BENCH_TILE_LIMIT = 9;
+/** The most tiles the card shows; the number keys pick the first nine, a click any. */
+export const BENCH_TILE_LIMIT = 16;
 
 function ingredient(itemDefinitionId: string, provenance: string): BenchIngredient {
   return { itemDefinitionId, name: itemDefinitionName(itemDefinitionId).toUpperCase(), provenance: provenance.toUpperCase() };
@@ -69,6 +73,8 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
       iconDefinitionId: leaf.itemDefinitionId,
       name: shortItemName(nodeDefinitionId(node)).toUpperCase(),
       fused: node.kind === 'composite',
+      parts: fusionPartCount(node),
+      fusable: node.kind === 'leaf' || node.recipeId === 'hybrid',
       stolen: !isCleanPart(node),
       pick: node.instanceId === firstId ? 'first' : node.instanceId === secondId ? 'second' : null,
     };

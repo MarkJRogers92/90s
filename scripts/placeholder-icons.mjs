@@ -380,6 +380,17 @@ const ICONS = {
   rewind_button: ['gadget', 0x303030, 0xffd84a],
   laserdisc: ['disc', 0xd8e8ff, 0xffd84a],
   late_fee_stamp: ['hammer', 0x8a5a2a, 0xe03a3a],
+  // Rare finds (drops only).
+  golden_mop: ['stick', 0xffd84a, 0xfff0a0],
+  power_glove: ['gadget', 0x505058, 0xe03a3a],
+  super_soaker_cps: ['blaster', 0xff8a1a, 0x6aff4a],
+  game_brick: ['gadget', 0xb8b8a8, 0x6a8a3a],
+  laser_tag_rifle: ['blaster', 0x202028, 0xff3a4a],
+  virtual_pet: ['ball', 0xff6fa8, 0x3ff0ff],
+  trapper_keeper: ['box', 0xb06aff, 0x3ff0ff],
+  moon_shoes: ['box', 0x3a6aff, 0xd8dce4],
+  pager: ['gadget', 0x202028, 0x6aff8a],
+  lightsaber_toy: ['blade', 0x3ff0ff, 0x9aa0a8],
 };
 
 function lighten(color, amount) {

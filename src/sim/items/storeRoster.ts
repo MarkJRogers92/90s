@@ -205,6 +205,26 @@ export const STORE_ROSTER: readonly RosterEntry[] = [
 ];
 
 /**
+ * Rare finds: never on a shelf. Enemies drop them once in a while and every
+ * boss hands one over. Stronger than anything in a store, and very 90s.
+ */
+export const RARE_ROSTER: readonly RosterEntry[] = [
+  melee({ id: 'golden_mop', name: 'Golden Mop', noun: 'Golden Mop', adjective: 'Golden', blurb: 'RARE: THE EMPLOYEE OF THE YEAR SWING', band: [40, 50], damage: 9, cooldown: 22, range: 86, degrees: 50 }),
+  melee({ id: 'power_glove', name: 'Power Glove', noun: 'Power Glove', adjective: "It's-So-Bad", blurb: 'RARE: LIGHTNING-FAST HEAVY PUNCHES', band: [40, 50], damage: 6, cooldown: 11, range: 62, degrees: 45 }),
+  shooter({ id: 'super_soaker_cps', name: 'Super Soaker CPS 2000', noun: 'CPS 2000', adjective: 'Pressurized', blurb: 'RARE: THREE HUGE SOAKING BLASTS', band: [40, 50], kind: 'water', prongs: [-8, 0, 8], damage: 4, speed: 4.4, radius: 8, lifetime: 90, cooldown: 20, wetTicks: 300 }),
+  shooter({ id: 'game_brick', name: 'Game Brick', noun: 'Brick', adjective: 'Indestructible', blurb: 'RARE: A HANDHELD THAT HITS LIKE A BRICK', band: [40, 50], kind: 'physical', prongs: [0], damage: 8, speed: 4.6, radius: 7, lifetime: 70, cooldown: 36 }),
+  shooter({ id: 'laser_tag_rifle', name: 'Laser Tag Rifle', noun: 'Laser Rifle', adjective: 'Tagged', blurb: 'RARE: FAST TWIN LASERS', band: [40, 50], kind: 'physical', prongs: [-3, 3], damage: 3, speed: 8.5, radius: 3, lifetime: 50, cooldown: 10 }),
+  modifier({ id: 'virtual_pet', name: 'Virtual Pet', noun: 'Virtual Pet', adjective: 'Hungry', blurb: 'RARE: WET ENEMIES CHAIN LIGHTNING THREE TIMES', band: [40, 50], effect: { kind: 'conductive_reaction', stage: 'reaction', priority: 0, sourceItemId: 'virtual_pet', label: 'conductive chain (three starts per root, five additional Wet targets)', chainStartsPerRoot: 3, maxAdditionalTargets: 5, baseRange: 190, visitsEachTargetOnce: true } }),
+  modifier({ id: 'trapper_keeper', name: 'Trapper Keeper', noun: 'Trapper Keeper', adjective: 'Velcro', blurb: 'RARE: HITS GLUE ENEMIES IN PLACE', band: [40, 50], effect: sticky('trapper_keeper', 240, 0.4, 0.3) }),
+  modifier({ id: 'moon_shoes', name: 'Moon Shoes', noun: 'Moon Shoes', adjective: 'Lunar', blurb: 'RARE: BIGGER AND FASTER SHOTS', band: [40, 50], effect: geometry('moon_shoes', 5, 1.3) }),
+  modifier({ id: 'pager', name: 'Two-Way Pager', noun: 'Pager', adjective: 'Paged', blurb: 'RARE: SHOTS COME BACK, BIGGER', band: [40, 50], effect: { kind: 'trajectory_replay', stage: 'trajectory', priority: 0, sourceItemId: 'pager', label: 'one return pass (activates once per root)', returnPasses: 1, activatesOncePerRoot: true } }),
+  melee({ id: 'lightsaber_toy', name: 'Light-Up Laser Sword', noun: 'Laser Sword', adjective: 'Humming', blurb: 'RARE: LONG GLOWING SLASH', band: [40, 50], damage: 8, cooldown: 26, range: 96, degrees: 40 }),
+];
+
+/** Every round-32 entry, sold or dropped. */
+export const ALL_ROSTER: readonly RosterEntry[] = [...STORE_ROSTER, ...RARE_ROSTER];
+
+/**
  * Who sells what, by store template id. The template list in
  * wing/templates.ts lays these out on shelves and prices them in band.
  */

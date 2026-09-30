@@ -15,7 +15,7 @@ import type {
   TrajectoryReplayEffect,
 } from './types';
 import { freezeDeep } from './types';
-import { STORE_ROSTER } from './storeRoster';
+import { RARE_ROSTER, STORE_ROSTER } from './storeRoster';
 
 /** Wet and Sticky durations are authored content, identical for every source. */
 export const WET_TICKS = 180;
@@ -495,6 +495,8 @@ export const ITEM_CATALOG: readonly ItemDefinition[] = freezeDeep([
   } satisfies ItemDefinition,
   // Round 32: the store-themed roster, appended so the frozen subsets below never change.
   ...STORE_ROSTER.map((entry) => entry.definition),
+  // Rare finds: only ever dropped (run/drops.ts), never sold.
+  ...RARE_ROSTER.map((entry) => entry.definition),
 ]);
 
 /**
