@@ -63,6 +63,7 @@ import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
 import { layLow, wantedStars } from './wanted';
 import { updateStalker } from './stalker';
 import { nearArcadeCabinet, playArcadeCabinet, updateStoreTwist } from './storeTwists';
+import { dropRunWeapon } from './resale';
 import { activeStore, checkStoreEntrance, enterStore, leaveStore, roomStores, storeEntranceNear } from './storeInterior';
 import type {
   MvpCommandResult,
@@ -542,6 +543,8 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     selectRunWeaponSlot(state, input.selectSlot);
   } else if (input.cycleWeapon !== undefined && input.cycleWeapon !== 0) {
     cycleRunWeapon(state, input.cycleWeapon);
+  } else if (input.drop === true) {
+    dropRunWeapon(state);
   }
 
   // 3. Carrier presence follows the inventory, so a purchase in stage 2 brings

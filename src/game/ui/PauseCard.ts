@@ -11,7 +11,7 @@ const DEPTH = 20_550;
 const W = 960;
 const H = 600;
 const CARD_W = 420;
-const CARD_H = 358;
+const CARD_H = 386;
 const CARD_X = (W - CARD_W) / 2;
 const CARD_Y = (H - CARD_H) / 2;
 
@@ -21,6 +21,7 @@ export const PAUSE_CONTROLS: ReadonlyArray<readonly [string, string]> = [
   ['SPACE', 'DASH'],
   ['E / F', 'BUY / STEAL'],
   ['1-9 Q', 'SWITCH WEAPON'],
+  ['X', 'DROP WEAPON'],
   ['M / N', 'SOUND / MUSIC'],
   ['O', 'SETTINGS'],
 ];

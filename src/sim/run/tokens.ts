@@ -15,6 +15,7 @@ import { publishRunFeedback } from './economy';
 import { ELITE_SNACK_CHANCE, ELITE_TOKEN_MULTIPLIER, SNACK_CHANCE, luck } from './luck';
 import { runMaxHealth, tokenMagnetReach } from './perks';
 import type { MvpRunState } from './types';
+import type { FusionInventoryNode } from '../fusion/types';
 
 export type MallTokenPickup = {
   readonly id: string;
@@ -24,6 +25,10 @@ export type MallTokenPickup = {
   readonly itemDefinitionId?: string;
   /** A rare drop glints. */
   readonly rare?: boolean;
+  /** Round 36: an item the janitor dropped, exactly as it was held (provenance and fusion intact). */
+  readonly node?: FusionInventoryNode;
+  /** Round 36: a dropped item cannot be picked back up before this tick. */
+  readonly lockedUntilTick?: number;
   readonly x: number;
   readonly y: number;
   readonly value: number;

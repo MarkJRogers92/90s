@@ -66,6 +66,8 @@ export type MvpInputFrame = {
   cycleWeapon?: number;
   /** One-shot: dash (Space or Shift). */
   dash?: boolean;
+  /** One-shot (round 36): drop the held weapon (X). */
+  drop?: boolean;
 };
 
 /**

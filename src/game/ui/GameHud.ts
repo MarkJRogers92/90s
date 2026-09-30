@@ -670,6 +670,7 @@ export class GameHud {
       ['E', 'BUY / USE'],
       ['F', 'STEAL'],
       ['1-9 Q', 'SWITCH WEAPON'],
+      ['X', 'DROP / SELL'],
     ];
     // Right side: the janitor spawns on the west, so the card never covers them.
     const x = SCREEN_W - 320;

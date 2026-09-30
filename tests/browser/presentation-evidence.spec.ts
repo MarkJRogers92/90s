@@ -286,6 +286,9 @@ test('ten restart cycles keep one opening view, stable listeners, and one ambien
   await moveUntil(page, 'w', (state) => state.player.y < 50);
   await moveUntil(page, 'd', (state) => state.player.x > 850);
   await moveUntil(page, 's', (state) => state.player.y > 220);
+  // Under a loaded gate the held S overshoots the 96px east door; re-centre on
+  // it the way enterFirstCombat does (this is why the test flaked in parallel).
+  await nudgePlayerY(page, 240);
   await moveUntil(page, 'd', (state) => state.roomId === 'storefront_a');
   // Every room now owns a dressed mall view; leaving the opening replaces it.
   expect((await snapshot(page)).presentation?.themeId).not.toBe('opening_concourse');
