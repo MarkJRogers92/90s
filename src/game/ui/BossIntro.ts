@@ -36,6 +36,8 @@ const PORTRAIT_SHEETS: Readonly<Record<BossKind, string>> = {
   lp_manager: ENEMY_TEXTURE_KEYS.lpManagerIdle,
   manager: ENEMY_TEXTURE_KEYS.managerIdle,
   owner: ENEMY_TEXTURE_KEYS.ownerIdle,
+  // TODO(round 37 art): the Developer's own PixelLab sheet.
+  developer: ENEMY_TEXTURE_KEYS.ownerIdle,
 };
 
 export class BossIntro {

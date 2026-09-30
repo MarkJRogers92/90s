@@ -7,6 +7,7 @@ import {
 } from '../core/geometry';
 import { moveCircle } from './movement';
 import { playerDashing } from './dash';
+import { landTar } from './roofer';
 
 export const BOSS_MAX_HEALTH = 90;
 export const BOSS_RADIUS = 22;
@@ -43,7 +44,7 @@ export const VOLLEY_ANGLE_OFFSETS_DEGREES = [-30, -15, 0, 15, 30] as const;
  * the Mall Manager on the upper floor is tougher, reaches further, volleys
  * wider from its first phase, and calls in Bargain Hunters instead of Hangers.
  */
-export type BossKind = 'lp_manager' | 'manager' | 'owner';
+export type BossKind = 'lp_manager' | 'manager' | 'owner' | 'developer';
 
 export type BossConfig = {
   readonly maxHealth: number;
@@ -75,6 +76,17 @@ export type BossConfig = {
   };
   /** How many summons a phase-two call brings (0 or absent: none). */
   readonly summonCountPhase2?: number;
+  /**
+   * The Developer's tar barrage: from phase two, every other attack throws
+   * buckets instead of slamming. One ring locks on the janitor and the rest
+   * circle it at `spread`; they all land `lobTicks` later as a Roofer's do.
+   */
+  readonly tarBarrage?: {
+    readonly countPhase2: number;
+    readonly countPhase3: number;
+    readonly spread: number;
+    readonly lobTicks: number;
+  };
 };
 
 export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
@@ -130,10 +142,30 @@ export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
     summonCountPhase2: 1,
     charge: { speedPerTick: 9.5, ticks: 36, damage: 2, stunTicks: 100, shockwaveTrays: 10 },
   },
+  // Floor 4: the man who bought the dead mall to knock it down, on the helipad.
+  developer: {
+    maxHealth: 240,
+    radius: 26,
+    pursueSpeedPerTick: 1.0,
+    slamTelegraphTicks: 34,
+    slamReach: 68,
+    slamDamage: 2,
+    slamRecoverTicks: 82,
+    slamRecoverTicksPhase3: 54,
+    // Rolled-up blueprints: a tighter fan than the Owner's trays.
+    volleyAngles: [-30, -15, 0, 15, 30],
+    volleySpeedPerTick: 2.8,
+    volleyCadence: [160, 120, 90],
+    summonKind: 'roofer',
+    summonHealth: 20,
+    summonRadius: 15,
+    summonCountPhase2: 1,
+    tarBarrage: { countPhase2: 3, countPhase3: 5, spread: 72, lobTicks: 60 },
+  },
 };
 
 export function isBossKind(kind: EnemyKind): kind is BossKind {
-  return kind === 'lp_manager' || kind === 'manager' || kind === 'owner';
+  return kind === 'lp_manager' || kind === 'manager' || kind === 'owner' || kind === 'developer';
 }
 
 export function isBoss(enemy: Pick<EnemyState, 'kind'>): boolean {
@@ -141,7 +173,7 @@ export function isBoss(enemy: Pick<EnemyState, 'kind'>): boolean {
 }
 
 export function bossConfigFor(kind: EnemyKind): BossConfig {
-  return kind === 'owner' ? BOSS_CONFIGS.owner : kind === 'manager' ? BOSS_CONFIGS.manager : BOSS_CONFIGS.lp_manager;
+  return isBossKind(kind) ? BOSS_CONFIGS[kind] : BOSS_CONFIGS.lp_manager;
 }
 
 /**
@@ -271,9 +303,9 @@ function summonPhaseThreeHangers(state: RunState, enemyIndex: number, count: num
       y: position.y,
       health: config.summonHealth,
       radius: config.summonRadius,
-      // A called-in brute needs a beat before its first charge.
-      phase: config.summonKind === 'mascot' ? 'recover' : 'pursue',
-      phaseTicks: config.summonKind === 'mascot' ? 50 : 0,
+      // A called-in brute or Roofer needs a beat before its first charge or throw.
+      phase: config.summonKind === 'mascot' || config.summonKind === 'roofer' ? 'recover' : 'pursue',
+      phaseTicks: config.summonKind === 'mascot' || config.summonKind === 'roofer' ? 50 : 0,
       cooldownTicks: 0,
       telegraphAimX: 0,
       telegraphAimY: 0,
@@ -375,6 +407,35 @@ function updateOwnerCharge(
 }
 
 /**
+ * The Developer's barrage: one ring on the janitor, the rest around it, turned
+ * a little each time so no two barrages leave the same safe spots.
+ */
+function throwTarBarrage(state: RunState, boss: EnemyState, barrage: NonNullable<BossConfig['tarBarrage']>, count: number): void {
+  const { x, y } = state.player;
+  const turn = (boss.bossAttacks ?? 0) * 0.7;
+  const strikes = [{ x, y, ticks: barrage.lobTicks }];
+  for (let index = 1; index < count; index += 1) {
+    const angle = turn + ((index - 1) / (count - 1)) * Math.PI * 2;
+    strikes.push({
+      x: Math.max(0, Math.min(PLAYFIELD_WIDTH, x + Math.cos(angle) * barrage.spread)),
+      y: Math.max(0, Math.min(PLAYFIELD_HEIGHT, y + Math.sin(angle) * barrage.spread)),
+      ticks: barrage.lobTicks,
+    });
+  }
+  boss.tarStrikes = [...(boss.tarStrikes ?? []), ...strikes];
+}
+
+/** Buckets in the air count down and land where they were aimed. */
+function landTarStrikes(state: RunState, boss: EnemyState): void {
+  if (!boss.tarStrikes?.length) return;
+  for (const strike of boss.tarStrikes) {
+    strike.ticks -= 1;
+    if (strike.ticks <= 0) landTar(state, strike.x, strike.y);
+  }
+  boss.tarStrikes = boss.tarStrikes.filter((strike) => strike.ticks > 0);
+}
+
+/**
  * Deterministic Loss Prevention Manager update, called from the existing
  * enemy stage. Phase is recomputed from current health every tick, the slam
  * runs on phase/phaseTicks with its aim locked at telegraph start, and the
@@ -392,7 +453,7 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
   const config = bossConfigFor(boss.kind);
   const bossPhase = bossPhaseForHealth(boss.health, config.maxHealth);
   boss.bossPhase = bossPhase;
-  if (config.charge && bossPhase >= 2 && !boss.bossSummonedMid && (config.summonCountPhase2 ?? 0) > 0) {
+  if (bossPhase >= 2 && !boss.bossSummonedMid && (config.summonCountPhase2 ?? 0) > 0) {
     summonPhaseThreeHangers(state, enemyIndex, config.summonCountPhase2);
     boss.bossSummonedMid = true;
   }
@@ -403,6 +464,7 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
   if (config.charge && updateOwnerCharge(state, boss, config.charge)) {
     return;
   }
+  landTarStrikes(state, boss);
 
   const phaseCadence = config.volleyCadence[bossPhase - 1] ?? null;
   if (phaseCadence === null) {
@@ -453,6 +515,12 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
         boss.chargeTicks = config.charge.ticks;
         boss.phase = 'pursue';
         boss.phaseTicks = BOSS_PURSUE_TICKS;
+        return;
+      }
+      if (config.tarBarrage && bossPhase >= 2 && attacks % 2 === 1) {
+        throwTarBarrage(state, boss, config.tarBarrage, bossPhase === 3 ? config.tarBarrage.countPhase3 : config.tarBarrage.countPhase2);
+        boss.phase = 'recover';
+        boss.phaseTicks = bossPhase === 3 ? config.slamRecoverTicksPhase3 : config.slamRecoverTicks;
         return;
       }
       if (state.player.invulnerableTicks <= 0 && !playerDashing(state)) {

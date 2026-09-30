@@ -42,8 +42,8 @@ function walk(state: RunState, enemy: EnemyState, towardX: number, towardY: numb
   enemy.y = next.y;
 }
 
-/** The bucket lands: splash whoever is under it, and leave the tar. */
-function land(state: RunState, x: number, y: number): void {
+/** A bucket lands: splash whoever is under it, and leave the tar. The Developer's barrage lands the same way. */
+export function landTar(state: RunState, x: number, y: number): void {
   const player = state.player;
   if (Math.hypot(player.x - x, player.y - y) <= TAR_SPLASH_RADIUS && player.invulnerableTicks <= 0 && !playerDashing(state)) {
     player.health -= TAR_SPLASH_DAMAGE;
@@ -58,7 +58,7 @@ export function updateRoofer(state: RunState, enemy: EnemyState): void {
   if (enemy.phase === 'telegraph') {
     enemy.phaseTicks -= 1;
     if (enemy.phaseTicks <= 0) {
-      land(state, enemy.lobX ?? player.x, enemy.lobY ?? player.y);
+      landTar(state, enemy.lobX ?? player.x, enemy.lobY ?? player.y);
       enemy.phase = 'recover';
       enemy.phaseTicks = ROOFER_RECOVER_TICKS;
     }

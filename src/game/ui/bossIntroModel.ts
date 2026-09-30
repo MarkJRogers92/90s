@@ -34,6 +34,8 @@ export type BossIntroCopy = {
 export function bossIntroCopy(kind: BossKind): BossIntroCopy {
   switch (kind) {
     // The taglines are the in-canvas HUD's original boss cards, which this replaces.
+    case 'developer':
+      return { directory: 'ROOF - HELIPAD', name: 'THE DEVELOPER', tagline: 'THIS MALL IS COMING DOWN. WITH YOU IN IT.', color: '#ffb02a' };
     case 'owner':
       return { directory: "LEVEL 3 - OWNER'S SUITE", name: 'THE MALL OWNER', tagline: 'EVERYTHING YOU SEE IS MINE. INCLUDING YOU.', color: '#ff2a3a' };
     case 'manager':
