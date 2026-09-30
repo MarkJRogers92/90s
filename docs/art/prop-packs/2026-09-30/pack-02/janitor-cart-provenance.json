@@ -1,0 +1,104 @@
+{
+  "id": "janitor-cart",
+  "generatedSource": "exec-3d8936e7-a775-4fd6-8d64-82d1469824f7.png",
+  "main": {
+    "png": "sprite.png",
+    "report": {
+      "input_size": [
+        1536,
+        1024
+      ],
+      "grid": null,
+      "grid_offset": [
+        0,
+        0
+      ],
+      "background": "alpha channel",
+      "output_size": [
+        96,
+        80
+      ],
+      "colors": 14,
+      "orphans_removed": 0,
+      "notes": [
+        "illustration preset: preserve contrasting details while shrinking",
+        "fitted to 96x80",
+        "snapped to 32-colour palette",
+        "illustration polish: noise 27, declutter 3, silhouette 100"
+      ],
+      "preset": "illustration"
+    },
+    "qa": {
+      "size": [
+        96,
+        80
+      ],
+      "opaque_pixels": 3929,
+      "warnings": [],
+      "bbox": [
+        1,
+        4,
+        94,
+        75
+      ],
+      "fill_of_canvas": 0.88,
+      "colors": 14,
+      "orphan_pixels": 34,
+      "outline_coverage": 1,
+      "components": 1,
+      "mirror_symmetry": 0.14
+    },
+    "exported": "janitor-cart.png"
+  },
+  "small": {
+    "png": "sprite.png",
+    "report": {
+      "input_size": [
+        1536,
+        1024
+      ],
+      "grid": null,
+      "grid_offset": [
+        0,
+        0
+      ],
+      "background": "alpha channel",
+      "output_size": [
+        48,
+        40
+      ],
+      "colors": 13,
+      "orphans_removed": 0,
+      "notes": [
+        "illustration preset: preserve contrasting details while shrinking",
+        "fitted to 48x40",
+        "snapped to 32-colour palette",
+        "illustration polish: noise 17, declutter 0, silhouette 90"
+      ],
+      "preset": "illustration"
+    },
+    "qa": {
+      "size": [
+        48,
+        40
+      ],
+      "opaque_pixels": 941,
+      "warnings": [
+        "24 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        46,
+        36
+      ],
+      "fill_of_canvas": 0.84,
+      "colors": 13,
+      "orphan_pixels": 24,
+      "outline_coverage": 0.85,
+      "components": 1,
+      "mirror_symmetry": 0.14
+    },
+    "exported": "small/janitor-cart.png"
+  }
+}

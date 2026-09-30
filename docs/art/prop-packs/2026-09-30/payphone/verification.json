@@ -1,0 +1,34 @@
+{
+  "payphone-32x64.png": {
+    "size": [
+      32,
+      64
+    ],
+    "opaque_colors": 14,
+    "binary_alpha": true,
+    "strict_game_palette": true
+  },
+  "payphone-64x128.png": {
+    "size": [
+      64,
+      128
+    ],
+    "opaque_colors": 32,
+    "binary_alpha": true,
+    "strict_game_palette": false
+  },
+  "payphone-64x128-palette.png": {
+    "size": [
+      64,
+      128
+    ],
+    "opaque_colors": 16,
+    "binary_alpha": true,
+    "strict_game_palette": true
+  },
+  "aseprite": {
+    "path": "payphone-64x128.aseprite",
+    "layers": "one editable raster layer",
+    "pixel_identical_roundtrip": true
+  }
+}

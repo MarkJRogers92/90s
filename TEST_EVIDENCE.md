@@ -1301,3 +1301,7 @@ test defect: it compared an immutable projectile origin with a carrier position
 sampled after the carrier had kept moving. The current proof samples immediately
 before firing, tightens the allowance from 48 to 12 units, and passes in the
 57-case parallel gate; see the 2026-09-27 section above.
+
+## 2026-09-30 — Prop-pack archive verification
+
+Archive checks verified 19 native PNGs with binary transparency and at most 32 opaque colors; 18 are within the supplied shared palette. PNGs and nine editable Aseprite masters were copied byte-for-byte from reviewed local deliverables. Both ZIP CRC checks and 64 Markdown link checks passed. See [publication-verification.json](docs/art/prop-packs/2026-09-30/publication-verification.json) and [SHA256SUMS](docs/art/prop-packs/2026-09-30/SHA256SUMS). No game behavior changed, so game tests and a browser playtest were not run for this archive-only change.

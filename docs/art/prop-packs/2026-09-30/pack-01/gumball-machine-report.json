@@ -1,0 +1,51 @@
+{
+  "png": "gumball-machine.png",
+  "report": {
+    "input_size": [
+      1024,
+      1536
+    ],
+    "grid": null,
+    "grid_offset": [
+      0,
+      0
+    ],
+    "background": "alpha channel",
+    "output_size": [
+      64,
+      96
+    ],
+    "colors": 19,
+    "orphans_removed": 0,
+    "notes": [
+      "illustration preset: preserve contrasting details while shrinking",
+      "fitted to 64x96",
+      "snapped to 32-colour palette",
+      "illustration polish: noise 36, declutter 5, silhouette 64"
+    ],
+    "preset": "illustration"
+  },
+  "qa": {
+    "size": [
+      64,
+      96
+    ],
+    "opaque_pixels": 1972,
+    "warnings": [
+      "42 isolated single pixels (noisy texture)"
+    ],
+    "bbox": [
+      16,
+      1,
+      47,
+      94
+    ],
+    "fill_of_canvas": 0.49,
+    "colors": 19,
+    "orphan_pixels": 42,
+    "outline_coverage": 1,
+    "components": 1,
+    "mirror_symmetry": 0.31
+  },
+  "exported": "gumball-machine.png"
+}

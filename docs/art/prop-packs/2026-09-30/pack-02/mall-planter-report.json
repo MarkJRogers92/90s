@@ -1,0 +1,49 @@
+{
+  "png": "mall-planter.png",
+  "report": {
+    "input_size": [
+      1254,
+      1254
+    ],
+    "grid": null,
+    "grid_offset": [
+      0,
+      0
+    ],
+    "background": "alpha channel",
+    "output_size": [
+      64,
+      64
+    ],
+    "colors": 14,
+    "orphans_removed": 0,
+    "notes": [
+      "illustration preset: preserve contrasting details while shrinking",
+      "fitted to 64x64",
+      "snapped to 32-colour palette",
+      "illustration polish: noise 10, declutter 0, silhouette 337"
+    ],
+    "preset": "illustration"
+  },
+  "qa": {
+    "size": [
+      64,
+      64
+    ],
+    "opaque_pixels": 2201,
+    "warnings": [],
+    "bbox": [
+      2,
+      1,
+      60,
+      62
+    ],
+    "fill_of_canvas": 0.89,
+    "colors": 14,
+    "orphan_pixels": 24,
+    "outline_coverage": 0.99,
+    "components": 1,
+    "mirror_symmetry": 0.28
+  },
+  "exported": "mall-planter.png"
+}

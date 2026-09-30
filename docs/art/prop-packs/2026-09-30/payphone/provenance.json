@@ -1,0 +1,163 @@
+{
+  "pipeline": "GPT image generation -> Pixel Forge illustration preset",
+  "generation_tool": "built-in image_gen",
+  "prompt_file": "prompt.txt",
+  "source": "payphone-gpt-source.png",
+  "primary": "payphone-64x128.png",
+  "game_palette_variant": "payphone-32x64.png",
+  "conversion": {
+    "small": {
+      "png": "sprite.png",
+      "report": {
+        "input_size": [
+          1024,
+          1536
+        ],
+        "grid": null,
+        "grid_offset": [
+          0,
+          0
+        ],
+        "background": "alpha channel",
+        "output_size": [
+          32,
+          64
+        ],
+        "colors": 14,
+        "orphans_removed": 0,
+        "notes": [
+          "illustration preset: preserve contrasting details while shrinking",
+          "fitted to 32x64",
+          "snapped to 32-colour palette",
+          "illustration polish: noise 21, declutter 0, silhouette 101"
+        ],
+        "preset": "illustration"
+      },
+      "qa": {
+        "size": [
+          32,
+          64
+        ],
+        "opaque_pixels": 928,
+        "warnings": [
+          "27 isolated single pixels (noisy texture)"
+        ],
+        "bbox": [
+          5,
+          1,
+          26,
+          62
+        ],
+        "fill_of_canvas": 0.67,
+        "colors": 14,
+        "orphan_pixels": 27,
+        "outline_coverage": 0.99,
+        "components": 1,
+        "mirror_symmetry": 0.2
+      },
+      "exported": "payphone-32x64.png"
+    },
+    "large": {
+      "png": "sprite.png",
+      "report": {
+        "input_size": [
+          1024,
+          1536
+        ],
+        "grid": null,
+        "grid_offset": [
+          0,
+          0
+        ],
+        "background": "alpha channel",
+        "output_size": [
+          64,
+          128
+        ],
+        "colors": 32,
+        "orphans_removed": 0,
+        "notes": [
+          "illustration preset: preserve contrasting details while shrinking",
+          "fitted to 64x128",
+          "illustration polish: noise 144, declutter 0, silhouette 220"
+        ],
+        "preset": "illustration"
+      },
+      "qa": {
+        "size": [
+          64,
+          128
+        ],
+        "opaque_pixels": 3872,
+        "warnings": [
+          "104 isolated single pixels (noisy texture)"
+        ],
+        "bbox": [
+          9,
+          1,
+          53,
+          126
+        ],
+        "fill_of_canvas": 0.69,
+        "colors": 32,
+        "orphan_pixels": 104,
+        "outline_coverage": 1,
+        "components": 1,
+        "mirror_symmetry": 0.15
+      },
+      "exported": "payphone-64x128.png"
+    },
+    "palette": {
+      "png": "sprite.png",
+      "report": {
+        "input_size": [
+          1024,
+          1536
+        ],
+        "grid": null,
+        "grid_offset": [
+          0,
+          0
+        ],
+        "background": "alpha channel",
+        "output_size": [
+          64,
+          128
+        ],
+        "colors": 16,
+        "orphans_removed": 0,
+        "notes": [
+          "illustration preset: preserve contrasting details while shrinking",
+          "fitted to 64x128",
+          "snapped to 32-colour palette",
+          "illustration polish: noise 98, declutter 3, silhouette 91"
+        ],
+        "preset": "illustration"
+      },
+      "qa": {
+        "size": [
+          64,
+          128
+        ],
+        "opaque_pixels": 3872,
+        "warnings": [
+          "65 isolated single pixels (noisy texture)"
+        ],
+        "bbox": [
+          9,
+          1,
+          53,
+          126
+        ],
+        "fill_of_canvas": 0.69,
+        "colors": 16,
+        "orphan_pixels": 65,
+        "outline_coverage": 1,
+        "components": 1,
+        "mirror_symmetry": 0.18
+      },
+      "exported": "payphone-64x128-palette.png"
+    }
+  },
+  "integration": "standalone candidate; not installed in game"
+}
