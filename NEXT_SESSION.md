@@ -56,7 +56,7 @@ Sell and drop are in (X drops, X or SELL at the bench). Left over:
    `284c02d0-5925-4ae5-9f4e-fb0663313214`, and the better leaf blower of
    `400602cc-639b-4bc2-af1c-4e67f9e1199d` / `962b3ee2-b74e-4385-8d31-4fb4cc5e18ec`
    (keep the current one if neither reads). Promote as in round 33.
-2. Reduced-flashing toggle (below).
+2. Reduced flashing: done in round 37.
 3. Run the restart spec with 2 workers on a 4-core box.
 
 ## Round 35 playtest questions

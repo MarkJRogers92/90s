@@ -1019,3 +1019,12 @@ From the first real playtest log (21 shifts) and the owner's direction that
   PauseCard `CARD_H` is 386.
 - Spec note: `presentation-evidence.spec.ts:269` re-centres with
   `nudgePlayerY` before the east door. It needs <= 2 workers on 4 cores.
+
+## Round 37: reduced flashing
+
+`flashes: 'reduced'` (Settings) already softened hits and the police wash. It
+now also: holds alarm beacons steady (`alarmCue(..., steady)`), freezes the
+Radio Shed snow (`flickerTick`), cuts fusion-reveal sparks to a third
+(`revealSparkCount`), scales the stamp shake by the Shake setting, and eases
+blackouts over `BLACKOUT_FADE_FRAMES` (`blackoutFade.ts`, applied in
+`MallRoomView.renderLighting`). Sim rules are untouched.

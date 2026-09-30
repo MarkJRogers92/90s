@@ -128,6 +128,12 @@ describe('dropping the held weapon (round 36)', () => {
     expect(dropRunWeapon(state).accepted).toBe(false);
     expect(runWeaponSlots(state)).toHaveLength(1);
   });
+
+  it('says why when X is refused, so the key never feels dead', () => {
+    const state = createMvpRun(5);
+    tickMvpRun(state, { ...idle, drop: true });
+    expect(state.recentChange).toMatch(/last weapon/i);
+  });
 });
 
 describe('the drop key (round 36)', () => {

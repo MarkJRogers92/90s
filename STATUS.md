@@ -7,6 +7,13 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 37 (2026-09-30): the Flashes: Reduced setting now covers the newer
+effects. Store alarm beacons hold lit instead of alternating, the Radio Shed
+snow freezes, the fusion reveal bursts a third as many sparks and its stamp
+shake follows the Shake setting (off = none), and a blackout fades in and out
+over about a second instead of cutting. 1020 unit tests pass; see
+TEST_EVIDENCE.md round 37.
+
 Round 36 (2026-09-30): sell and drop items. X drops the held weapon as a
 floor pickup (keeps its provenance and fusion, 45-tick pickup lock, the last
 weapon is never dropped). At the Bench Warrant, pick one item and press X or

@@ -48,6 +48,7 @@ import {
 } from './propAmbience';
 import { INTERIOR_EXIT } from '../../sim/run/storeInterior';
 import { flashAllowed, gameSettings } from '../settings/settings';
+import { stepBlackoutMix } from './blackoutFade';
 
 type Layer = Phaser.GameObjects.Container;
 type Occluder = {
@@ -601,11 +602,23 @@ export class MallRoomView {
   public setBlackout(on: boolean): void {
     if (on === this.blackout) return;
     this.blackout = on;
-    this.lighting.setAmbient(on ? 0x040308 : this.plan.ambient);
-    this.lighting.setStaticLights(on ? this.plan.lights.map((light) => ({ ...light, intensity: light.intensity * 0.12 })) : this.plan.lights);
+    // Normally the lights cut at once; reduced flashes ease over renderLighting's frames.
+    if (flashAllowed(gameSettings().get())) this.applyBlackoutMix(stepBlackoutMix(this.blackoutMix, on, false));
+  }
+
+  private blackoutMix = 0;
+
+  private applyBlackoutMix(mix: number): void {
+    this.blackoutMix = mix;
+    const dark = 0x040308;
+    const channel = (shift: number): number => Math.round(((this.plan.ambient >> shift) & 0xff) * (1 - mix) + ((dark >> shift) & 0xff) * mix);
+    this.lighting.setAmbient((channel(16) << 16) | (channel(8) << 8) | channel(0));
+    this.lighting.setStaticLights(mix === 0 ? this.plan.lights : this.plan.lights.map((light) => ({ ...light, intensity: light.intensity * (1 - 0.88 * mix) })));
   }
 
   public renderLighting(tick: number): void {
+    const target = this.blackout ? 1 : 0;
+    if (this.blackoutMix !== target) this.applyBlackoutMix(stepBlackoutMix(this.blackoutMix, this.blackout, !flashAllowed(gameSettings().get())));
     this.lighting.render(tick);
   }
 
