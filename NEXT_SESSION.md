@@ -18,26 +18,32 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 33): `tsc` clean, 970 unit tests, `npm run build` passes;
-the Playwright suite was not run this round (see TEST_EVIDENCE.md round 33).
+Last gate (round 34): `tsc` clean, 994 unit tests, `npm run build` passes;
+see TEST_EVIDENCE.md round 34 for the browser run.
 
 ## Next up
 
-Round 33 finished the PixelLab art pass: the four borrowed shopfronts and
-all 64 placeholder icons are real art (playbook, "Round 33"). What is left,
-in the owner's order:
+Rounds 33-34 did the PixelLab art pass and made fusions a spectacle (fused
+icons, stamp and discovery banner, the Break Room catalog, recipe hints). In
+the owner's order, what is left:
 
-1. Optional art: redo the staple gun, leaf blower and mic stand icons (weak
-   reads), and interior props that would sell a store (weight bench, paint
-   cans, record bins, pizza oven).
-2. **Make fusions a spectacle**: fused icons that stack both items' art with
-   a glow that grows with part count; a sparks-and-stamp reveal and a first
-   "NEW FUSION DISCOVERED" banner; a fusion catalog in the Break Room (the
-   24+16 signature fusions, found count); recipe hints (paired stock, PA).
-3. **Store twists for the seven new stores** (pitching machine, paint
+1. **Store twists for the seven new stores** (pitching machine, paint
    spills, wind-up toys, TV static, listening booth, oven zone, rewind tile).
-4. Smaller: run the two round-32 browser failures on the Mac to confirm they
-   are environmental; drop or sell items; a reduced-flashing toggle.
+2. Smaller: drop or sell items; a reduced-flashing toggle (the reveal adds a
+   camera shake and sparks; include it); fix
+   `presentation-evidence.spec.ts:269` (ten restart cycles), which fails on
+   `main` too. Under 4 workers on the Mac a dozen browser specs time out;
+   they pass serially (round 34 evidence).
+3. Optional art: redo the staple gun, leaf blower and mic stand icons;
+   interior props (weight bench, paint cans, record bins, pizza oven).
+
+## Round 34 playtest questions
+
+- Does the reveal feel good, or slow at the bench after the tenth fusion?
+  (Repeats get the stamp but no banner.)
+- Are recipe hints too common? Some small stores hold a whole pair by
+  chance, so paired shelves turn up in most malls.
+- Is the silhouette catalog a reason to replay?
 
 ## Round 32 playtest questions
 

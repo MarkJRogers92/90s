@@ -17,8 +17,12 @@ import type { MvpRunState } from '../../sim/run/types';
 import { hotItemCount, wantedStars } from '../../sim/run/wanted';
 import { STALKER_MIN_STARS } from '../../sim/run/stalker';
 import { activeStore } from '../../sim/run/storeInterior';
+import { itemDefinitionName } from '../../sim/run/economy';
+import { shortItemName } from '../../sim/fusion/hybrid';
 
 export const PA_COOLDOWN_TICKS = 60 * 12;
+/** The longest line the ticker shows. */
+export const PA_MAX_CHARS = 56;
 export const PA_IDLE_TICKS = 60 * 45;
 /** A fresh shift or floor keeps the PA quiet only this long (the cold open's beat). */
 export const PA_START_GRACE_TICKS = 60 * 3;
@@ -52,6 +56,12 @@ export const PA_LINES = {
     'THE JANITOR IS WANTED. PLEASE DO NOT ENCOURAGE.',
   ],
   launder: ['MANAGEMENT REMINDS STAFF: ALL SALES ARE FINAL.'],
+  // Round 34: a signature pair shelved together in the store just entered.
+  recipe: [
+    'PSST. {A} AND {B}. TRUST US.',
+    'STAFF PICK: {A} WITH {B}.',
+    'TRY THE {A} WITH THE {B}.',
+  ],
   stalker: [
     'LOSS PREVENTION IS NOW FOLLOWING THE JANITOR. KEEP UP.',
     'AN AGENT HAS BEEN ASSIGNED. HE DOES NOT CLOCK OUT.',
@@ -95,7 +105,26 @@ type Snapshot = {
   readonly store: string;
   readonly comboTier: number;
   readonly quiet: boolean;
+  readonly interior: boolean;
+  /** A signature pair both still on the active store's shelf, by item id. */
+  readonly pair: readonly [string, string] | null;
 };
+
+function shelvedPair(state: MvpRunState): readonly [string, string] | null {
+  const store = activeStore(state);
+  if (!store) return null;
+  const offers = state.wing.rooms[state.roomIndex]?.offers.filter((offer) => offer.storeId === store.templateId) ?? [];
+  const onShelf = (id: string) => offers.some((offer) => offer.itemDefinitionId === id && (state.offerStatus[offer.id] ?? 'available') === 'available');
+  const offer = offers.find((candidate) => candidate.pairedWith && onShelf(candidate.itemDefinitionId) && onShelf(candidate.pairedWith));
+  return offer ? [offer.itemDefinitionId, offer.pairedWith!] : null;
+}
+
+/** A recipe line with both items named, falling back to their short nouns when it would not fit the ticker. */
+export function recipeLine(line: string, a: string, b: string): string {
+  const full = line.replace('{A}', itemDefinitionName(a).toUpperCase()).replace('{B}', itemDefinitionName(b).toUpperCase());
+  if (full.length <= PA_MAX_CHARS) return full;
+  return line.replace('{A}', shortItemName(a).toUpperCase()).replace('{B}', shortItemName(b).toUpperCase());
+}
 
 function snapshot(state: MvpRunState): Snapshot {
   return {
@@ -111,6 +140,8 @@ function snapshot(state: MvpRunState): Snapshot {
     store: (activeStore(state)?.name ?? 'the store').toUpperCase(),
     comboTier: Math.floor((state.stats?.combo ?? 0) / COMBO_MILESTONE),
     quiet: !state.room.combat.enemies.some((enemy) => enemy.health > 0),
+    interior: state.room.interior === true,
+    pair: shelvedPair(state),
   };
 }
 
@@ -139,6 +170,7 @@ export class PaDirector {
     }
     if (current.alarm && !previous.alarm) return this.say('alarm', current, true);
     if (current.shutter === 'closed' && previous.shutter !== 'closed') return this.say('shutter', current, true);
+    if (current.interior && !previous.interior && current.pair) return this.say('recipe', current, true);
     if (current.roomIndex !== previous.roomIndex) {
       const room = state.wing.rooms[current.roomIndex];
       if (room?.bossAnchor != null) return this.say(current.floor === 3 ? 'boss_floor_three' : current.floor === 2 ? 'boss_floor_two' : 'boss_floor_one', current, true);
@@ -173,7 +205,8 @@ export class PaDirector {
     const pick = Math.abs(Math.imul(current.seed + 17, 31) + this.spoken * 7) % lines.length;
     this.lastSpoke = current.tick;
     this.spoken += 1;
-    return (lines[pick] ?? lines[0]!).replace('{STORE}', current.store);
+    const line = (lines[pick] ?? lines[0]!).replace('{STORE}', current.store);
+    return event === 'recipe' && current.pair ? recipeLine(line, current.pair[0], current.pair[1]) : line;
   }
 }
 

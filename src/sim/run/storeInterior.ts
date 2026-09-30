@@ -27,6 +27,7 @@ import { generateWing } from '../wing/generateWing';
 import type { GeneratedWing, WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/types';
 import { DOORWAY_WIDTH, STORE_TEMPLATES, WALL_THICKNESS, type AuthoredStoreTemplate } from '../wing/templates';
 import { publishRunFeedback } from './economy';
+import { pairUpStock } from './recipeHints';
 import type { MvpCommandResult, MvpRunState } from './types';
 
 /**
@@ -172,14 +173,14 @@ export function generateRunWing(seed: number, floor: 1 | 2 | 3 = 1): GeneratedWi
   const furniture = CONCOURSE_FURNITURE.flatMap((piece) => (piece.footprint ? [{ ...piece.footprint }] : []));
   const rooms = wing.rooms.map((room): WingRoomDefinition => {
     if (!room.store) return room;
-    const first = scaleStore(room.store, room.offers);
+    const first = pairUpStock(scaleStore(room.store, room.offers), seed);
     // The concourse furniture stands in the way, like any wall.
     room = { ...room, walls: [...room.walls, ...furniture] };
     const template = spare[nextSpare];
     nextSpare += 1;
     if (!template) return { ...room, store: first.store, stores: [first.store], offers: first.offers };
     const extra = instantiate(template, seed);
-    const second = scaleStore(extra.store, extra.offers);
+    const second = pairUpStock(scaleStore(extra.store, extra.offers), seed);
     return {
       ...room,
       store: first.store,

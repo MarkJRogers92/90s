@@ -1,5 +1,29 @@
 # Test evidence
 
+## 2026-09-30 — round 34: fusions as a spectacle
+
+- New tests, each run red first for the intended reason: `career` (6,
+  discovery incl. nested steps), `fused-icon` (5), `fusion-reveal` (5),
+  `bench-card-model` (1, fused tiles ask for the fusion), `recipe-hints` (5,
+  incl. every signature being makeable: it caught Free Refills),
+  `pa-announcer` (2). `store-interior` now allows the one recipe swap.
+- `npx tsc --noEmit` clean; `npx vitest run` 994 passed (92 files);
+  `npm run build` clean.
+- Browser suite on the Mac (`PW_PORT=4191`, 4 workers): 61 passed, 13 failed
+  in 11.1 min. Re-run with one worker, 12 of the 13 pass (break-room x2,
+  combat pause, daily seed, fusion bench, night-shift x5 incl. the round-32
+  cold-open failure at :230, presentation-evidence :172 and :241), so they
+  were load timeouts. `presentation-evidence.spec.ts:269` (ten restart
+  cycles) still fails, and fails identically on untouched `main` (8e6bf60) in
+  a temporary worktree: pre-existing, not from this round. That confirms
+  round 32's note on the Mac: :230 was environmental, :269 is real.
+- Manual (app browser pane): `?fixture=mvp-workbench`, Storm Soaker, Goo Mop,
+  Hydro Mop, Sticky and Confetti Soaker fused; banners, stamps, stacked icons
+  in the hotbar and bench, career saved mid-shift; Break Room catalog at
+  3/40; `?fixture=mvp-store&store=slice-station&seed=5` shows the Pizza
+  Cutter + Pizza Peel link. No page errors. Screens in
+  `artifacts/neon-overhaul/round34/`.
+
 ## 2026-09-30 — round 33: PixelLab art pass (shopfronts and item icons)
 
 - New tests in `store-roster`: every store has a shopfront of its own that

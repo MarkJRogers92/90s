@@ -8,7 +8,9 @@
  * mirrors room-boundary checkpoints through the provided store. Damage,
  * movement, economy, and state transitions stay in `src/sim`.
  */
-import { browserCareer, perksFor } from '../career/career';
+import { browserCareer, discoverFusion, perksFor, type FusionDiscovery } from '../career/career';
+import { playFusionBanner } from '../ui/FusionReveal';
+import { fusionRevealModel } from '../ui/fusionRevealModel';
 import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
@@ -687,13 +689,24 @@ export class MvpRunScene extends Phaser.Scene {
    * also moved the pointer cannot leak into the next tick.
    */
   private confirmFusion(): void {
+    const preview = this.run.preview;
     const result = confirmRunFusionPreview(this.run);
-    if (result.accepted) {
+    if (result.accepted && preview) {
       this.audio?.play('fuse');
-      this.runView?.celebrateFusion();
+      const reveal = fusionRevealModel(preview, preview.recipeId === 'hybrid' ? this.discoverFusion(preview.resultDefinitionId) : null);
+      this.runView?.celebrateFusion(reveal);
+      if (reveal.banner) playFusionBanner(this, reveal.banner, reveal.color, this.run.room.combat.player.y - this.cameras.main.scrollY);
       this.resumeAfterPreview();
     }
     this.syncView();
+  }
+
+  /** Logs a fusion in the career as it is made, so a discovery survives a quit mid-shift. */
+  private discoverFusion(fusionId: string): FusionDiscovery {
+    const store = browserCareer();
+    const { career, discovery } = discoverFusion(store.load(), fusionId);
+    if (discovery.firstTime) store.save(career);
+    return discovery;
   }
 
   private pickBenchItem(instanceId: string): void {

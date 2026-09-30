@@ -7,6 +7,20 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 34 (2026-09-30): fusions are a spectacle. A fused item's icon stacks
+every part on the base with a glow that grows green, cyan, gold with the part
+count. Fusing at the Bench Warrant raises the new icon out of a spark burst
+under a rubber stamp (FUSED!, SIGNATURE!, MAXED OUT!), and the first time
+the janitor ever makes a fusion a NEW FUSION DISCOVERED banner drops in
+(SIGNATURE FUSION DISCOVERED with the running count for a named pair).
+Fusions are logged the moment they are made, including pairs later fused
+deeper (they were lost before). The Break Room's fusion catalog shows every
+signature pair as icons, silhouettes until found, with a meter. Recipe hints:
+some stores shelve both halves of a signature pair tied by gold sparks, and
+the PA names the pair on the way in. Fixed: Free Refills could never be made
+as a signature (its key was unsorted). 994 unit tests pass; see
+TEST_EVIDENCE.md round 34.
+
 Round 33 (2026-09-30): PixelLab art pass. The four themed stores that
 borrowed another shop's front (Sports Locker, Hardware Hut, Toy Box, Radio
 Shed) have their own PixelLab shopfronts, and all 64 placeholder item icons

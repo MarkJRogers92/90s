@@ -173,7 +173,7 @@ export function recordShift(career: Career, result: ShiftResult, date: string): 
       kills: career.kills + Math.max(0, result.kills),
       bestCombo: Math.max(career.bestCombo, result.bestCombo),
       wall,
-      fusionsFound: [...new Set([...career.fusionsFound, ...(result.fusions ?? []).filter(isRealFusion)])].sort(),
+      fusionsFound: [...new Set([...career.fusionsFound, ...(result.fusions ?? []).flatMap(fusionSteps)])].sort(),
     },
     earned: pay.total,
     pay,
@@ -188,7 +188,52 @@ function isRealFusion(id: unknown): id is string {
   return parts !== null && isHybridPair(parts.baseId, parts.ingredientId);
 }
 
-export type FusionLogEntry = { readonly name: string; readonly found: boolean };
+/** A fusion and every fusion nested inside it (the steps that built it), real ones only. */
+function fusionSteps(id: string): string[] {
+  if (!isRealFusion(id)) return [];
+  const parts = hybridParts(id)!;
+  return [id, ...fusionSteps(parts.baseId), ...fusionSteps(parts.ingredientId)];
+}
+
+function pairOf(id: string): string {
+  const parts = hybridParts(id)!;
+  return [parts.baseId, parts.ingredientId].sort().join('+');
+}
+
+export type FusionDiscovery = {
+  /** Nothing the career had seen: this fusion, or a step inside it, is new. */
+  readonly firstTime: boolean;
+  /** The name of the signature this fusion is (its outermost pair), or null. */
+  readonly signature: string | null;
+  readonly signaturesFound: number;
+  readonly signatureTotal: number;
+};
+
+/**
+ * Logs a fusion the moment the bench makes it, with every fusion nested
+ * inside it, so a signature pair that was later fused deeper still counts.
+ * The career is returned unchanged (the same object) when nothing is new.
+ */
+export function discoverFusion(career: Career, fusionId: string): { career: Career; discovery: FusionDiscovery } {
+  const steps = fusionSteps(fusionId);
+  const known = new Set(career.fusionsFound);
+  const fresh = steps.filter((step) => !known.has(step));
+  const next = fresh.length === 0 ? career : { ...career, fusionsFound: [...known, ...fresh].sort() };
+  const log = fusionLog(next);
+  const pair = steps.length > 0 ? pairOf(fusionId) : null;
+  const signature = pair ? signatureFusions().find((entry) => [...entry.itemIds].sort().join('+') === pair)?.name ?? null : null;
+  return {
+    career: next,
+    discovery: { firstTime: fresh.length > 0, signature, signaturesFound: log.signaturesFound, signatureTotal: log.signatureTotal },
+  };
+}
+
+export type FusionLogEntry = {
+  readonly name: string;
+  readonly found: boolean;
+  /** The pair that makes it, shown as silhouettes until it is found. */
+  readonly itemIds: readonly [string, string];
+};
 export type FusionLog = {
   readonly entries: readonly FusionLogEntry[];
   readonly signaturesFound: number;
@@ -198,13 +243,10 @@ export type FusionLog = {
 
 /** The signature fusions, named once found and ??? until then. */
 export function fusionLog(career: Career): FusionLog {
-  const found = new Set(career.fusionsFound.map((id) => {
-    const parts = hybridParts(id)!;
-    return [parts.baseId, parts.ingredientId].sort().join('+');
-  }));
+  const found = new Set(career.fusionsFound.flatMap(fusionSteps).map(pairOf));
   const entries = signatureFusions().map((signature) => {
     const known = found.has([...signature.itemIds].sort().join('+'));
-    return { name: known ? signature.name : '???', found: known };
+    return { name: known ? signature.name : '???', found: known, itemIds: signature.itemIds };
   });
   return {
     entries,

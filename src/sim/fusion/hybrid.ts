@@ -141,7 +141,7 @@ export function rootItemId(id: string): string {
 }
 
 /** Named combinations: the fusions worth discovering. Order does not matter. */
-const SIGNATURES: Readonly<Record<string, string>> = {
+const AUTHORED_SIGNATURES: Readonly<Record<string, string>> = {
   'janitor_mop+pump_soaker': 'Hydro Mop',
   'janitor_mop+plasma_globe': 'Shock Mop',
   'gel_pens+janitor_mop': 'Goo Mop',
@@ -184,6 +184,14 @@ const SIGNATURES: Readonly<Record<string, string>> = {
   'claw_hammer+nail_gun': 'Handyman Special',
   'soda_gun+slushie_cup': 'Free Refills',
 };
+
+/** Keyed by `pairKey`, so a pair authored in either order still matches. */
+const SIGNATURES: Readonly<Record<string, string>> = Object.fromEntries(
+  Object.entries(AUTHORED_SIGNATURES).map(([key, name]) => {
+    const [a, b] = key.split('+') as [string, string];
+    return [pairKey(a, b), name];
+  }),
+);
 
 const NOUNS: Readonly<Record<string, string>> = {
   janitor_mop: 'Mop', pump_soaker: 'Soaker', party_popper: 'Popper', bottle_rocket_pack: 'Rockets',

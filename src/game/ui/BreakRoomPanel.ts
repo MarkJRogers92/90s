@@ -6,6 +6,7 @@
  * pinned up as polaroids, and the best one is Employee of the Month. Pure DOM
  * built with textContent only; every rule lives in `career.ts`.
  */
+import { ITEM_ICON_FILES } from '../presentation/assets';
 import {
   LOCKER_ITEMS,
   PERKS,
@@ -29,7 +30,7 @@ const PERK_ICONS: Record<PerkId, string> = {
   sneakers: `${ART}/perk-sneakers.png`,
   shopvac: `${ART}/perk-shopvac.png`,
 };
-const ITEM_ICON = (itemId: string): string => `/assets/neon/items/${itemId.replace(/_/g, '-')}.png`;
+const ITEM_ICON = (itemId: string): string => `/assets/neon/items/${ITEM_ICON_FILES[itemId] ?? itemId.replace(/_/g, '-')}.png`;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -143,14 +144,26 @@ export class BreakRoomPanel {
 
     const log = fusionLog(career);
     const fusions = el('section', 'br-section br-fusions');
+    const meter = el('div', 'br-fusion-meter');
+    const fill = el('span', 'br-fusion-meter-fill');
+    fill.style.width = `${Math.round((log.signaturesFound / Math.max(1, log.signatureTotal)) * 100)}%`;
+    meter.append(fill);
     fusions.append(
-      el('h3', 'br-heading', `Fusion log · ${log.signaturesFound}/${log.signatureTotal} signatures`),
+      el('h3', 'br-heading', `Fusion catalog · ${log.signaturesFound}/${log.signatureTotal} signatures`),
+      meter,
       el('p', 'br-note', log.totalFound === 0
-        ? 'Fuse any two items at a Bench Warrant. Some pairs have names.'
-        : `${log.totalFound} different fusions made. Some pairs have names — find them all.`),
+        ? 'Fuse any two items at a Bench Warrant. Some pairs have names: the shapes below are the clues.'
+        : `${log.totalFound} different fusions made. The shapes are the clues to the rest.`),
     );
+    // Each signature shows its two items: in colour once found, as silhouettes until then.
     const list = el('ul', 'br-fusion-list');
-    for (const entry of log.entries) list.append(el('li', entry.found ? 'is-found' : '', entry.name.toUpperCase()));
+    for (const entry of log.entries) {
+      const item = el('li', entry.found ? 'is-found' : '');
+      const pair = el('span', 'br-fusion-pair');
+      pair.append(img(ITEM_ICON(entry.itemIds[0]), 'br-fusion-icon'), el('span', 'br-fusion-plus', '+'), img(ITEM_ICON(entry.itemIds[1]), 'br-fusion-icon'));
+      item.append(pair, el('span', 'br-fusion-name', entry.name.toUpperCase()));
+      list.append(item);
+    }
     fusions.append(list);
 
     const left = el('div', 'br-column');

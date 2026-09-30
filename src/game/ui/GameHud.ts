@@ -15,8 +15,9 @@
 import Phaser from 'phaser';
 import { activeStore } from '../../sim/run/storeInterior';
 import type { MvpRunState } from '../../sim/run/types';
-import { itemIconKey, PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
+import { PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
+import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildGameHudModel, collapsedObjective, hudExpanded, wrapLogText, type GameHudModel, type HudOfferDetail } from './gameHudModel';
 import { roomEventFor } from '../../sim/run/roomEvents';
@@ -441,8 +442,7 @@ export class GameHud {
       g.fillStyle(selected ? 0x2a1840 : 0x140e20, 1).fillRect(sx, y, SLOT, SLOT);
       g.lineStyle(selected ? 3 : 1, selected ? CYAN : 0x3a3052, 1).strokeRect(sx + 1, y + 1, SLOT - 2, SLOT - 2);
       if (selected) g.fillStyle(CYAN, 0.18).fillRect(sx + 3, y + 3, SLOT - 6, SLOT - 6);
-      const key = weapon ? itemIconKey(weapon.itemDefinitionId) : null;
-      const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+      const usable = weapon ? usableItemIcon(this.scene, weapon.itemDefinitionId) : null;
       if (usable) {
         if (icon.texture.key !== usable) icon.setTexture(usable);
         icon.setScale(Math.min((SLOT - 10) / icon.width, (SLOT - 10) / icon.height)).setVisible(true).setPosition(sx + SLOT / 2, y + SLOT / 2);
@@ -473,8 +473,7 @@ export class GameHud {
       const px = x + weaponsW + 22 + i * 32;
       g.fillStyle(0x14201a, 1).fillRect(px, y + 16, 28, 28);
       g.lineStyle(1, 0x6aff8a, 0.8).strokeRect(px + 0.5, y + 16.5, 27, 27);
-      const key = itemIconKey(passive.itemDefinitionId);
-      const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+      const usable = usableItemIcon(this.scene, passive.itemDefinitionId);
       if (usable) {
         if (icon.texture.key !== usable) icon.setTexture(usable);
         icon.setScale(Math.min(22 / icon.width, 22 / icon.height)).setVisible(true).setPosition(px + 14, y + 30);
@@ -566,8 +565,7 @@ export class GameHud {
     // Icon well.
     this.frame.fillStyle(0x140d22, 1).fillRect(x + 12, y + 12, 80, 80);
     this.frame.lineStyle(2, detail.kind === 'WEAPON' ? CYAN : 0x6aff8a, 1).strokeRect(x + 13, y + 13, 78, 78);
-    const key = itemIconKey(detail.itemDefinitionId);
-    const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+    const usable = usableItemIcon(this.scene, detail.itemDefinitionId);
     if (usable) {
       this.promptIcon.setTexture(usable).setVisible(true).setPosition(x + 52, y + 52);
       const size = Math.max(this.promptIcon.width, this.promptIcon.height) || 1;
