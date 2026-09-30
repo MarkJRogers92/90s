@@ -1,0 +1,219 @@
+{
+  "title": "DEAD MALL prop pack 01",
+  "date": "2026-09-30",
+  "status": "standalone artwork candidates; game files unchanged",
+  "pipeline": "Built-in GPT image generation, then local Pixel Forge illustration preset; no PixelLab generation used",
+  "palette_profile": {
+    "name": "DEAD MALL neon",
+    "style": "Match the existing art of 'DEAD MALL neon' (154 images analysed). Typical sprite: about 32x32 px using ~25 colours, partial / selective outlines. Keep proportions, level of detail and shading style consistent with the reference images.",
+    "palette": {
+      "a": "#040202",
+      "b": "#14141c",
+      "c": "#161833",
+      "d": "#3b1d23",
+      "e": "#292d46",
+      "f": "#292c5c",
+      "g": "#31333e",
+      "h": "#662331",
+      "i": "#4335a6",
+      "j": "#4e4d56",
+      "k": "#3e4e70",
+      "l": "#95262d",
+      "m": "#853c2e",
+      "n": "#6d5047",
+      "o": "#3e6c5e",
+      "p": "#b03c9d",
+      "q": "#6c767d",
+      "r": "#926f3f",
+      "s": "#d74634",
+      "t": "#598842",
+      "u": "#5b8ab8",
+      "v": "#d27555",
+      "w": "#9d86c1",
+      "x": "#9a9990",
+      "y": "#ed72bc",
+      "z": "#a3c4da",
+      "A": "#fbb159",
+      "B": "#99ce94",
+      "C": "#f2b486",
+      "D": "#d4cda4",
+      "E": "#f2ee8c",
+      "F": "#eaeae5"
+    },
+    "palette_mode": "prefer",
+    "size": [
+      32,
+      32
+    ],
+    "references": [
+      "refs/dead-mall/payphone.png",
+      "refs/dead-mall/food-table-set.png",
+      "refs/dead-mall/rc-car.png",
+      "refs/dead-mall/perk-coffee.png"
+    ],
+    "source": {
+      "project": "dead-mall",
+      "path": "neon",
+      "files": 154
+    }
+  },
+  "conversion": {
+    "profile": "dead-mall",
+    "colors": 32,
+    "remove_background": "alpha",
+    "detect_grid": false,
+    "preset": "illustration"
+  },
+  "rendering": "Use nearest-neighbor filtering; do not stretch to square. Position/collision and in-game appearance have not been verified.",
+  "editable_files": "Aseprite files contain one raster layer. Indexed Pixel Forge JSON is included for both sizes.",
+  "assets": [
+    {
+      "id": "gumball-machine",
+      "label": "Gumball machine",
+      "variants": [
+        {
+          "file": "gumball-machine.png",
+          "size": [
+            64,
+            96
+          ],
+          "colors": 19,
+          "opaque_pixels": 1972,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": [
+            "42 isolated single pixels (noisy texture)"
+          ]
+        },
+        {
+          "file": "small/gumball-machine.png",
+          "size": [
+            32,
+            48
+          ],
+          "colors": 17,
+          "opaque_pixels": 482,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": [
+            "10 isolated single pixels (noisy texture)"
+          ]
+        }
+      ],
+      "aseprite": "aseprite/gumball-machine.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "gumball-machine-source.png",
+      "generated_source_original": "exec-111cde82-22b1-4d71-8570-8917f6c82624.png",
+      "prompt": "gumball-machine-prompt.txt",
+      "visual_review": "Globe, vending body, knob, pedestal and foot remain recognizable. Retained isolated detail pixels in glass and highlights; compact version simplifies the knob."
+    },
+    {
+      "id": "mall-directory",
+      "label": "Mall directory",
+      "variants": [
+        {
+          "file": "mall-directory.png",
+          "size": [
+            64,
+            96
+          ],
+          "colors": 12,
+          "opaque_pixels": 4025,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": []
+        },
+        {
+          "file": "small/mall-directory.png",
+          "size": [
+            32,
+            48
+          ],
+          "colors": 10,
+          "opaque_pixels": 945,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": []
+        }
+      ],
+      "aseprite": "aseprite/mall-directory.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "mall-directory-source.png",
+      "generated_source_original": "exec-e37a17fe-ef41-4c09-a58f-bdef4bea9e32.png",
+      "prompt": "mall-directory-prompt.txt",
+      "visual_review": "Cabinet and illuminated map panel remain recognizable. Map becomes an abstract color diagram at compact size; no readable text."
+    },
+    {
+      "id": "wet-floor-sign",
+      "label": "Wet-floor sign",
+      "variants": [
+        {
+          "file": "wet-floor-sign.png",
+          "size": [
+            48,
+            64
+          ],
+          "colors": 7,
+          "opaque_pixels": 1590,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": []
+        },
+        {
+          "file": "small/wet-floor-sign.png",
+          "size": [
+            24,
+            32
+          ],
+          "colors": 6,
+          "opaque_pixels": 367,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": []
+        }
+      ],
+      "aseprite": "aseprite/wet-floor-sign.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "wet-floor-sign-source.png",
+      "generated_source_original": "exec-2b9898ce-72de-4183-a4d0-60858e7f3ce8.png",
+      "prompt": "wet-floor-sign-prompt.txt",
+      "visual_review": "Handle hole, A-frame and hazard triangle remain recognizable. Slipping-person pictogram is simplified at compact size."
+    },
+    {
+      "id": "crt-tv-cart",
+      "label": "CRT TV cart",
+      "variants": [
+        {
+          "file": "crt-tv-cart.png",
+          "size": [
+            64,
+            96
+          ],
+          "colors": 11,
+          "opaque_pixels": 3744,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": []
+        },
+        {
+          "file": "small/crt-tv-cart.png",
+          "size": [
+            32,
+            48
+          ],
+          "colors": 9,
+          "opaque_pixels": 855,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "warnings": []
+        }
+      ],
+      "aseprite": "aseprite/crt-tv-cart.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "crt-tv-cart-source.png",
+      "generated_source_original": "exec-b6b673ba-0008-44e7-a084-7fdb2c7b83cd.png",
+      "prompt": "crt-tv-cart-prompt.txt",
+      "visual_review": "CRT, bright static band, shelves, VHS player and casters remain recognizable. Small controls and cord merge at compact size."
+    }
+  ]
+}

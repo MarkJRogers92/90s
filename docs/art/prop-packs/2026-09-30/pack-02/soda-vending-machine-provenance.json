@@ -1,0 +1,104 @@
+{
+  "id": "soda-vending-machine",
+  "generatedSource": "exec-3880ced8-5eae-4578-bd5b-11dcb9bfaa50.png",
+  "main": {
+    "png": "sprite.png",
+    "report": {
+      "input_size": [
+        1024,
+        1536
+      ],
+      "grid": null,
+      "grid_offset": [
+        0,
+        0
+      ],
+      "background": "alpha channel",
+      "output_size": [
+        64,
+        96
+      ],
+      "colors": 13,
+      "orphans_removed": 0,
+      "notes": [
+        "illustration preset: preserve contrasting details while shrinking",
+        "fitted to 64x96",
+        "snapped to 32-colour palette",
+        "illustration polish: noise 7, declutter 0, silhouette 21"
+      ],
+      "preset": "illustration"
+    },
+    "qa": {
+      "size": [
+        64,
+        96
+      ],
+      "opaque_pixels": 4572,
+      "warnings": [],
+      "bbox": [
+        4,
+        1,
+        58,
+        94
+      ],
+      "fill_of_canvas": 0.84,
+      "colors": 13,
+      "orphan_pixels": 55,
+      "outline_coverage": 1,
+      "components": 1,
+      "mirror_symmetry": 0.17
+    },
+    "exported": "soda-vending-machine.png"
+  },
+  "small": {
+    "png": "sprite.png",
+    "report": {
+      "input_size": [
+        1024,
+        1536
+      ],
+      "grid": null,
+      "grid_offset": [
+        0,
+        0
+      ],
+      "background": "alpha channel",
+      "output_size": [
+        32,
+        48
+      ],
+      "colors": 13,
+      "orphans_removed": 0,
+      "notes": [
+        "illustration preset: preserve contrasting details while shrinking",
+        "fitted to 32x48",
+        "snapped to 32-colour palette",
+        "illustration polish: noise 11, declutter 0, silhouette 90"
+      ],
+      "preset": "illustration"
+    },
+    "qa": {
+      "size": [
+        32,
+        48
+      ],
+      "opaque_pixels": 1098,
+      "warnings": [
+        "29 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        2,
+        1,
+        28,
+        46
+      ],
+      "fill_of_canvas": 0.81,
+      "colors": 13,
+      "orphan_pixels": 29,
+      "outline_coverage": 1,
+      "components": 1,
+      "mirror_symmetry": 0.18
+    },
+    "exported": "small/soda-vending-machine.png"
+  }
+}

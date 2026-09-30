@@ -1,0 +1,221 @@
+{
+  "title": "DEAD MALL prop pack 02",
+  "date": "2026-09-30",
+  "status": "Standalone artwork candidates; no game integration",
+  "pipeline": "Built-in GPT image generation then local Pixel Forge illustration preset. No PixelLab generation.",
+  "palette_profile": {
+    "name": "DEAD MALL neon",
+    "style": "Match the existing art of 'DEAD MALL neon' (154 images analysed). Typical sprite: about 32x32 px using ~25 colours, partial / selective outlines. Keep proportions, level of detail and shading style consistent with the reference images.",
+    "palette": {
+      "a": "#040202",
+      "b": "#14141c",
+      "c": "#161833",
+      "d": "#3b1d23",
+      "e": "#292d46",
+      "f": "#292c5c",
+      "g": "#31333e",
+      "h": "#662331",
+      "i": "#4335a6",
+      "j": "#4e4d56",
+      "k": "#3e4e70",
+      "l": "#95262d",
+      "m": "#853c2e",
+      "n": "#6d5047",
+      "o": "#3e6c5e",
+      "p": "#b03c9d",
+      "q": "#6c767d",
+      "r": "#926f3f",
+      "s": "#d74634",
+      "t": "#598842",
+      "u": "#5b8ab8",
+      "v": "#d27555",
+      "w": "#9d86c1",
+      "x": "#9a9990",
+      "y": "#ed72bc",
+      "z": "#a3c4da",
+      "A": "#fbb159",
+      "B": "#99ce94",
+      "C": "#f2b486",
+      "D": "#d4cda4",
+      "E": "#f2ee8c",
+      "F": "#eaeae5"
+    },
+    "palette_mode": "prefer",
+    "size": [
+      32,
+      32
+    ],
+    "references": [
+      "refs/dead-mall/payphone.png",
+      "refs/dead-mall/food-table-set.png",
+      "refs/dead-mall/rc-car.png",
+      "refs/dead-mall/perk-coffee.png"
+    ],
+    "source": {
+      "project": "dead-mall",
+      "path": "neon",
+      "files": 154
+    }
+  },
+  "conversion": {
+    "profile": "dead-mall",
+    "colors": 32,
+    "preset": "illustration",
+    "remove_background": "alpha",
+    "detect_grid": false
+  },
+  "rendering": "Nearest-neighbor filtering; preserve native aspect ratio. In-game scale, collision and placement unverified.",
+  "editable_files": "Aseprite masters contain one raster layer. Indexed Pixel Forge JSON is supplied for both sizes.",
+  "assets": [
+    {
+      "id": "arcade-cabinet",
+      "label": "Arcade cabinet",
+      "variants": [
+        {
+          "file": "arcade-cabinet.png",
+          "size": [
+            64,
+            96
+          ],
+          "colors": 16,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 3821,
+          "qa_warnings": []
+        },
+        {
+          "file": "small/arcade-cabinet.png",
+          "size": [
+            32,
+            48
+          ],
+          "colors": 14,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 913,
+          "qa_warnings": []
+        }
+      ],
+      "aseprite": "aseprite/arcade-cabinet.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "arcade-cabinet-source.png",
+      "original_generated_source": "exec-2b7cd236-a63c-46e7-96e2-96bd95cc5076.png",
+      "prompt": "arcade-cabinet-prompt.txt",
+      "visual_review": "Angular cabinet silhouette, star marquee, screen, joystick and buttons read at both sizes; screen artwork becomes a simple spaceship mark."
+    },
+    {
+      "id": "soda-vending-machine",
+      "label": "Soda vending machine",
+      "variants": [
+        {
+          "file": "soda-vending-machine.png",
+          "size": [
+            64,
+            96
+          ],
+          "colors": 13,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 4572,
+          "qa_warnings": []
+        },
+        {
+          "file": "small/soda-vending-machine.png",
+          "size": [
+            32,
+            48
+          ],
+          "colors": 13,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 1098,
+          "qa_warnings": [
+            "29 isolated single pixels (noisy texture)"
+          ]
+        }
+      ],
+      "aseprite": "aseprite/soda-vending-machine.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "soda-vending-machine-source.png",
+      "original_generated_source": "exec-3880ced8-5eae-4578-bd5b-11dcb9bfaa50.png",
+      "prompt": "soda-vending-machine-prompt.txt",
+      "visual_review": "Can graphic, four-button column and dispensing flap read at both sizes. Compact export retains isolated detail pixels flagged by QA."
+    },
+    {
+      "id": "mall-planter",
+      "label": "Mall planter",
+      "variants": [
+        {
+          "file": "mall-planter.png",
+          "size": [
+            64,
+            64
+          ],
+          "colors": 14,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 2201,
+          "qa_warnings": []
+        },
+        {
+          "file": "small/mall-planter.png",
+          "size": [
+            32,
+            32
+          ],
+          "colors": 14,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 506,
+          "qa_warnings": [
+            "13 isolated single pixels (noisy texture)"
+          ]
+        }
+      ],
+      "aseprite": "aseprite/mall-planter.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "mall-planter-source.png",
+      "original_generated_source": "exec-1551eea7-9cf0-4d62-95fb-8f5c25675a16.png",
+      "prompt": "mall-planter-prompt.txt",
+      "visual_review": "Pot, palm canopy and drooping amber leaf read at both sizes. Compact export simplifies fronds and retains a few isolated detail pixels."
+    },
+    {
+      "id": "janitor-cart",
+      "label": "Janitor cart",
+      "variants": [
+        {
+          "file": "janitor-cart.png",
+          "size": [
+            96,
+            80
+          ],
+          "colors": 14,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 3929,
+          "qa_warnings": []
+        },
+        {
+          "file": "small/janitor-cart.png",
+          "size": [
+            48,
+            40
+          ],
+          "colors": 13,
+          "binary_alpha": true,
+          "palette_verified": true,
+          "opaque_pixels": 941,
+          "qa_warnings": [
+            "24 isolated single pixels (noisy texture)"
+          ]
+        }
+      ],
+      "aseprite": "aseprite/janitor-cart.aseprite",
+      "aseprite_roundtrip_pixel_identical": true,
+      "source": "janitor-cart-source.png",
+      "original_generated_source": "exec-3d8936e7-a775-4fd6-8d64-82d1469824f7.png",
+      "prompt": "janitor-cart-prompt.txt",
+      "visual_review": "Bucket, wringer, mop, bottles, trash bag, handle and wheels read in the main export. Compact export merges small equipment details and retains isolated detail pixels."
+    }
+  ]
+}

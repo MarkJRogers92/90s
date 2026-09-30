@@ -1,0 +1,49 @@
+{
+  "png": "arcade-cabinet.png",
+  "report": {
+    "input_size": [
+      1024,
+      1536
+    ],
+    "grid": null,
+    "grid_offset": [
+      0,
+      0
+    ],
+    "background": "alpha channel",
+    "output_size": [
+      32,
+      48
+    ],
+    "colors": 14,
+    "orphans_removed": 0,
+    "notes": [
+      "illustration preset: preserve contrasting details while shrinking",
+      "fitted to 32x48",
+      "snapped to 32-colour palette",
+      "illustration polish: noise 11, declutter 0, silhouette 68"
+    ],
+    "preset": "illustration"
+  },
+  "qa": {
+    "size": [
+      32,
+      48
+    ],
+    "opaque_pixels": 913,
+    "warnings": [],
+    "bbox": [
+      4,
+      1,
+      27,
+      46
+    ],
+    "fill_of_canvas": 0.72,
+    "colors": 14,
+    "orphan_pixels": 10,
+    "outline_coverage": 0.99,
+    "components": 1,
+    "mirror_symmetry": 0.23
+  },
+  "exported": "arcade-cabinet.png"
+}

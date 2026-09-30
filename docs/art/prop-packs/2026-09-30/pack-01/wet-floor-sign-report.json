@@ -1,0 +1,49 @@
+{
+  "png": "wet-floor-sign.png",
+  "report": {
+    "input_size": [
+      1024,
+      1536
+    ],
+    "grid": null,
+    "grid_offset": [
+      0,
+      0
+    ],
+    "background": "alpha channel",
+    "output_size": [
+      48,
+      64
+    ],
+    "colors": 7,
+    "orphans_removed": 0,
+    "notes": [
+      "illustration preset: preserve contrasting details while shrinking",
+      "fitted to 48x64",
+      "snapped to 32-colour palette",
+      "illustration polish: noise 3, declutter 0, silhouette 77"
+    ],
+    "preset": "illustration"
+  },
+  "qa": {
+    "size": [
+      48,
+      64
+    ],
+    "opaque_pixels": 1590,
+    "warnings": [],
+    "bbox": [
+      4,
+      1,
+      43,
+      62
+    ],
+    "fill_of_canvas": 0.81,
+    "colors": 7,
+    "orphan_pixels": 13,
+    "outline_coverage": 1,
+    "components": 1,
+    "mirror_symmetry": 0.36
+  },
+  "exported": "wet-floor-sign.png"
+}

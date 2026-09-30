@@ -1,0 +1,24 @@
+{
+  "png_exports_checked": 8,
+  "checks": [
+    "source alpha exists",
+    "exact native dimensions",
+    "binary transparent and opaque alpha",
+    "palette subset and at most 32 opaque colors",
+    "four Aseprite masters pixel-identical on roundtrip"
+  ],
+  "visual_review": {
+    "inspected": true,
+    "views": [
+      "native and 2x on dark DEAD MALL palette background",
+      "4x checkerboard preview"
+    ],
+    "notes": {
+      "arcade-cabinet": "Angular cabinet silhouette, star marquee, screen, joystick and buttons read at both sizes; screen artwork becomes a simple spaceship mark.",
+      "soda-vending-machine": "Can graphic, four-button column and dispensing flap read at both sizes. Compact export retains isolated detail pixels flagged by QA.",
+      "mall-planter": "Pot, palm canopy and drooping amber leaf read at both sizes. Compact export simplifies fronds and retains a few isolated detail pixels.",
+      "janitor-cart": "Bucket, wringer, mop, bottles, trash bag, handle and wheels read in the main export. Compact export merges small equipment details and retains isolated detail pixels."
+    }
+  },
+  "game_integration_tested": false
+}

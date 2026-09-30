@@ -200,3 +200,7 @@ untouched Codex opening-slice baseline; see [`CLAUDE_HANDOFF.md`](CLAUDE_HANDOFF
 and the history of this file for its evidence notes. Earlier modes (Start
 shift, Lab, Shoplifting Loop, Void the Warranty) keep their original
 presentation. Night Shift is the game.
+
+## 2026-09-30 — Additional prop candidates
+
+The [asset handoff](docs/art/prop-packs/2026-09-30/HANDOFF.md) lists nine new prop candidates, both downloadable packs, and exact repository paths. Select sizes and check placement, render anchors and collision before integrating them through the existing asset pipeline.

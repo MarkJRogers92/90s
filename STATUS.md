@@ -316,3 +316,7 @@ supersedes the earlier statement that nothing from M5 had been pushed or merged.
 **Known uncertainty:** The art is deliberate graybox/vector work and there is no sound. Balance is unplayed: wing pacing, store placement, boss difficulty, and checkpoint cadence all need the user's hands. The repaired car is unplayed too — its steering weight, the 180-unit leash, the recall trip, and whether the fusion fee reads as a real trade rather than a free upgrade all need hands on it. Phase-3 boss summons are allowed once per boss encounter rather than once per save slot, because checkpoints deliberately exclude room-local entity state. WebKit, Safari, Windows, device coverage, and physical-device performance were not run. No 800x600 production screenshot was retaken after the repair.
 
 **Next:** Stop at M5. Run a hands-on Night Shift playtest, including buying the car and fusing it at the kiosk; do not begin M6 without new authorization.
+
+## 2026-09-30 — Standalone prop packs archived
+
+Nine environment prop candidates are available under [docs/art/prop-packs/2026-09-30](docs/art/prop-packs/2026-09-30/README.md), with PNGs, Aseprite masters, source artwork, compact variants, and a portable handoff. This checkpoint adds documentation assets; game runtime content is unchanged. Publishing evidence is in the asset folder.

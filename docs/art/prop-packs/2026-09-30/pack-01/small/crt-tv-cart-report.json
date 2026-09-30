@@ -1,0 +1,49 @@
+{
+  "png": "crt-tv-cart.png",
+  "report": {
+    "input_size": [
+      1024,
+      1536
+    ],
+    "grid": null,
+    "grid_offset": [
+      0,
+      0
+    ],
+    "background": "alpha channel",
+    "output_size": [
+      32,
+      48
+    ],
+    "colors": 9,
+    "orphans_removed": 0,
+    "notes": [
+      "illustration preset: preserve contrasting details while shrinking",
+      "fitted to 32x48",
+      "snapped to 32-colour palette",
+      "illustration polish: noise 16, declutter 0, silhouette 108"
+    ],
+    "preset": "illustration"
+  },
+  "qa": {
+    "size": [
+      32,
+      48
+    ],
+    "opaque_pixels": 855,
+    "warnings": [],
+    "bbox": [
+      1,
+      2,
+      30,
+      44
+    ],
+    "fill_of_canvas": 0.84,
+    "colors": 9,
+    "orphan_pixels": 7,
+    "outline_coverage": 0.89,
+    "components": 1,
+    "mirror_symmetry": 0.4
+  },
+  "exported": "crt-tv-cart.png"
+}

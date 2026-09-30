@@ -1,0 +1,18 @@
+{
+  "png_exports_checked": 8,
+  "checks": [
+    "exact native dimensions",
+    "binary alpha with transparent and opaque pixels",
+    "opaque colors within shared DEAD MALL profile palette",
+    "32-color maximum",
+    "four Aseprite masters pixel-identical on roundtrip",
+    "visual inspection at native and integer-scaled sizes"
+  ],
+  "game_integration_tested": false,
+  "notes": {
+    "gumball-machine": "Globe, vending body, knob, pedestal and foot remain recognizable. Retained isolated detail pixels in glass and highlights; compact version simplifies the knob.",
+    "mall-directory": "Cabinet and illuminated map panel remain recognizable. Map becomes an abstract color diagram at compact size; no readable text.",
+    "wet-floor-sign": "Handle hole, A-frame and hazard triangle remain recognizable. Slipping-person pictogram is simplified at compact size.",
+    "crt-tv-cart": "CRT, bright static band, shelves, VHS player and casters remain recognizable. Small controls and cord merge at compact size."
+  }
+}
