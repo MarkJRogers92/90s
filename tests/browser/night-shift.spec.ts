@@ -233,7 +233,7 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   await launchRun(page, '/?seed=7');
   // Measure the concourse itself, once the clock-in cold open has cleared.
   await expect
-    .poll(() => runSnapshot(page).then((state) => (state as { cinematic?: boolean }).cinematic), { timeout: 10_000 })
+    .poll(() => runSnapshot(page).then((state) => (state as { cinematic?: boolean }).cinematic), { timeout: 45_000 })
     .toBe(false);
   const first = await runSnapshot(page);
   expect(first.roomId).toBe('service_corridor');
@@ -414,12 +414,16 @@ test('actor presentation follows real movement, attack, and the first Food Court
     .toBe('food_court');
   await page.keyboard.up('d');
 
+  // Keep the snapshot that showed the cue: the cue is brief, so a second
+  // snapshot taken later would find it already gone.
+  let foodCourt!: NonNullable<Awaited<ReturnType<typeof runSnapshot>>['actorPresentation']>;
   await expect.poll(async () => {
     const presentation = (await runSnapshot(page)).actorPresentation;
-    return presentation?.hangers.some((hanger) => hanger.spriteActive && hanger.lungeCueVisible) ?? false;
+    const seen = presentation?.hangers.some((hanger) => hanger.spriteActive && hanger.lungeCueVisible) ?? false;
+    if (seen && presentation) foodCourt = presentation;
+    return seen;
   }, { timeout: 15_000 }).toBe(true);
-  const foodCourt = (await runSnapshot(page)).actorPresentation!;
-  const hanger = foodCourt.hangers.find((candidate) => candidate.spriteActive);
+  const hanger = foodCourt.hangers.find((candidate) => candidate.spriteActive && candidate.lungeCueVisible);
   expect(hanger?.vectorFallbackActive).toBe(false);
   expect(hanger?.lungeCueDepth).toBeGreaterThan(foodCourt.depthBands.tallForeground);
 

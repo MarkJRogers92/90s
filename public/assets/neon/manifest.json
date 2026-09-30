@@ -1652,22 +1652,22 @@
   {
     "path": "public/assets/neon/items/leaf-blower.png",
     "source": "docs/art/neon-overhaul/pixellab/items/leaf-blower.png",
-    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
+    "generator": "PixelLab generate-image-pixflux (32x32, high top-down, palette forced from the earlier item icons), round 38 redo, binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "cbdf90e58fb2f54bf8cb68a7c0df7ea48dd058661bb1f663fd0c68598c04870d"
+    "sha256": "893054b1aa3fe21c5393c5e42e205dc0bd3a69cbb93d0595bb26e505fe7c750d"
   },
   {
     "path": "public/assets/neon/items/staple-gun.png",
     "source": "docs/art/neon-overhaul/pixellab/items/staple-gun.png",
-    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
+    "generator": "PixelLab generate-image-pixflux (32x32, high top-down, palette forced from the earlier item icons), round 38 redo, binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "79f80a9d0619c51ad8329cd42d4bca0da1bc85957ac887d11c43886cfbb156d7"
+    "sha256": "30ed904f927b7042c860e522fc7a24ab608f3f13d33a6236d6a9d2d7b41f2a02"
   },
   {
     "path": "public/assets/neon/items/claw-hammer.png",
@@ -1882,12 +1882,12 @@
   {
     "path": "public/assets/neon/items/mic-stand.png",
     "source": "docs/art/neon-overhaul/pixellab/items/mic-stand.png",
-    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
+    "generator": "PixelLab generate-image-pixflux (32x32, high top-down, palette forced from the earlier item icons), round 38 redo, binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "b269c9d3910b2e3aeb1f65365e8319e2bf9cf6b04de2702426f2527d700ca72a"
+    "sha256": "060f9fa413c8388a22706e397b5914df99dc66da97e4c7a5cb839ccdc87708dd"
   },
   {
     "path": "public/assets/neon/items/drumsticks.png",
