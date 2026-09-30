@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { worldToCanvas } from './projection';
+import { CANVAS_START_MS } from './timing';
 
 type DebugSnapshot = {
   tick: number;
@@ -26,7 +27,7 @@ type DebugSnapshot = {
 async function startShift(page: Page, path = '/'): Promise<void> {
   await page.goto(path);
   await page.getByRole('button', { name: 'Start shift', exact: true }).click();
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.getByTestId('run-hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);

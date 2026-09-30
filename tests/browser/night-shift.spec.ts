@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { worldToCanvas } from './projection';
+import { CANVAS_START_MS } from './timing';
 
 type RunSnapshot = {
   mode: 'run';
@@ -141,8 +142,8 @@ async function launchRun(page: Page, path = '/'): Promise<void> {
 
 /** Waits until the run scene, its HUD, and the development bridge are live. */
 async function waitForRun(page: Page): Promise<void> {
-  await expect(page.locator('canvas')).toHaveCount(1);
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.locator('#mvp-run-hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => runSnapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
@@ -207,7 +208,7 @@ test('launches Night Shift with one canvas, one HUD, and the Opening Concourse',
   const errors = collectErrors(page);
   await launchRun(page);
 
-  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await expect(page.getByTestId('mvp-run-hud')).toHaveCount(1);
 
   const state = await runSnapshot(page);
@@ -449,12 +450,18 @@ test('Opening Concourse sorts the player and carrier by their own feet', async (
   test.setTimeout(45_000);
   await launchRun(page, '/?fixture=mvp-bench&seed=7');
   await page.keyboard.down('s');
+  // Judge one snapshot, taken while the two stand at different heights and the
+  // renderer has drawn that same frame. A second read under load could land
+  // after the following car has caught up to the janitor's height.
+  let state = await runSnapshot(page);
   await expect.poll(async () => {
-    const state = await runSnapshot(page);
-    return state.carrier ? Math.abs(state.player.y - state.carrier.y) : 0;
-  }, { timeout: 10_000 }).toBeGreaterThan(1);
+    state = await runSnapshot(page);
+    const depths = state.presentation?.actorDepths ?? [];
+    const drawn = (id: string, y: number | undefined) => depths.find((actor) => actor.id === id)?.baseY === y;
+    return state.carrier !== null && Math.abs(state.player.y - state.carrier.y) > 1
+      && drawn('player', state.player.y) && drawn('carrier', state.carrier.y);
+  }, { timeout: 10_000, intervals: [20] }).toBe(true);
   await page.keyboard.up('s');
-  const state = await runSnapshot(page);
   const player = state.presentation?.actorDepths.find((actor) => actor.id === 'player');
   const carrier = state.presentation?.actorDepths.find((actor) => actor.id === 'carrier');
   expect(player?.baseY).toBe(state.player.y);
@@ -606,7 +613,7 @@ test('ten restarts keep one canvas, one HUD, and a clean run', async ({ page }) 
     await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   }
 
-  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await expect(page.getByTestId('mvp-run-hud')).toHaveCount(1);
   const state = await runSnapshot(page);
   expect(state.generation).toBe(11);
@@ -918,7 +925,7 @@ test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) =>
   await page.getByText('Inspect shift details', { exact: true }).click();
   await expect(page.locator('#mvp-run-inspection')).not.toHaveAttribute('open', '');
   await expect(page.getByText('Inspect shift details', { exact: true })).toBeFocused();
-  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

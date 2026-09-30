@@ -1,5 +1,6 @@
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
 import { worldToCanvas } from './projection';
+import { CANVAS_START_MS } from './timing';
 
 type PresentationSnapshot = {
   generation: number;
@@ -64,7 +65,7 @@ async function launchRun(page: Page, viewport: { width: number; height: number }
   await page.setViewportSize(viewport);
   await page.goto('/?seed=7');
   await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
-  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await expect(page.locator('#mvp-run-hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);

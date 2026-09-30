@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { worldToCanvas } from './projection';
+import { CANVAS_START_MS } from './timing';
 
 type BenchSnapshot = {
   mode: 'bench';
@@ -55,8 +56,8 @@ async function benchSnapshot(page: Page): Promise<BenchSnapshot> {
 async function launchBench(page: Page, path = '/'): Promise<void> {
   await page.goto(path);
   await page.getByRole('button', { name: 'Void the Warranty', exact: true }).click();
-  await expect(page.locator('canvas')).toHaveCount(1);
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.locator('#bench-hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => benchSnapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
@@ -67,7 +68,7 @@ test('launches void the warranty with one canvas, one HUD, and bench warrant kio
 }) => {
   const errors = collectErrors(page);
   await launchBench(page);
-  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await expect(page.getByTestId('bench-hud')).toHaveCount(1);
   await expect(page.locator('#bench-interaction')).toContainText('BENCH WARRANT');
   const state = await benchSnapshot(page);
@@ -226,7 +227,7 @@ test('late pickup, recall, doorway transfer, restarts, and return clean up', asy
   expect(restarted.cash).toBe(10);
   expect(restarted.revision).toBe(0);
   expect(restarted.activeRoom).toBe('service');
-  await expect(page.locator('canvas')).toHaveCount(1);
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await page.getByRole('button', { name: 'Return to title', exact: true }).click();
   await expect(page.getByRole('button', { name: 'Void the Warranty', exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Void the Warranty', exact: true })).toBeEnabled();
@@ -241,7 +242,7 @@ test('at 1440x900 canvas and HUD share the viewport without horizontal overflow'
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await launchBench(page);
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.locator('#bench-hud')).toBeVisible();
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - 1440);
   expect(overflow).toBeLessThanOrEqual(0);

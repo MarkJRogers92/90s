@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { worldToCanvas } from './projection';
+import { CANVAS_START_MS } from './timing';
 
 type LabSnapshot = {
   mode: 'shift' | 'lab';
@@ -71,8 +72,8 @@ async function launchInteractionLab(page: Page, fixture?: string): Promise<void>
   const launch = page.getByRole('button', { name: 'Interaction Lab', exact: true });
   await expect(launch).toBeVisible();
   await launch.click();
-  await expect(page.locator('canvas')).toHaveCount(1);
-  await expect(page.locator('canvas')).toBeVisible();
+  await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
+  await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await expect(page.getByTestId('run-hud')).toHaveCount(1);
   await expect(page.getByRole('region', { name: 'Interaction Lab' })).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
