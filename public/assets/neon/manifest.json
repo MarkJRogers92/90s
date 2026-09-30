@@ -2328,5 +2328,65 @@
       64
     ],
     "sha256": "d2ae15d11f391e35cffe7d602f3c7463d6c76c50fe5283fdafc644c0ea226569"
+  },
+  {
+    "path": "public/assets/neon/enemies/roofer-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-roofer-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py (frames shifted down 14px by shift_frames.py)",
+    "size": [
+      1088,
+      136
+    ],
+    "sha256": "4c145e554a09382e632c0e5d769c8888c43b25a914c0b1fa4f2121ab8fe4105e"
+  },
+  {
+    "path": "public/assets/neon/enemies/roofer-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-roofer-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py (frames shifted down 14px by shift_frames.py)",
+    "size": [
+      816,
+      1088
+    ],
+    "sha256": "03335996a9e5a172658084efdc072e0dda97658d11a4260029a94dab4d37ba58"
+  },
+  {
+    "path": "public/assets/neon/enemies/roofer-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-roofer-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py (frames shifted down 14px by shift_frames.py)",
+    "size": [
+      952,
+      1088
+    ],
+    "sha256": "e081004303abcf23a8ea4af7be0880e5585d08f2132c9d928d643d2e5009e197"
+  },
+  {
+    "path": "public/assets/neon/enemies/developer-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-developer-idle.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      1440,
+      180
+    ],
+    "sha256": "af9fda6e5695a553fff16462d0e1898cc305cc177dd5116233a2a453e65231b2"
+  },
+  {
+    "path": "public/assets/neon/enemies/developer-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-developer-walk.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      1080,
+      1440
+    ],
+    "sha256": "5b0e870a0d8d343972c4270d9c25edad40780291c33a95e835f7390187127161"
+  },
+  {
+    "path": "public/assets/neon/enemies/developer-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-developer-death.png",
+    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "size": [
+      1260,
+      1440
+    ],
+    "sha256": "62fe2811945161c37b14cbb761788248e6dc1b0f19007f18e5428d60e032f781"
   }
 ]

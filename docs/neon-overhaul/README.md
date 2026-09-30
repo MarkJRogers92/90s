@@ -1005,3 +1005,53 @@ From the first real playtest log (21 shifts) and the owner's direction that
 - Browser pane gotcha: a hidden pane throttles rAF to ~1 fps, so the game
   looks broken. Check `document.hidden` before chasing a frame-rate bug.
 
+## Round 36: sell and drop
+
+- `sim/run/resale.ts`: pick one item at the Bench Warrant and X / SELL pays
+  `resaleValue` (half the shelf price per clean part, a quarter per stolen
+  one, at least $1). X anywhere drops the held weapon as a floor item that
+  keeps its provenance and fusion (`MallTokenPickup.node`); it is picked back
+  up only after the janitor steps out of `TOKEN_PICKUP_RADIUS` and returns
+  (`awaitingStepOff`). The last weapon is never dropped or sold, and says so.
+
+## Round 37: Floor 4, the Roof (the new finale)
+
+Beating the Mall Owner now clears Floor 3 and offers the escalator to the
+Roof. Beating **the Developer** on the Helipad is the win.
+
+- **Floor table** (`sim/wing/floorSpecs.ts`): each floor's room names, boss,
+  full-strength fights, enemy mix and wing-seed derivation, plus
+  `FINAL_FLOOR`. The game side keeps one `Record<FloorNumber, ...>` per
+  concern (HUD names/objectives, PA, fight music, dressing, escalator ride,
+  pink slip). **To add a floor**: extend `FloorNumber` and `FLOOR_SPECS`,
+  and tsc lists every table left to fill. A test pins seed 5's fights on
+  floors 1-3 so a new floor can't disturb the ones below.
+- **The Roofer** (`combat/roofer.ts`, 20 hp): keeps `ROOFER_FLEE_RANGE` (200)
+  between throws; lobs a bucket at the janitor's spot with a
+  `ROOFER_LOB_TICKS` (54) flight; `TAR_SPLASH_RADIUS` 36 hurts 1. Every
+  bucket leaves a puddle (`combat/tar.ts`: `RunState.tar`, up to 6,
+  `TAR_PUDDLE_TICKS` 300) that slows walking to `TAR_SLOW` 0.55; dashes are
+  not slowed. Roofers take Spitter slots on the Roof (45%).
+- **The Developer** (`BOSS_CONFIGS.developer`, 240 hp): slam and a
+  five-blueprint fan; from phase 2 every other attack is a `tarBarrage`
+  (3 rings, 5 in phase 3, 72 px around the janitor, 60 ticks, landing like
+  a Roofer's). Calls one Roofer at phase 2, two more at phase 3.
+- **Presentation**: `lob` wind-up (landing ring + arcing bucket), tar on the
+  floor decal layer; `roofFloor` dressing (gravel floor, moonlight, sodium
+  door lamps, PixelLab back walls `roof-hvac`, `roof-billboard`,
+  `roof-water-tower`, `roof-access`; collision props become `acUnit`,
+  `ventStack`, `skylight`; mall furniture stays downstairs); the Helipad's
+  billboard reads COMING SOON / LUXURY CONDOS over an H ring; tracks
+  "Rooftop Nocturne" (132, E minor) and "Demolition Order" (156, C sharp
+  minor); PA, pink slip (CONDEMNED WITH THE BUILDING), kill cam
+  (DEMOLITION CANCELLED), boss card (ROOF - HELIPAD).
+- **Sprites**: PixelLab `create_character` (standard, 8 directions) with
+  `walking-6-frames` and `falling-back-death` templates on 5 or 3
+  directions (the packer mirrors the rest). PixelLab grew the canvases to
+  136 and 180 px, so `ROOFER_DISPLAY_SIZE` / `DEVELOPER_DISPLAY_SIZE` keep
+  them in scale, and `shift_frames.py` dropped the Roofer's feet into line
+  with the other sheets (the game anchors frames at 84% of their height).
+- **Career**: FLOOR 3 CLEARED pays 12 stubs; CLOCKED OUT means the
+  Developer is down.
+- **Fixtures**: `mvp-floor-four`, `-lobby` (HVAC Yard), `-roofer`, `-boss`,
+  `-boss-win`.

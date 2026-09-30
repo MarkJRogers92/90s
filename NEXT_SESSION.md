@@ -18,20 +18,13 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 36): `tsc` clean, 1016 unit tests, `npm run build` passes;
-see TEST_EVIDENCE.md round 36.
+Last gate (round 37): `tsc` clean, 1040 unit tests, `npm run build` passes,
+75 browser tests; see TEST_EVIDENCE.md round 37.
 
 ## Next up
 
-**Round 37: Floor 4, the Roof** (owner's pick, 2026-09-30). It becomes the
-new final floor: beating the Mall Owner offers the escalator again and the
-Roof boss is the win (kill cam, dawn walk-out, CLOCKED OUT), with a FLOOR 3
-CLEARED stub tier. The owner plans more levels per floor later, so replace
-the `1 | 2 | 3` unions and `floor === 3 ? ... : floor === 2 ? ...` ternaries
-(about 25 files) with a per-floor table rather than adding a fourth branch.
-Follow the Round 23b pattern: wing names, a new enemy, a boss config,
-`roofFloor` dressing, two tracks, PA and pink-slip lines, PixelLab sprites,
-fixtures, `floor: 4` checkpoints.
+Round 37 (Floor 4, the Roof) is done; see STATUS.md and the playbook's
+Round 37 section, which says how to add another floor.
 
 Round 36 (sell and drop) is done; see STATUS.md. Left over from it:
 
@@ -43,6 +36,16 @@ Round 36 (sell and drop) is done; see STATUS.md. Left over from it:
   962b3ee2-b74e-4385-8d31-4fb4cc5e18ec handheld) not yet reviewed. Promote
   like round 33 (binary alpha, manifest sha).
 - Later: reduced-flashing toggle.
+
+## Round 37 playtest questions
+
+- Is the Roofer's 54-tick lob readable? Is 1 damage plus a slowing puddle
+  too mean with brutes and Statics in the same room?
+- Does tar pile up into a floor you can't cross? (Six puddles, 5 s each.)
+- The Developer at 240 hp with barrages from phase 2: too long a finale
+  after four floors? Does the night now run too long overall?
+- Is FLOOR 3 CLEARED (12 stubs) the right pay, now that clocking out needs
+  four floors?
 
 ## Round 35 playtest questions
 
@@ -72,12 +75,15 @@ Round 36 (sell and drop) is done; see STATUS.md. Left over from it:
 
 ## What the game has now
 
-- **Three floors**, six rooms each, reached by the escalator:
+- **Four floors**, six rooms each, reached by the escalator (one table:
+  `src/sim/wing/floorSpecs.ts`):
   - Floor 1 ends with the Loss Prevention Manager.
   - Floor 2 (Statics, Bargain Hunters) ends with the Mall Manager.
   - Floor 3, Food Court After Dark (Mascot Brute), ends with the Mall Owner.
-  - Jump in with `?fixture=mvp-floor-two`, `mvp-floor-two-boss` and the
-    Floor 3 fixtures listed in the playbook.
+  - Floor 4, the Roof (Roofers and their tar), ends with the Developer: the win.
+  - Jump in with `?fixture=mvp-floor-two`, `mvp-floor-two-boss`,
+    `mvp-floor-four-roofer`, `mvp-floor-four-boss` and the other fixtures
+    listed in the playbook.
 - **Grab and run** (round 25): press F on a shelf item to set off the alarm,
   then get out before the shutter drops. The loop adds Heat, wanted stars and
   hot goods, and fusing a hot item at the Bench Warrant launders it.
@@ -170,8 +176,8 @@ Candidates, not commitments. Pick with the owner.
 - Blackouts silence the alarm (option E).
 
 **Content**
-- Floor 4 / the Roof or Parking Garage, or a Basement Service Tunnels
-  secret floor.
+- More levels per floor (the owner's plan): the floor table is ready for
+  it. A Parking Garage or Basement Service Tunnels secret floor.
 - A second playable employee with their own starting kit.
 - More 90s items (Walkman, Tamagotchi, Super Soaker 50, Pogs, Game Boy).
 - Elite variants of enemies.

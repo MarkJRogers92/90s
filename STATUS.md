@@ -7,6 +7,17 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 37 (2026-09-30): Floor 4, the Roof, is the new finale. Beating the
+Mall Owner now offers the escalator once more, to six rooms out under the
+night sky (Roof Access, Skylight Walk, HVAC Yard, Billboard Deck, Water
+Tower, Helipad). The new Roofer lobs hot tar at where you stand (a landing
+ring warns; the splash hurts; the puddle slows walking but not dashing), and
+the Developer on the Helipad, the man who bought the mall to knock it down,
+is the win: slams, blueprint volleys, then tar barrages and Roofers. The
+floors are now one table (`sim/wing/floorSpecs.ts`), so the next floor or
+level is an entry plus whatever tsc lists. PixelLab art for the roof, the
+Roofer and the Developer; two new tracks. See TEST_EVIDENCE.md round 37.
+
 Round 36 (2026-09-30): sell and drop. At the Bench Warrant pick one item and
 X / SELL pays half its shelf price (a quarter if stolen, which also sheds its
 heat; a fusion is worth its parts). X anywhere drops the held weapon exactly
