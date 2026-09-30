@@ -119,3 +119,24 @@ describe('bench tiles show fused icons (round 34)', () => {
     expect(tiles.find((tile) => tile.instanceId === 'c')?.iconDefinitionId).toBe('gel_pens');
   });
 });
+
+describe('selling from the bench card (round 36)', () => {
+  it('one picked item shows what it sells for; the last weapon says why not', async () => {
+    const { resaleValue } = await import('../../src/sim/run/resale');
+    const { openRunWorkbench, pickWorkbenchItem } = await import('../../src/sim/run/bench');
+    const { runWeaponSlots } = await import('../../src/sim/run/weapons');
+    const state = createMvpRun(7);
+    const globe = { kind: 'leaf' as const, instanceId: 'g', itemDefinitionId: 'plasma_globe', acquisitionKind: 'purchased' as const, sourceLocationId: 't', sourceStockId: 't-g', acquisitionTick: 0 };
+    state.inventory = { ...state.inventory, inventory: [...state.inventory.inventory, globe], revision: state.inventory.revision + 1 };
+    const kiosk = state.wing.rooms[state.roomIndex]!.benchKiosk!;
+    state.room.combat.player.x = kiosk.x;
+    state.room.combat.player.y = kiosk.y;
+    openRunWorkbench(state);
+    expect(buildBenchCardModel(state)!.sale).toBeNull();
+    pickWorkbenchItem(state, 'g');
+    expect(buildBenchCardModel(state)!.sale).toEqual({ value: resaleValue(globe), allowed: true, reason: '' });
+    pickWorkbenchItem(state, 'g');
+    pickWorkbenchItem(state, runWeaponSlots(state)[0]!.instanceId);
+    expect(buildBenchCardModel(state)!.sale).toMatchObject({ allowed: false, reason: expect.stringMatching(/last weapon/i) });
+  });
+});

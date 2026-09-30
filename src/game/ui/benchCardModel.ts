@@ -11,6 +11,7 @@ import { shortItemName } from '../../sim/fusion/hybrid';
 import { nodeDefinitionId } from '../../sim/fusion/inventory';
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
+import { keepReason, resaleValue } from '../../sim/run/resale';
 
 export type BenchIngredient = { readonly itemDefinitionId: string; readonly name: string; readonly provenance: string };
 export type BenchChange = { readonly label: string; readonly before: string; readonly after: string };
@@ -49,6 +50,8 @@ export type BenchCardModel = {
   readonly warning: string;
   /** What to do next, or why the picked pair does not fuse. */
   readonly hint: string;
+  /** Round 36: with exactly one item picked, what it sells for (X), or why it cannot be sold. */
+  readonly sale: { readonly value: number; readonly allowed: boolean; readonly reason: string } | null;
 };
 
 /** The most tiles the card shows; the number keys pick the first nine, a click any. */
@@ -81,10 +84,13 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
     };
   });
 
+  const soloNode = firstId !== null && secondId === null ? state.inventory.inventory.find((node) => node.instanceId === firstId) : undefined;
+  const reason = soloNode ? keepReason(state, soloNode.instanceId) : '';
   const base = {
     tiles,
     cash: state.cash,
     warning: 'PERMANENT - BOTH ITEMS ARE CONSUMED, NO REFUNDS',
+    sale: soloNode ? { value: resaleValue(soloNode), allowed: reason === '', reason } : null,
   };
   if (!preview) {
     const picked = tiles.filter((tile) => tile.pick !== null).length;
@@ -102,7 +108,7 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
       affordable: false,
       hint: bench?.message
         ? bench.message.toUpperCase()
-        : picked === 0 ? 'PICK TWO ITEMS TO FUSE (CLICK OR 1-9)' : 'PICK A SECOND ITEM',
+        : picked === 0 ? 'PICK TWO ITEMS TO FUSE (CLICK OR 1-9)' : 'PICK A SECOND ITEM, OR X TO SELL THIS ONE',
     };
   }
 

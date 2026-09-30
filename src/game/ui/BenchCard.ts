@@ -24,7 +24,7 @@ const CARD_Y = (H - CARD_H) / 2;
 const GREEN = 0x6aff8a;
 
 /** A card button, or a click on one of your item tiles. */
-export type BenchCardAction = 'fuse' | 'cancel' | { readonly pick: string };
+export type BenchCardAction = 'fuse' | 'sell' | 'cancel' | { readonly pick: string };
 type Rect = { x: number; y: number; w: number; h: number; action: BenchCardAction };
 
 export class BenchCard {
@@ -53,10 +53,16 @@ export class BenchCard {
     return this.model?.fee !== null && this.model?.affordable === true;
   }
 
+  /** Round 36: exactly one item is picked and it can be sold. */
+  public get canSell(): boolean {
+    return this.model?.sale?.allowed === true;
+  }
+
   public buttonAt(x: number, y: number): BenchCardAction | null {
     if (!this.root.visible) return null;
     const hit = [...this.buttons, ...this.targets].find((b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
     if (hit?.action === 'fuse' && !this.canFuse) return null;
+    if (hit?.action === 'sell' && !this.canSell) return null;
     return hit?.action ?? null;
   }
 
@@ -208,10 +214,14 @@ export class BenchCard {
     this.buttons = [];
     const by = top + CARD_H - 58;
     const canFuse = model.fee !== null && model.affordable;
-    const specs: Array<{ action: 'fuse' | 'cancel'; key: string; text: string; x: number; color: number; disabled: boolean }> = [
-      { action: 'fuse', key: 'ENTER', text: model.fee === null ? 'FUSE' : model.affordable ? 'FUSE' : 'NEED CASH', x: W / 2 - 230, color: GREEN, disabled: !canFuse },
-      { action: 'cancel', key: 'ESC', text: 'CANCEL', x: W / 2 + 20, color: 0x9a8fb4, disabled: false },
+    const sale = model.sale;
+    const specs: Array<{ action: 'fuse' | 'sell' | 'cancel'; key: string; text: string; x: number; color: number; disabled: boolean }> = [
+      { action: 'fuse', key: 'ENTER', text: model.fee === null ? 'FUSE' : model.affordable ? 'FUSE' : 'NEED CASH', x: W / 2 - 350, color: GREEN, disabled: !canFuse },
+      // Round 36: sell the one picked item for its resale value.
+      { action: 'sell', key: 'X', text: sale ? (sale.allowed ? `SELL $${sale.value}` : 'KEEP IT') : 'SELL', x: W / 2 - 105, color: YELLOW, disabled: sale?.allowed !== true },
+      { action: 'cancel', key: 'ESC', text: 'CANCEL', x: W / 2 + 140, color: 0x9a8fb4, disabled: false },
     ];
+    if (sale && !sale.allowed) this.label(slot++, sale.reason.toUpperCase(), '#ff9a6a', W / 2, by - 14, 1);
     for (const spec of specs) {
       const w = 210;
       const h = 42;

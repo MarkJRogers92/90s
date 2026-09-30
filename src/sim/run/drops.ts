@@ -115,7 +115,15 @@ export function collectItemDrops(state: MvpRunState): void {
   const player = state.room.combat.player;
   state.room.tokens = state.room.tokens.filter((pickup) => {
     if (pickup.kind !== 'item' || !pickup.itemDefinitionId) return true;
+    if ((pickup.lockedUntilTick ?? 0) > state.tick) return true;
     if (Math.hypot(pickup.x - player.x, pickup.y - player.y) > TOKEN_PICKUP_RADIUS) return true;
+    if (pickup.node) {
+      // Something the janitor dropped comes back exactly as it went down.
+      state.inventory = { ...state.inventory, inventory: [...state.inventory.inventory, pickup.node], revision: state.inventory.revision + 1 };
+      refreshRunLoadout(state);
+      publishRunFeedback(state, `Picked up the ${itemDefinitionName(pickup.itemDefinitionId)}.`);
+      return false;
+    }
     own(state, foundLeaf(state, pickup.itemDefinitionId, pickup.id));
     publishRunFeedback(state, `${pickup.rare ? 'RARE FIND' : 'Found'}: ${itemDefinitionName(pickup.itemDefinitionId)}.`);
     return false;

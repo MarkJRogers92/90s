@@ -23,14 +23,41 @@ see TEST_EVIDENCE.md round 35.
 
 ## Next up
 
-Rounds 33-35 did the art pass, the fusion spectacle and every store's twist.
-What is left from the owner's list:
+Round 36 is in progress (saved mid-way, 2026-09-30):
 
-1. Drop or sell items (the inventory grows with fusing and drops).
-2. A reduced-flashing toggle: alarms, blackouts, the fusion reveal's shake
-   and sparks, the Radio Shed static.
-3. Fix `presentation-evidence.spec.ts:269` (fails on `main` too).
-4. Optional art: redo the staple gun, leaf blower and mic stand icons.
+- Done: **sell and drop** (`sim/run/resale.ts`). X drops the held weapon
+  (it keeps its provenance and fusion, 45-tick pickup lock, never the last
+  weapon); at the Bench Warrant pick one item and X / SELL pays half its
+  shelf price (a quarter if stolen, a fusion the sum of its parts). Bench
+  card SELL button, controls legends. 1016 unit tests passed before the
+  pause-card height tweak.
+- Done: `presentation-evidence.spec.ts:269` now re-centres on the east door
+  (`nudgePlayerY`) like `enterFirstCombat`. Passed 5/5 serially. The parallel
+  stress run is still to do: earlier stress runs were spoiled by source edits
+  reloading the Vite page mid-test, so run it with nothing being edited:
+  `PW_PORT=4191 npx playwright test --workers=4 --repeat-each=8 tests/browser/presentation-evidence.spec.ts:269`
+- To do: icon redos. Picked staple gun variant A and mic stand variant B
+  (PixelLab jobs bbc92a1e-6f3e-4371-a471-208e384a55f4 and
+  284c02d0-5925-4ae5-9f4e-fb0663313214, download from
+  `https://api.pixellab.ai/mcp/images/<job>/download`). Leaf blower: two new
+  tries (400602cc-639b-4bc2-af1c-4e67f9e1199d backpack,
+  962b3ee2-b74e-4385-8d31-4fb4cc5e18ec handheld) not yet reviewed. Promote
+  like round 33 (binary alpha, manifest sha).
+- Then: browser-check the bench SELL button and X drop, STATUS/TEST_EVIDENCE
+  round 36, commit, PR.
+- Later: reduced-flashing toggle.
+
+## Round 36 (sell and drop) leftovers
+
+Sell and drop are in (X drops, X or SELL at the bench). Left over:
+
+1. Icon redos, on a machine that can reach `api.pixellab.ai`: staple gun
+   `bbc92a1e-6f3e-4371-a471-208e384a55f4`, mic stand
+   `284c02d0-5925-4ae5-9f4e-fb0663313214`, and the better leaf blower of
+   `400602cc-639b-4bc2-af1c-4e67f9e1199d` / `962b3ee2-b74e-4385-8d31-4fb4cc5e18ec`
+   (keep the current one if neither reads). Promote as in round 33.
+2. Reduced-flashing toggle (below).
+3. Run the restart spec with 2 workers on a 4-core box.
 
 ## Round 35 playtest questions
 

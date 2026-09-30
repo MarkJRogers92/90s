@@ -1005,3 +1005,17 @@ From the first real playtest log (21 shifts) and the owner's direction that
 - Browser pane gotcha: a hidden pane throttles rAF to ~1 fps, so the game
   looks broken. Check `document.hidden` before chasing a frame-rate bug.
 
+
+## Round 36: sell and drop
+
+- Rules live in `src/sim/run/resale.ts` (`resaleValue`, `keepReason`; tests in
+  `tests/unit/sell-drop.test.ts`). Half the shelf price, a quarter when
+  stolen, a fusion pays the sum of its parts. The last weapon is never sold
+  or dropped.
+- Drop: `KeyX` in `MvpRunScene.ts` drops the held weapon as a floor pickup
+  with its provenance and fusion and a 45-tick pickup lock.
+- Bench: `sale` in `benchCardModel.ts`, a SELL button in `BenchCard.ts`
+  (pick one tile, X or click). X is in the GameHud and PauseCard legends;
+  PauseCard `CARD_H` is 386.
+- Spec note: `presentation-evidence.spec.ts:269` re-centres with
+  `nudgePlayerY` before the east door. It needs <= 2 workers on 4 cores.

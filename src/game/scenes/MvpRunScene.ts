@@ -10,6 +10,7 @@
  */
 import { browserCareer, discoverFusion, perksFor, type FusionDiscovery } from '../career/career';
 import { playFusionBanner } from '../ui/FusionReveal';
+import { sellWorkbenchItem } from '../../sim/run/resale';
 import { fusionRevealModel } from '../ui/fusionRevealModel';
 import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 import Phaser from 'phaser';
@@ -138,6 +139,8 @@ class MvpRunInputAdapter {
   private pendingRecall = false;
   private pendingSlot = 0;
   private pendingCycle = 0;
+  /** Round 36: X drops the held weapon. */
+  private pendingDrop = false;
   private pendingDash = false;
   /** The controller's reading for this frame, set by the scene before ticking. */
   private pad: PadFrame | null = null;
@@ -223,6 +226,10 @@ class MvpRunInputAdapter {
         this.benchCard.act('cancel');
         return;
       }
+      if (event.code === 'KeyX') {
+        this.benchCard.act('sell');
+        return;
+      }
       // Number keys pick items on the bench instead of switching weapons.
       if (/^Digit[1-9]$/.test(event.code)) {
         const tile = this.benchCard.tileForKey(Number(event.code.slice(5)));
@@ -245,6 +252,8 @@ class MvpRunInputAdapter {
       this.pendingSlot = Number(event.code.slice(5));
     } else if (event.code === 'KeyQ') {
       this.pendingCycle = event.shiftKey ? -1 : 1;
+    } else if (event.code === 'KeyX') {
+      this.pendingDrop = true;
     } else if (event.code === 'Space') {
       // Space must never also scroll the page or press a focused DOM button.
       event.preventDefault();
@@ -327,10 +336,12 @@ class MvpRunInputAdapter {
       selectSlot: this.pendingSlot,
       cycleWeapon: this.pendingCycle || (edges ? pad.cycle : 0),
       dash: this.pendingDash || (edges && pad.dash),
+      drop: this.pendingDrop,
     };
     this.pendingDash = false;
     this.pendingSlot = 0;
     this.pendingCycle = 0;
+    this.pendingDrop = false;
     this.pendingInteract = false;
     this.pendingSteal = false;
     this.pendingRecall = false;
@@ -352,6 +363,7 @@ class MvpRunInputAdapter {
     this.pendingRecall = false;
     this.pendingSlot = 0;
     this.pendingCycle = 0;
+    this.pendingDrop = false;
   }
 
   public destroy(): void {
@@ -496,7 +508,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.inputAdapter.benchCard = {
       isOpen: () => bench.open,
       buttonAt: (x, y) => bench.buttonAt(x, y),
-      act: (action) => (action === 'fuse' ? this.confirmFusion() : action === 'cancel' ? this.cancelFusion() : this.pickBenchItem(action.pick)),
+      act: (action) => (action === 'fuse' ? this.confirmFusion() : action === 'cancel' ? this.cancelFusion() : action === 'sell' ? this.sellBenchItem() : this.pickBenchItem(action.pick)),
       tileForKey: (key) => bench.tileForKey(key),
     };
     this.paTicker = new PaTicker(this, (cue) => this.audio?.play(cue));
@@ -711,6 +723,12 @@ export class MvpRunScene extends Phaser.Scene {
     const { career, discovery } = discoverFusion(store.load(), fusionId);
     if (discovery.firstTime) store.save(career);
     return discovery;
+  }
+
+  /** Round 36: sells the one item picked on the bench. */
+  private sellBenchItem(): void {
+    if (sellWorkbenchItem(this.run).accepted) this.audio?.play('purchase');
+    this.syncView();
   }
 
   private pickBenchItem(instanceId: string): void {

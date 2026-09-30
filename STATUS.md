@@ -7,6 +7,16 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 36 (2026-09-30): sell and drop items. X drops the held weapon as a
+floor pickup (keeps its provenance and fusion, 45-tick pickup lock, the last
+weapon is never dropped). At the Bench Warrant, pick one item and press X or
+click SELL: half the shelf price, a quarter if stolen, a fusion pays the sum
+of its parts. The restart spec's door step now re-centres like
+`enterFirstCombat`. Not done: the staple gun, mic stand and leaf blower icon
+redos (the container's proxy returns 403 for the PixelLab download host, so
+the chosen jobs are still to be fetched). 1016 unit tests pass; see
+TEST_EVIDENCE.md round 36.
+
 Round 35 (2026-09-30): every store plays differently. The seven themed
 stores get twists: Sports Locker's pitching machine fires down the aisle,
 Hardware Hut's paint spills are slippery, Toy Box's wind-up toys shove the
