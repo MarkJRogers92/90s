@@ -18,10 +18,12 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 37): `tsc` clean, 1021 unit tests, `npm run build` passes;
-see TEST_EVIDENCE.md round 37.
+Last gate (round 39, the Roof): see TEST_EVIDENCE.md round 39.
 
 ## Next up
+
+Round 39 (Floor 4, the Roof) is done; see STATUS.md and the playbook's
+Round 39 section, which says how to add another floor.
 
 Rounds 33-37 finished the owner's list (art pass, fusion spectacle, store
 twists, sell and drop, reduced flashing). What is left:
@@ -30,6 +32,16 @@ twists, sell and drop, reduced flashing). What is left:
    do not read.
 2. Playtest rounds 32-37 (questions below) and tune.
 2b. Browser gate: `night-shift.spec.ts:463` flakes under 2-4 workers (passes alone).
+
+## Round 39 (the Roof) playtest questions
+
+- Is the Roofer's 54-tick lob readable? Is 1 damage plus a slowing puddle
+  too mean with brutes and Statics in the same room?
+- Does tar pile up into a floor you can't cross? (Six puddles, 5 s each.)
+- The Developer at 240 hp with barrages from phase 2: too long a finale
+  after four floors? Does the night now run too long overall?
+- Is FLOOR 3 CLEARED (12 stubs) the right pay, now that clocking out needs
+  four floors?
 
 ## Round 35 playtest questions
 
@@ -59,12 +71,15 @@ twists, sell and drop, reduced flashing). What is left:
 
 ## What the game has now
 
-- **Three floors**, six rooms each, reached by the escalator:
+- **Four floors**, six rooms each, reached by the escalator (one table:
+  `src/sim/wing/floorSpecs.ts`):
   - Floor 1 ends with the Loss Prevention Manager.
   - Floor 2 (Statics, Bargain Hunters) ends with the Mall Manager.
   - Floor 3, Food Court After Dark (Mascot Brute), ends with the Mall Owner.
-  - Jump in with `?fixture=mvp-floor-two`, `mvp-floor-two-boss` and the
-    Floor 3 fixtures listed in the playbook.
+  - Floor 4, the Roof (Roofers and their tar), ends with the Developer: the win.
+  - Jump in with `?fixture=mvp-floor-two`, `mvp-floor-two-boss`,
+    `mvp-floor-four-roofer`, `mvp-floor-four-boss` and the other fixtures
+    listed in the playbook.
 - **Grab and run** (round 25): press F on a shelf item to set off the alarm,
   then get out before the shutter drops. The loop adds Heat, wanted stars and
   hot goods, and fusing a hot item at the Bench Warrant launders it.
@@ -157,8 +172,8 @@ Candidates, not commitments. Pick with the owner.
 - Blackouts silence the alarm (option E).
 
 **Content**
-- Floor 4 / the Roof or Parking Garage, or a Basement Service Tunnels
-  secret floor.
+- More levels per floor (the owner's plan): the floor table is ready for
+  it. A Parking Garage or Basement Service Tunnels secret floor.
 - A second playable employee with their own starting kit.
 - More 90s items (Walkman, Tamagotchi, Super Soaker 50, Pogs, Game Boy).
 - Elite variants of enemies.

@@ -9,7 +9,7 @@ import type {
 } from './items/types';
 
 export type RunStatus = 'playing' | 'won' | 'dead';
-export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner';
+export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer';
 export type Vec2 = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 
@@ -59,6 +59,11 @@ export type EnemyState = Vec2 & {
   /** Static: the spot it will blink onto at the end of its wind-up. */
   blinkX?: number;
   blinkY?: number;
+  /** Developer: tar buckets in the air, each landing where it was aimed when its ticks run out. */
+  tarStrikes?: { x: number; y: number; ticks: number }[];
+  /** Roofer: where the bucket in the air will land (locked at the throw). */
+  lobX?: number;
+  lobY?: number;
   /** Bargain Hunter: ticks left in a charge, and a wall-stun. */
   chargeTicks?: number;
   stunnedTicks?: number;
@@ -316,6 +321,9 @@ export type PrimaryAttackContext = {
   readonly projectileOrigin?: Vec2;
 };
 
+/** A tar puddle on the roof (Floor 4): slows walking until it dries. */
+export type TarPuddle = Vec2 & { radius: number; ticks: number };
+
 export type RunState = {
   seed: number;
   tick: number;
@@ -325,6 +333,8 @@ export type RunState = {
   enemies: EnemyState[];
   projectiles: ProjectileState[];
   walls: Rect[];
+  /** Floor 4: tar puddles from the Roofers' buckets. Absent means none. */
+  tar?: TarPuddle[];
   nextEntityId: number;
   roomWasPopulated: boolean;
   rewardGranted: boolean;

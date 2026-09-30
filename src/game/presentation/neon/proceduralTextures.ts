@@ -25,7 +25,9 @@ export type FloorStyle =
   | 'checker'
   | 'carpet'
   | 'concrete'
-  | 'linoleum';
+  | 'linoleum'
+  /** Floor 4: the roof's tar-and-gravel membrane. */
+  | 'gravel';
 
 export function floorTextureKey(style: FloorStyle): string {
   return `floor:${style}`;
@@ -158,7 +160,7 @@ export function ensureFxTextures(scene: Phaser.Scene): void {
       canvas.refresh();
     }
   }
-  for (const style of ['terrazzo', 'checker', 'carpet', 'concrete', 'linoleum'] as const) {
+  for (const style of ['terrazzo', 'checker', 'carpet', 'concrete', 'linoleum', 'gravel'] as const) {
     ensureFloorTexture(scene, style);
   }
 }
@@ -333,6 +335,21 @@ function ensureFloorTexture(scene: Phaser.Scene, style: FloorStyle): void {
       context.fillStyle = '#4d5051';
       context.fillRect(0, 0, size, 1);
       context.fillRect(0, 0, 1, size);
+      break;
+    }
+    case 'gravel': {
+      // The roof: blue-black tar membrane scattered with pale ballast gravel,
+      // and the lap seams of the roll roofing running across it.
+      context.fillStyle = '#2b2d33';
+      context.fillRect(0, 0, size, size);
+      speckle(['#34363d', '#24262b', '#3b3d44'], 320);
+      speckle(['#6c6a70', '#8a8790', '#5b5a60', '#9d97a0'], 170, 1);
+      context.fillStyle = '#1a1b1f';
+      context.fillRect(0, 21, size, 2);
+      context.fillRect(0, 53, size, 2);
+      context.fillStyle = 'rgba(255,255,255,0.07)';
+      context.fillRect(0, 20, size, 1);
+      context.fillRect(0, 52, size, 1);
       break;
     }
     case 'linoleum': {

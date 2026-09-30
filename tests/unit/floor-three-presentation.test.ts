@@ -44,10 +44,10 @@ describe('the shift card on Floor 3', () => {
     expect(card.rows.find((row) => row.label === 'REACHED')?.value).toBe('FLOOR 2 - 6/6');
   });
 
-  it('clocks out only after the Mall Owner, and reaches FLOOR 3 - n/6', () => {
+  it('offers the Roof after the Mall Owner (not CLOCKED OUT), and reaches FLOOR 3 - n/6', () => {
     const win = buildShiftCardModel(ended(topFloor(), 'won'))!;
-    expect(win.headline).toBe('CLOCKED OUT');
-    expect(win.ascend).toBe(false);
+    expect(win.headline).toBe('FLOOR CLEARED');
+    expect(win.ascend).toBe(true);
     expect(win.rows.find((row) => row.label === 'REACHED')?.value).toBe('FLOOR 3 - 6/6');
     const loss = buildShiftCardModel(ended(topFloor(), 'dead', 2))!;
     expect(loss.rows.find((row) => row.label === 'REACHED')?.value).toBe('FLOOR 3 - 3/6');

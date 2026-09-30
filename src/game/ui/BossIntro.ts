@@ -36,6 +36,7 @@ const PORTRAIT_SHEETS: Readonly<Record<BossKind, string>> = {
   lp_manager: ENEMY_TEXTURE_KEYS.lpManagerIdle,
   manager: ENEMY_TEXTURE_KEYS.managerIdle,
   owner: ENEMY_TEXTURE_KEYS.ownerIdle,
+  developer: ENEMY_TEXTURE_KEYS.developerIdle,
 };
 
 export class BossIntro {

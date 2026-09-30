@@ -20,6 +20,7 @@ import { createEnemyStatusState } from '../effects/statuses';
 import type { FusionInventoryState } from '../fusion/types';
 import type { EnemyState, RunState } from '../model';
 import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
+import { floorNumberOf, floorSpec } from '../wing/floorSpecs';
 import { compileRunLoadout } from './loadout';
 import type { MvpRoomEntryFrom } from './types';
 import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
@@ -27,6 +28,7 @@ import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
 import { STATIC_DRIFT_TICKS, STATIC_HEALTH, STATIC_RADIUS } from '../combat/staticEnemy';
 import { SHOPPER_HEALTH, SHOPPER_RADIUS } from '../combat/shopper';
 import { MASCOT_HEALTH, MASCOT_RADIUS } from '../combat/mascot';
+import { ROOFER_HEALTH, ROOFER_RADIUS } from '../combat/roofer';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -56,6 +58,8 @@ const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; rad
   shopper: { health: SHOPPER_HEALTH, radius: SHOPPER_RADIUS, phase: 'recover', phaseTicks: 50 },
   // A Mascot Brute also waits a beat: its wind-up is the first thing it does.
   mascot: { health: MASCOT_HEALTH, radius: MASCOT_RADIUS, phase: 'recover', phaseTicks: 60 },
+  // A Roofer's first bucket waits too, so the Roof's rooms can be read before tar flies.
+  roofer: { health: ROOFER_HEALTH, radius: ROOFER_RADIUS, phase: 'recover', phaseTicks: 70 },
 };
 
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemyState {
@@ -221,7 +225,7 @@ export function buildRoomCombatState(
   );
   if (room.bossAnchor) {
     // Loss Prevention downstairs; the Mall Manager runs the upper level; the Mall Owner owns the roof.
-    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, wing.floor === 3 ? 'owner' : wing.floor === 2 ? 'manager' : 'lp_manager'));
+    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, floorSpec(floorNumberOf(wing)).bossKind));
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
     enemies.push(spawnMannequin(enemies.length + 1, spot.x, spot.y));

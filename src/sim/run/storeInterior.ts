@@ -25,6 +25,7 @@ import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
 import type { Rect, Vec2 } from '../model';
 import { generateWing } from '../wing/generateWing';
 import type { GeneratedWing, WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/types';
+import type { FloorNumber } from '../wing/floorSpecs';
 import { DOORWAY_WIDTH, STORE_TEMPLATES, WALL_THICKNESS, type AuthoredStoreTemplate } from '../wing/templates';
 import { publishRunFeedback } from './economy';
 import { pairUpStock } from './recipeHints';
@@ -163,7 +164,7 @@ function instantiate(template: AuthoredStoreTemplate, seed: number): { store: Wi
  * shop from the templates the wing left unused, and every shop scaled to a
  * full-room interior.
  */
-export function generateRunWing(seed: number, floor: 1 | 2 | 3 = 1): GeneratedWing {
+export function generateRunWing(seed: number, floor: FloorNumber = 1): GeneratedWing {
   const wing = generateWing(seed, floor);
   const used = new Set(wing.rooms.flatMap((room) => (room.store ? [room.store.templateId] : [])));
   const spare = STORE_TEMPLATES

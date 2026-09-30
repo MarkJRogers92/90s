@@ -5,6 +5,7 @@
  * whatever landed the last blow, told the way a mall would.
  */
 import type { DamageSource } from '../playtest/recorder';
+import type { FloorNumber } from '../../sim/wing/floorSpecs';
 
 export const PINK_SLIP_MS = 3500;
 export const SLIP_STAMP_AT_MS = 2000;
@@ -57,9 +58,17 @@ const REASONS: Record<DamageSource, string> = {
   other: 'GENERAL POOR ATTITUDE',
 };
 
+/** A floor boss's own reason, when its slam or shots land the last blow. */
+const BOSS_REASONS: Readonly<Record<FloorNumber, string | null>> = {
+  1: null,
+  2: 'DISAGREEING WITH MANAGEMENT',
+  3: 'HOSTILE TAKEOVER',
+  4: 'CONDEMNED WITH THE BUILDING',
+};
+
 /** Why Alex was let go, from what landed the last blow (bosses by floor). */
-export function pinkSlipReason(source: DamageSource | null, floor: 1 | 2 | 3): string {
-  if ((source === 'slam' || source === 'bossShot') && floor === 3) return 'HOSTILE TAKEOVER';
-  if ((source === 'slam' || source === 'bossShot') && floor === 2) return 'DISAGREEING WITH MANAGEMENT';
+export function pinkSlipReason(source: DamageSource | null, floor: FloorNumber): string {
+  const boss = BOSS_REASONS[floor];
+  if ((source === 'slam' || source === 'bossShot') && boss) return boss;
   return REASONS[source ?? 'other'];
 }

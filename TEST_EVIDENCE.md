@@ -1,5 +1,41 @@
 # Test evidence
 
+## 2026-09-30 — round 39: Floor 4, the Roof
+
+- New tests, run red first: `floor-specs` (4: the floor table), `roofer`
+  (5: lob locked at the throw, splash, dodge, tar slows walking not dashing
+  and dries, backs off), `developer` (5: config, barrage rings on and around
+  the janitor landing together, more in phase 3, alternation, Roofer calls),
+  `floor-four` (8: final floor, names, Roofers only on the Roof, seed 5's
+  floors 1-3 fights pinned to their pre-Roof values, Owner -> Roof ascent,
+  Helipad spawns the Developer, floor-4 checkpoints, FLOOR 3 CLEARED pay),
+  `roof-presentation` (2: lob wind-ups).
+- Changed on purpose: Floor 3 tests now expect the escalator after the Owner
+  and a floor-4 checkpoint to be valid; the browser spec rides the Owner up
+  to the Roof, spawns the Developer, and clocks out on him; the Break Room
+  Employee of the Month now needs the Developer.
+- Refactor gate (floor table, no behaviour change): 1020 unit tests; 8
+  floor/escalator/boss browser tests.
+- Wiring gate: 1038 unit tests; 11 floor/boss browser tests serially
+  (Owner -> FLOOR CLEARED -> Roof, Helipad Developer at HP 240/240,
+  Developer -> CLOCKED OUT with a new shift after, Break Room clock-out pay).
+- Captures (headless Playwright, 1440x900): `artifacts/neon-overhaul/round37/`
+  roofer-lob (splash lands on a janitor standing still), roofer-tar
+  (puddle under the janitor, next ring on its way), roof-access, developer.
+- Found by capture and fixed: tar was drawn over the janitor (moved to the
+  floor decal layer); mall furniture on the roof (collision props swapped for
+  AC units, vent stacks and a skylight; the rest dropped).
+- Final gate, with the Roofer and Developer sheets in: `npx tsc --noEmit`
+  clean; `npx vitest run` 1040 passed; `npm run build` clean; full browser
+  suite `PW_PORT=4191 npx playwright test --workers=2` 75 passed (4.2 min).
+  Captures re-taken with the sprites (developer mid-slam on the pad; the
+  Roofer walking the HVAC Yard with its next bucket in the air).
+- A full browser run with the sprite sheets registered but not yet on disk
+  failed 33 tests on "Failed to process file ... neon:enemy:roofer-idle":
+  the zero-console-errors checks catch a missing asset.
+- Merged with main's rounds 36-38: dropped items keep this branch's
+  step-away rule (`awaitingStepOff`) instead of the 45-tick lock.
+
 ## 2026-09-30 — round 38: icon redos
 
 - The round-36 PixelLab jobs returned `404 Result not found` (results expire),

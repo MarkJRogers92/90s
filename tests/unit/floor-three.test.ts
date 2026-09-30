@@ -45,12 +45,13 @@ describe('Floor 3: Food Court After Dark', () => {
     expect(floorThreeSeed(11)).not.toBe(floorThreeSeed(12));
   });
 
-  it('opens the escalator after floor 2 but not after floor 3', () => {
+  it('opens the escalator after floor 2, and (since the Roof) after floor 3 too', () => {
     expect(canAscend(wonFloorTwo())).toBe(true);
-    const top = ascend(wonFloorTwo());
-    top.status = 'won';
-    expect(canAscend(top)).toBe(false);
-    expect(() => ascend(top)).toThrow();
+    const three = ascend(wonFloorTwo());
+    expect(canAscend(three)).toBe(false);
+    three.status = 'won';
+    expect(canAscend(three)).toBe(true);
+    expect(ascend(three).wing.floor).toBe(4);
   });
 
   it('carries gear, cash, stats and perks, healed', () => {
@@ -85,6 +86,6 @@ describe('Floor 3: Food Court After Dark', () => {
     const restored = restoreMvpRun(parsed.checkpoint);
     expect(restored.wing.floor).toBe(3);
     expect(restored.seed).toBe(state.seed);
-    expect(parseCheckpoint({ ...saved, floor: 4 }).ok).toBe(false);
+    expect(parseCheckpoint({ ...saved, floor: 5 }).ok).toBe(false);
   });
 });

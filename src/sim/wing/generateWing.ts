@@ -22,8 +22,6 @@ import {
   REGULAR_COMBAT_ROOM_ROLES,
   ROOM_BOUNDS,
   ROOM_HEIGHT,
-  FLOOR_THREE_ROOM_NAMES,
-  FLOOR_TWO_ROOM_NAMES,
   ROOM_NAMES,
   ROOM_VARIANTS,
   ROOM_WIDTH,
@@ -47,6 +45,7 @@ import type {
   WingStoreInstance,
 } from './types';
 import { validateWingGraph } from './validateWingGraph';
+import { floorSpec, type FloorNumber } from './floorSpecs';
 
 const STOREFRONT_VARIANT_ID = 'storefront-open-plan';
 const STARTING_CASH = 30;
@@ -190,7 +189,7 @@ function instantiateStore(
 function chooseCombatSpawns(
   rng: ReturnType<typeof createWingRng>,
   variant: AuthoredRoomVariant,
-  floor: 1 | 2 | 3 = 1,
+  floor: FloorNumber = 1,
 ): WingEnemySpawn[] {
   const drawn = nextInt(
     rng,
@@ -198,7 +197,7 @@ function chooseCombatSpawns(
     variant.enemyCount.max,
   );
   // Upstairs every fight is at full strength.
-  const count = floor >= 2 ? variant.enemyCount.max : drawn;
+  const count = floorSpec(floor).fullStrength ? variant.enemyCount.max : drawn;
   if (count === 0) {
     return [];
   }
@@ -214,34 +213,11 @@ function chooseCombatSpawns(
     const authored = slot.kinds[kindIndex]!;
     return {
       slotId: slot.slotId,
-      kind: floor === 3 ? topFloorKind(authored, rng) : floor === 2 ? upperFloorKind(authored, rng) : authored,
+      kind: floorSpec(floor).enemyKind(authored, rng),
       x: slot.x,
       y: slot.y,
     };
   });
-}
-
-/**
- * Upstairs, some of the familiar monsters are replaced: Hangers by the
- * Static, Spitters by Bargain Hunters. Drawn after the floor-1 draws for the
- * slot, so the floor-2 sequence is its own and floor 1 never changes.
- */
-function upperFloorKind(kind: WingEnemySpawn['kind'], rng: ReturnType<typeof createWingRng>): WingEnemySpawn['kind'] {
-  const roll = nextInt(rng, 0, 99);
-  if (kind === 'hanger') return roll < 45 ? 'static' : 'hanger';
-  if (kind === 'spitter') return roll < 45 ? 'shopper' : 'spitter';
-  return kind;
-}
-
-/**
- * The top floor mixes everything: Statics and Bargain Hunters as upstairs,
- * plus Mascot Brutes in place of either familiar monster.
- */
-function topFloorKind(kind: WingEnemySpawn['kind'], rng: ReturnType<typeof createWingRng>): WingEnemySpawn['kind'] {
-  const roll = nextInt(rng, 0, 99);
-  if (kind === 'hanger') return roll < 28 ? 'static' : roll < 58 ? 'mascot' : 'hanger';
-  if (kind === 'spitter') return roll < 32 ? 'shopper' : roll < 62 ? 'mascot' : 'spitter';
-  return kind;
 }
 
 let roomNames: Readonly<Record<WingRoomId, string>> = ROOM_NAMES;
@@ -313,9 +289,9 @@ function storefrontRoom(
   };
 }
 
-export function generateWing(seed: number, floor: 1 | 2 | 3 = 1): GeneratedWing {
+export function generateWing(seed: number, floor: FloorNumber = 1): GeneratedWing {
   const rng = createWingRng(seed);
-  roomNames = floor === 3 ? FLOOR_THREE_ROOM_NAMES : floor === 2 ? FLOOR_TWO_ROOM_NAMES : ROOM_NAMES;
+  roomNames = floorSpec(floor).roomNames;
 
   const combatVariants = new Map<CombatRoomRole, AuthoredRoomVariant>();
   for (const role of COMBAT_ROOM_ROLES) {
@@ -421,7 +397,7 @@ export function generateWing(seed: number, floor: 1 | 2 | 3 = 1): GeneratedWing 
   roomNames = ROOM_NAMES;
   const wing: GeneratedWing = freezeDeep({
     seed,
-    ...(floor === 2 ? { floor: 2 as const } : floor === 3 ? { floor: 3 as const } : {}),
+    ...(floor === 1 ? {} : { floor }),
     rooms,
     startingCash: STARTING_CASH,
   });

@@ -751,11 +751,46 @@ test('the Food Court After Dark boss room spawns the Mall Owner', async ({ page 
   expect(errors.consoleErrors).toEqual([]);
 });
 
-test('beating the Mall Owner plays out to the CLOCKED OUT card, and a new shift starts from it', async ({ page }) => {
+test('beating the Mall Owner clears Floor 3 and rides the escalator up to the Roof', async ({ page }) => {
   test.setTimeout(120_000);
   const errors = collectErrors(page);
   await launchRun(page, '/?fixture=mvp-floor-three-boss-win&seed=4242');
   await expect.poll(() => runSnapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'owner'))).toBe(true);
+  await swingUntilWon(page);
+
+  // Kill cam, then FLOOR CLEARED (not CLOCKED OUT): Enter takes the escalator to the Roof.
+  await expect
+    .poll(async () => {
+      const before = await runSnapshot(page);
+      if (before.status === 'won' && before.floor === 3) await page.keyboard.press('Enter');
+      return runSnapshot(page).then((state) => `${state.status}:${state.floor}:${state.roomId}`);
+    }, { timeout: 30_000, intervals: [700] })
+    .toBe('playing:4:service_corridor');
+
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('the Roof boss room spawns the Developer', async ({ page }) => {
+  test.setTimeout(90_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-four-boss&seed=5150');
+  await expect
+    .poll(() => runSnapshot(page).then((state) => state.roomId), { timeout: 30_000 })
+    .toBe('security_office');
+  const state = await runSnapshot(page);
+  expect(state.floor).toBe(4);
+  expect(state.enemies.some((enemy) => enemy.kind === 'developer')).toBe(true);
+  await expect(page.locator('#mvp-run-boss')).toContainText('HP 240/240');
+  expect(errors.pageErrors).toEqual([]);
+  expect(errors.consoleErrors).toEqual([]);
+});
+
+test('beating the Developer plays out to the CLOCKED OUT card, and a new shift starts from it', async ({ page }) => {
+  test.setTimeout(120_000);
+  const errors = collectErrors(page);
+  await launchRun(page, '/?fixture=mvp-floor-four-boss-win&seed=4242');
+  await expect.poll(() => runSnapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'developer'))).toBe(true);
   await swingUntilWon(page);
 
   // Kill cam, the walk out at dawn, then the card: R starts a new shift.

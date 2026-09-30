@@ -25,6 +25,7 @@ import { MAX_SECURITY_HEAT, MAX_SUSPICION } from '../shop/types';
 import type { CarriedTheft, ShopOfferRuntimeStatus } from '../shop/types';
 import { generateRunWing } from './storeInterior';
 import type { GeneratedWing, WingRoomId } from '../wing/types';
+import { FINAL_FLOOR, isFloorNumber, type FloorNumber } from '../wing/floorSpecs';
 import { syncRunCarrier } from './carrier';
 import { refreshRunLoadout, runCompilerInstances } from './loadout';
 import {
@@ -47,7 +48,7 @@ export type MvpCheckpoint = {
   readonly version: 1;
   readonly seed: number;
   /** Present only on the upper level; older saves are floor 1. */
-  readonly floor?: 2 | 3;
+  readonly floor?: Exclude<FloorNumber, 1>;
   readonly roomIndex: number;
   readonly tick: number;
   readonly cash: number;
@@ -112,7 +113,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
   return {
     version: MVP_CHECKPOINT_VERSION,
     seed: state.seed,
-    ...(state.wing.floor === 2 || state.wing.floor === 3 ? { floor: state.wing.floor } : {}),
+    ...(state.wing.floor !== undefined ? { floor: state.wing.floor } : {}),
     roomIndex: state.roomIndex,
     tick: state.tick,
     cash: state.cash,
@@ -227,10 +228,10 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   if (typeof seed !== 'number' || !Number.isFinite(seed)) {
     return fail('Checkpoint seed must be a finite number.');
   }
-  const floor = value.floor === 3 ? 3 : value.floor === 2 ? 2 : 1;
-  if (value.floor !== undefined && value.floor !== 2 && value.floor !== 3) {
-    return fail('Checkpoint floor must be 2 or 3 when present.');
+  if (value.floor !== undefined && (!isFloorNumber(value.floor) || value.floor === 1)) {
+    return fail(`Checkpoint floor must be 2 to ${FINAL_FLOOR} when present.`);
   }
+  const floor: FloorNumber = isFloorNumber(value.floor) ? value.floor : 1;
   let wing: GeneratedWing;
   try {
     wing = generateRunWing(seed, floor);
@@ -365,7 +366,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     checkpoint: {
       version: MVP_CHECKPOINT_VERSION,
       seed,
-      ...(floor === 2 || floor === 3 ? { floor } : {}),
+      ...(floor === 1 ? {} : { floor }),
       roomIndex,
       tick,
       cash,

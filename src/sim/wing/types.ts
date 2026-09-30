@@ -7,6 +7,7 @@
  */
 import type { Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
+import type { FloorNumber } from './floorSpecs';
 
 export type WingRoomRole =
   | 'service_corridor'
@@ -28,7 +29,7 @@ export type WingDoorway = {
 
 export type WingEnemySpawn = {
   readonly slotId: string;
-  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper' | 'mascot';
+  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper' | 'mascot' | 'roofer';
   readonly x: number;
   readonly y: number;
 };
@@ -79,8 +80,8 @@ export type WingRoomDefinition = {
 
 export type GeneratedWing = {
   readonly seed: number;
-  /** The upper level is floor 2, the food court after dark floor 3; absent means floor 1 (the original wing). */
-  readonly floor?: 2 | 3;
+  /** The floor above the ground floor this wing is on (see floorSpecs.ts); absent means floor 1 (the original wing). */
+  readonly floor?: Exclude<FloorNumber, 1>;
   readonly rooms: readonly WingRoomDefinition[];
   readonly startingCash: number;
 };

@@ -19,6 +19,7 @@ import { CONCOURSE_FURNITURE, INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_XS,
 import type { WingStoreInstance } from '../../../sim/wing/types';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
+import type { FloorNumber } from '../../../sim/wing/floorSpecs';
 
 /* ------------------------------------------------------------------------ */
 /* Stage geometry                                                             */
@@ -54,6 +55,11 @@ export const FACADE_TEXTURES = {
   hardware: { key: 'neon:facade:hardware-hut', file: 'facades/hardware-hut.png', width: 288 },
   toys: { key: 'neon:facade:toy-box', file: 'facades/toy-box.png', width: 288 },
   radio: { key: 'neon:facade:radio-shed', file: 'facades/radio-shed.png', width: 288 },
+  // Round 39: the Roof's back walls (no shops up here).
+  roofHvac: { key: 'neon:facade:roof-hvac', file: 'facades/roof-hvac.png', width: 288 },
+  roofBillboard: { key: 'neon:facade:roof-billboard', file: 'facades/roof-billboard.png', width: 288 },
+  roofTower: { key: 'neon:facade:roof-water-tower', file: 'facades/roof-water-tower.png', width: 288 },
+  roofAccess: { key: 'neon:facade:roof-access', file: 'facades/roof-access.png', width: 288 },
 } as const;
 export type FacadeId = keyof typeof FACADE_TEXTURES;
 
@@ -107,6 +113,10 @@ export const PROP_TEXTURES = {
   waterCooler: { key: 'neon:prop:water-cooler', file: 'props/water-cooler.png', width: 21, height: 55 },
   trayReturn: { key: 'neon:prop:tray-return', file: 'props/tray-return.png', width: 38, height: 54 },
   trashBank: { key: 'neon:prop:trash-bank', file: 'props/trash-bank.png', width: 69, height: 39 },
+  // Round 39: the Roof's stand-ins for mall props that dress collision.
+  acUnit: { key: 'neon:prop:roof-ac-unit', file: 'props/roof-ac-unit.png', width: 65, height: 53 },
+  skylight: { key: 'neon:prop:roof-skylight', file: 'props/roof-skylight.png', width: 118, height: 92 },
+  ventStack: { key: 'neon:prop:roof-vent-stack', file: 'props/roof-vent-stack.png', width: 59, height: 64 },
 } as const;
 export type PropId = keyof typeof PROP_TEXTURES;
 
@@ -924,12 +934,140 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
   }
 }
 
-export function planRoomDressing(room: WingRoomDefinition, floor: 1 | 2 | 3 = 1, insideStore: number | null = null): DressingPlan {
+/**
+ * The Roof (floor 4): out under the night sky. Tar-and-gravel underfoot, cold
+ * moonlight, sodium lamps at the doors, and the back walls are machinery and
+ * sky instead of shops. The Helipad has the Developer's billboard.
+ */
+const MOON = 0x8aa8ff;
+const SODIUM = 0xffa040;
+
+/** What stands in for a mall prop that dresses collision up on the Roof. */
+const ROOF_STAND_INS: Partial<Record<PropId, PropId>> = {
+  planter: 'ventStack',
+  palm: 'ventStack',
+  booth: 'acUnit',
+  securityDesk: 'acUnit',
+  fountain: 'skylight',
+};
+/** Loose clutter that could plausibly be left on a roof; everything else stays downstairs. */
+const ROOF_CLUTTER: ReadonlySet<PropId> = new Set<PropId>(['bin', 'crates', 'pillar']);
+
+/**
+ * The Roof keeps every prop that shows the janitor what blocks him (collision
+ * covers), swapped for rooftop machinery, and drops the mall's furniture.
+ */
+function roofProps(props: readonly DressingProp[]): DressingProp[] {
+  return props.flatMap((prop) => {
+    const stand = ROOF_STAND_INS[prop.prop];
+    if (prop.covers) return [{ ...prop, prop: stand ?? prop.prop }];
+    return ROOF_CLUTTER.has(prop.prop) ? [prop] : [];
+  });
+}
+
+function roofLights(room: WingRoomDefinition, facades: readonly DressingFacade[]): PointLight[] {
+  return [
+    ...facadeSpillLights(facades).map((light) => ({ ...light, intensity: light.intensity * 0.6 })),
+    ...doorwayLights(room, SODIUM),
+    // Moonlight: wide and dim, so the neon and the tar rings read against it.
+    ...ceilingGrid(MOON, 0.35, 260, [200, 400], [200, 760]),
+  ];
+}
+
+function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
+  const roof = { floor: 'gravel' as const, ambient: 0x161c30, civilians: false };
+  switch (room.id) {
+    case 'service_corridor': {
+      const facades = facadeRow([
+        { facade: 'roofHvac', sign: sign('COOLING TOWER 2', NEON.cyan, 'DO NOT TOUCH', NEON.orange, 2), spill: 0x80b0ff },
+        { facade: 'roofAccess', sign: sign('ROOF ACCESS', NEON.yellow, 'AUTHORIZED ONLY', NEON.red), spill: 0xffc070 },
+        { facade: 'roofHvac', sign: sign('UNIT 3', NEON.cyan, undefined, undefined, 2), spill: 0x80b0ff },
+      ]);
+      return {
+        ...plan, ...roof,
+        props: roofProps(plan.props),
+        areaName: 'ROOF ACCESS',
+        facades,
+        lights: roofLights(room, facades),
+        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.yellow }],
+        neonRings: plan.neonRings.map((ring) => ({ ...ring, color: NEON.cyan })),
+      };
+    }
+    case 'storefront_a':
+    case 'storefront_b':
+      return {
+        ...plan,
+        ambient: 0x1c2036,
+        lights: [...plan.lights.map((light) => ({ ...light, intensity: light.intensity * 0.8 })), ...ceilingGrid(MOON, 0.3, 240, [180, 400], [240, 720])],
+        neonStrips: [...plan.neonStrips, { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow }],
+        civilians: false,
+      };
+    case 'food_court': {
+      const facades = facadeRow([
+        { facade: 'roofHvac', sign: sign('UNIT A', NEON.cyan, undefined, undefined, 2), spill: 0x80b0ff },
+        { facade: 'roofHvac', sign: sign('DANGER', NEON.red, 'HIGH VOLTAGE', NEON.yellow), spill: 0xff8070 },
+        { facade: 'roofHvac', sign: sign('UNIT B', NEON.cyan, undefined, undefined, 2), spill: 0x80b0ff },
+      ]);
+      return {
+        ...plan, ...roof,
+        props: roofProps(plan.props),
+        areaName: 'HVAC YARD',
+        facades,
+        lights: roofLights(room, facades),
+        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.cyan }, { x1: 20, y1: 304, x2: 940, y2: 304, color: NEON.orange }],
+      };
+    }
+    case 'back_hall': {
+      const facades = facadeRow([
+        { facade: 'roofTower', sign: sign('DEAD MALL', NEON.magenta, 'WATER DEPT', NEON.cyan, 2), spill: 0xc080ff },
+        { facade: 'roofHvac', sign: null, spill: 0x80b0ff },
+        { facade: 'roofTower', sign: sign('TANK 2', NEON.cyan, undefined, undefined, 2), spill: 0x80b0ff },
+      ]);
+      return {
+        ...plan, ...roof,
+        props: roofProps(plan.props),
+        areaName: 'WATER TOWER',
+        ambient: 0x121828,
+        facades,
+        lights: [...roofLights(room, facades), ...ceilingGrid(SODIUM, 0.45, 130, [150, 360], [480], () => 'buzz')],
+      };
+    }
+    case 'security_office': {
+      const facades = facadeRow([
+        { facade: 'roofAccess', sign: sign('HELIPAD', NEON.yellow, 'CLEAR THE PAD', NEON.red), spill: 0xffc070 },
+        { facade: 'roofBillboard', sign: sign('COMING SOON', NEON.yellow, 'LUXURY CONDOS', NEON.magenta), spill: 0xffd070 },
+        { facade: 'roofHvac', sign: sign('NO TRESPASSING', NEON.red, undefined, undefined, 2), spill: 0xff9080 },
+      ]);
+      return {
+        ...plan, ...roof,
+        props: roofProps(plan.props),
+        areaName: 'HELIPAD',
+        facades,
+        lights: [...roofLights(room, facades), { x: 760, y: 240, radius: 230, color: NEON.yellow, intensity: 0.45, squash: 0.7, flicker: 'pulse' }],
+        neonStrips: [{ x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow }],
+        // The pad itself: a painted H in a ring, lit from below.
+        neonRings: [{ x: 760, y: 240, width: 260, height: 150, color: NEON.yellow }],
+        floorSigns: [{ ...sign('H', NEON.yellow, undefined, undefined, 6), x: 760, y: 240 }],
+      };
+    }
+    default:
+      return plan;
+  }
+}
+
+/** How each floor re-dresses the ground floor's plan for a room. */
+const FLOOR_DRESSING: Readonly<Record<FloorNumber, (plan: DressingPlan, room: WingRoomDefinition) => DressingPlan>> = {
+  1: (plan) => plan,
+  2: (plan, room) => upperFloor(plan, room),
+  3: (plan, room) => topFloor(plan, room),
+  4: (plan, room) => roofFloor(plan, room),
+};
+
+export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null): DressingPlan {
   // A shop looks like itself on any floor.
   const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
   if (shop) return storeInterior(room, shop);
-  const plan = planFloorOneRoom(room);
-  return floor === 3 ? topFloor(plan, room) : floor === 2 ? upperFloor(plan, room) : plan;
+  return FLOOR_DRESSING[floor](planFloorOneRoom(room), room);
 }
 
 function planFloorOneRoom(room: WingRoomDefinition): DressingPlan {

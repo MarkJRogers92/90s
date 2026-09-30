@@ -143,6 +143,12 @@ export const ENEMY_TEXTURE_KEYS = {
   ownerIdle: 'neon:enemy:owner-idle',
   ownerWalk: 'neon:enemy:owner-walk',
   ownerDeath: 'neon:enemy:owner-death',
+  rooferIdle: 'neon:enemy:roofer-idle',
+  rooferWalk: 'neon:enemy:roofer-walk',
+  rooferDeath: 'neon:enemy:roofer-death',
+  developerIdle: 'neon:enemy:developer-idle',
+  developerWalk: 'neon:enemy:developer-walk',
+  developerDeath: 'neon:enemy:developer-death',
 } as const;
 
 /** Item icons keyed by the simulation's item definition id. */
@@ -242,6 +248,12 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.ownerIdle, 'enemies/owner-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.ownerWalk, 'enemies/owner-walk.png'),
   neon(ENEMY_TEXTURE_KEYS.ownerDeath, 'enemies/owner-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.rooferIdle, 'enemies/roofer-idle.png'),
+  neon(ENEMY_TEXTURE_KEYS.rooferWalk, 'enemies/roofer-walk.png'),
+  neon(ENEMY_TEXTURE_KEYS.rooferDeath, 'enemies/roofer-death.png'),
+  neon(ENEMY_TEXTURE_KEYS.developerIdle, 'enemies/developer-idle.png'),
+  neon(ENEMY_TEXTURE_KEYS.developerWalk, 'enemies/developer-walk.png'),
+  neon(ENEMY_TEXTURE_KEYS.developerDeath, 'enemies/developer-death.png'),
   neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
   neon(SCENE_TEXTURE_KEYS.dawnExit, 'ui/dawn-exit.png'),

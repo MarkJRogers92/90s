@@ -7,6 +7,19 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 39 (2026-09-30): Floor 4, the Roof, is the new finale. Beating the
+Mall Owner now offers the escalator once more, to six rooms out under the
+night sky (Roof Access, Skylight Walk, HVAC Yard, Billboard Deck, Water
+Tower, Helipad). The new Roofer lobs hot tar at where you stand (a landing
+ring warns; the splash hurts; the puddle slows walking but not dashing), and
+the Developer on the Helipad, the man who bought the mall to knock it down,
+is the win: slams, blueprint volleys, then tar barrages and Roofers. The
+floors are now one table (`sim/wing/floorSpecs.ts`), so the next floor or
+level is an entry plus whatever tsc lists. PixelLab art for the roof, the
+Roofer and the Developer; two new tracks. Dropped items now wait for the
+janitor to step away before they can be picked back up (replacing round 36's
+45-tick lock, which handed them straight back). See TEST_EVIDENCE.md round 39.
+
 Round 38 (2026-09-30): the staple gun, mic stand and leaf blower icons are
 redone (PixelLab, 32x32, palette forced from the earlier icons). The 14
 candidate icons came from a fresh PixelLab run, since the round-36 jobs had

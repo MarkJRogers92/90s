@@ -21,6 +21,7 @@ import { STATIC_BURST_RADIUS } from '../../sim/combat/staticEnemy';
 import { activeStore } from '../../sim/run/storeInterior';
 import { shelvedSignaturePair } from '../../sim/run/recipeHints';
 import { wantedStars } from '../../sim/run/wanted';
+import type { FloorNumber } from '../../sim/wing/floorSpecs';
 import type { BossKind } from '../../sim/combat/boss';
 
 export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'other';
@@ -86,7 +87,7 @@ export type RunRecord = {
   readonly seed: number;
   readonly outcome: 'won' | 'dead' | 'quit';
   /** Present (2 or 3) only for shifts above the ground floor. */
-  readonly floor?: 2 | 3;
+  readonly floor?: Exclude<FloorNumber, 1>;
   readonly ticks: number;
   readonly reachedRoom: number;
   readonly rooms: readonly RoomLog[];
@@ -391,7 +392,7 @@ export class PlaytestRecorder {
       startedAt: this.startedAt,
       seed: state.seed,
       outcome,
-      ...(state.wing.floor === 2 || state.wing.floor === 3 ? { floor: state.wing.floor } : {}),
+      ...(state.wing.floor !== undefined ? { floor: state.wing.floor } : {}),
       ticks: state.tick - this.startTick,
       reachedRoom: state.roomIndex + 1,
       rooms: this.rooms.map((room) => ({ ...room, damage: { ...room.damage } })),

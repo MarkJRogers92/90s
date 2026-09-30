@@ -24,7 +24,7 @@ import { RARE_ROSTER } from '../items/storeRoster';
 import { itemDefinitionName, publishRunFeedback } from './economy';
 import { refreshRunLoadout } from './loadout';
 import { luck } from './luck';
-import { TOKEN_PICKUP_RADIUS, type EnemyMarker } from './tokens';
+import { TOKEN_PICKUP_RADIUS, type EnemyMarker, type MallTokenPickup } from './tokens';
 import type { MvpRunState } from './types';
 
 /** A regular kill's chance to leave an item. */
@@ -113,10 +113,13 @@ export function dropItemsForDeaths(state: MvpRunState, before: readonly EnemyMar
 export function collectItemDrops(state: MvpRunState): void {
   if (!state.room.tokens.some((pickup) => pickup.kind === 'item')) return;
   const player = state.room.combat.player;
+  const inReach = (pickup: MallTokenPickup) => Math.hypot(pickup.x - player.x, pickup.y - player.y) <= TOKEN_PICKUP_RADIUS;
+  // A dropped item wakes once the janitor has stepped out of reach of it.
+  state.room.tokens = state.room.tokens.map((pickup) =>
+    pickup.awaitingStepOff && !inReach(pickup) ? { ...pickup, awaitingStepOff: false } : pickup);
   state.room.tokens = state.room.tokens.filter((pickup) => {
     if (pickup.kind !== 'item' || !pickup.itemDefinitionId) return true;
-    if ((pickup.lockedUntilTick ?? 0) > state.tick) return true;
-    if (Math.hypot(pickup.x - player.x, pickup.y - player.y) > TOKEN_PICKUP_RADIUS) return true;
+    if (pickup.awaitingStepOff || !inReach(pickup)) return true;
     if (pickup.node) {
       // Something the janitor dropped comes back exactly as it went down.
       state.inventory = { ...state.inventory, inventory: [...state.inventory.inventory, pickup.node], revision: state.inventory.revision + 1 };
