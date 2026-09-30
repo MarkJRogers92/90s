@@ -10,15 +10,15 @@
  */
 import type { BossKind } from '../combat/boss';
 import { nextInt, type createWingRng } from './rng';
-import { FLOOR_THREE_ROOM_NAMES, FLOOR_TWO_ROOM_NAMES, ROOM_NAMES } from './templates';
+import { FLOOR_THREE_ROOM_NAMES, FLOOR_TWO_ROOM_NAMES, ROOF_ROOM_NAMES, ROOM_NAMES } from './templates';
 import type { WingEnemySpawn, WingRoomRole } from './types';
 
-export type FloorNumber = 1 | 2 | 3;
+export type FloorNumber = 1 | 2 | 3 | 4;
 
-export const FLOOR_NUMBERS: readonly FloorNumber[] = Object.freeze([1, 2, 3]);
+export const FLOOR_NUMBERS: readonly FloorNumber[] = Object.freeze([1, 2, 3, 4]);
 
 /** Beating this floor's boss clocks the janitor out. */
-export const FINAL_FLOOR: FloorNumber = 3;
+export const FINAL_FLOOR: FloorNumber = 4;
 
 type WingRng = ReturnType<typeof createWingRng>;
 
@@ -70,6 +70,19 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
       return kind;
     },
     seedFrom: (seed) => (Math.imul(seed | 0, 37) + 104729) | 0,
+  },
+  // The Roof: Roofers lob tar from where the Spitters stood; brutes and Statics still come up.
+  4: {
+    roomNames: ROOF_ROOM_NAMES,
+    bossKind: 'developer',
+    fullStrength: true,
+    enemyKind: (kind, rng) => {
+      const roll = nextInt(rng, 0, 99);
+      if (kind === 'hanger') return roll < 25 ? 'mascot' : roll < 45 ? 'static' : 'hanger';
+      if (kind === 'spitter') return roll < 45 ? 'roofer' : roll < 62 ? 'shopper' : 'spitter';
+      return kind;
+    },
+    seedFrom: (seed) => (Math.imul(seed | 0, 41) + 1299709) | 0,
   },
 };
 

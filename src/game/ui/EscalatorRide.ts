@@ -34,6 +34,12 @@ const RIDES: Readonly<Record<RideFloor, {
     upperRow: ['pizza', 'burger', 'wok'],
     sign: { text: 'FOOD COURT', color: '#ff8a3a', subtitle: 'AFTER DARK - ARCADE - THE OWNER', subtitleColor: '#3ff0ff' },
   },
+  // TODO(round 37 ride): a roof-access ride (stairs to the night sky) instead of shopfronts.
+  4: {
+    lowerRow: ['pizza', 'burger', 'wok'],
+    upperRow: ['arcade', 'cinema', 'arcade'],
+    sign: { text: 'THE ROOF', color: '#ffb02a', subtitle: 'HVAC - HELIPAD - THE DEVELOPER', subtitleColor: '#3ff0ff' },
+  },
 };
 
 const DEPTH = 20_700;

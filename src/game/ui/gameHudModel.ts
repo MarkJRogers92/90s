@@ -136,11 +136,21 @@ const TOP_FLOOR_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
   security_office: "OWNER'S",
 };
 
+const ROOF_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
+  service_corridor: 'ACCESS',
+  storefront_a: 'SKYLIGHTS',
+  food_court: 'HVAC',
+  storefront_b: 'BILLBOARD',
+  back_hall: 'TOWER',
+  security_office: 'HELIPAD',
+};
+
 /** Each floor's map names and its two objectives: reach the boss, then beat it. */
 const FLOOR_HUD: Readonly<Record<FloorNumber, { readonly short: Readonly<Record<WingRoomId, string>>; readonly reach: string; readonly boss: string }>> = {
   1: { short: GROUND_SHORT_NAMES, reach: 'REACH SECURITY', boss: 'STOP LOSS PREVENTION' },
   2: { short: UPSTAIRS_SHORT_NAMES, reach: 'REACH MANAGEMENT', boss: 'FIRE THE MANAGER' },
   3: { short: TOP_FLOOR_SHORT_NAMES, reach: 'REACH THE OWNER', boss: 'TAKE DOWN THE OWNER' },
+  4: { short: ROOF_SHORT_NAMES, reach: 'REACH THE HELIPAD', boss: 'STOP THE DEVELOPER' },
 };
 
 export function heartsFor(health: number, maxHealth = PLAYER_MAX_HEALTH): HeartState[] {
@@ -256,7 +266,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
         health: boss.health,
         max: bossConfigFor(boss.kind).maxHealth,
         phase: boss.bossPhase ?? bossPhaseForHealth(boss.health, bossConfigFor(boss.kind).maxHealth),
-        name: boss.kind === 'owner' ? 'THE MALL OWNER' : boss.kind === 'manager' ? 'MALL MANAGER' : 'LOSS PREVENTION',
+        name: boss.kind === 'developer' ? 'THE DEVELOPER' : boss.kind === 'owner' ? 'THE MALL OWNER' : boss.kind === 'manager' ? 'MALL MANAGER' : 'LOSS PREVENTION',
       }
       : null,
     floor,

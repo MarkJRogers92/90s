@@ -63,6 +63,7 @@ const BOSS_REASONS: Readonly<Record<FloorNumber, string | null>> = {
   1: null,
   2: 'DISAGREEING WITH MANAGEMENT',
   3: 'HOSTILE TAKEOVER',
+  4: 'CONDEMNED WITH THE BUILDING',
 };
 
 /** Why Alex was let go, from what landed the last blow (bosses by floor). */

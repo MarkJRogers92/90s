@@ -81,7 +81,9 @@ export const PA_LINES = {
   boss_floor_one: ['LOSS PREVENTION IS ON THE FLOOR. DO NOT RUN.'],
   boss_floor_two: ['WILL THE MALL MANAGER PLEASE REPORT TO... OH NO.'],
   boss_floor_three: ['THE OWNER WOULD LIKE A WORD. PLEASE DO NOT REPLY.'],
+  boss_floor_four: ['THE DEVELOPER HAS LANDED. THE MALL IS SOLD.'],
   topfloor: ['THE FOOD COURT IS CLOSED. THE MASCOTS ARE NOT.'],
+  roof: ['WELCOME TO THE ROOF. MIND THE EDGE. AND THE TAR.'],
   upstairs: ['WELCOME TO THE UPPER LEVEL. PLEASE HOLD THE HANDRAIL.'],
   idle: [
     'THE MALL CLOSES AT 9 PM. IT IS NOW PAST MIDNIGHT.',
@@ -99,6 +101,7 @@ const FLOOR_PA: Readonly<Record<FloorNumber, { readonly arrive: PaEvent | null; 
   1: { arrive: null, boss: 'boss_floor_one' },
   2: { arrive: 'upstairs', boss: 'boss_floor_two' },
   3: { arrive: 'topfloor', boss: 'boss_floor_three' },
+  4: { arrive: 'roof', boss: 'boss_floor_four' },
 };
 
 type Snapshot = {

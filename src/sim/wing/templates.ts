@@ -104,6 +104,16 @@ export const FLOOR_THREE_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
   security_office: "Owner's Suite",
 };
 
+/** Floor 4, the Roof: the finale, out under the night sky above the dead mall. */
+export const ROOF_ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
+  service_corridor: 'Roof Access',
+  storefront_a: 'Skylight Walk',
+  food_court: 'HVAC Yard',
+  storefront_b: 'Billboard Deck',
+  back_hall: 'Water Tower',
+  security_office: 'Helipad',
+};
+
 export const ROOM_VARIANTS: Readonly<
   Record<CombatRoomRole, readonly [AuthoredRoomVariant, AuthoredRoomVariant]>
 > = {

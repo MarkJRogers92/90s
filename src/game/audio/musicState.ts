@@ -33,7 +33,13 @@ export type MusicCue = {
 const LAST_HEART = 2;
 
 /** Each floor's fight music (bosses have their own tracks, by boss). */
-const FIGHT_TRACKS: Readonly<Record<FloorNumber, MusicTrackId>> = { 1: 'combat', 2: 'upstairs', 3: 'topfloor' };
+const FIGHT_TRACKS: Readonly<Record<FloorNumber, MusicTrackId>> = {
+  1: 'combat',
+  2: 'upstairs',
+  3: 'topfloor',
+  // TODO(round 37 music): the Roof's own fight track.
+  4: 'topfloor',
+};
 
 export function musicCue(state: MvpRunState): MusicCue {
   if (state.status !== 'playing') return { track: 'silent', tempoScale: 1, volume: 0, intensity: 0, tension: false };

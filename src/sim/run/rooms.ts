@@ -28,6 +28,7 @@ import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
 import { STATIC_DRIFT_TICKS, STATIC_HEALTH, STATIC_RADIUS } from '../combat/staticEnemy';
 import { SHOPPER_HEALTH, SHOPPER_RADIUS } from '../combat/shopper';
 import { MASCOT_HEALTH, MASCOT_RADIUS } from '../combat/mascot';
+import { ROOFER_HEALTH, ROOFER_RADIUS } from '../combat/roofer';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -57,6 +58,8 @@ const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; rad
   shopper: { health: SHOPPER_HEALTH, radius: SHOPPER_RADIUS, phase: 'recover', phaseTicks: 50 },
   // A Mascot Brute also waits a beat: its wind-up is the first thing it does.
   mascot: { health: MASCOT_HEALTH, radius: MASCOT_RADIUS, phase: 'recover', phaseTicks: 60 },
+  // A Roofer's first bucket waits too, so the Roof's rooms can be read before tar flies.
+  roofer: { health: ROOFER_HEALTH, radius: ROOFER_RADIUS, phase: 'recover', phaseTicks: 70 },
 };
 
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemyState {

@@ -930,6 +930,8 @@ const FLOOR_DRESSING: Readonly<Record<FloorNumber, (plan: DressingPlan, room: Wi
   1: (plan) => plan,
   2: (plan, room) => upperFloor(plan, room),
   3: (plan, room) => topFloor(plan, room),
+  // TODO(round 37 dressing): the Roof's own dressing.
+  4: (plan, room) => topFloor(plan, room),
 };
 
 export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null): DressingPlan {

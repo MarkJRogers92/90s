@@ -98,12 +98,14 @@ export function newCareer(): Career {
 /** How one finished shift went, as the end card scored it. */
 export type ShiftResult = {
   readonly score: number;
-  /** Clocked out: the top floor's boss (the Mall Owner) is down. */
+  /** Clocked out: the final floor's boss (the Developer, on the Roof) is down. */
   readonly won: boolean;
   /** Loss Prevention is down (true on any floor-2 or floor-3 shift). */
   readonly floorCleared: boolean;
-  /** The Mall Manager is down (true on any floor-3 shift). Absent means false. */
+  /** The Mall Manager is down (true on any floor-3 or Roof shift). Absent means false. */
   readonly floorTwoCleared?: boolean;
+  /** The Mall Owner is down (true on any Roof shift). Absent means false. */
+  readonly floorThreeCleared?: boolean;
   readonly kills: number;
   readonly bestCombo: number;
   readonly seconds: number;
@@ -123,6 +125,7 @@ export function stubsForShift(result: ShiftResult): Pay {
   if (performance > 0) lines.push({ label: 'PERFORMANCE', amount: performance });
   if (result.floorCleared) lines.push({ label: 'FLOOR 1 CLEARED', amount: 6 });
   if (result.floorTwoCleared === true || result.won) lines.push({ label: 'FLOOR 2 CLEARED', amount: 9 });
+  if (result.floorThreeCleared === true || result.won) lines.push({ label: 'FLOOR 3 CLEARED', amount: 12 });
   if (result.won) lines.push({ label: 'CLOCKED OUT', amount: 14 });
   const wanted = Math.max(0, Math.min(5, Math.trunc(result.wanted ?? 0)));
   if (wanted > 0) lines.push({ label: 'FIVE-FINGER BONUS', amount: wanted });
@@ -147,7 +150,7 @@ export type ShiftRecord = {
 
 export function recordShift(career: Career, result: ShiftResult, date: string): ShiftRecord {
   const pay = stubsForShift(result);
-  const polaroid: Polaroid | null = result.floorCleared || result.floorTwoCleared === true || result.won
+  const polaroid: Polaroid | null = result.floorCleared || result.floorTwoCleared === true || result.floorThreeCleared === true || result.won
     ? {
         score: result.score,
         won: result.won,

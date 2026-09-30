@@ -117,12 +117,12 @@ test('a shift that dies still gets paid, with no photo', async ({ page }) => {
   expect(Number(paid?.stubs)).toBeGreaterThan(0);
 });
 
-test('beating the Mall Owner pins up the first Employee of the Month', async ({ page }) => {
+test('beating the Developer pins up the first Employee of the Month', async ({ page }) => {
   test.setTimeout(120_000);
   const errors = collectErrors(page);
-  await page.goto('/?fixture=mvp-floor-three-boss-win&seed=4242');
+  await page.goto('/?fixture=mvp-floor-four-boss-win&seed=4242');
   await startShift(page);
-  await expect.poll(() => snapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'owner'))).toBe(true);
+  await expect.poll(() => snapshot(page).then((state) => state.enemies.some((enemy) => enemy.kind === 'developer'))).toBe(true);
   const box = await page.locator('canvas').boundingBox();
   if (!box) throw new Error('no canvas');
   await page.mouse.move(box.x + box.width * 0.85, box.y + box.height * 0.5);

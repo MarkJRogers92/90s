@@ -1143,6 +1143,42 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-floor-four' || fixture === 'mvp-floor-four-lobby' || fixture === 'mvp-floor-four-roofer' || fixture === 'mvp-floor-four-boss' || fixture === 'mvp-floor-four-boss-win') {
+      // Up all three escalators to the Roof, optionally on to the HVAC Yard fight or the Developer.
+      let roof = state;
+      for (let floor = 1; floor < 4; floor += 1) {
+        roof.status = 'won';
+        roof = ascend(roof);
+      }
+      if (fixture !== 'mvp-floor-four') {
+        const stop = fixture === 'mvp-floor-four-lobby' || fixture === 'mvp-floor-four-roofer' ? 'food_court' : roof.wing.rooms.at(-1)?.id;
+        let guard = 0;
+        while (roof.wing.rooms[roof.roomIndex]?.id !== stop && guard < 10) {
+          guard += 1;
+          roof.room.combat.enemies = [];
+          tickMvpRun(roof, { moveX: 0, moveY: 0, aimX: roof.room.combat.player.x, aimY: roof.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(roof, 'east').accepted) break;
+        }
+      }
+      if (fixture === 'mvp-floor-four-roofer') {
+        // One Roofer across the HVAC Yard, about to throw.
+        const player = roof.room.combat.player;
+        roof.room.combat.enemies = [{
+          id: 1, kind: 'roofer', x: player.x + 300, y: player.y, health: 20, radius: 15, phase: 'pursue',
+          phaseTicks: 0, cooldownTicks: 0, telegraphAimX: 0, telegraphAimY: 0,
+        }];
+      }
+      if (fixture === 'mvp-floor-four-boss-win') {
+        // One swing from the ending: the Developer at a single point of health.
+        const boss = roof.room.combat.enemies.find((enemy) => isBossKind(enemy.kind));
+        if (boss) {
+          boss.health = 1;
+          roof.room.combat.player.x = boss.x - 80;
+          roof.room.combat.player.y = boss.y;
+        }
+      }
+      return roof;
+    }
     if (fixture === 'mvp-floor-three' || fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-brute' || fixture === 'mvp-floor-three-boss' || fixture === 'mvp-floor-three-boss-win') {
       // Straight up both escalators, optionally on to the Arcade fight or the Mall Owner.
       state.status = 'won';

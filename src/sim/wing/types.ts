@@ -29,7 +29,7 @@ export type WingDoorway = {
 
 export type WingEnemySpawn = {
   readonly slotId: string;
-  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper' | 'mascot';
+  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper' | 'mascot' | 'roofer';
   readonly x: number;
   readonly y: number;
 };
