@@ -916,3 +916,22 @@ From the first real playtest log (21 shifts) and the owner's direction that
   colours), marked `PLACEHOLDER` in the manifest. PixelLab was not connected
   in this cloud session. Screens: `artifacts/neon-overhaul/round32/`.
 
+## Round 33: PixelLab art pass
+
+- **Shopfronts**: `sports`, `hardware`, `toys` and `radio` in
+  `FACADE_TEXTURES` (288x160, the storefront recipe above). `storeFacade()`
+  names a store's front; a test keeps every store on a front of its own.
+  Spiral Records, Video World and Slice Station already had fitting fronts.
+  Radio Shed needed a second try: "radio store" alone drew an outdoor street,
+  so say "indoor shopping mall" and "tiled mall floor".
+- **Item icons**: `create_image_pixflux`, 32x32, `high top-down`, single black
+  outline, detailed shading, and a forced palette (`color_image`) quantised
+  from the 24 earlier icons plus a five-step gold ramp for rares. Sources in
+  `docs/art/neon-overhaul/pixellab/items/`; runtime copies get binary alpha.
+  `scripts/placeholder-icons.mjs` is gone (re-running it would have
+  overwritten the art). Weakest reads, worth a redo: staple gun and leaf
+  blower (both look like flashlights), mic stand (small).
+- PixelLab runs at most 8 jobs at once; the no-auth `download_url` of a
+  finished job can be fetched with curl, so batches do not need `get_image`.
+- Spend: 69 generations (799 -> 730). Screens: `artifacts/neon-overhaul/round33/`.
+

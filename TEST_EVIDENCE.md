@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-09-30 — round 33: PixelLab art pass (shopfronts and item icons)
+
+- New tests in `store-roster`: every store has a shopfront of its own that
+  exists on disk (red first: 11 stores shared 7 fronts), and no item icon in
+  the manifest is still a placeholder (red first: 64). `npx tsc --noEmit`
+  clean; `npx vitest run` 970 passed (89 files); `npm run build` clean.
+- Manual (Mac, Chromium in the app's browser pane, 800x600):
+  `?fixture=mvp-store-front&seed=19` (Radio Shed + Hardware Hut), `seed=28`
+  (Toy Box + Sports Locker) and `?fixture=mvp-store&store=toy-box&seed=28`
+  (shelf icons). Signs sit on each front's blank band; no console errors.
+  Screens and icon contact sheets in `artifacts/neon-overhaul/round33/`.
+- Not run this round: the Playwright browser suite (art-only change), so the
+  two round-32 environmental failures are still unconfirmed on the Mac.
+
 ## 2026-09-30 — round 32: deep fusion, themed stores, drops, tuning
 
 - New tests: `playtest-tuning-round32` (6), `deep-fusion` (8),

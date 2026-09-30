@@ -7,6 +7,12 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 33 (2026-09-30): PixelLab art pass. The four themed stores that
+borrowed another shop's front (Sports Locker, Hardware Hut, Toy Box, Radio
+Shed) have their own PixelLab shopfronts, and all 64 placeholder item icons
+(54 store items and the 10 rares) are now PixelLab art in the palette of the
+earlier icons. 970 unit tests pass; see TEST_EVIDENCE.md round 33.
+
 Round 32 (2026-09-30): the fusion game. Anything fuses with anything,
 including things already fused, up to four items in one ($3 more per extra
 item). Seven new themed stores (Sports Locker, Hardware Hut, Toy Box, Radio

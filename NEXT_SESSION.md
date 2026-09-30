@@ -18,24 +18,26 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 26): `tsc` clean, 910 unit tests, `npm run build` passes;
-see TEST_EVIDENCE.md round 26 for the browser run.
+Last gate (round 33): `tsc` clean, 970 unit tests, `npm run build` passes;
+the Playwright suite was not run this round (see TEST_EVIDENCE.md round 33).
 
-## Next up: PixelLab art for round 32
+## Next up
 
-PixelLab was not connected in the cloud session that built round 32. In a
-session that has it (connector, or `PIXELLAB_API_KEY`):
+Round 33 finished the PixelLab art pass: the four borrowed shopfronts and
+all 64 placeholder icons are real art (playbook, "Round 33"). What is left,
+in the owner's order:
 
-1. **Shopfronts first** (most visible): one 288x160 `create_map_object`
-   panel per new store, then point its `STORE_LOOKS` facade at it
-   (`roomDressing.ts`, add to `FACADE_TEXTURES`): Sports Locker, Hardware
-   Hut, Toy Box, Radio Shed, Spiral Records, Slice Station (the pizza
-   counter panel may do), Video World (the video panel may do).
-2. **Item icons**: 64 placeholders (`generator` starts with `PLACEHOLDER` in
-   `public/assets/neon/manifest.json`), 32x32, same file names. The ten rares
-   deserve the most care.
-3. Optional: interior props that would sell a store (weight bench, paint
-   cans, toy shelves, record bins, pizza oven).
+1. Optional art: redo the staple gun, leaf blower and mic stand icons (weak
+   reads), and interior props that would sell a store (weight bench, paint
+   cans, record bins, pizza oven).
+2. **Make fusions a spectacle**: fused icons that stack both items' art with
+   a glow that grows with part count; a sparks-and-stamp reveal and a first
+   "NEW FUSION DISCOVERED" banner; a fusion catalog in the Break Room (the
+   24+16 signature fusions, found count); recipe hints (paired stock, PA).
+3. **Store twists for the seven new stores** (pitching machine, paint
+   spills, wind-up toys, TV static, listening booth, oven zone, rewind tile).
+4. Smaller: run the two round-32 browser failures on the Mac to confirm they
+   are environmental; drop or sell items; a reduced-flashing toggle.
 
 ## Round 32 playtest questions
 

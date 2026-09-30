@@ -36,6 +36,8 @@ FACADES = [
     'video-store', 'music-store', 'electronics-store', 'arcade', 'boutique',
     'cinema-concession', 'pizza-counter', 'burger-counter', 'wok-counter', 'security-office',
     'back-hall-wall',
+    # Round 33: shopfronts for the themed stores that borrowed one.
+    'sports-locker', 'hardware-hut', 'toy-box', 'radio-shed',
 ]
 PROPS = [
     'globe-fountain', 'bunny-mascot', 'food-table-set', 'planter-long',
