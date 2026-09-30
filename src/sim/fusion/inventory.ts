@@ -7,8 +7,9 @@
  */
 import { ITEM_CATALOG } from '../items/catalog';
 import type { ItemDefinition, ItemInstance } from '../items/types';
-import { HYBRID_BASE_FEE, HYBRID_CLEAN_DISCOUNT, hybridDefinitionId, isHybridPair } from './hybrid';
+import { hybridDefinitionId, hybridFee, isHybridPair } from './hybrid';
 import type {
+  FusionPart,
   FusionComposite,
   FusionInventoryNode,
   FusionInventoryState,
@@ -36,10 +37,32 @@ function isEmitterCarrier(definition: ItemDefinition): boolean {
   return definition.capabilities?.includes('emitter_carrier') === true;
 }
 
+/** Every catalog item a node was made from, base first. */
+export function compositeLeaves(node: FusionInventoryNode): InventoryLeaf[] {
+  if (node.kind === 'leaf') return [node];
+  if (node.recipeId === 'emitter_mount') return [node.primary, node.carrier];
+  return [...compositeLeaves(node.primary), ...compositeLeaves(node.carrier)];
+}
+
+/** How many catalog items a node holds: 1 for an item, up to four for a hybrid. */
+export function fusionPartCount(node: FusionInventoryNode): number {
+  return compositeLeaves(node).length;
+}
+
+/** Nothing in it was stolen: bought, or (round 32) found. */
+export function isCleanPart(node: FusionInventoryNode): boolean {
+  return compositeLeaves(node).every((leaf) => leaf.acquisitionKind !== 'stolen');
+}
+
+/** Every hybrid inside a node (not the node itself). */
+function nestedHybrids(node: FusionInventoryNode): FusionComposite[] {
+  if (node.kind === 'leaf' || node.recipeId !== 'hybrid') return [];
+  return [node.primary, node.carrier].flatMap((part) => (part.kind === 'composite' ? [part, ...nestedHybrids(part)] : []));
+}
+
 function expectedFeeFor(composite: FusionComposite): number {
-  const bothClean =
-    composite.primary.acquisitionKind === 'purchased' && composite.carrier.acquisitionKind === 'purchased';
-  if (composite.recipeId === 'hybrid') return HYBRID_BASE_FEE - (bothClean ? HYBRID_CLEAN_DISCOUNT : 0);
+  const bothClean = isCleanPart(composite.primary) && isCleanPart(composite.carrier);
+  if (composite.recipeId === 'hybrid') return hybridFee(fusionPartCount(composite), bothClean);
   return bothClean ? 4 : 6;
 }
 
@@ -57,6 +80,10 @@ function isValidLeaf(node: FusionInventoryNode): node is InventoryLeaf {
   );
 }
 
+function isValidPart(node: FusionPart): boolean {
+  return node.kind === 'leaf' ? isValidLeaf(node) : isValidComposite(node);
+}
+
 function isValidComposite(node: FusionInventoryNode): node is FusionComposite {
   if (node.kind !== 'composite') {
     return false;
@@ -66,19 +93,24 @@ function isValidComposite(node: FusionInventoryNode): node is FusionComposite {
     (node.recipeId !== 'emitter_mount' && node.recipeId !== 'hybrid') ||
     !isNonNegativeInteger(node.createdTick) ||
     !isNonEmptyString(node.transactionId) ||
-    !isValidLeaf(node.primary) ||
-    !isValidLeaf(node.carrier) ||
     node.primary.instanceId === node.carrier.instanceId
   ) {
+    return false;
+  }
+  if (node.recipeId === 'hybrid') {
+    return (
+      isValidPart(node.primary) &&
+      isValidPart(node.carrier) &&
+      isHybridPair(nodeDefinitionId(node.primary), nodeDefinitionId(node.carrier))
+    );
+  }
+  if (!isValidLeaf(node.primary) || !isValidLeaf(node.carrier)) {
     return false;
   }
   const primaryDefinition = DEFINITIONS_BY_ID.get(node.primary.itemDefinitionId);
   const carrierDefinition = DEFINITIONS_BY_ID.get(node.carrier.itemDefinitionId);
   if (!primaryDefinition || !carrierDefinition) {
     return false;
-  }
-  if (node.recipeId === 'hybrid') {
-    return isHybridPair(primaryDefinition.id, carrierDefinition.id);
   }
   if (!isProjectilePrimary(primaryDefinition)) {
     return false;
@@ -129,19 +161,31 @@ export function isValidFusionInventoryState(state: FusionInventoryState): boolea
     return false;
   }
   const forestIds = new Set<string>(topLevelIds);
-  for (const node of state.inventory) {
+  const addParts = (node: FusionInventoryNode): boolean => {
     if (node.kind !== 'composite') {
-      continue;
+      return true;
     }
-    for (const componentId of [node.primary.instanceId, node.carrier.instanceId]) {
-      if (forestIds.has(componentId)) {
+    for (const part of [node.primary, node.carrier]) {
+      if (forestIds.has(part.instanceId)) {
         return false;
       }
-      forestIds.add(componentId);
+      forestIds.add(part.instanceId);
+      if (!addParts(part)) {
+        return false;
+      }
+    }
+    return true;
+  };
+  for (const node of state.inventory) {
+    if (!addParts(node)) {
+      return false;
     }
   }
   const transactionIds = new Set<string>();
-  const committedComponentIds = new Set<string>();
+  // A hybrid fused again is one record's result and the next record's part,
+  // so results and parts are each unique, but one id may be both.
+  const committedPartIds = new Set<string>();
+  const committedResultIds = new Set<string>();
   for (const record of state.committedTransactions) {
     if (!isValidRecord(record)) {
       return false;
@@ -150,19 +194,19 @@ export function isValidFusionInventoryState(state: FusionInventoryState): boolea
       return false;
     }
     transactionIds.add(record.transactionId);
-    for (const committedId of [
-      record.primaryInstanceId,
-      record.carrierInstanceId,
-      record.compositeInstanceId,
-    ]) {
-      if (committedComponentIds.has(committedId)) {
+    for (const partId of [record.primaryInstanceId, record.carrierInstanceId]) {
+      if (committedPartIds.has(partId)) {
         return false;
       }
-      committedComponentIds.add(committedId);
+      committedPartIds.add(partId);
     }
+    if (committedResultIds.has(record.compositeInstanceId) || record.compositeInstanceId === record.primaryInstanceId || record.compositeInstanceId === record.carrierInstanceId) {
+      return false;
+    }
+    committedResultIds.add(record.compositeInstanceId);
   }
-  const composites = state.inventory.filter(
-    (node): node is FusionComposite => node.kind === 'composite',
+  const composites = state.inventory.flatMap((node): FusionComposite[] =>
+    node.kind === 'composite' ? [node, ...nestedHybrids(node)] : [],
   );
   const recordsByTransaction = new Map(
     state.committedTransactions.map((record) => [record.transactionId, record]),
@@ -250,6 +294,6 @@ export function projectFusionInventory(
  */
 export function nodeDefinitionId(node: FusionInventoryNode): string {
   if (node.kind === 'leaf') return node.itemDefinitionId;
-  if (node.recipeId === 'hybrid') return hybridDefinitionId(node.primary.itemDefinitionId, node.carrier.itemDefinitionId);
+  if (node.recipeId === 'hybrid') return hybridDefinitionId(nodeDefinitionId(node.primary), nodeDefinitionId(node.carrier));
   return node.primary.itemDefinitionId;
 }

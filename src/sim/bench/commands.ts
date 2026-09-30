@@ -1,3 +1,4 @@
+import { compositeLeaves } from '../fusion/inventory';
 import { circleIntersectsRect } from '../core/geometry';
 import { recordBehaviorTrace } from '../effects/events';
 import { ITEM_CATALOG } from '../items/catalog';
@@ -141,13 +142,7 @@ export function acquireLateModifier(state: BenchRunState): void {
     return;
   }
   const alreadyOwned = state.fusion.inventory.some((node) => {
-    if (node.kind === 'leaf') {
-      return node.itemDefinitionId === scenario.lateModifierDefinitionId;
-    }
-    return (
-      node.primary.itemDefinitionId === scenario.lateModifierDefinitionId ||
-      node.carrier.itemDefinitionId === scenario.lateModifierDefinitionId
-    );
+    return compositeLeaves(node).some((leaf) => leaf.itemDefinitionId === scenario.lateModifierDefinitionId);
   });
   if (alreadyOwned) {
     state.recentChange = 'The late Gel Pen Pack was already acquired.';

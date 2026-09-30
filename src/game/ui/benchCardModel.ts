@@ -6,6 +6,7 @@
  * Pure, derived from the simulation's own workbench and proposal, so the card
  * can never promise something the fusion will not do.
  */
+import { compositeLeaves, isCleanPart } from '../../sim/fusion/inventory';
 import { shortItemName } from '../../sim/fusion/hybrid';
 import { nodeDefinitionId } from '../../sim/fusion/inventory';
 import { itemDefinitionName } from '../../sim/run/economy';
@@ -61,14 +62,14 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
   const secondId = bench?.secondId ?? preview?.carrierInstanceId ?? null;
 
   const tiles = state.inventory.inventory.slice(0, BENCH_TILE_LIMIT).map((node, index): BenchTile => {
-    const leaf = node.kind === 'leaf' ? node : node.primary;
+    const leaf = compositeLeaves(node)[0]!;
     return {
       key: index + 1,
       instanceId: node.instanceId,
       iconDefinitionId: leaf.itemDefinitionId,
       name: shortItemName(nodeDefinitionId(node)).toUpperCase(),
       fused: node.kind === 'composite',
-      stolen: leaf.acquisitionKind === 'stolen',
+      stolen: !isCleanPart(node),
       pick: node.instanceId === firstId ? 'first' : node.instanceId === secondId ? 'second' : null,
     };
   });
@@ -99,8 +100,8 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
   }
 
   const composite = preview.compositePreview;
-  const primary = ingredient(composite.primary.itemDefinitionId, preview.primaryProvenance);
-  const carrier = ingredient(composite.carrier.itemDefinitionId, preview.carrierProvenance);
+  const primary = ingredient(nodeDefinitionId(composite.primary), preview.primaryProvenance);
+  const carrier = ingredient(nodeDefinitionId(composite.carrier), preview.carrierProvenance);
   const feeNote = preview.cleanDiscount > 0 ? `BASE $${preview.baseFee} - $${preview.cleanDiscount} CLEAN DISCOUNT` : `BASE $${preview.baseFee}`;
   const affordable = state.cash >= preview.fee;
   if (preview.recipeId === 'emitter_mount') {

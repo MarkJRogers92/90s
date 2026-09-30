@@ -5,6 +5,7 @@
  * so every heart, checkbox and minimap cell is traceable to a simulation field
  * and the whole thing is unit-testable.
  */
+import { compositeLeaves, isCleanPart } from '../../sim/fusion/inventory';
 import { runMaxHealth } from '../../sim/run/perks';
 import { bossConfigFor, bossPhaseForHealth, isBossKind } from '../../sim/combat/boss';
 import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
@@ -206,13 +207,13 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   }));
 
   const hotbar = state.inventory.inventory.slice(0, 8).map((node): HudSlot => {
-    const leaf = node.kind === 'leaf' ? node : node.primary;
+    const leaf = compositeLeaves(node)[0]!;
     return {
       instanceId: node.instanceId,
       itemDefinitionId: leaf.itemDefinitionId,
       selected: node.instanceId === state.inventory.selectedPrimaryInstanceId,
       fused: node.kind === 'composite',
-      stolen: leaf.acquisitionKind === 'stolen',
+      stolen: !isCleanPart(node),
       hot: isHotNode(node),
     };
   });

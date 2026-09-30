@@ -4,6 +4,7 @@
  * Pure, derived from the simulation's own terminal summary and run state, so
  * every number on the card is one the run actually recorded.
  */
+import { compositeLeaves } from '../../sim/fusion/inventory';
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
 import { formatDailyDate } from '../run/dailyShift';
@@ -37,11 +38,8 @@ function namesFor(state: MvpRunState, instanceIds: readonly string[]): string {
   if (instanceIds.length === 0) return 'NOTHING';
   const names = instanceIds.map((instanceId) => {
     for (const node of state.inventory.inventory) {
-      if (node.kind === 'leaf' && node.instanceId === instanceId) return itemDefinitionName(node.itemDefinitionId);
-      if (node.kind === 'composite') {
-        if (node.primary.instanceId === instanceId) return itemDefinitionName(node.primary.itemDefinitionId);
-        if (node.carrier.instanceId === instanceId) return itemDefinitionName(node.carrier.itemDefinitionId);
-      }
+      const match = compositeLeaves(node).find((leaf) => leaf.instanceId === instanceId);
+      if (match) return itemDefinitionName(match.itemDefinitionId);
     }
     return 'UNKNOWN ITEM';
   });

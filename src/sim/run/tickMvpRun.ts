@@ -21,6 +21,7 @@
  * input. Room-local enemies, projectiles, surfaces, and the car are rebuilt
  * from the seed whenever the room changes and never carry across a doorway.
  */
+import { compositeLeaves } from '../fusion/inventory';
 import { circleIntersectsRect } from '../core/geometry';
 import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
@@ -418,7 +419,7 @@ function evaluateRoomClear(state: MvpRunState): void {
 
 function publishSummary(state: MvpRunState, status: 'won' | 'dead'): void {
   const leaves = state.inventory.inventory.flatMap((node) =>
-    node.kind === 'leaf' ? [node] : [node.primary, node.carrier],
+    compositeLeaves(node),
   );
   state.status = status;
   state.summary = freezeDeep({

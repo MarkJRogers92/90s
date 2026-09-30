@@ -86,11 +86,12 @@ function cloneNode(node: FusionInventoryNode): FusionInventoryNode {
   if (node.kind === 'leaf') {
     return { ...node };
   }
-  const composite: FusionComposite = {
+  // Hybrids nest since round 32: clone every level.
+  const composite = {
     ...node,
-    primary: { ...node.primary },
-    carrier: { ...node.carrier },
-  };
+    primary: cloneNode(node.primary),
+    carrier: cloneNode(node.carrier),
+  } as FusionComposite;
   return composite;
 }
 

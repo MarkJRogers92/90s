@@ -12,6 +12,7 @@
  * state; it never touches the simulation. Nothing here leaves the machine:
  * records go to `PlaytestLog`, which is local and off until switched on.
  */
+import { compositeLeaves } from '../../sim/fusion/inventory';
 import type { FusionInventoryNode } from '../../sim/fusion/types';
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
@@ -127,7 +128,7 @@ function snapshot(state: MvpRunState): Snapshot {
 function heldFrom(state: MvpRunState, storeId: string, kind: 'purchased' | 'stolen'): number {
   let count = 0;
   for (const node of state.inventory.inventory) {
-    const leaves = node.kind === 'leaf' ? [node] : [node.primary, node.carrier];
+    const leaves = compositeLeaves(node);
     for (const leaf of leaves) if (leaf.acquisitionKind === kind && leaf.sourceLocationId === storeId) count += 1;
   }
   return count;
@@ -177,7 +178,7 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
 function namesBy(nodes: readonly FusionInventoryNode[], kind: 'purchased' | 'stolen'): string[] {
   const names: string[] = [];
   for (const node of nodes) {
-    const parts = node.kind === 'leaf' ? [node] : [node.primary, node.carrier];
+    const parts = compositeLeaves(node);
     for (const part of parts) {
       if (part.acquisitionKind === kind) names.push(itemDefinitionName(part.itemDefinitionId).toUpperCase());
     }

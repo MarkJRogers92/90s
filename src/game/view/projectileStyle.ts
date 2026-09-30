@@ -4,7 +4,7 @@
  * (sticky, rewind, conductive). Pure, so every weapon provably reads
  * differently and a new weapon falls back to a plain bolt.
  */
-import { hybridParts } from '../../sim/fusion/hybrid';
+import { hybridParts, rootItemId } from '../../sim/fusion/hybrid';
 
 export type ProjectileShape = 'droplet' | 'confetti' | 'rocket' | 'cloud' | 'dart' | 'ball' | 'slush' | 'bubble' | 'bolt';
 export type ProjectileTrail = 'droplets' | 'streamers' | 'flame' | 'mist' | 'ink' | 'none' | 'ice';
@@ -48,8 +48,9 @@ const BOLT = { shape: 'bolt' as const, color: 0xf0e6d2, accent: 0x9ad8ff, trail:
 function baseLook(sourceItemId: string): Pick<ProjectileStyle, 'shape' | 'color' | 'accent' | 'trail' | 'scale'> {
   const parts = hybridParts(sourceItemId);
   if (!parts) return BASE[sourceItemId] ?? BOLT;
-  const base = BASE[parts.baseId];
-  const ingredient = BASE[parts.ingredientId];
+  // A deeper fusion looks like the items at the root of each side.
+  const base = BASE[rootItemId(parts.baseId)];
+  const ingredient = BASE[rootItemId(parts.ingredientId)];
   if (base) return { ...base, accent: ingredient?.color ?? base.accent, scale: base.scale * 1.15 };
   return ingredient ?? BOLT;
 }

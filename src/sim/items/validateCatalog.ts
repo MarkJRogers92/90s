@@ -22,6 +22,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 const ITEM_ID_PATTERN = /^[a-z][a-z0-9_]*$/;
+/** A nested hybrid brackets its hybrid parts: `hybrid__(hybrid__a__b)__c`. */
+const HYBRID_ID_PATTERN = /^hybrid__[a-z0-9_()]+$/;
 const DELIVERIES: readonly string[] = ['direct', 'projectile'];
 
 function describe(value: unknown): string {
@@ -391,7 +393,7 @@ export function findCatalogIssues(definitions: unknown): CatalogIssue[] {
     }
 
     const id = definition.id;
-    if (typeof id !== 'string' || !ITEM_ID_PATTERN.test(id)) {
+    if (typeof id !== 'string' || !(ITEM_ID_PATTERN.test(id) || HYBRID_ID_PATTERN.test(id))) {
       issues.push({
         code: 'invalid_definition',
         contentId: typeof id === 'string' ? id : `<index ${index}>`,

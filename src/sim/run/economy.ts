@@ -7,6 +7,7 @@
  * a rejected command leaves cash, Heat, suspicion, offers, inventory, and the
  * player untouched.
  */
+import { compositeLeaves } from '../fusion/inventory';
 import { definitionFor } from '../items/registry';
 import type { InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
@@ -91,12 +92,7 @@ export function itemDefinitionName(itemDefinitionId: ItemId): string {
 function ownedDefinitionIds(state: MvpRunState): Set<ItemId> {
   const ids = new Set<ItemId>();
   for (const node of state.inventory.inventory) {
-    if (node.kind === 'leaf') {
-      ids.add(node.itemDefinitionId);
-      continue;
-    }
-    ids.add(node.primary.itemDefinitionId);
-    ids.add(node.carrier.itemDefinitionId);
+    for (const leaf of compositeLeaves(node)) ids.add(leaf.itemDefinitionId);
   }
   return ids;
 }
@@ -105,7 +101,7 @@ function ownedDefinitionIds(state: MvpRunState): Set<ItemId> {
 function hybridOwns(state: MvpRunState, itemDefinitionId: ItemId): boolean {
   return state.inventory.inventory.some(
     (node) => node.kind === 'composite' && node.recipeId === 'hybrid'
-      && (node.primary.itemDefinitionId === itemDefinitionId || node.carrier.itemDefinitionId === itemDefinitionId),
+      && compositeLeaves(node).some((leaf) => leaf.itemDefinitionId === itemDefinitionId),
   );
 }
 

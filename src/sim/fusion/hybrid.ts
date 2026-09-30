@@ -19,6 +19,12 @@
  *   the run's economy rules;
  * - every fused weapon hits one harder.
  * The RC car is the exception: it only takes a shooter, as an Emitter Mount.
+ *
+ * Round 32: a hybrid can be fused again, with another item or another hybrid,
+ * up to MAX_FUSION_PARTS items in one thing. A nested hybrid's id wraps each
+ * hybrid part in parentheses (`hybrid__(hybrid__a__b)__c`), so a two-item id
+ * is unchanged and every save from before still resolves. The same rules
+ * apply at every depth, and whatever the base already did is kept.
  */
 import { ITEM_CATALOG } from '../items/catalog';
 import type {
@@ -32,6 +38,15 @@ import { freezeDeep } from '../items/types';
 export const HYBRID_PREFIX = 'hybrid__';
 export const HYBRID_BASE_FEE = 5;
 export const HYBRID_CLEAN_DISCOUNT = 2;
+/** The most items one fused thing can hold. */
+export const MAX_FUSION_PARTS = 4;
+/** What each item past the second adds to a fusion's fee. */
+export const HYBRID_FEE_PER_EXTRA_PART = 3;
+
+/** The fee for a fusion that ends up holding `parts` items. */
+export function hybridFee(parts: number, clean: boolean): number {
+  return HYBRID_BASE_FEE + Math.max(0, parts - 2) * HYBRID_FEE_PER_EXTRA_PART - (clean ? HYBRID_CLEAN_DISCOUNT : 0);
+}
 const DEGREES = Math.PI / 180;
 const MAX_OFFSETS = 7;
 
@@ -72,15 +87,56 @@ export function fusionPairFor(first: ItemDefinition, second: ItemDefinition): Fu
   };
 }
 
+function wrapPart(id: string): string {
+  return id.startsWith(HYBRID_PREFIX) ? `(${id})` : id;
+}
+
 export function hybridDefinitionId(baseId: string, ingredientId: string): string {
-  return `${HYBRID_PREFIX}${baseId}__${ingredientId}`;
+  return `${HYBRID_PREFIX}${wrapPart(baseId)}__${wrapPart(ingredientId)}`;
+}
+
+/** Reads one part at `start`: a bracketed hybrid or a plain id up to the next `__`. */
+function readPart(body: string, start: number): { id: string; end: number } | null {
+  if (body[start] === '(') {
+    let depth = 0;
+    for (let index = start; index < body.length; index += 1) {
+      if (body[index] === '(') depth += 1;
+      else if (body[index] === ')') {
+        depth -= 1;
+        if (depth === 0) {
+          const id = body.slice(start + 1, index);
+          return id.startsWith(HYBRID_PREFIX) ? { id, end: index + 1 } : null;
+        }
+      }
+    }
+    return null;
+  }
+  const next = body.indexOf('__', start);
+  const end = next === -1 ? body.length : next;
+  const id = body.slice(start, end);
+  return id.length > 0 && !id.includes('(') && !id.includes(')') ? { id, end } : null;
 }
 
 export function hybridParts(id: string): { baseId: string; ingredientId: string } | null {
   if (!id.startsWith(HYBRID_PREFIX)) return null;
-  const [baseId, ingredientId, extra] = id.slice(HYBRID_PREFIX.length).split('__');
-  if (!baseId || !ingredientId || extra !== undefined) return null;
-  return { baseId, ingredientId };
+  const body = id.slice(HYBRID_PREFIX.length);
+  const base = readPart(body, 0);
+  if (!base || body.slice(base.end, base.end + 2) !== '__') return null;
+  const ingredient = readPart(body, base.end + 2);
+  if (!ingredient || ingredient.end !== body.length) return null;
+  return { baseId: base.id, ingredientId: ingredient.id };
+}
+
+/** How many catalog items an id stands for: 1 for an item, 2-4 for a hybrid. */
+export function hybridPartCount(id: string): number {
+  const parts = hybridParts(id);
+  return parts ? hybridPartCount(parts.baseId) + hybridPartCount(parts.ingredientId) : 1;
+}
+
+/** The catalog item at the root of an id: the item every base chain started from. */
+export function rootItemId(id: string): string {
+  const parts = hybridParts(id);
+  return parts ? rootItemId(parts.baseId) : id;
 }
 
 /** Named combinations: the fusions worth discovering. Order does not matter. */
@@ -129,9 +185,21 @@ export function isSignatureFusion(baseId: string, ingredientId: string): boolean
   return pairKey(baseId, ingredientId) in SIGNATURES;
 }
 
+const MARKS = ['', '', '', 'MK III', 'MK IV'];
+
+function adjectiveFor(id: string): string {
+  return ADJECTIVES[rootItemId(id)] ?? 'Fused';
+}
+
 function hybridName(base: ItemDefinition, ingredient: ItemDefinition): string {
-  return SIGNATURES[pairKey(base.id, ingredient.id)]
-    ?? `${ADJECTIVES[ingredient.id] ?? 'Fused'} ${NOUNS[base.id] ?? base.name}`;
+  const signature = SIGNATURES[pairKey(base.id, ingredient.id)];
+  if (signature) return signature;
+  const parts = hybridPartCount(base.id) + hybridPartCount(ingredient.id);
+  if (parts <= 2) return `${adjectiveFor(ingredient.id)} ${NOUNS[base.id] ?? base.name}`;
+  // Deeper: stack one adjective on the base's own name while it still fits.
+  const stacked = `${adjectiveFor(ingredient.id)} ${base.name}`;
+  if (stacked.length <= 22) return stacked;
+  return `${adjectiveFor(ingredient.id)} ${NOUNS[rootItemId(base.id)] ?? 'Thing'} ${MARKS[parts] ?? ''}`.trim();
 }
 
 /** A modifier's effect, stronger for being bolted on, and owned by the hybrid. */
@@ -239,6 +307,23 @@ function summaryFor(base: ItemDefinition, ingredient: ItemDefinition): string {
   return `${base.name} fused with ${ingredient.name} at the Bench Warrant.`;
 }
 
+/** Everything but the shot a definition already does, now owned by the new hybrid. */
+function carried(definition: ItemDefinition, id: string): ItemEffectSpec[] {
+  return definition.effects
+    .filter((effect) => effect.kind !== 'projectile_payload')
+    .map((effect) => ({ ...effect, sourceItemId: id }));
+}
+
+/** One shot out of two parts that may each already fire one. */
+function combinedPayload(a: ProjectilePayloadEffect | null, b: ProjectilePayloadEffect | null, id: string, bonus: number): ProjectilePayloadEffect | null {
+  if (a && b) {
+    const merged = mergedPayload(a, b, id);
+    return { ...merged, damage: merged.damage + bonus };
+  }
+  const only = a ?? b;
+  return only ? ownPayload(only, id, bonus) : null;
+}
+
 function build(base: ItemDefinition, ingredient: ItemDefinition): ItemDefinition {
   const id = hybridDefinitionId(base.id, ingredient.id);
   const name = hybridName(base, ingredient);
@@ -246,6 +331,8 @@ function build(base: ItemDefinition, ingredient: ItemDefinition): ItemDefinition
   const signature = isSignatureFusion(base.id, ingredient.id) ? 1 : 0;
   const summary = summaryFor(base, ingredient);
   const [baseRole, ingredientRole] = roles;
+  // A base that was already fused keeps what it did (round 32).
+  const kept = carried(base, id);
 
   if (baseRole === 'ranged' && ingredientRole === 'ranged') {
     const payload = mergedPayload(payloadOf(base)!, payloadOf(ingredient)!, id);
@@ -253,12 +340,13 @@ function build(base: ItemDefinition, ingredient: ItemDefinition): ItemDefinition
     return {
       id, name, summary,
       base: { ...base.base!, damage: withSignature.damage, speed: withSignature.speed, cooldownTicks: Math.round(((base.base!.cooldownTicks + ingredient.base!.cooldownTicks) / 2) * 0.9) },
-      effects: [withSignature],
+      effects: [withSignature, ...kept, ...carried(ingredient, id)],
     };
   }
   if (baseRole === 'melee' && ingredientRole === 'melee') {
     const a = base.base!;
     const b = ingredient.base!;
+    const shot = combinedPayload(payloadOf(base), payloadOf(ingredient), id, 0);
     return {
       id, name, summary,
       base: {
@@ -268,27 +356,34 @@ function build(base: ItemDefinition, ingredient: ItemDefinition): ItemDefinition
         halfAngleRadians: Math.max(a.halfAngleRadians, b.halfAngleRadians),
         cooldownTicks: Math.round((a.cooldownTicks + b.cooldownTicks) / 2),
       },
-      effects: [],
+      effects: [...(shot ? [shot] : []), ...kept, ...carried(ingredient, id)],
     };
   }
   if (baseRole === 'melee' && ingredientRole === 'ranged') {
-    const shot = ownPayload(payloadOf(ingredient)!, id, signature);
+    const shot = combinedPayload(payloadOf(base), payloadOf(ingredient), id, signature)!;
     return {
       id, name, summary,
       base: { ...base.base!, damage: base.base!.damage + 1 + signature, cooldownTicks: base.base!.cooldownTicks + 6 },
-      effects: [shot],
+      effects: [shot, ...kept, ...carried(ingredient, id).map((effect) => overclock(effect, id))],
     };
   }
   if (baseRole === 'melee') {
     const { attack, effects } = meleeWithModifier(base.base!, ingredient, id);
-    return { id, name, summary, base: { ...attack, damage: attack.damage + signature }, effects };
+    const own = payloadOf(base);
+    // A second swing bubble would only double up on the one the base fires.
+    const added = own ? effects.filter((effect) => effect.kind !== 'projectile_payload') : effects;
+    return {
+      id, name, summary,
+      base: { ...attack, damage: attack.damage + signature },
+      effects: [...(own ? [ownPayload(own, id, 0)] : []), ...kept, ...added],
+    };
   }
   if (baseRole === 'ranged') {
     const shot = ownPayload(payloadOf(base)!, id, 1 + signature);
     return {
       id, name, summary,
       base: { ...base.base!, damage: shot.damage },
-      effects: [shot, ...ingredient.effects.map((effect) => overclock(effect, id))],
+      effects: [shot, ...kept, ...ingredient.effects.map((effect) => overclock(effect, id))],
     };
   }
   // Two passives (or a passive and a utility): one kit, everything overclocked.
@@ -301,26 +396,33 @@ function build(base: ItemDefinition, ingredient: ItemDefinition): ItemDefinition
 const DEFINITIONS = new Map(ITEM_CATALOG.map((definition) => [definition.id, definition]));
 const CACHE = new Map<string, ItemDefinition>();
 
+/** Any item or hybrid id's definition, or undefined when it is not a legal thing to own. */
+export function fusedDefinitionFor(id: string): ItemDefinition | undefined {
+  const authored = DEFINITIONS.get(id);
+  if (authored) return authored;
+  const parts = hybridParts(id);
+  if (!parts || !isHybridPair(parts.baseId, parts.ingredientId)) return undefined;
+  return hybridDefinition(parts.baseId, parts.ingredientId);
+}
+
 /** The derived definition for a base and an ingredient (throws on an impossible pair). */
 export function hybridDefinition(baseId: string, ingredientId: string): ItemDefinition {
   const id = hybridDefinitionId(baseId, ingredientId);
   const cached = CACHE.get(id);
   if (cached) return cached;
-  const base = DEFINITIONS.get(baseId);
-  const ingredient = DEFINITIONS.get(ingredientId);
-  if (!base || !ingredient || baseId === ingredientId) throw new Error(`No hybrid of "${baseId}" and "${ingredientId}".`);
-  const pair = fusionPairFor(base, ingredient);
-  if (pair.recipe !== 'hybrid' || pair.baseId !== baseId) throw new Error(`"${baseId}" + "${ingredientId}" is not a hybrid in that order.`);
-  const definition = freezeDeep(build(base, ingredient));
+  if (!isHybridPair(baseId, ingredientId)) throw new Error(`"${baseId}" + "${ingredientId}" is not a hybrid in that order.`);
+  const definition = freezeDeep(build(fusedDefinitionFor(baseId)!, fusedDefinitionFor(ingredientId)!));
   CACHE.set(id, definition);
   return definition;
 }
 
-/** True when the pair, in this order, is a legal hybrid. */
+/** True when the pair, in this order, is a legal hybrid of at most MAX_FUSION_PARTS items. */
 export function isHybridPair(baseId: string, ingredientId: string): boolean {
-  const base = DEFINITIONS.get(baseId);
-  const ingredient = DEFINITIONS.get(ingredientId);
-  if (!base || !ingredient || baseId === ingredientId) return false;
+  if (baseId === ingredientId) return false;
+  if (hybridPartCount(baseId) + hybridPartCount(ingredientId) > MAX_FUSION_PARTS) return false;
+  const base = fusedDefinitionFor(baseId);
+  const ingredient = fusedDefinitionFor(ingredientId);
+  if (!base || !ingredient) return false;
   const pair = fusionPairFor(base, ingredient);
   return pair.recipe === 'hybrid' && pair.baseId === baseId;
 }
@@ -328,8 +430,8 @@ export function isHybridPair(baseId: string, ingredientId: string): boolean {
 /** Plain-words lines for the Bench Warrant card: what the hybrid does. */
 export function hybridHighlights(baseId: string, ingredientId: string): string[] {
   const definition = hybridDefinition(baseId, ingredientId);
-  const base = DEFINITIONS.get(baseId)!;
-  const ingredient = DEFINITIONS.get(ingredientId)!;
+  const base = fusedDefinitionFor(baseId)!;
+  const ingredient = fusedDefinitionFor(ingredientId)!;
   const roles = [fusionRole(base), fusionRole(ingredient)];
   const lines: string[] = [];
   const payload = definition.effects.find((effect): effect is ProjectilePayloadEffect => effect.kind === 'projectile_payload');
@@ -352,13 +454,15 @@ export function hybridHighlights(baseId: string, ingredientId: string): string[]
   if ([baseId, ingredientId].includes('fanny_pack')) lines.push('CARRY ONE MORE STOLEN ITEM');
   if (ingredient.effects.length > 0 && roles[1] === 'mod') lines.push(`${ingredient.name.toUpperCase()} NO LONGER BOOSTS YOUR OTHER WEAPONS`);
   if (isSignatureFusion(baseId, ingredientId)) lines.unshift('SIGNATURE FUSION: +1 DAMAGE');
+  const parts = hybridPartCount(baseId) + hybridPartCount(ingredientId);
+  if (parts > 2) lines.unshift(`${parts}-ITEM FUSION${parts === MAX_FUSION_PARTS ? ' (THE LIMIT)' : ''}`);
   return lines.slice(0, 5);
 }
 
 /** A short tile label: the item's one-word noun, or a hybrid's own name. */
 export function shortItemName(id: string): string {
   const parts = hybridParts(id);
-  if (parts && isHybridPair(parts.baseId, parts.ingredientId)) return hybridDefinition(parts.baseId, parts.ingredientId).name;
+  if (parts) return fusedDefinitionFor(id)?.name ?? id;
   return NOUNS[id] ?? DEFINITIONS.get(id)?.name ?? id;
 }
 

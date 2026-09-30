@@ -10,18 +10,23 @@ import { resolveEmitterMount } from './emitterMount';
 import {
   HYBRID_BASE_FEE,
   HYBRID_CLEAN_DISCOUNT,
+  MAX_FUSION_PARTS,
+  fusedDefinitionFor,
   fusionPairFor,
   hybridDefinition,
+  hybridFee,
   hybridHighlights,
   isSignatureFusion,
 } from './hybrid';
-import { isValidFusionInventoryState } from './inventory';
+import { fusionPartCount, isCleanPart, isValidFusionInventoryState, nodeDefinitionId } from './inventory';
 import { commitEmitterMount } from './transaction';
 import type {
   CommitResult,
   FusionInventoryState,
   FusionProposal,
   FusionTransactionRecord,
+  FusionPart,
+  FusionInventoryNode,
   HybridProposal,
   HybridResolution,
 } from './types';
@@ -33,7 +38,11 @@ type Resolution =
   | { readonly accepted: true; readonly proposal: FusionProposal }
   | { readonly accepted: false; readonly reason: string; readonly message: string };
 
-const DEFINITIONS = new Map(ITEM_CATALOG.map((definition) => [definition.id, definition]));
+/** A node that can go into a hybrid: an item, or a hybrid (never an Emitter Mount). */
+function asPart(node: FusionInventoryNode | undefined): FusionPart | null {
+  if (!node) return null;
+  return node.kind === 'leaf' || node.recipeId === 'hybrid' ? node : null;
+}
 
 function rejected(reason: string, message: string): { accepted: false; reason: string; message: string } {
   return { accepted: false, reason, message };
@@ -48,15 +57,19 @@ export function hybridCompositeIdFor(nextCompositeId: number): string {
 }
 
 function resolveHybrid(state: FusionInventoryState, baseInstanceId: string, ingredientInstanceId: string, createdTick: number): HybridResolution {
-  const base = state.inventory.find((node) => node.instanceId === baseInstanceId);
-  const ingredient = state.inventory.find((node) => node.instanceId === ingredientInstanceId);
-  if (!base || !ingredient || base.kind !== 'leaf' || ingredient.kind !== 'leaf') {
-    return rejected('not_a_leaf', 'Only standalone items fuse: a fused item cannot be fused again.');
+  const base = asPart(state.inventory.find((node) => node.instanceId === baseInstanceId));
+  const ingredient = asPart(state.inventory.find((node) => node.instanceId === ingredientInstanceId));
+  if (!base || !ingredient) {
+    return rejected('not_a_part', 'The RC car is already carrying the shot: an Emitter Mount cannot be fused again.');
   }
-  const definition = hybridDefinition(base.itemDefinitionId, ingredient.itemDefinitionId);
-  const clean = base.acquisitionKind === 'purchased' && ingredient.acquisitionKind === 'purchased';
+  const parts = fusionPartCount(base) + fusionPartCount(ingredient);
+  if (parts > MAX_FUSION_PARTS) {
+    return rejected('too_many_parts', `Too much warranty to void: one fusion holds at most four items (this would be ${parts}).`);
+  }
+  const definition = hybridDefinition(nodeDefinitionId(base), nodeDefinitionId(ingredient));
+  const clean = isCleanPart(base) && isCleanPart(ingredient);
   const cleanDiscount = clean ? HYBRID_CLEAN_DISCOUNT : 0;
-  const fee = HYBRID_BASE_FEE - cleanDiscount;
+  const fee = hybridFee(parts, clean);
   if (state.cash < fee) {
     return rejected('insufficient_cash', `Fusing costs $${fee}, but only $${state.cash} is available.`);
   }
@@ -68,17 +81,17 @@ function resolveHybrid(state: FusionInventoryState, baseInstanceId: string, ingr
     sourceRevision: state.revision,
     primaryInstanceId: base.instanceId,
     carrierInstanceId: ingredient.instanceId,
-    primaryName: DEFINITIONS.get(base.itemDefinitionId)!.name,
-    carrierName: DEFINITIONS.get(ingredient.itemDefinitionId)!.name,
-    primaryProvenance: base.acquisitionKind,
-    carrierProvenance: ingredient.acquisitionKind,
-    baseFee: HYBRID_BASE_FEE,
+    primaryName: fusedDefinitionFor(nodeDefinitionId(base))!.name,
+    carrierName: fusedDefinitionFor(nodeDefinitionId(ingredient))!.name,
+    primaryProvenance: isCleanPart(base) ? 'purchased' : 'stolen',
+    carrierProvenance: isCleanPart(ingredient) ? 'purchased' : 'stolen',
+    baseFee: fee + cleanDiscount,
     cleanDiscount,
     fee,
     resultDefinitionId: definition.id,
     resultName: definition.name,
-    highlights: hybridHighlights(base.itemDefinitionId, ingredient.itemDefinitionId),
-    signature: isSignatureFusion(base.itemDefinitionId, ingredient.itemDefinitionId),
+    highlights: hybridHighlights(nodeDefinitionId(base), nodeDefinitionId(ingredient)),
+    signature: isSignatureFusion(nodeDefinitionId(base), nodeDefinitionId(ingredient)),
     retainedInstanceIds: state.inventory
       .filter((node) => node.instanceId !== base.instanceId && node.instanceId !== ingredient.instanceId)
       .map((node) => node.instanceId),
@@ -119,20 +132,29 @@ export function resolveFusion(
   if (!first || !second) {
     return rejected('missing_component', 'Both items must be owned.');
   }
-  if (first.kind !== 'leaf' || second.kind !== 'leaf') {
-    return rejected('not_a_leaf', 'A fused item cannot be fused again.');
+  const firstPart = asPart(first);
+  const secondPart = asPart(second);
+  if (!firstPart || !secondPart) {
+    return rejected('not_a_part', 'The RC car is already carrying the shot: an Emitter Mount cannot be fused again.');
   }
-  const firstDefinition = DEFINITIONS.get(first.itemDefinitionId);
-  const secondDefinition = DEFINITIONS.get(second.itemDefinitionId);
+  const firstDefinition = fusedDefinitionFor(nodeDefinitionId(firstPart));
+  const secondDefinition = fusedDefinitionFor(nodeDefinitionId(secondPart));
   if (!firstDefinition || !secondDefinition) {
     return rejected('unknown_definition', 'Both items must be known catalog items.');
   }
   if (firstDefinition.id === secondDefinition.id) {
     return rejected('same_item', `Two ${firstDefinition.name}s do not make anything new.`);
   }
+  const parts = fusionPartCount(firstPart) + fusionPartCount(secondPart);
+  if (parts > MAX_FUSION_PARTS) {
+    return rejected('too_many_parts', `Too much warranty to void: one fusion holds at most four items (this would be ${parts}).`);
+  }
   const pair = fusionPairFor(firstDefinition, secondDefinition);
   if (pair.recipe === null) return rejected('unsupported_pair', pair.reason);
-  const baseInstanceId = pair.baseId === first.itemDefinitionId ? first.instanceId : second.instanceId;
+  if (pair.recipe === 'emitter_mount' && (firstPart.kind !== 'leaf' || secondPart.kind !== 'leaf')) {
+    return rejected('unsupported_pair', 'The RC Car only carries a single, unfused shooter.');
+  }
+  const baseInstanceId = pair.baseId === firstDefinition.id ? first.instanceId : second.instanceId;
   const ingredientInstanceId = baseInstanceId === first.instanceId ? second.instanceId : first.instanceId;
   if (pair.recipe === 'emitter_mount') {
     return resolveEmitterMount(state, baseInstanceId, ingredientInstanceId, createdTick);

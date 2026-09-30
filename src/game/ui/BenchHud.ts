@@ -1,3 +1,4 @@
+import { compositeLeaves } from '../../sim/fusion/inventory';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { BENCH_KIOSK, getBenchScenario } from '../../sim/bench/scenarios';
 import type { BenchRunState, BenchScenarioId } from '../../sim/bench/types';
@@ -129,7 +130,7 @@ export class BenchHud {
       .filter((node) => node.kind === 'composite')
       .map(
         (node) =>
-          `${node.instanceId}: ${definitionName(node.primary.itemDefinitionId)} (${node.primary.instanceId}, ${node.primary.acquisitionKind}) + ${definitionName(node.carrier.itemDefinitionId)} (${node.carrier.instanceId}, ${node.carrier.acquisitionKind})`,
+          `${node.instanceId}: ${compositeLeaves(node).map((leaf) => `${definitionName(leaf.itemDefinitionId)} (${leaf.instanceId}, ${leaf.acquisitionKind})`).join(' + ')}`,
       );
     const provenanceParts = [...leaves, ...composites];
     this.provenance.textContent = `PROVENANCE: ${provenanceParts.length > 0 ? provenanceParts.join(' · ') : 'none'}`;
@@ -163,12 +164,7 @@ export class BenchHud {
       this.late.textContent = 'LATE PICKUP: none in this scenario';
     } else {
       const owned = state.fusion.inventory.some((node) => {
-        if (node.kind === 'leaf') {
-          return node.itemDefinitionId === lateId;
-        }
-        return (
-          node.primary.itemDefinitionId === lateId || node.carrier.itemDefinitionId === lateId
-        );
+        return compositeLeaves(node).some((leaf) => leaf.itemDefinitionId === lateId);
       });
       const fused = state.carrier.mode === 'emitter';
       if (owned) {
