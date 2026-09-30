@@ -1,13 +1,11 @@
 # Next session
 
-## Start here (updated 2026-09-29)
+## Start here (updated 2026-09-30)
 
-The repository now lives at `~/code/90s` (it moved from
-`~/Documents/Github Code/90s`). The live work is branch `claude/neon-overhaul`
-in `.worktrees/neon-overhaul`, fast-forwarded to `origin/main` at `ac58121`
-(PR #15). Rounds 18–25 reached `main` through PRs #8–#15; PR #15 came from
-`claude/jolly-pascal-cc520j`, so check `git log HEAD..origin/main` before
-starting and fast-forward if needed.
+Round 32 is on branch `claude/great-cori-w923cb` (pushed; not merged). It
+builds on `origin/main` at `6e4f14f` (PR #18). On the owner's Mac the repo
+is `~/code/90s`; make sure the checkout is on `main` (or this branch) before
+playing, since an old Codex branch shows the pre-neon game.
 
 Read [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first. It
 is the playbook: architecture, art pipeline, and a section per round with its
@@ -22,6 +20,31 @@ port 5173 is taken by another worktree, run the browser gate with
 
 Last gate (round 26): `tsc` clean, 910 unit tests, `npm run build` passes;
 see TEST_EVIDENCE.md round 26 for the browser run.
+
+## Next up: PixelLab art for round 32
+
+PixelLab was not connected in the cloud session that built round 32. In a
+session that has it (connector, or `PIXELLAB_API_KEY`):
+
+1. **Shopfronts first** (most visible): one 288x160 `create_map_object`
+   panel per new store, then point its `STORE_LOOKS` facade at it
+   (`roomDressing.ts`, add to `FACADE_TEXTURES`): Sports Locker, Hardware
+   Hut, Toy Box, Radio Shed, Spiral Records, Slice Station (the pizza
+   counter panel may do), Video World (the video panel may do).
+2. **Item icons**: 64 placeholders (`generator` starts with `PLACEHOLDER` in
+   `public/assets/neon/manifest.json`), 32x32, same file names. The ten rares
+   deserve the most care.
+3. Optional: interior props that would sell a store (weight bench, paint
+   cans, toy shelves, record bins, pizza oven).
+
+## Round 32 playtest questions
+
+- Is fusing three or four things worth the fee ($8 and $11)? Too strong?
+- Drops: is 4% (30% for elites) the right rate? Do rares feel special?
+- Is the getaway bonus enough to make stealing a real choice?
+- Floor 1 at three enemies a fight, the five-prong Manager and the 210 hp
+  Owner: better?
+- Mall Mart as the general store: do people stop now?
 
 ## What the game has now
 
@@ -60,7 +83,11 @@ see TEST_EVIDENCE.md round 26 for the browser run.
   Try `?fixture=mvp-boss-door` and walk east.
 - **Ambient props** (round 26): swaying palms, attract-mode arcades, the
   fountain's spray, dying neon tubes (`src/game/view/propAmbience.ts`).
-- **Void the Warranty** (round 23c): any two items fuse at the Bench Warrant.
+- **Void the Warranty** (round 23c): any two items fuse at the Bench Warrant;
+  since round 32 fused things fuse again, up to four items in one.
+- **Eleven stores, 88 items** (round 32): `src/sim/items/storeRoster.ts`
+  holds the new items and who stocks them; enemies drop items and every boss
+  drops a rare (`src/sim/run/drops.ts`).
 - **Daily Shift** (round 23a): today's seeded mall with standard-issue gear.
   Each day's record is saved in `dead-mall:daily:v1`.
 - **Break Room** (rounds 22 and 24): Pay Stubs buy perks between shifts.

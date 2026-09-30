@@ -742,7 +742,7 @@ test('the Food Court After Dark boss room spawns the Mall Owner', async ({ page 
   const state = await runSnapshot(page);
   expect(state.floor).toBe(3);
   expect(state.enemies.some((enemy) => enemy.kind === 'owner')).toBe(true);
-  await expect(page.locator('#mvp-run-boss')).toContainText('HP 240/240');
+  await expect(page.locator('#mvp-run-boss')).toContainText('HP 210/210');
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });
