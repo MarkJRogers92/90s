@@ -8,6 +8,8 @@
 - Browser (throwaway spec, deleted): with `flashes: reduced, shake: off` saved,
   the workbench fusion (Storm Soaker reveal) and the Radio Shed store fixture
   load and run with no page errors. Screens `artifacts/neon-overhaul/round37-*.png`.
+  Also: a refused X (last weapon) now logs why (`sell-drop` +1, red first);
+  1021 unit tests pass.
   Not eyeballed frame by frame: the alarm hold and blackout fade (covered by
   unit tests only).
 
