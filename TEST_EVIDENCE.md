@@ -1,5 +1,22 @@
 # Test evidence
 
+## 2026-09-30 — round 37b: browser gate under load
+
+- Corrects the round-36 note below. The cold open is not what starved: under
+  4 workers on 4 cores it clears in 9-14 s (probe: tick rates and
+  `cinematic` per 4 s). The restart spec failed because ten restarts take
+  about 80 s alone and 3x that under load, past its 150 s budget; the
+  `cinematic` failure at 45 s in the first stress run was that run's timeout.
+- Fixes (tests only): `presentation-evidence.spec.ts:269` budget 360 s;
+  `night-shift.spec.ts:230` cold-open wait 10 s -> 45 s;
+  `night-shift.spec.ts:351` kept the snapshot that showed the lunge cue, since
+  a later snapshot found the brief cue gone (failed 4 of 4 on round 35's code
+  too, so not a regression).
+- Results: restart spec `--workers=4 --repeat-each=8` 8 of 8 (5.5 min);
+  `:230` x3 at 4 workers 3 of 3; `:351` x3 serial 3 of 3. Full browser suite
+  at 2 workers before the `:351` fix: 72 of 74; the other failure, `:463`
+  (offers identical per seed), passes alone (load flake).
+
 ## 2026-09-30 — round 37: reduced flashing
 
 - New `tests/unit/reduced-flashing.test.ts` (4), red first (missing exports):
