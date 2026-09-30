@@ -6,7 +6,9 @@ import { AUTHORED_OFFER_BANDS, STORE_TEMPLATES } from '../../src/sim/wing/templa
 import { generateRunWing, roomStores } from '../../src/sim/run/storeInterior';
 import { ITEM_ICON_FILES } from '../../src/game/presentation/assets';
 import { itemBlurb } from '../../src/game/ui/itemBlurbs';
-import { hasStoreLook } from '../../src/game/presentation/rooms/roomDressing';
+// @ts-expect-error Vitest provides this Node built-in at test runtime.
+import { existsSync, readFileSync } from 'node:fs';
+import { FACADE_TEXTURES, hasStoreLook, storeFacade } from '../../src/game/presentation/rooms/roomDressing';
 
 const template = (id: string) => STORE_TEMPLATES.find((candidate) => candidate.id === id)!;
 const stocks = (id: string) => template(id).offers.map((offer) => offer.itemDefinitionId);
@@ -15,6 +17,18 @@ describe('a mall full of themed stores (round 32)', () => {
   it('has at least eleven stores, each with a look of its own', () => {
     expect(STORE_TEMPLATES.length).toBeGreaterThanOrEqual(11);
     for (const store of STORE_TEMPLATES) expect(hasStoreLook(store.id), store.id).toBe(true);
+  });
+
+  it('no item still wears a placeholder icon', () => {
+    const manifest = JSON.parse(readFileSync('public/assets/neon/manifest.json', 'utf8')) as Array<{ path: string; generator: string }>;
+    const placeholders = manifest.filter((entry) => entry.path.includes('/items/') && entry.generator.includes('PLACEHOLDER'));
+    expect(placeholders.map((entry: { path: string }) => entry.path)).toEqual([]);
+  });
+
+  it('every store has a shopfront of its own, drawn for it', () => {
+    const facades = STORE_TEMPLATES.map((store) => storeFacade(store.id));
+    expect(new Set(facades).size).toBe(STORE_TEMPLATES.length);
+    for (const facade of facades) expect(existsSync(`public/assets/neon/${FACADE_TEXTURES[facade].file}`), facade).toBe(true);
   });
 
   it('each store stocks things that fit it', () => {

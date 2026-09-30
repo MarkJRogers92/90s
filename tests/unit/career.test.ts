@@ -6,6 +6,7 @@ import {
   WALL_SIZE,
   buyLocker,
   buyPerk,
+  discoverFusion,
   equipLocker,
   fusionLog,
   newCareer,
@@ -195,3 +196,52 @@ describe('the fusion log', () => {
     expect(repaired.fusionsFound).toEqual(['hybrid__pump_soaker__plasma_globe']);
   });
 });
+
+describe('discovering fusions as they are made (round 34)', () => {
+  const stormSoaker = 'hybrid__pump_soaker__plasma_globe';
+  const deeper = `hybrid__(${stormSoaker})__gel_pens`;
+
+  it('logs a fusion the moment it is made, and knows a repeat', () => {
+    const first = discoverFusion(newCareer(), stormSoaker);
+    expect(first.discovery).toMatchObject({ firstTime: true, signature: 'Storm Soaker' });
+    expect(first.career.fusionsFound).toEqual([stormSoaker]);
+    const again = discoverFusion(first.career, stormSoaker);
+    expect(again.discovery.firstTime).toBe(false);
+    expect(again.career).toBe(first.career);
+  });
+
+  it('an unnamed pair is a discovery without a signature', () => {
+    const { discovery } = discoverFusion(newCareer(), 'hybrid__box_cutter__gel_pens');
+    expect(discovery).toMatchObject({ firstTime: true, signature: null });
+  });
+
+  it('a signature pair buried in a deeper fusion still counts', () => {
+    const { career, discovery } = discoverFusion(newCareer(), deeper);
+    expect(discovery.firstTime).toBe(true);
+    expect(career.fusionsFound).toEqual([stormSoaker, deeper].sort());
+    expect(fusionLog(career).entries.find((entry) => entry.name === 'Storm Soaker')?.found).toBe(true);
+    const shift = recordShift(newCareer(), { ...death, fusions: [deeper] }, 'd').career;
+    expect(fusionLog(shift).signaturesFound).toBe(1);
+  });
+
+  it('reports the running signature count for the banner', () => {
+    const { discovery } = discoverFusion(newCareer(), stormSoaker);
+    expect(discovery.signaturesFound).toBe(1);
+    expect(discovery.signatureTotal).toBe(fusionLog(newCareer()).signatureTotal);
+  });
+
+  it('the catalog names each signature pair by its two items, found or not', () => {
+    const log = fusionLog(discoverFusion(newCareer(), stormSoaker).career);
+    const storm = log.entries.find((entry) => entry.found)!;
+    expect([...storm.itemIds].sort()).toEqual(['plasma_globe', 'pump_soaker']);
+    expect(log.entries.every((entry) => entry.itemIds.length === 2)).toBe(true);
+  });
+
+  it('ignores anything that is not a real fusion', () => {
+    const career = newCareer();
+    const result = discoverFusion(career, 'nonsense');
+    expect(result.career).toBe(career);
+    expect(result.discovery.firstTime).toBe(false);
+  });
+});
+

@@ -50,6 +50,10 @@ export const FACADE_TEXTURES = {
   wok: { key: 'neon:facade:wok-counter', file: 'facades/wok-counter.png', width: 256 },
   security: { key: 'neon:facade:security-office', file: 'facades/security-office.png', width: 288 },
   service: { key: 'neon:facade:back-hall-wall', file: 'facades/back-hall-wall.png', width: 288 },
+  sports: { key: 'neon:facade:sports-locker', file: 'facades/sports-locker.png', width: 288 },
+  hardware: { key: 'neon:facade:hardware-hut', file: 'facades/hardware-hut.png', width: 288 },
+  toys: { key: 'neon:facade:toy-box', file: 'facades/toy-box.png', width: 288 },
+  radio: { key: 'neon:facade:radio-shed', file: 'facades/radio-shed.png', width: 288 },
 } as const;
 export type FacadeId = keyof typeof FACADE_TEXTURES;
 
@@ -367,15 +371,20 @@ const STORE_LOOKS: Readonly<Record<string, StoreLook>> = {
   'cinema-snacks': { facade: 'cinema', neon: NEON.red, subtitle: 'NOW SHOWING', floor: 'carpet', spill: 0xffc070, fixture: 'vending' },
   'arcade-annex': { facade: 'arcade', neon: NEON.cyan, subtitle: 'INSERT COIN', floor: 'carpet', spill: 0x9a7cff, fixture: 'arcadeCabinet' },
   'department-outlet': { facade: 'boutique', neon: NEON.pink, subtitle: 'FASHION FOR LESS', floor: 'carpet', spill: 0xff9ad8, fixture: 'clothingRack' },
-  // Round 32: the themed stores, dressed from the existing kit until they get PixelLab shopfronts.
-  'sports-locker': { facade: 'boutique', neon: NEON.green, subtitle: 'GAME ON', floor: 'linoleum', spill: 0xb8ffc8, fixture: 'gondola' },
-  'hardware-hut': { facade: 'electronics', neon: NEON.orange, subtitle: 'DO IT YOURSELF', floor: 'concrete', spill: 0xffc08a, fixture: 'gondola' },
-  'toy-box': { facade: 'arcade', neon: NEON.yellow, subtitle: 'KIDS RULE', floor: 'checker', spill: 0xfff09a, fixture: 'gondola' },
-  'radio-shed': { facade: 'electronics', neon: NEON.red, subtitle: "YOU'VE GOT QUESTIONS", floor: 'linoleum', spill: 0xff9a9a, fixture: 'vhsShelf' },
+  // Round 32: the themed stores. Round 33 gave the four that borrowed a front their own PixelLab shopfront.
+  'sports-locker': { facade: 'sports', neon: NEON.green, subtitle: 'GAME ON', floor: 'linoleum', spill: 0xb8ffc8, fixture: 'gondola' },
+  'hardware-hut': { facade: 'hardware', neon: NEON.orange, subtitle: 'DO IT YOURSELF', floor: 'concrete', spill: 0xffc08a, fixture: 'gondola' },
+  'toy-box': { facade: 'toys', neon: NEON.yellow, subtitle: 'KIDS RULE', floor: 'checker', spill: 0xfff09a, fixture: 'gondola' },
+  'radio-shed': { facade: 'radio', neon: NEON.red, subtitle: "YOU'VE GOT QUESTIONS", floor: 'linoleum', spill: 0xff9a9a, fixture: 'vhsShelf' },
   'spiral-records': { facade: 'music', neon: NEON.magenta, subtitle: 'MUSIC · MOVIES · MORE', floor: 'carpet', spill: 0xff9ae6, fixture: 'vhsShelf' },
   'slice-station': { facade: 'pizza', neon: NEON.orange, subtitle: 'HOT N READY', floor: 'checker', spill: 0xffd08a, fixture: 'condiments' },
   'video-world': { facade: 'video', neon: NEON.cyan, subtitle: 'BE KIND REWIND', floor: 'carpet', spill: 0xffd9a0, fixture: 'vhsShelf' },
 };
+
+/** The shopfront panel a store template shows on its concourse. */
+export function storeFacade(templateId: string): FacadeId {
+  return (STORE_LOOKS[templateId] ?? STORE_LOOKS['mall-mart']!).facade;
+}
 
 /** Whether a store template has its own dressing (rather than Mall Mart's fallback). */
 export function hasStoreLook(templateId: string): boolean {

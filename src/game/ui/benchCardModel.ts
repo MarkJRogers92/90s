@@ -70,7 +70,8 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
     return {
       key: index + 1,
       instanceId: node.instanceId,
-      iconDefinitionId: leaf.itemDefinitionId,
+      // A hybrid's icon is built from the fusion itself (every part stacked).
+      iconDefinitionId: node.kind === 'composite' && node.recipeId === 'hybrid' ? nodeDefinitionId(node) : leaf.itemDefinitionId,
       name: shortItemName(nodeDefinitionId(node)).toUpperCase(),
       fused: node.kind === 'composite',
       parts: fusionPartCount(node),

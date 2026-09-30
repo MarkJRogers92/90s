@@ -18,24 +18,32 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 26): `tsc` clean, 910 unit tests, `npm run build` passes;
-see TEST_EVIDENCE.md round 26 for the browser run.
+Last gate (round 34): `tsc` clean, 994 unit tests, `npm run build` passes;
+see TEST_EVIDENCE.md round 34 for the browser run.
 
-## Next up: PixelLab art for round 32
+## Next up
 
-PixelLab was not connected in the cloud session that built round 32. In a
-session that has it (connector, or `PIXELLAB_API_KEY`):
+Rounds 33-34 did the PixelLab art pass and made fusions a spectacle (fused
+icons, stamp and discovery banner, the Break Room catalog, recipe hints). In
+the owner's order, what is left:
 
-1. **Shopfronts first** (most visible): one 288x160 `create_map_object`
-   panel per new store, then point its `STORE_LOOKS` facade at it
-   (`roomDressing.ts`, add to `FACADE_TEXTURES`): Sports Locker, Hardware
-   Hut, Toy Box, Radio Shed, Spiral Records, Slice Station (the pizza
-   counter panel may do), Video World (the video panel may do).
-2. **Item icons**: 64 placeholders (`generator` starts with `PLACEHOLDER` in
-   `public/assets/neon/manifest.json`), 32x32, same file names. The ten rares
-   deserve the most care.
-3. Optional: interior props that would sell a store (weight bench, paint
-   cans, toy shelves, record bins, pizza oven).
+1. **Store twists for the seven new stores** (pitching machine, paint
+   spills, wind-up toys, TV static, listening booth, oven zone, rewind tile).
+2. Smaller: drop or sell items; a reduced-flashing toggle (the reveal adds a
+   camera shake and sparks; include it); fix
+   `presentation-evidence.spec.ts:269` (ten restart cycles), which fails on
+   `main` too. Under 4 workers on the Mac a dozen browser specs time out;
+   they pass serially (round 34 evidence).
+3. Optional art: redo the staple gun, leaf blower and mic stand icons;
+   interior props (weight bench, paint cans, record bins, pizza oven).
+
+## Round 34 playtest questions
+
+- Does the reveal feel good, or slow at the bench after the tenth fusion?
+  (Repeats get the stamp but no banner.)
+- Are recipe hints too common? Some small stores hold a whole pair by
+  chance, so paired shelves turn up in most malls.
+- Is the silhouette catalog a reason to replay?
 
 ## Round 32 playtest questions
 

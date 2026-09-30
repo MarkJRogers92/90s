@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "retrodiffusion": {
+      "command": "python3",
+      "args": ["docs/art/neon-overhaul/retrodiffusion_mcp.py"]
+    }
+  }
+}

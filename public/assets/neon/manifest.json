@@ -1541,642 +1541,682 @@
   },
   {
     "path": "public/assets/neon/items/aluminum-bat.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (bat silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/aluminum-bat.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "860c5a5fe6ef0b6d9820c3a980ca9d22b013795c7c218cc0dcefb537d79cf7fe"
+    "sha256": "d613b21491fa0909fe15e516fb455780b8bb77c7f2e8bf0400c3baa85619edf8"
   },
   {
     "path": "public/assets/neon/items/hockey-stick.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/hockey-stick.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "b22593e918ee36c7284fc649423e46b2503005e545ea7ab3704866953b65cb77"
+    "sha256": "efc6f0c19a7c4be9befd4ba0fc79f33050420509191772a28bdb6617c449e6f9"
   },
   {
     "path": "public/assets/neon/items/golf-club.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/golf-club.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "3de5785cd34bb88730e160418e547f479bf3031f32c49b3c69a143fd04acb920"
+    "sha256": "9c5a64936cf6dcc66515056f531ad6107aca5e6051072c1eb91a5a2373237b66"
   },
   {
     "path": "public/assets/neon/items/tennis-ball-launcher.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/tennis-ball-launcher.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "31934cc213c0951a281ea468c6dfe911ce2f2c285b2690d2694ca681ac2dde53"
+    "sha256": "4d7bb35e7a50cfa7819642f83d2f2d00f70338d0d82ca6516edffecf3d135295"
   },
   {
     "path": "public/assets/neon/items/dodgeball.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/dodgeball.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "bcbd343aeefb08f56b87bfd4ca5cbd644191f60e0add3b521e4fd3c102844753"
+    "sha256": "7ab974e8b7021108f77cbe93189929fa0db628cd05a6040cd89d1e512516bb5b"
   },
   {
     "path": "public/assets/neon/items/sweatband.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/sweatband.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "af50869e0a8cb009fd7cc2f78c66995870e6d45269b9248b1c5da41a1289a3c1"
+    "sha256": "97bd89ce472a9eb8946fccd46ea7fd3646732aa27919a40ca77e3e6b0105aea5"
   },
   {
     "path": "public/assets/neon/items/lacrosse-stick.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/lacrosse-stick.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "94414da9e114d2ba25a2883d78abdc61f0c0e0247dc334fe7c4a67360ce33afc"
+    "sha256": "47b0d0efd2395f28858312480e4329dea5aa98ce659d82b98535382b2c1e3838"
   },
   {
     "path": "public/assets/neon/items/football.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/football.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "d3a293cf0a86253f4a4a4255b1f20a880833cef830c9134af72359009162d4fb"
+    "sha256": "82ba1bdb0d850d06ac4045f5bab6114029a9c5a661318c6f6f7ec05ad7e0126d"
   },
   {
     "path": "public/assets/neon/items/nail-gun.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gun silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/nail-gun.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "9b05e843291d605801c2b12d683d5c46796ba9f24aa65db630b400e5acd1db7f"
+    "sha256": "2a313cd0b8a24bb7770612ecbc1965a8248911790063b0ee69fd3ea8321c788f"
   },
   {
     "path": "public/assets/neon/items/pipe-wrench.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (hammer silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/pipe-wrench.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "6049d164072b28e0c73bee1fb25e83d85a7dd9cbcbf79efe48001b76e8eaeeac"
+    "sha256": "85a1bb7b956f14c349e203c5a2f785bf343713c7215cbe72b4c3e1f49172ed35"
   },
   {
     "path": "public/assets/neon/items/duct-tape.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/duct-tape.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "bcfa23e52eb3c101c7f635a4527fb8c1a5db9d74237f1b4124cb932bf4889554"
+    "sha256": "826bbb18ea388c1ed99cc3243b905ee7af4ddd157f8da91a3ad9b921f50de6a2"
   },
   {
     "path": "public/assets/neon/items/leaf-blower.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/leaf-blower.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "f8c007abede642e0125f5020bbd07842f6e660e067502bf1f24473e62f5c1335"
+    "sha256": "cbdf90e58fb2f54bf8cb68a7c0df7ea48dd058661bb1f663fd0c68598c04870d"
   },
   {
     "path": "public/assets/neon/items/staple-gun.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gun silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/staple-gun.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "74cd5b147a3671c86738772478c7f451670d823455e8a4d7bf7899dfd6ea9cdf"
+    "sha256": "79f80a9d0619c51ad8329cd42d4bca0da1bc85957ac887d11c43886cfbb156d7"
   },
   {
     "path": "public/assets/neon/items/claw-hammer.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (hammer silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/claw-hammer.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "f0584b6d10dfaff4d133fa9d8243bbd620793fcdd37c0c9b7ef5537682881057"
+    "sha256": "5fd25b8629f700a5c430af2008bbaa2e4c314a8382c0e6a9e767fbd2939aaf8a"
   },
   {
     "path": "public/assets/neon/items/garden-hose.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/garden-hose.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "910ec8bb76a15c1738d4acff2f10b5eb8c25c5aeef38a86079d28316655e4342"
+    "sha256": "f0c9fab79a88f53eac7362428c22573ec279709256aaeb72746e49ac6e8ca47d"
   },
   {
     "path": "public/assets/neon/items/jumper-cables.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (battery silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/jumper-cables.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "753ba527321a149781b1f8de86c446bfd62460d592a410467c529bcd107d9ec5"
+    "sha256": "0d9574199a00627ca0eb7a59aa9b21a5053e674a88c90108df387854ed14d7fd"
   },
   {
     "path": "public/assets/neon/items/super-soaker-50.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/super-soaker-50.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "4fca5b8ce4195734b90065a16822527b4a384a045a8e615ba09530c09daf0649"
+    "sha256": "f0a8add98cea9364a41cb51390272de5b147cd70885be8fba53ff4b2bccbb46f"
   },
   {
     "path": "public/assets/neon/items/yo-yo.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/yo-yo.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "15c021fffadebf170577e018d4fdeb5be38846b58de19bea3221ad9e73251685"
+    "sha256": "102998bf4dcee2bb49d9a4eb8abf0e605392fa89bc903f60dd8ccf8de565f4f6"
   },
   {
     "path": "public/assets/neon/items/slingshot.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/slingshot.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "bbaf68602ff735b49ee16e35f99d3d8297d1b79e687802771a04d8a50470e623"
+    "sha256": "589d81f6a9e784deecff387b4f6583a3fe76160c68e40c8d2389afb3663f43bb"
   },
   {
     "path": "public/assets/neon/items/slime-tub.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/slime-tub.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "53d70ccef1b3fc50e13bf19385ed7dc78c8255405f7c54ae9382725959637f4b"
+    "sha256": "42942884a55b42f79c8450b9ad7d7c0e4ca5c9975df89dcacbd709e06e9d83e8"
   },
   {
     "path": "public/assets/neon/items/pog-slammer.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/pog-slammer.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "09a91bb1566419b1183599a7c45ebcf7405441948e0b0bbee1e9a8bdac9485b4"
+    "sha256": "2c6c4073858c13b4d4784188c4a4342ff3b50533254dd1d728bfd1f1f16f25bc"
   },
   {
     "path": "public/assets/neon/items/water-balloons.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/water-balloons.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "45e843dd54c1add7677981d4c54db5e9ca3889e915facb9e029c49688c97d55e"
+    "sha256": "6afcd737a1b7d9721d6dcce7bb590883b3dc7351b5bbee3ff9036a3d73201d75"
   },
   {
     "path": "public/assets/neon/items/foam-sword.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blade silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/foam-sword.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "1feb5113d458e0b847fe3d597850776616151c135670cfb1188353efa5a8419d"
+    "sha256": "bed049b453b8ff9f0360ea677956236488c3fafc6da9444aad16af54529f79a3"
   },
   {
     "path": "public/assets/neon/items/slinky.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (tape silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/slinky.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "aad8a1950d581f2197a381d59d2094ab456b4c5f0fb5fb5fd29b5b9ff4325fe1"
+    "sha256": "db50b4a006a88fdc2ec68a76e95d06e1fc486c69b97e1b30415a5e8fcdef0d52"
   },
   {
     "path": "public/assets/neon/items/laser-pointer.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/laser-pointer.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "0e560043b36826f80cf1208de15574f4b4e4670f7ae85994e1b4ad8c31f9866b"
+    "sha256": "70374d15b1a27e0f2dbbf8fb9eae2eee78f53632690ac0f97fad602b60298bb8"
   },
   {
     "path": "public/assets/neon/items/walkman.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (cassette silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/walkman.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "f6fed2389b2df2e1c42a8c5531d2f6e87c2cf68765cf46974855b2febad50d56"
+    "sha256": "6e1c9c03056de3aeb42cec7022173f4b78eccf572dc720d0028eac74f93b1f20"
   },
   {
     "path": "public/assets/neon/items/nine-volt-pack.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (battery silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/nine-volt-pack.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "1460d8a76eea9f67722b8d1b704c025dece9b597d3f9d787f0f85655119e601f"
+    "sha256": "45fcef07f4fbe2657c16d7eadde6375605bc997fff6db931eecf8d2f63bbdeb7"
   },
   {
     "path": "public/assets/neon/items/boombox.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/boombox.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "117babe3aa268932d932a7a78ddc2e56b50ce1d0d4ad927ed368ec860fc02eb4"
+    "sha256": "dddd75ac7dabebc9e705e469e0e07531f4c12c7edff47bc0b5b988aac91a2416"
   },
   {
     "path": "public/assets/neon/items/rc-blimp-remote.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/rc-blimp-remote.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "70fbdbef09586cf0c91e9e6b60bb758d500883f001cfd7607c80da738a96d155"
+    "sha256": "a389bbbd4b2be5658519ca9ac720f07252ee63b57c3ccfabba1ab0ff0c71eff5"
   },
   {
     "path": "public/assets/neon/items/satellite-dish.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/satellite-dish.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "76008cf6b12ff868d1162817507dad390f6470440248013081d2ac847b33fd17"
+    "sha256": "1564e9942712c219c183c3e6fe6398b0c23236c6e2ad704d797c01a1429bf3f7"
   },
   {
     "path": "public/assets/neon/items/tesla-coil-kit.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (battery silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/tesla-coil-kit.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "abb31694806628dc788cf3166103ac53abeb8bd75038c1b8d6095967e4a08ad1"
+    "sha256": "0d1c3906c488ecd4fd6c169033ae8a92f41f7deebb36543b8aa27bbefe1b04b9"
   },
   {
     "path": "public/assets/neon/items/camcorder.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/camcorder.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "2de4bca556d7d70db1b7858bb07f1931e66cb7da9f42379b93b179923565eaba"
+    "sha256": "ba5688f80b87af0a8eeafd6ea0c8799596569b19897ddac3ad85d3924f03e06e"
   },
   {
     "path": "public/assets/neon/items/electric-guitar.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (guitar silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/electric-guitar.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "531603c7685a76e1d7565d95497251dca89f146d8bf3bc4ad55ac02ebdd82247"
+    "sha256": "f4783ad6a7ba4b1640ebe139766639485bbc8ff4d321d45ef77ac05e101adb85"
   },
   {
     "path": "public/assets/neon/items/record-toss.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/record-toss.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "d5c3161c271019949b875dd7da98eed3b1a216cb372bdd23fac2e52616be8597"
+    "sha256": "2c7a5fb21f65f157a824749952b17ee11ba78a9811f7afe42465f22ba1ae23fb"
   },
   {
     "path": "public/assets/neon/items/mic-stand.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (mic silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/mic-stand.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "4d16ac299aee8decf63229f4e346b3fea7fcf8780eb728a62113606c9a258993"
+    "sha256": "b269c9d3910b2e3aeb1f65365e8319e2bf9cf6b04de2702426f2527d700ca72a"
   },
   {
     "path": "public/assets/neon/items/drumsticks.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/drumsticks.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "01508595197209fba8af1d34843abb72e1dd00c152e0c6959b46dbf873be66cf"
+    "sha256": "891b28ea956d2901ecdc3ecf1298ca467c4c9a122af92f794e426e19ce840466"
   },
   {
     "path": "public/assets/neon/items/mixtape.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (cassette silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/mixtape.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "ffba9ab9c2346b5bfe45cef5adbb5bb9ee1216fbb8e204dd2e330b6b49939db7"
+    "sha256": "55f9471f1f8f2960fb759d2e8e3b391e098438cb1a5a83b45f7a7f861714db5e"
   },
   {
     "path": "public/assets/neon/items/cd-shuriken.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/cd-shuriken.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "57febbee43b98cd0c2c2cb5b048624707859ada99eb0a67ab693fb771e9231fb"
+    "sha256": "d09c4a289f85c7f9f99a336a7db5461a44f0803c94cf28ce6ab8410eb06220ce"
   },
   {
     "path": "public/assets/neon/items/fog-machine.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/fog-machine.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "511f44d1683988a43d33c010361e853a22daba65514bd86249a14c56964ac871"
+    "sha256": "928134206b2beff88c61f42d68ccc348293019401e50dab8b1437e1172a0df4e"
   },
   {
     "path": "public/assets/neon/items/keytar.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (guitar silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/keytar.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "99a5ac3cd03a6e6e735c64da28998aa8e9af03ec31376ff29a534be948169598"
+    "sha256": "62f5147d6aac0379896831e128e353a32ce6582a0df5d4d3867b07674a860ec9"
   },
   {
     "path": "public/assets/neon/items/pizza-cutter.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (wheel silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/pizza-cutter.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "ae0e5303084f2f105e3fd6a35125e8c66663e06c20e6fafd1598bcb9dece0602"
+    "sha256": "a876b8fef1da6be92ea76fd1116565a294fab6ca9fe2eb0cf0023d75cf511783"
   },
   {
     "path": "public/assets/neon/items/pizza-peel.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/pizza-peel.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "ddd8119bbd4db85df5c037eef90caa4d4724723c0c6ee9681c0e3a965190d91d"
+    "sha256": "a878abc434cfffb76b905e7f9e2f51844250e08cd31c2a7909b8c8e5c976f969"
   },
   {
     "path": "public/assets/neon/items/cheese-pump.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/cheese-pump.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "7ae369f713612237ec35f1bdb86f0db829a7c3cd759fd9b2052884ab61494800"
+    "sha256": "2f249b6539e763d66b69a91c1d71513a4aa054bc94259ac02d004ba442d77fc9"
   },
   {
     "path": "public/assets/neon/items/soda-gun.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gun silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/soda-gun.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "c418a3e529404a36efb28254767194538ff6a1488b8a584dc2fb3a749ef1312b"
+    "sha256": "155a80a68911e5ccb5a65c7d3b34e8f496f0ab0bb552adc237a08c2be9680813"
   },
   {
     "path": "public/assets/neon/items/dough-roller.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (bat silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/dough-roller.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "057b21da6200dc7f76c27f4bb3f3ddf18d553e7e68ca8b73bae980f8d196cb80"
+    "sha256": "bb7d9533c5dd80831e2ce22ee2899c9cf631912120133a35aa74a26dd769a2c9"
   },
   {
     "path": "public/assets/neon/items/pepperoni-launcher.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/pepperoni-launcher.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "053b22e135bb7b6b1a5f4ee5c97fd5047bbc0204e689b145265c590e70c378f5"
+    "sha256": "0f761027d7175668993ce798f52aa688823935387bffe6e592509a90cdf42c0d"
   },
   {
     "path": "public/assets/neon/items/hot-sauce.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/hot-sauce.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "8cbac028a9d79b58166a9924e152778b5428c0fca6029a613457765270ea0967"
+    "sha256": "f9c16d3cf419975de7ce8dda83357682c7134701ba563d8369db55c99cbe199c"
   },
   {
     "path": "public/assets/neon/items/ketchup-bottle.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (bottle silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/ketchup-bottle.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "136ec3e1a467a98fee3bea5c987c0ed5a13cd96f19d07395bd77b7733044bb73"
+    "sha256": "c482c542b8f0b13b98d6edb450570494cfd1c095ca16d0f2e3de5dbb9f2eeafc"
   },
   {
     "path": "public/assets/neon/items/vhs-tape.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (cassette silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/vhs-tape.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "7c2a994e1bd32c64fe16b50a0b647b83fac2464a1eec6f2a9c011517d3cd084a"
+    "sha256": "fe7fd7714d302a3c57d5300472c873111f276a848a90681f4de35fab8b5c708b"
   },
   {
     "path": "public/assets/neon/items/cardboard-standee.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/cardboard-standee.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "7cec711c7c2f57216d7fd9ccaa72de1ac930c6c25f7a75569d359e666fcc9564"
+    "sha256": "f79dd5f119b32f5222a3ac5198c25e40055d499bb9a988fb2bf23f0fa3b36876"
   },
   {
     "path": "public/assets/neon/items/popcorn-bucket.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/popcorn-bucket.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "c065762cfc968f4d281fb99b58e64d21dd447446d81a735e97fcb03ad112f8a0"
+    "sha256": "26028b23bd0ee0cd1e17fd1097e04f16e70890e170205ebf8f918aadba7cdce1"
   },
   {
     "path": "public/assets/neon/items/rewind-button.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/rewind-button.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "ae877399d7c8518418740cbf5b0bf6dec27832a1b73b7e88cf93ae0b9873b6a0"
+    "sha256": "643da51013535570c378cd1df2f356aa2b57f15718df031f4133fb2138093f9e"
   },
   {
     "path": "public/assets/neon/items/laserdisc.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (disc silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/laserdisc.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "2ff12057470dae09378eb4b88cf19e3a06b32114c2686c990974885d347a40ce"
+    "sha256": "54aaafd8ab5238169a2b01925820c5f6f2ea3650af64a871e08790aff7fa1d20"
   },
   {
     "path": "public/assets/neon/items/late-fee-stamp.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (hammer silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/late-fee-stamp.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "e2d5447c02e42250c2d9ddf68900454a1ab2d3683ded6ff0862a0f976fbc8d9c"
+    "sha256": "2dd086cdff0a028be30d55debca00ca5a182223b9ed4942b1bb232f7b7a65553"
   },
   {
     "path": "public/assets/neon/items/golden-mop.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (stick silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/golden-mop.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "1dbbc19aea552a6c3aa15ae8540f1424612c1843e46310cac6dd6f2e5c02b6b6"
+    "sha256": "5d390ffeca8dff6fd5b1218e91fc835b52e42838ec34e2b9252fe62a4f954b0c"
   },
   {
     "path": "public/assets/neon/items/power-glove.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/power-glove.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "67d50136e19588a5dc0c6288ab8397250eb0390095c06a91923c4eb816c5b79b"
+    "sha256": "d6005a4e08ba2409753b769cf9f1486c74431d8fd09dd2ff277b762dbd5ddd5e"
   },
   {
     "path": "public/assets/neon/items/super-soaker-cps.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/super-soaker-cps.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "24e76d1db8d41e2f978fe025d94867d0882ab6337945429ff4f92987264d31a1"
+    "sha256": "213e9300b63425500e27ac15c5f0494528e250b993a66f35f3d718e7515b8995"
   },
   {
     "path": "public/assets/neon/items/game-brick.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/game-brick.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "f3436399b49b43d767db1ec001cb2fccf6497344b990062b61e2c85f85db8a1f"
+    "sha256": "94fdca2b0b6ffd6cb9c0d76d5a9f6547f7e25cdc208bc7d128636672257b47ac"
   },
   {
     "path": "public/assets/neon/items/laser-tag-rifle.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blaster silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/laser-tag-rifle.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "25062dc424d1c693194dea3c6d7fe67794eca6ab9adf3fa47778172b0993e64a"
+    "sha256": "eec1e9a0cc5b8223e2c8e60c5e2c33d14640c0950138e962d8b3d57363fe5909"
   },
   {
     "path": "public/assets/neon/items/virtual-pet.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (ball silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/virtual-pet.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "11264ed6454b3b714b84b9bce5f8e5eea476d91b34c3bb85597bca4f279778fb"
+    "sha256": "4b283684761e04870c91f00fb0f9ae659b12ba782ae482d95f5ebb24e093f0f7"
   },
   {
     "path": "public/assets/neon/items/trapper-keeper.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/trapper-keeper.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "bbddaebd93c65dc1871dd418895fccf8b9909df6a77d90124af9afc5b36faf96"
+    "sha256": "c4393cee6d1cd235c5dbbb8fddad2b73f2158a972018ea57f1f1f64ce07ce37b"
   },
   {
     "path": "public/assets/neon/items/moon-shoes.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (box silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/moon-shoes.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "8459c48fff012a780ba6553681d6d4213f2ded8e45d2f8930b0cc2a314d925bc"
+    "sha256": "b540aec2da16824f23b731cee9170cf7774d86958851fd1e76396f3f2e927d0e"
   },
   {
     "path": "public/assets/neon/items/pager.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (gadget silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/pager.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "3695edd3cd087d2126d1ca313f43dbe5dbaefa1ef98e6a50fbc40f349c15d40e"
+    "sha256": "7c9874fdec303cc0b490a6f3df0fe8f4c1c27f58e35cb1620c9ed77dd8f583c0"
   },
   {
     "path": "public/assets/neon/items/lightsaber-toy.png",
-    "source": "scripts/placeholder-icons.mjs",
-    "generator": "PLACEHOLDER (blade silhouette): replace with PixelLab",
+    "source": "docs/art/neon-overhaul/pixellab/items/lightsaber-toy.png",
+    "generator": "PixelLab create_image_pixflux (32x32, palette forced from the earlier item icons), binary alpha",
     "size": [
       32,
       32
     ],
-    "sha256": "6b071772b22072e9e488667f1741b229a6f12cb8bd3ebc26fdfc469ec879ba56"
+    "sha256": "68b27a75a005345ba3381f08eb6ef612e5e7930da1169c750ec6f3e5dc9212d6"
+  },
+  {
+    "path": "public/assets/neon/facades/sports-locker.png",
+    "source": "docs/art/neon-overhaul/pixellab/sports-locker.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "6b0638dc66b995f41caf8807cb7bfde3fbaf072a5656ca6ad5a7f79ec857c23a"
+  },
+  {
+    "path": "public/assets/neon/facades/hardware-hut.png",
+    "source": "docs/art/neon-overhaul/pixellab/hardware-hut.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "257e6da657935de96f3d0b925cca3af5a7e9d0692143d1296fe58f5036dfe1c2"
+  },
+  {
+    "path": "public/assets/neon/facades/toy-box.png",
+    "source": "docs/art/neon-overhaul/pixellab/toy-box.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "589f7c563a19c588eb7330520e6ede4b7553a7f2f5d0ac7a50ba8524612189f1"
+  },
+  {
+    "path": "public/assets/neon/facades/radio-shed.png",
+    "source": "docs/art/neon-overhaul/pixellab/radio-shed.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "430762f248cf9459588c47b1eb6d08f693a93bda3b5b0cb11f3af12c2ae846eb"
   }
 ]

@@ -39,6 +39,8 @@ export type WingOffer = {
   readonly itemDefinitionId: string;
   readonly position: Vec2;
   readonly price: number;
+  /** Round 34: the other half of a signature fusion shelved alongside it. */
+  readonly pairedWith?: string;
 };
 
 export type WingStoreInstance = {

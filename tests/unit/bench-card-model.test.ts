@@ -96,3 +96,26 @@ describe('bench card as a workbench', () => {
     expect(card.fee).toBe(state.preview!.fee);
   });
 });
+
+describe('bench tiles show fused icons (round 34)', () => {
+  it('a fused tile asks for the fusion itself, so its icon shows every part', () => {
+    const state = createMvpRun(7);
+    const leaf = (instanceId: string, itemDefinitionId: string) => ({
+      kind: 'leaf' as const, instanceId, itemDefinitionId, acquisitionKind: 'purchased' as const,
+      sourceLocationId: 'test', sourceStockId: `test-${itemDefinitionId}`, acquisitionTick: 0,
+    });
+    state.inventory = {
+      ...state.inventory,
+      inventory: [
+        ...state.inventory.inventory,
+        { kind: 'composite', instanceId: 'fused-1', recipeId: 'hybrid', createdTick: 0, transactionId: 't', primary: leaf('a', 'pump_soaker'), carrier: leaf('b', 'plasma_globe') },
+        leaf('c', 'gel_pens'),
+      ],
+      revision: state.inventory.revision + 1,
+    };
+    state.workbench = { firstId: null, secondId: null, message: '' };
+    const tiles = buildBenchCardModel(state)!.tiles;
+    expect(tiles.find((tile) => tile.instanceId === 'fused-1')?.iconDefinitionId).toBe('hybrid__pump_soaker__plasma_globe');
+    expect(tiles.find((tile) => tile.instanceId === 'c')?.iconDefinitionId).toBe('gel_pens');
+  });
+});

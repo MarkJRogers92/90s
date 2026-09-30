@@ -48,6 +48,8 @@ import { CombatFeedback } from './CombatFeedback';
 import { WeaponView } from './WeaponView';
 import { enemySpriteSheet } from './ActorSpriteView';
 import { PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
+import { usableItemIcon } from '../presentation/fusedIconTexture';
+import type { FusionRevealModel } from '../ui/fusionRevealModel';
 import { projectileStyle, type ProjectileStyle } from './projectileStyle';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
@@ -817,6 +819,28 @@ export class MvpRunView {
         this.openingConcourse?.addLight({ x: bx + Math.cos(spin) * 60, y: offer.position.y - 30 + Math.sin(spin) * 22, radius: 80, color: 0x3a6aff, intensity: 0.9, squash: 0.6 });
       }
       if (status !== 'available') this.offerNames.get(offer.id)?.setVisible(false);
+      // A recipe hint: a signature pair shelved together is tied by a gold
+      // link while both halves are still on the shelf (drawn once, from the first).
+      const partner = offer.pairedWith ? shelf.find((other) => other.itemDefinitionId === offer.pairedWith) : undefined;
+      if (partner && status === 'available' && (state.offerStatus[partner.id] ?? 'available') === 'available') {
+        const glow = 0.55 + 0.35 * Math.sin(state.tick / 12);
+        if (offer.position.x < partner.position.x || (offer.position.x === partner.position.x && offer.position.y < partner.position.y)) {
+          // Gold sparks run along the floor from one half to the other.
+          const dx = partner.position.x - offer.position.x;
+          const dy = partner.position.y - offer.position.y;
+          const steps = Math.max(4, Math.floor(Math.hypot(dx, dy) / 14));
+          for (let step = 1; step < steps; step += 1) {
+            const t = (step + (state.tick / 10) % 1) / steps;
+            cues.fillStyle(0xffd84a, glow * (step % 2 === 0 ? 1 : 0.55)).fillRect(Math.round(offer.position.x + dx * t) - 2, Math.round(offer.position.y + dy * t) - 2, 4, 4);
+          }
+        }
+        const top = offer.position.y - 96;
+        cues.fillStyle(0x3a2a06, 1).fillTriangle(offer.position.x, top - 9, offer.position.x - 8, top, offer.position.x + 8, top);
+        cues.fillTriangle(offer.position.x, top + 9, offer.position.x - 8, top, offer.position.x + 8, top);
+        cues.fillStyle(0xffd84a, glow + 0.1).fillTriangle(offer.position.x, top - 7, offer.position.x - 6, top, offer.position.x + 6, top);
+        cues.fillTriangle(offer.position.x, top + 7, offer.position.x - 6, top, offer.position.x + 6, top);
+        this.openingConcourse?.addLight({ x: offer.position.x, y: top, radius: 28, color: 0xffd84a, intensity: 0.7 });
+      }
       this.offerIcon(offer.id, offer.itemDefinitionId, offer.position.x, offer.position.y, state.tick, status, kindColor);
       // The same run offer price the HUD card shows, so a world label can
       // never disagree with the discounted price the run actually charges.
@@ -1933,37 +1957,66 @@ export class MvpRunView {
    * janitor, and a FUSED! stamp that floats up. Real-time tweens, since the
    * sim has only just resumed and this is pure presentation.
    */
-  public celebrateFusion(): void {
+  /**
+   * The Bench Warrant's reveal (round 34): a ring and sparks burst off the
+   * janitor, the fused item's icon rises out of the burst in its glow, and a
+   * rubber stamp slams down over it in the reveal's ink.
+   */
+  public celebrateFusion(reveal: FusionRevealModel): void {
     const player = this.lastPlayer;
     if (!player) return;
     const scene = this.scene;
     const depth = 9_000;
+    const ink = Phaser.Display.Color.HexStringToColor(reveal.color).color;
+    const cx = player.x;
+    const cy = player.y - 14;
     const ring = scene.add.graphics().setDepth(depth).setBlendMode(Phaser.BlendModes.ADD);
     const state = { t: 0 };
     scene.tweens.add({
       targets: state, t: 1, duration: 520, ease: 'Cubic.easeOut',
       onUpdate: () => {
         ring.clear();
-        ring.lineStyle(4 * (1 - state.t) + 1, 0x6aff8a, 1 - state.t).strokeCircle(player.x, player.y - 14, 12 + state.t * 90);
-        ring.lineStyle(2, 0x3ff0ff, (1 - state.t) * 0.8).strokeCircle(player.x, player.y - 14, 6 + state.t * 60);
+        ring.lineStyle(4 * (1 - state.t) + 1, ink, 1 - state.t).strokeCircle(cx, cy, 12 + state.t * 90 * (0.8 + reveal.parts * 0.1));
+        ring.lineStyle(2, 0x3ff0ff, (1 - state.t) * 0.8).strokeCircle(cx, cy, 6 + state.t * 60);
       },
       onComplete: () => ring.destroy(),
     });
-    for (let i = 0; i < 14; i += 1) {
-      const angle = (i / 14) * Math.PI * 2 + Math.random() * 0.3;
-      const spark = scene.add.rectangle(player.x, player.y - 14, 3, 3, i % 2 === 0 ? 0xffd84a : 0x6aff8a).setDepth(depth).setBlendMode(Phaser.BlendModes.ADD);
-      scene.tweens.add({
+    // Sparks fly in from all round and then burst out: more for bigger fusions.
+    const count = 10 + reveal.parts * 4;
+    for (let i = 0; i < count; i += 1) {
+      const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
+      const far = 70 + Math.random() * 30;
+      const spark = scene.add.rectangle(cx + Math.cos(angle) * far, cy + Math.sin(angle) * far, 3, 3, i % 2 === 0 ? 0xffd84a : ink)
+        .setDepth(depth).setBlendMode(Phaser.BlendModes.ADD);
+      scene.tweens.chain({
         targets: spark,
-        x: player.x + Math.cos(angle) * (40 + Math.random() * 40),
-        y: player.y - 14 + Math.sin(angle) * (40 + Math.random() * 40),
-        alpha: 0, duration: 420 + Math.random() * 220, ease: 'Quad.easeOut',
+        tweens: [
+          { x: cx, y: cy, duration: 180, ease: 'Quad.easeIn' },
+          { x: cx + Math.cos(angle) * (40 + Math.random() * 50), y: cy + Math.sin(angle) * (40 + Math.random() * 50), alpha: 0, duration: 420 + Math.random() * 220, ease: 'Quad.easeOut' },
+        ],
         onComplete: () => spark.destroy(),
       });
     }
-    const label = ensurePixelLabel(scene, 'FUSED!', '#6aff8a', 3, '#06120a');
-    const stamp = scene.add.image(player.x, player.y - 48, label.key).setDepth(depth + 1).setScale(1.6);
-    scene.tweens.add({ targets: stamp, scale: 1, duration: 160, ease: 'Back.easeOut' });
-    scene.tweens.add({ targets: stamp, y: player.y - 84, alpha: 0, delay: 650, duration: 600, onComplete: () => stamp.destroy() });
+    const iconKey = reveal.itemDefinitionId ? usableItemIcon(scene, reveal.itemDefinitionId) : null;
+    const icon = iconKey ? scene.add.image(cx, cy, iconKey).setDepth(depth + 1).setScale(0.2).setAlpha(0) : null;
+    if (icon) {
+      scene.tweens.add({ targets: icon, y: cy - 58, scale: 64 / Math.max(icon.width, icon.height, 1), alpha: 1, delay: 160, duration: 300, ease: 'Back.easeOut' });
+      scene.tweens.add({ targets: icon, y: cy - 90, alpha: 0, delay: 1_500, duration: 500, onComplete: () => icon.destroy() });
+    }
+    // The stamp drops from above, lands with a thud and a shake, and inks a ring.
+    const label = ensurePixelLabel(scene, reveal.stamp, reveal.color, 3, '#06120a');
+    const stampY = cy - (icon ? 26 : 48);
+    const stamp = scene.add.image(cx, stampY, label.key).setDepth(depth + 2).setScale(3).setAlpha(0).setAngle(-8);
+    scene.tweens.add({
+      targets: stamp, scale: 1, alpha: 1, delay: icon ? 420 : 120, duration: 140, ease: 'Quad.easeIn',
+      onComplete: () => {
+        scene.cameras.main.shake(90, 0.004);
+        const splat = scene.add.graphics().setDepth(depth + 1).setBlendMode(Phaser.BlendModes.ADD);
+        splat.lineStyle(2, ink, 0.9).strokeRect(cx - stamp.width / 2 - 6, stampY - stamp.height / 2 - 4, stamp.width + 12, stamp.height + 8);
+        scene.tweens.add({ targets: splat, alpha: 0, scale: { from: 1, to: 1.04 }, duration: 500, onComplete: () => splat.destroy() });
+      },
+    });
+    scene.tweens.add({ targets: stamp, y: stampY - 36, alpha: 0, delay: 1_600, duration: 600, onComplete: () => stamp.destroy() });
   }
 
   public heartbeat(active: boolean, sinceBeatMs: number): void {

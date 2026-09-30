@@ -2141,7 +2141,7 @@ body[data-mode='run'] .marquee {
 
 .br-fusion-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 6px;
   margin: 0;
   padding: 0;
@@ -2149,6 +2149,9 @@ body[data-mode='run'] .marquee {
 }
 
 .br-fusion-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 5px 8px;
   border: 1px dashed rgb(154 143 180 / 45%);
   color: #6a6080;
@@ -2157,8 +2160,45 @@ body[data-mode='run'] .marquee {
 }
 
 .br-fusion-list li.is-found {
-  border: 1px solid #6aff8a;
-  color: #6aff8a;
-  background: rgb(106 255 138 / 8%);
-  text-shadow: 0 0 6px rgb(106 255 138 / 50%);
+  border: 1px solid #ffd84a;
+  color: #ffd84a;
+  background: rgb(255 216 74 / 8%);
+  text-shadow: 0 0 6px rgb(255 216 74 / 50%);
+}
+
+.br-fusion-pair {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 1px;
+}
+
+.br-fusion-icon {
+  width: 24px;
+  height: 24px;
+  image-rendering: pixelated;
+}
+
+/* Unfound: the pair's silhouettes are the clue. */
+.br-fusion-list li:not(.is-found) .br-fusion-icon {
+  filter: brightness(0) drop-shadow(0 0 1px rgb(154 143 180 / 70%));
+  opacity: 0.8;
+}
+
+.br-fusion-plus {
+  font-size: 0.6rem;
+}
+
+.br-fusion-meter {
+  height: 6px;
+  margin: 2px 0 8px;
+  border: 1px solid rgb(255 216 74 / 55%);
+  background: rgb(11 7 20 / 80%);
+}
+
+.br-fusion-meter-fill {
+  display: block;
+  height: 100%;
+  background: #ffd84a;
+  box-shadow: 0 0 8px rgb(255 216 74 / 60%);
 }

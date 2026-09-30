@@ -87,7 +87,13 @@ describe('store interiors', () => {
           return;
         }
         const first = room.offers.filter((offer) => offer.storeId === room.store!.templateId);
-        expect(first.map((offer) => offer.id)).toEqual(before.offers.map((offer) => offer.id));
+        // Round 34: a recipe hint may swap one offer for the other half of a
+        // signature pair (recipeHints.ts); everything else is the wing's own.
+        const own = before.offers.map((offer) => offer.id);
+        const swapped = first.filter((offer) => !own.includes(offer.id));
+        expect(first).toHaveLength(own.length);
+        expect(swapped.length).toBeLessThanOrEqual(1);
+        for (const offer of swapped) expect(offer.pairedWith).toBeDefined();
         for (const store of roomStores(room)) {
           expect(store.bounds).toEqual(INTERIOR_BOUNDS);
           expect(store.exit.bounds).toEqual(INTERIOR_EXIT);

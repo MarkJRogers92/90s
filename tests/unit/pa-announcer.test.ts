@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { enterDoorway } from '../../src/sim/run/tickMvpRun';
 import { ascendToFloorTwo } from '../../src/sim/run/floors';
+import { enterStore, roomStores } from '../../src/sim/run/storeInterior';
+import { itemDefinitionName } from '../../src/sim/run/economy';
+import { signatureFusions } from '../../src/sim/fusion/hybrid';
 import type { EnemyState } from '../../src/sim/model';
 import type { MvpRunState } from '../../src/sim/run/types';
-import { PA_COOLDOWN_TICKS, PA_IDLE_TICKS, PA_LINES, PA_START_GRACE_TICKS, PaDirector, paTypingFrame } from '../../src/game/ui/paModel';
+import { PA_COOLDOWN_TICKS, PA_IDLE_TICKS, PA_LINES, PA_START_GRACE_TICKS, PaDirector, paTypingFrame, recipeLine } from '../../src/game/ui/paModel';
 
 const hanger = (): EnemyState => ({ id: 70, kind: 'hanger', x: 600, y: 200, health: 12, radius: 14, phase: 'pursue', phaseTicks: 0, cooldownTicks: 0, telegraphAimX: 0, telegraphAimY: 0 } as EnemyState);
 
@@ -146,5 +149,46 @@ describe('the mall PA after a quiet start', () => {
     state.tick += PA_START_GRACE_TICKS;
     state.heat += 20;
     expect(PA_LINES.theft).toContain(director.observe(state));
+  });
+});
+
+describe('the PA drops recipe hints (round 34)', () => {
+  /** A fresh run standing on the concourse of a storefront whose shop shelves a signature pair. */
+  function atPairedShop(): { state: MvpRunState; index: number; names: [string, string] } {
+    for (let seed = 1; seed < 400; seed += 1) {
+      const state = createMvpRun(seed);
+      for (let guard = 0; guard < 6; guard += 1) {
+        const room = state.wing.rooms[state.roomIndex]!;
+        const index = roomStores(room).findIndex((shop) => room.offers.some((offer) => offer.storeId === shop.templateId && offer.pairedWith));
+        if (index >= 0) {
+          const offer = room.offers.find((candidate) => candidate.storeId === roomStores(room)[index]!.templateId && candidate.pairedWith)!;
+          return { state, index, names: [itemDefinitionName(offer.itemDefinitionId).toUpperCase(), itemDefinitionName(offer.pairedWith!).toUpperCase()] };
+        }
+        state.room.combat.enemies = [];
+        state.tick += 1;
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+    }
+    throw new Error('no paired shop in 400 malls');
+  }
+
+  it('walking into a store with a named pair on the shelf gets a hint naming both', () => {
+    const { state, index, names } = atPairedShop();
+    const director = watching(state);
+    state.tick += PA_COOLDOWN_TICKS;
+    expect(enterStore(state, index).accepted).toBe(true);
+    state.tick += 1;
+    const line = director.observe(state)!;
+    expect(line).toContain(names[0]);
+    expect(line).toContain(names[1]);
+  });
+
+  it('keeps every hint short enough for the ticker, for every named pair', () => {
+    for (const { itemIds: [a, b] } of signatureFusions()) {
+      for (const line of PA_LINES.recipe) {
+        const said = recipeLine(line, a, b);
+        expect(said.length, said).toBeLessThanOrEqual(56);
+      }
+    }
   });
 });

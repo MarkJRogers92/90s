@@ -916,3 +916,57 @@ From the first real playtest log (21 shifts) and the owner's direction that
   colours), marked `PLACEHOLDER` in the manifest. PixelLab was not connected
   in this cloud session. Screens: `artifacts/neon-overhaul/round32/`.
 
+## Round 33: PixelLab art pass
+
+- **Shopfronts**: `sports`, `hardware`, `toys` and `radio` in
+  `FACADE_TEXTURES` (288x160, the storefront recipe above). `storeFacade()`
+  names a store's front; a test keeps every store on a front of its own.
+  Spiral Records, Video World and Slice Station already had fitting fronts.
+  Radio Shed needed a second try: "radio store" alone drew an outdoor street,
+  so say "indoor shopping mall" and "tiled mall floor".
+- **Item icons**: `create_image_pixflux`, 32x32, `high top-down`, single black
+  outline, detailed shading, and a forced palette (`color_image`) quantised
+  from the 24 earlier icons plus a five-step gold ramp for rares. Sources in
+  `docs/art/neon-overhaul/pixellab/items/`; runtime copies get binary alpha.
+  `scripts/placeholder-icons.mjs` is gone (re-running it would have
+  overwritten the art). Weakest reads, worth a redo: staple gun and leaf
+  blower (both look like flashlights), mic stand (small).
+- PixelLab runs at most 8 jobs at once; the no-auth `download_url` of a
+  finished job can be fetched with curl, so batches do not need `get_image`.
+- Spend: 69 generations (799 -> 730). Screens: `artifacts/neon-overhaul/round33/`.
+
+## Round 34: fusions as a spectacle
+
+- **Fused icons** (`presentation/fusedIcon.ts`, pure plan;
+  `fusedIconTexture.ts`, `usableItemIcon(scene, id)`): base icon at 32 px,
+  the other parts at 16 px on its corner over dark plates, a pixel glow grown
+  from the silhouette (1/2/3 px, green/cyan/gold for 2/3/4 parts), cached as
+  `neon:fused:<id>`. The HUD hotbar, passives and bench tiles use it (the
+  bench model now passes a hybrid's own id). The held weapon and floor
+  pickups keep the base icon.
+- **Discovery** (`career.ts` `discoverFusion`): logs a fusion and every step
+  nested in it as it is made, and reports `firstTime`, the signature name and
+  the running count. The scene saves the career right away, so a quit
+  mid-shift keeps the find. `fusionLog` counts nested steps too, and each
+  entry carries its pair's `itemIds`.
+- **Reveal** (`ui/fusionRevealModel.ts` pure; `MvpRunView.celebrateFusion`;
+  `ui/FusionReveal.ts` banner): sparks rush in and burst, the fused icon
+  rises, the stamp slams with a small shake at 560 ms; the banner follows at
+  650 ms on the half of the screen away from the janitor. All scene tweens,
+  so it plays while the sim is paused or not.
+- **Catalog** (Break Room): pair icons per signature, `brightness(0)`
+  silhouettes until found, a gold meter.
+- **Recipe hints** (`sim/run/recipeHints.ts`, applied in `generateRunWing`):
+  a shop whose window holds a whole signature pair marks it; one in
+  `RECIPE_HINT_ODDS` (3) of the rest that stock a pair swaps its last other
+  offer for the missing half (same spot, authored price, id and `offerIds`
+  updated). `WingOffer.pairedWith` names the partner. The view ties the pair
+  with running gold sparks and diamonds; `PaDirector` says a `recipe` line on
+  entering a store with both halves still on the shelf (`recipeLine` falls
+  back to short nouns past 56 characters).
+- Signature keys are normalised with `pairKey` at load (`AUTHORED_SIGNATURES`),
+  so a pair authored in either order matches; a test checks every one.
+- Verifying tween timing in the browser pane: its screenshots lag the key
+  events, so fire the key from `javascript_tool` and `await` a fixed delay
+  before the screenshot. Screens: `artifacts/neon-overhaul/round34/`.
+

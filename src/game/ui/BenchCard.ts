@@ -7,8 +7,7 @@
  */
 import Phaser from 'phaser';
 import type { MvpRunState } from '../../sim/run/types';
-import { itemIconKey } from '../presentation/assets';
-import { usableTextureKey } from '../presentation/assetFallback';
+import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { buildBenchCardModel, type BenchCardModel, type BenchTile } from './benchCardModel';
 
@@ -104,8 +103,7 @@ export class BenchCard {
     g.fillStyle(0x140d22, 1).fillRect(x, y, 84, 84);
     g.lineStyle(2, edge, itemDefinitionId ? 1 : 0.35).strokeRect(x + 1, y + 1, 82, 82);
     if (!itemDefinitionId) return slot;
-    const key = itemIconKey(itemDefinitionId);
-    const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+    const usable = usableItemIcon(this.scene, itemDefinitionId);
     if (!usable) return slot;
     const icon = this.image(slot, usable, x + 42, y + 42);
     icon.setScale(66 / (Math.max(icon.width, icon.height) || 1));
@@ -120,8 +118,7 @@ export class BenchCard {
     const hot = this.hovered !== null && typeof this.hovered === 'object' && this.hovered.pick === tile.instanceId;
     g.fillStyle(tile.pick ? edge : 0x140d22, tile.pick ? 0.22 : 1).fillRect(x, y, TILE, TILE);
     g.lineStyle(tile.pick || hot ? 3 : 2, hot && !tile.pick ? 0xf4ecff : edge, 1).strokeRect(x + 1, y + 1, TILE - 2, TILE - 2);
-    const key = itemIconKey(tile.iconDefinitionId);
-    const usable = key ? usableTextureKey(this.scene.textures, key) : null;
+    const usable = usableItemIcon(this.scene, tile.iconDefinitionId);
     if (usable) {
       const icon = this.image(slot++, usable, x + TILE / 2, y + TILE / 2 + 2);
       const bob = tile.pick ? Math.sin(now / 180) * 1.5 : 0;
