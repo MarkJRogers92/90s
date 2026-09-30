@@ -1,5 +1,24 @@
 # Test evidence
 
+## 2026-09-30 — round 36: sell and drop
+
+- `sell-drop` (9 tests) and `bench-card-model` cover resale value, selling,
+  the last-weapon rule, and dropping. Two red-first fixes from the browser
+  check: standing on a dropped item for 300 ticks must not pick it up (it
+  did, after the 45-tick timer; now it waits for the janitor to step out of
+  reach), and a refused drop must say why (it was silent).
+- `npx tsc --noEmit` clean; `npx vitest run` 1016 passed (95 files);
+  `npm run build` clean.
+- Browser (app pane, `?fixture=mvp-bench&seed=4242`): X dropped the Party
+  Popper and fell back to the mop; it stayed down through 3 s standing
+  still; X with only the mop left logged YOU CANNOT PART WITH YOUR LAST
+  WEAPON. Bench: picking the RC car showed SELL $10, X paid $30 -> $40 and
+  the car stopped following. The walk-away-and-back pickup is covered by
+  the unit test only (synthetic key holds did not drive the pane).
+- Stress: `PW_PORT=4191 npx playwright test --workers=4 --repeat-each=8
+  tests/browser/presentation-evidence.spec.ts:269` 8 of 8 passed (2.1 min),
+  with nothing being edited.
+
 ## 2026-09-30 — round 35: store twists, fusion logging, boss card
 
 - New tests, run red first: `store-twists-round35` (9: a hint for all eleven

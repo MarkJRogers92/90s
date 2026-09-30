@@ -6,7 +6,7 @@ import { tickMvpRun } from '../../src/sim/run/tickMvpRun';
 import { hotItemCount } from '../../src/sim/run/wanted';
 import { runWeaponSlots } from '../../src/sim/run/weapons';
 import { AUTHORED_OFFER_BANDS } from '../../src/sim/wing/templates';
-import { DROP_PICKUP_LOCK_TICKS, dropRunWeapon, resaleValue, sellWorkbenchItem } from '../../src/sim/run/resale';
+import { dropRunWeapon, resaleValue, sellWorkbenchItem } from '../../src/sim/run/resale';
 import type { FusionInventoryNode, InventoryLeaf } from '../../src/sim/fusion/types';
 import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
 
@@ -110,13 +110,17 @@ describe('dropping the held weapon (round 36)', () => {
     expect(state.inventory.inventory.some((node) => node.instanceId === 't-pump_soaker')).toBe(false);
     const token = state.room.tokens.find((pickup) => pickup.kind === 'item' && pickup.node?.instanceId === 't-pump_soaker');
     expect(token).toBeDefined();
-    // Not snatched straight back up, even standing on it.
-    state.room.combat.player.x = token!.x;
-    state.room.combat.player.y = token!.y;
-    for (let i = 0; i < DROP_PICKUP_LOCK_TICKS - 2; i += 1) tickMvpRun(state, idle);
+    // Not snatched back up while the janitor stands on it, however long.
+    const player = state.room.combat.player;
+    player.x = token!.x;
+    player.y = token!.y;
+    for (let i = 0; i < 300; i += 1) tickMvpRun(state, idle);
     expect(state.inventory.inventory.some((node) => node.instanceId === 't-pump_soaker')).toBe(false);
-    // After the lock it picks back up exactly as it was: still stolen, still hot.
-    for (let i = 0; i < 6; i += 1) tickMvpRun(state, idle);
+    // Step out of reach and back: it picks up exactly as it was, still stolen, still hot.
+    player.x = token!.x + 200;
+    tickMvpRun(state, idle);
+    player.x = token!.x;
+    tickMvpRun(state, idle);
     const back = state.inventory.inventory.find((node) => node.instanceId === 't-pump_soaker');
     expect(back).toMatchObject({ kind: 'leaf', acquisitionKind: 'stolen' });
     expect(hotItemCount(state)).toBe(1);
@@ -127,6 +131,8 @@ describe('dropping the held weapon (round 36)', () => {
     expect(runWeaponSlots(state)).toHaveLength(1);
     expect(dropRunWeapon(state).accepted).toBe(false);
     expect(runWeaponSlots(state)).toHaveLength(1);
+    // Says why, so the X key never looks broken.
+    expect(state.recentChange).toBe('You cannot part with your last weapon.');
   });
 });
 

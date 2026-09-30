@@ -7,6 +7,15 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 36 (2026-09-30): sell and drop. At the Bench Warrant pick one item and
+X / SELL pays half its shelf price (a quarter if stolen, which also sheds its
+heat; a fusion is worth its parts). X anywhere drops the held weapon exactly
+as it was; it stays in the room and is picked back up only after the janitor
+steps away and returns (a browser check caught a 45-tick timer that handed it
+straight back to a janitor standing still). The last weapon is never dropped
+or sold, and the log now says so. 1016 unit tests pass; see TEST_EVIDENCE.md
+round 36. Next: Floor 4, the Roof, as the new finale.
+
 Round 35 (2026-09-30): every store plays differently. The seven themed
 stores get twists: Sports Locker's pitching machine fires down the aisle,
 Hardware Hut's paint spills are slippery, Toy Box's wind-up toys shove the

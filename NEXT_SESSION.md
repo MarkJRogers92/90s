@@ -18,33 +18,30 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 35): `tsc` clean, 1006 unit tests, `npm run build` passes;
-see TEST_EVIDENCE.md round 35.
+Last gate (round 36): `tsc` clean, 1016 unit tests, `npm run build` passes;
+see TEST_EVIDENCE.md round 36.
 
 ## Next up
 
-Round 36 is in progress (saved mid-way, 2026-09-30):
+**Round 37: Floor 4, the Roof** (owner's pick, 2026-09-30). It becomes the
+new final floor: beating the Mall Owner offers the escalator again and the
+Roof boss is the win (kill cam, dawn walk-out, CLOCKED OUT), with a FLOOR 3
+CLEARED stub tier. The owner plans more levels per floor later, so replace
+the `1 | 2 | 3` unions and `floor === 3 ? ... : floor === 2 ? ...` ternaries
+(about 25 files) with a per-floor table rather than adding a fourth branch.
+Follow the Round 23b pattern: wing names, a new enemy, a boss config,
+`roofFloor` dressing, two tracks, PA and pink-slip lines, PixelLab sprites,
+fixtures, `floor: 4` checkpoints.
 
-- Done: **sell and drop** (`sim/run/resale.ts`). X drops the held weapon
-  (it keeps its provenance and fusion, 45-tick pickup lock, never the last
-  weapon); at the Bench Warrant pick one item and X / SELL pays half its
-  shelf price (a quarter if stolen, a fusion the sum of its parts). Bench
-  card SELL button, controls legends. 1016 unit tests passed before the
-  pause-card height tweak.
-- Done: `presentation-evidence.spec.ts:269` now re-centres on the east door
-  (`nudgePlayerY`) like `enterFirstCombat`. Passed 5/5 serially. The parallel
-  stress run is still to do: earlier stress runs were spoiled by source edits
-  reloading the Vite page mid-test, so run it with nothing being edited:
-  `PW_PORT=4191 npx playwright test --workers=4 --repeat-each=8 tests/browser/presentation-evidence.spec.ts:269`
-- To do: icon redos. Picked staple gun variant A and mic stand variant B
+Round 36 (sell and drop) is done; see STATUS.md. Left over from it:
+
+- Icon redos. Picked staple gun variant A and mic stand variant B
   (PixelLab jobs bbc92a1e-6f3e-4371-a471-208e384a55f4 and
   284c02d0-5925-4ae5-9f4e-fb0663313214, download from
   `https://api.pixellab.ai/mcp/images/<job>/download`). Leaf blower: two new
   tries (400602cc-639b-4bc2-af1c-4e67f9e1199d backpack,
   962b3ee2-b74e-4385-8d31-4fb4cc5e18ec handheld) not yet reviewed. Promote
   like round 33 (binary alpha, manifest sha).
-- Then: browser-check the bench SELL button and X drop, STATUS/TEST_EVIDENCE
-  round 36, commit, PR.
 - Later: reduced-flashing toggle.
 
 ## Round 35 playtest questions

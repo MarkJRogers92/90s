@@ -7,8 +7,8 @@
  *   worth what its parts are. Selling stolen goods gets rid of their heat.
  * - Drop the held weapon anywhere: it goes on the floor exactly as it was
  *   held (a stolen item stays stolen), so dropping never launders anything.
- *   It stays in the room like any floor drop, and cannot be picked straight
- *   back up.
+ *   It stays in the room like any floor drop, and is only picked back up
+ *   once the janitor has stepped away from it and come back.
  *
  * The janitor always keeps at least one weapon. Pure rules over run data.
  */
@@ -20,9 +20,6 @@ import { itemDefinitionName, publishRunFeedback } from './economy';
 import { refreshRunLoadout } from './loadout';
 import { runWeaponSlots } from './weapons';
 import type { MvpCommandResult, MvpRunState } from './types';
-
-/** How long a dropped item sits before it can be picked back up. */
-export const DROP_PICKUP_LOCK_TICKS = 45;
 
 const rejected = (reason: string): MvpCommandResult => ({ accepted: false, reason });
 
@@ -84,7 +81,10 @@ export function dropRunWeapon(state: MvpRunState): MvpCommandResult {
   const id = state.inventory.selectedPrimaryInstanceId;
   const node = state.inventory.inventory.find((candidate) => candidate.instanceId === id);
   if (!node) return rejected('Nothing in hand to drop.');
-  if (isLastWeapon(state, node.instanceId)) return rejected(keepReason(state, node.instanceId));
+  if (isLastWeapon(state, node.instanceId)) {
+    publishRunFeedback(state, keepReason(state, node.instanceId));
+    return rejected(keepReason(state, node.instanceId));
+  }
   remove(state, node.instanceId);
   const player = state.room.combat.player;
   state.room.tokens.push({
@@ -92,7 +92,7 @@ export function dropRunWeapon(state: MvpRunState): MvpCommandResult {
     kind: 'item',
     itemDefinitionId: nodeDefinitionId(node),
     node,
-    lockedUntilTick: state.tick + DROP_PICKUP_LOCK_TICKS,
+    awaitingStepOff: true,
     x: player.x,
     y: player.y + 18,
     value: 0,
