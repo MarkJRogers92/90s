@@ -69,6 +69,8 @@ import { projectileStyle, type ProjectileStyle } from './projectileStyle';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
 import { shouldDrawDirectAttackArc } from './visualState';
+import { TAR_PUDDLE_TICKS } from '../../sim/combat/tar';
+import type { TarPuddle } from '../../sim/model';
 
 type ActorFrameEvidence = {
   readonly spriteActive: boolean;
@@ -240,6 +242,8 @@ export class MvpRunView {
     for (const patch of state.room.combat.surfaces) {
       this.drawSurfacePatch(patch, opening?.effectGraphics(`patch:${patch.id}`) ?? this.effectGraphics);
     }
+    // Tar is on the floor: the decal layer, under everyone standing in it.
+    for (const puddle of state.room.combat.tar ?? []) this.drawTarPuddle(puddle, this.storeGraphics, state.tick);
 
     const hangerEvidence: ActorPresentationDebugSnapshot['hangers'] = [];
     this.threats.length = 0;
@@ -1088,6 +1092,21 @@ export class MvpRunView {
    * the slam ring at the authored reach, the volley's five real angles, and a
    * hanger rearing as it closes to touching range.
    */
+  /** A tar puddle on the Roof: glossy black, hot at the rim while fresh, fading as it dries. */
+  private drawTarPuddle(puddle: TarPuddle, graphics: Phaser.GameObjects.Graphics, tick: number): void {
+    const heat = Math.min(1, puddle.ticks / TAR_PUDDLE_TICKS);
+    const fade = Math.min(1, puddle.ticks / 30);
+    const w = puddle.radius * 2;
+    const h = puddle.radius * 1.15;
+    graphics.fillStyle(0x0b0705, 0.82 * fade).fillEllipse(puddle.x, puddle.y, w, h);
+    graphics.fillStyle(0x1c120c, 0.7 * fade).fillEllipse(puddle.x - puddle.radius * 0.12, puddle.y - 2, w * 0.7, h * 0.6);
+    graphics.lineStyle(2, 0xff6a1a, (0.2 + 0.5 * heat) * fade).strokeEllipse(puddle.x, puddle.y, w, h);
+    // A slow bubble and a sheen, so it reads as liquid and not a hole.
+    const bubble = (tick + puddle.x) % 90;
+    if (bubble < 20 && heat > 0.2) graphics.lineStyle(1, 0x5a3a28, 0.8 * fade).strokeCircle(puddle.x + puddle.radius * 0.3, puddle.y - 3, 2 + bubble / 8);
+    graphics.fillStyle(0x8a7a90, 0.35 * fade).fillEllipse(puddle.x - puddle.radius * 0.35, puddle.y - h * 0.22, w * 0.18, 3);
+  }
+
   private drawWindups(enemy: EnemyState, windups: readonly Windup[], effects: Phaser.GameObjects.Graphics, tick: number): void {
     for (const windup of windups) {
       const p = windup.progress;
@@ -1137,6 +1156,22 @@ export class MvpRunView {
         // A thin thread back to the Static so the player knows who is coming.
         effects.lineStyle(1, 0x40e0ff, 0.35 * p).lineBetween(enemy.x, enemy.y - 30, tx, ty);
         this.drawAlert(effects, tx, ty - 44, p, 0x40e0ff);
+      } else if (windup.kind === 'lob') {
+        // A tar bucket in the air: its shadow closes in on the landing ring,
+        // and the bucket itself arcs over from whoever threw it.
+        const tx = windup.targetX ?? enemy.x;
+        const ty = windup.targetY ?? enemy.y;
+        const r = windup.reach ?? 36;
+        const color = blink ? 0xffffff : p > 0.7 ? 0xff5a1a : 0xffb02a;
+        effects.fillStyle(0x1a0c04, 0.18 + 0.32 * p).fillEllipse(tx, ty, r * 2 * (0.35 + 0.65 * p), r * 1.1 * (0.35 + 0.65 * p));
+        effects.lineStyle(3, color, 0.6 + 0.4 * p).strokeEllipse(tx, ty, r * 2, r * 1.1);
+        effects.lineStyle(1, color, 0.4).strokeEllipse(tx, ty, r * 2 + 8 + 3 * Math.sin(tick / 3), r * 1.1 + 5);
+        const bx = enemy.x + (tx - enemy.x) * p;
+        const by = enemy.y - 24 + (ty - enemy.y + 24) * p - Math.sin(Math.PI * p) * 110;
+        effects.fillStyle(0x2a2a30, 1).fillRect(bx - 6, by - 7, 12, 12);
+        effects.fillStyle(0xff7a1a, 0.9).fillRect(bx - 5, by - 7, 10, 3);
+        effects.lineStyle(1, 0xc8c8d0, 0.9).strokeRect(bx - 6, by - 7, 12, 12);
+        if (enemy.kind === 'roofer') this.drawAlert(effects, tx, ty - 40, p, 0xffb02a);
       } else if (windup.kind === 'charge') {
         // The Bargain Hunter's lane: as wide as its body, as long as the charge.
         const length = windup.reach ?? 144;

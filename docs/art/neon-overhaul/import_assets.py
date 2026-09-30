@@ -38,6 +38,8 @@ FACADES = [
     'back-hall-wall',
     # Round 33: shopfronts for the themed stores that borrowed one.
     'sports-locker', 'hardware-hut', 'toy-box', 'radio-shed',
+    # Round 37: the Roof's back walls.
+    'roof-hvac', 'roof-billboard', 'roof-water-tower', 'roof-access',
 ]
 PROPS = [
     'globe-fountain', 'bunny-mascot', 'food-table-set', 'planter-long',
@@ -49,6 +51,8 @@ PROPS = [
     'janitor-cart', 'locker-row', 'floor-buffer', 'confiscation-cage', 'filing-cabinets', 'water-cooler', 'tray-return', 'trash-bank',
     # Round 35: the themed stores' twists.
     'pitching-machine', 'wind-up-toy', 'listening-booth', 'pizza-oven',
+    # Round 37: rooftop stand-ins for the mall props that dress collision.
+    'roof-ac-unit', 'roof-skylight', 'roof-vent-stack',
 ]
 # Round 31: packed 9-frame animate_image strips, copied as-is (not cropped):
 # arcade-cabinet-anim, claw-machine-anim. sale-sign above is now the wide board.

@@ -16,7 +16,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
 import { floorNumberOf, type FloorNumber } from '../../sim/wing/floorSpecs';
 
-export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout' | 'upstairs' | 'manager' | 'topfloor' | 'owner';
+export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout' | 'upstairs' | 'manager' | 'topfloor' | 'owner' | 'roof' | 'developer';
 
 export type MusicCue = {
   readonly track: MusicTrackId | 'silent';
@@ -37,8 +37,7 @@ const FIGHT_TRACKS: Readonly<Record<FloorNumber, MusicTrackId>> = {
   1: 'combat',
   2: 'upstairs',
   3: 'topfloor',
-  // TODO(round 37 music): the Roof's own fight track.
-  4: 'topfloor',
+  4: 'roof',
 };
 
 export function musicCue(state: MvpRunState): MusicCue {
@@ -51,7 +50,7 @@ export function musicCue(state: MvpRunState): MusicCue {
   if (boss) {
     const phase = boss.bossPhase ?? 1;
     return {
-      track: boss.kind === 'owner' ? 'owner' : boss.kind === 'manager' ? 'manager' : 'boss',
+      track: boss.kind === 'developer' ? 'developer' : boss.kind === 'owner' ? 'owner' : boss.kind === 'manager' ? 'manager' : 'boss',
       tempoScale: phase === 3 ? 1.12 : phase === 2 ? 1.05 : 1,
       volume,
       intensity: Math.min(1, (phase === 3 ? 1 : phase === 2 ? 0.7 : 0.4) + danger),

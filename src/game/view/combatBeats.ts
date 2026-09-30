@@ -22,6 +22,7 @@ import { SPITTER_RECOVER_TICKS, SPITTER_TELEGRAPH_TICKS } from '../../sim/combat
 import { STATIC_BURST_RADIUS, STATIC_TELEGRAPH_TICKS } from '../../sim/combat/staticEnemy';
 import { SHOPPER_CHARGE_TICKS, SHOPPER_TELEGRAPH_TICKS } from '../../sim/combat/shopper';
 import { MASCOT_CHARGE_SPEED_PER_TICK, MASCOT_CHARGE_TICKS, MASCOT_TELEGRAPH_TICKS } from '../../sim/combat/mascot';
+import { ROOFER_LOB_TICKS, TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
 
 /** How far a Bargain Hunter's charge carries: the lane the renderer draws. */
 const SHOPPER_CHARGE_REACH = SHOPPER_CHARGE_TICKS * 9;
@@ -48,14 +49,14 @@ export const HEAVY_HIT_DAMAGE = 5;
 export const HANGER_WARN_DISTANCE = 72;
 
 export type Windup = {
-  readonly kind: 'spit' | 'slam' | 'volley' | 'reach' | 'blink' | 'charge';
+  readonly kind: 'spit' | 'slam' | 'volley' | 'reach' | 'blink' | 'charge' | 'lob';
   /** 0 when the wind-up starts, 1 the tick it goes off. */
   readonly progress: number;
   readonly aimX: number;
   readonly aimY: number;
   /** Slam only: the authored reach, so the ring is the real hitbox. */
   readonly reach?: number;
-  /** Blink only: where the Static will land. */
+  /** Blink and lob: where the Static or the tar bucket will land. */
   readonly targetX?: number;
   readonly targetY?: number;
   /** Volley only: each shot's angle in radians relative to the aim. */
@@ -80,6 +81,11 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
     } else if (enemy.phase === 'telegraph') {
       windups.push({ kind: 'slam', progress: clamp01(1 - enemy.phaseTicks / config.slamTelegraphTicks), reach: config.slamReach, ...aim });
     }
+    // The Developer's barrage: a ring under every bucket in the air.
+    const lobTicks = config.tarBarrage?.lobTicks ?? 1;
+    for (const strike of enemy.tarStrikes ?? []) {
+      windups.push({ kind: 'lob', progress: clamp01(1 - strike.ticks / lobTicks), aimX: 0, aimY: 0, targetX: strike.x, targetY: strike.y, reach: TAR_SPLASH_RADIUS });
+    }
     const volley = enemy.bossVolleyTelegraphTicks ?? 0;
     if (volley > 0) {
       windups.push({
@@ -95,6 +101,12 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
     // The crackling spot it will blink onto: the janitor's position when it locked on.
     return enemy.phase === 'telegraph'
       ? [{ kind: 'blink', progress: clamp01(1 - enemy.phaseTicks / STATIC_TELEGRAPH_TICKS), aimX: 0, aimY: 0, targetX: enemy.blinkX ?? enemy.x, targetY: enemy.blinkY ?? enemy.y, reach: STATIC_BURST_RADIUS }]
+      : [];
+  }
+  if (enemy.kind === 'roofer') {
+    // The bucket in the air: a ring where it will land, locked at the throw.
+    return enemy.phase === 'telegraph'
+      ? [{ kind: 'lob', progress: clamp01(1 - enemy.phaseTicks / ROOFER_LOB_TICKS), ...aim, targetX: enemy.lobX ?? player.x, targetY: enemy.lobY ?? player.y, reach: TAR_SPLASH_RADIUS }]
       : [];
   }
   if (enemy.kind === 'mascot') {

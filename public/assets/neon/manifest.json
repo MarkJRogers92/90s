@@ -2258,5 +2258,75 @@
       67
     ],
     "sha256": "ebabe521d1789246f1772aa47a05f912c3e02a44aeb255beddadbff8131b8305"
+  },
+  {
+    "path": "public/assets/neon/facades/roof-hvac.png",
+    "source": "docs/art/neon-overhaul/pixellab/roof-hvac.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "ddda83718f372971526780bf6d83d79e3e852e9b23e6461b85e5f77da7a65d17"
+  },
+  {
+    "path": "public/assets/neon/facades/roof-billboard.png",
+    "source": "docs/art/neon-overhaul/pixellab/roof-billboard.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "de5f5de498538504eca8fea5fdae38bbc3a81a3ecfbc29a88c1704cbffa89fd6"
+  },
+  {
+    "path": "public/assets/neon/facades/roof-water-tower.png",
+    "source": "docs/art/neon-overhaul/pixellab/roof-water-tower.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "b38de839a510bbf618b1197677a6d3d756c95849f6d017cf0d82b7caad5c3570"
+  },
+  {
+    "path": "public/assets/neon/facades/roof-access.png",
+    "source": "docs/art/neon-overhaul/pixellab/roof-access.png",
+    "generator": "PixelLab create_map_object (low top-down)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "f90448f28aba7df1b06b40d714210b2e697199dab6d17286ad6e2f4dbc80e744"
+  },
+  {
+    "path": "public/assets/neon/props/roof-ac-unit.png",
+    "source": "docs/art/neon-overhaul/pixellab/roof-ac-unit.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      65,
+      53
+    ],
+    "sha256": "ae71529f1a65dc8025010ef07b8b07d1b39d145957f12ac6e6a25bc3d08ec37d"
+  },
+  {
+    "path": "public/assets/neon/props/roof-skylight.png",
+    "source": "docs/art/neon-overhaul/pixellab/roof-skylight.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      118,
+      92
+    ],
+    "sha256": "1a659e1159f5145db904b6bbbdf8a17a682155ec6cccb0d9d14399765080bb9a"
+  },
+  {
+    "path": "public/assets/neon/props/roof-vent-stack.png",
+    "source": "docs/art/neon-overhaul/pixellab/roof-vent-stack.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      59,
+      64
+    ],
+    "sha256": "d2ae15d11f391e35cffe7d602f3c7463d6c76c50fe5283fdafc644c0ea226569"
   }
 ]

@@ -162,6 +162,16 @@ const OBm = [59, 62, 66], OC = [60, 64, 67], OG = [55, 59, 62], OFs = [54, 58, 6
 const OWNER_CHANGES = [OBm, OBm, OC, OC, OBm, OBm, OG, OFs, OBm, OBm, OC, OC, OEm, OEm, OA, OFs];
 const OWNER_ROOTS = [35, 35, 36, 36, 35, 35, 31, 30, 35, 35, 36, 36, 28, 28, 33, 30];
 
+// Rooftop Nocturne (Roof fights): E minor, i-VI-III-VII then i-VI-iv-V, under the open sky.
+const REm = [52, 55, 59], RC = [48, 52, 55], RG = [55, 59, 62], RD = [50, 54, 57], RAm = [45, 48, 52], RB = [47, 51, 54];
+const ROOF_CHANGES = [REm, REm, RC, RC, RG, RG, RD, RD, REm, REm, RC, RC, RAm, RAm, RB, RB];
+const ROOF_ROOTS = [28, 28, 24, 24, 31, 31, 26, 26, 28, 28, 24, 24, 33, 33, 35, 35];
+
+// Demolition Order (the Developer): C sharp minor, with a Phrygian D and a raised G sharp.
+const DCsm = [61, 64, 68], DD = [62, 66, 69], DA = [57, 61, 64], DGs = [56, 60, 63], DFsm = [54, 57, 61];
+const DEVELOPER_CHANGES = [DCsm, DCsm, DD, DD, DCsm, DCsm, DA, DGs, DCsm, DCsm, DD, DD, DFsm, DFsm, DGs, DGs];
+const DEVELOPER_ROOTS = [37, 37, 38, 38, 37, 37, 33, 32, 37, 37, 38, 38, 30, 30, 32, 32];
+
 const ALL16 = range(0, 16);
 
 export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
@@ -482,6 +492,92 @@ export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
       { kind: 'hat', minIntensity: 0.6, notes: drums('xoxoxoxoxoxoxoxo', ALL16, 0.4) },
       { kind: 'crash', minIntensity: 0.3, reverb: 0.5, notes: drums('x...............', [0, 8]) },
       { kind: 'tom', minIntensity: 0.6, reverb: 0.3, notes: [7, 15].flatMap((bar) => [8, 10, 12, 13, 14, 15].map((s, i) => ({ step: bar * 16 + s, midi: 52 - i * 3, vel: 0.9 }))) },
+    ],
+  },
+
+  /* "Rooftop Nocturne" (Roof fights) ------------------------------------------ */
+  roof: {
+    bpm: 132,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x.......x..x....', ALL16) },
+      { kind: 'drivebass', duck: true, notes: bassLine(ROOF_ROOTS, [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 7, 10], 1, 0.66) },
+      { kind: 'snare', minIntensity: 0.2, reverb: 0.6, notes: drums('........x.......', ALL16, 0.9) },
+      { kind: 'hat', minIntensity: 0.3, notes: drums('..x...x...x...xo', ALL16, 0.6) },
+      // Wind over the parapet: wide strings that never quite resolve.
+      { kind: 'strings', reverb: 0.7, notes: chordsPerBar(ROOF_CHANGES, 16, 0.42) },
+      // The city below: a far-off bell arpeggio, echoing.
+      { kind: 'bell', minIntensity: 0.35, echo: 0.55, reverb: 0.5, notes: arpeggio(ROOF_CHANGES.map((chord) => chord.map((n) => n + 12)), 0.22) },
+      {
+        kind: 'lead',
+        minIntensity: 0.6,
+        echo: 0.5,
+        reverb: 0.5,
+        notes: melody([
+          [8, 0, 71, 6], [8, 6, 74, 2], [8, 8, 76, 8],
+          [9, 0, 72, 12], [9, 12, 71, 4],
+          [10, 0, 74, 6], [10, 6, 79, 2], [10, 8, 78, 8],
+          [11, 0, 74, 16],
+          [12, 0, 72, 4], [12, 4, 76, 4], [12, 8, 81, 8],
+          [13, 0, 79, 8], [13, 8, 76, 8],
+          [14, 0, 75, 6], [14, 6, 78, 2], [14, 8, 83, 8],
+          [15, 0, 78, 16],
+        ], 0.5),
+      },
+      { kind: 'hat', minIntensity: 0.8, notes: drums('oooooooooooooooo', ALL16, 0.25) },
+      { kind: 'crash', minIntensity: 0.3, reverb: 0.6, notes: drums('x...............', [0, 8]) },
+      { kind: 'tom', minIntensity: 0.5, reverb: 0.4, notes: [12, 13, 14, 15].map((s, i) => ({ step: 15 * 16 + s, midi: 50 - i * 4, vel: 0.85 })) },
+    ],
+  },
+
+  /* "Demolition Order" (the Developer) --------------------------------------- */
+  developer: {
+    bpm: 156,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x...x...x...x.xx', ALL16) },
+      { kind: 'drivebass', duck: true, notes: bassLine(DEVELOPER_ROOTS, [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 1, 13, 0, 12], 1, 0.8) },
+      { kind: 'snare', reverb: 0.45, notes: drums('....x.......x...', ALL16, 0.95) },
+      { kind: 'clap', minIntensity: 0.5, reverb: 0.4, notes: drums('....x.......x..x', ALL16, 0.6) },
+      { kind: 'choir', minIntensity: 0.3, reverb: 0.7, notes: chordsPerBar(DEVELOPER_CHANGES, 16, 0.45) },
+      {
+        // The wrecking crew's hook: hammered repeats, then a fall.
+        kind: 'supersaw',
+        echo: 0.2,
+        reverb: 0.35,
+        notes: melody([
+          [0, 0, 73, 2], [0, 2, 73, 2], [0, 4, 73, 2], [0, 6, 76, 2], [0, 8, 80, 4], [0, 12, 78, 4],
+          [1, 0, 73, 16],
+          [2, 0, 74, 2], [2, 2, 74, 2], [2, 4, 74, 2], [2, 6, 78, 2], [2, 8, 81, 4], [2, 12, 78, 4],
+          [3, 0, 74, 16],
+          [4, 0, 73, 2], [4, 2, 73, 2], [4, 4, 76, 2], [4, 6, 80, 2], [4, 8, 85, 8],
+          [5, 0, 83, 8], [5, 8, 80, 8],
+          [6, 0, 81, 4], [6, 4, 76, 4], [6, 8, 73, 4], [6, 12, 69, 4],
+          [7, 0, 68, 16],
+        ], 0.55),
+      },
+      {
+        kind: 'lead',
+        minIntensity: 0.7,
+        echo: 0.3,
+        notes: melody([
+          [8, 0, 85, 4], [8, 4, 88, 4], [8, 8, 92, 8],
+          [9, 0, 86, 8], [9, 8, 85, 8],
+          [10, 0, 86, 4], [10, 4, 90, 4], [10, 8, 93, 8],
+          [11, 0, 90, 16],
+          [12, 0, 85, 4], [12, 4, 81, 4], [12, 8, 78, 8],
+          [13, 0, 81, 8], [13, 8, 85, 8],
+          [14, 0, 84, 4], [14, 4, 87, 4], [14, 8, 92, 8],
+          [15, 0, 92, 16],
+        ], 0.5),
+      },
+      // Steel on steel: an anvil clank on the offbeat of every phrase end.
+      { kind: 'bell', minIntensity: 0.4, reverb: 0.45, notes: [1, 3, 5, 7, 9, 11, 13, 15].map((bar) => ({ step: bar * 16 + 10, midi: 84, len: 1, vel: 0.5 })) },
+      { kind: 'hat', minIntensity: 0.5, notes: drums('xoxoxoxoxoxoxoxo', ALL16, 0.42) },
+      { kind: 'crash', minIntensity: 0.3, reverb: 0.5, notes: drums('x...............', [0, 4, 8, 12]) },
+      { kind: 'tom', minIntensity: 0.6, reverb: 0.3, notes: [3, 7, 11, 15].flatMap((bar) => [8, 10, 12, 13, 14, 15].map((s, i) => ({ step: bar * 16 + s, midi: 55 - i * 3, vel: 0.9 }))) },
     ],
   },
 
