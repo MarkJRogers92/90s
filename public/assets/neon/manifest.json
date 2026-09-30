@@ -2362,31 +2362,31 @@
   {
     "path": "public/assets/neon/enemies/developer-idle.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-developer-idle.png",
-    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "generator": "PixelLab animate_character, packed by pack_character.py, suit recoloured cream by recolor_suit.py",
     "size": [
       1440,
       180
     ],
-    "sha256": "af9fda6e5695a553fff16462d0e1898cc305cc177dd5116233a2a453e65231b2"
+    "sha256": "f7ad1df6396e064c9baefd0cecc80a815a14baa5a8ed377dd003882aa5942a6f"
   },
   {
     "path": "public/assets/neon/enemies/developer-walk.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-developer-walk.png",
-    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "generator": "PixelLab animate_character, packed by pack_character.py, suit recoloured cream by recolor_suit.py",
     "size": [
       1080,
       1440
     ],
-    "sha256": "5b0e870a0d8d343972c4270d9c25edad40780291c33a95e835f7390187127161"
+    "sha256": "ac00573748d0fd14ae2edbfa3259b065b2cecd3502c6e9c5b42746e371457001"
   },
   {
     "path": "public/assets/neon/enemies/developer-death.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-developer-death.png",
-    "generator": "PixelLab animate_character, packed by pack_character.py",
+    "generator": "PixelLab animate_character, packed by pack_character.py, suit recoloured cream by recolor_suit.py",
     "size": [
       1260,
       1440
     ],
-    "sha256": "62fe2811945161c37b14cbb761788248e6dc1b0f19007f18e5428d60e032f781"
+    "sha256": "005cc9cee52ef5920d319105fd017098e27ee40d27373222c1096f480023fa51"
   }
 ]
