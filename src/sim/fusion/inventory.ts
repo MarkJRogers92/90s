@@ -133,6 +133,21 @@ function isValidRecord(record: FusionTransactionRecord): boolean {
   );
 }
 
+/** The number a fusion or its transaction was issued under, e.g. 3 for `hybrid-tx-3`. */
+const FUSION_ID = /^(?:hybrid|emitter-mount)(?:-tx)?-(\d+)$/;
+
+/**
+ * The next fusion id must be past every one already issued, or a later fusion
+ * would reuse an id and two transactions would share it.
+ */
+function nextCompositeIdIsFresh(state: FusionInventoryState, forestIds: ReadonlySet<string>): boolean {
+  const issued = [...forestIds, ...state.committedTransactions.flatMap((record) => [record.transactionId, record.compositeInstanceId])];
+  return issued.every((id) => {
+    const match = FUSION_ID.exec(id);
+    return !match || Number(match[1]) < state.nextCompositeId;
+  });
+}
+
 export function isValidFusionInventoryState(state: FusionInventoryState): boolean {
   if (
     !Array.isArray(state.inventory) ||
@@ -260,7 +275,7 @@ export function isValidFusionInventoryState(state: FusionInventoryState): boolea
     }
     committedRevisions.add(record.committedRevision);
   }
-  return true;
+  return nextCompositeIdIsFresh(state, forestIds);
 }
 
 export type ProjectedFusionInventory = {

@@ -10,6 +10,7 @@
  * partially applies.
  */
 import {
+  compositeLeaves,
   isValidFusionInventoryState,
   projectFusionInventory,
 } from '../fusion/inventory';
@@ -312,6 +313,14 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     }
     clearedRoomIds.push(roomId as WingRoomId);
   }
+  // A fight room's doors stay shut until every enemy in it is down, so no
+  // fight room before the current room, or before any cleared room, can still
+  // be uncleared. Rooms ahead may be cleared: the janitor can walk back west.
+  const furthest = Math.max(roomIndex, ...clearedRoomIds.map((id) => wing.rooms.findIndex((room) => room.id === id)));
+  const skipped = wing.rooms.slice(0, furthest).find((room) => room.enemySpawns.length > 0 && !clearedRoomIds.includes(room.id));
+  if (skipped) {
+    return fail(`Checkpoint got past the fight in "${skipped.id}" without clearing it.`);
+  }
 
   const offerIds = new Map<
     string,
@@ -354,6 +363,19 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     );
   } catch {
     return fail('Checkpoint inventory cannot compile a loadout.');
+  }
+
+  // On the ground floor every shelf item the janitor owns came off this wing's
+  // shelves, so its offer cannot still be on sale. (Upstairs, a store can
+  // reappear with the same offer ids while he carries goods from below.)
+  if (floor === 1) {
+    const stillShelved = inventory.inventory.flatMap((node) => compositeLeaves(node)).find((leaf) =>
+      (leaf.acquisitionKind === 'purchased' || leaf.acquisitionKind === 'stolen')
+      && offerIds.has(leaf.sourceStockId)
+      && offerStatusResult.offerStatus[leaf.sourceStockId] !== 'consumed');
+    if (stillShelved) {
+      return fail(`Checkpoint owns "${stillShelved.instanceId}" from offer "${stillShelved.sourceStockId}" that is not sold.`);
+    }
   }
 
   const carriedResult = validateCarried(value.carried, offerStatusResult.offerStatus, offerIds);

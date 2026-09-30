@@ -1,5 +1,21 @@
 # Test evidence
 
+## 2026-09-30 — round 41: flaky tests and save validation
+
+- Flake: `night-shift` "sorts the player and carrier by their own feet"
+  failed 3 of 12 on 4 workers (the following RC car had caught up by the
+  second snapshot); after the fix 24 of 24. Start-up canvas waits (22) use
+  `CANVAS_START_MS` 20 s.
+- `checkpoint-holes` (7 tests, the four rejections run red first): walking
+  back west with rooms ahead cleared is accepted; skipping a fight room, a
+  cleared room beyond an unwon fight, a ground-floor item owned from an offer
+  still on sale, and a rewound `nextCompositeId` are rejected; a real fusion
+  and a sold-or-dropped purchase are accepted. A first "no gaps at all"
+  version broke 5 existing checkpoint tests whose helpers hop safe rooms
+  without a tick, so the rule was narrowed to fight rooms.
+- `npx tsc --noEmit` clean; `npx vitest run` 1055 passed; full browser suite
+  on 4 workers 76 passed.
+
 ## 2026-09-30 — round 40: the Developer's suit, the rest of reduced flashing
 
 - `reduced-flashing-more` (3 tests, run red first): `blink` holds steady when
