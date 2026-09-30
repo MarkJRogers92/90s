@@ -1110,7 +1110,8 @@ export class MvpRunView {
   private drawWindups(enemy: EnemyState, windups: readonly Windup[], effects: Phaser.GameObjects.Graphics, tick: number): void {
     for (const windup of windups) {
       const p = windup.progress;
-      const blink = p > 0.75 && Math.floor(tick / 3) % 2 === 0;
+      // The last quarter of a wind-up strobes white, unless flashing is reduced.
+      const blink = p > 0.75 && flashAllowed(gameSettings().get()) && Math.floor(tick / 3) % 2 === 0;
       if (windup.kind === 'spit') {
         // A dashed lane that grows along the locked aim toward where the glob goes.
         const ox = enemy.x + windup.aimX * 18;

@@ -36,6 +36,12 @@ const strengthScale = (strength: Strength, reduced: number): number => (strength
 export const shakeScale = (settings: GameSettings): number => strengthScale(settings.shake, 0.35);
 export const hitStopScale = (settings: GameSettings): number => strengthScale(settings.hitStop, 0.5);
 export const flashAllowed = (settings: GameSettings): boolean => settings.flashes === 'full';
+/**
+ * An on/off alternation every `halfPeriod` ticks, or steadily on with reduced
+ * flashing: banners and highlights still show, they just don't strobe.
+ */
+export const blink = (tick: number, halfPeriod: number, settings: GameSettings): boolean =>
+  !flashAllowed(settings) || Math.floor(tick / halfPeriod) % 2 === 0;
 /** Multiplier for full-screen red washes (hurt vignette, heartbeat pulse). */
 export const washScale = (settings: GameSettings): number => (settings.flashes === 'full' ? 1 : 0.45);
 

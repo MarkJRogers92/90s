@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import { ACTOR_TEXTURE_KEYS, ENEMY_TEXTURE_KEYS, type ActorTextureKey } from '../presentation/assets';
 import { actorVisualState } from './visualState';
+import { flashAllowed, gameSettings } from '../settings/settings';
 
 /** Round 39 display sizes: chosen so the figures match the Mascot's and the Owner's on screen. */
 export const ROOFER_DISPLAY_SIZE = 108;
@@ -165,7 +166,7 @@ export function actorPresentation(
 ): ActorPresentation {
   const direction = memory.directionFor(actor);
   const walking = actor.moveX !== 0 || actor.moveY !== 0;
-  const state = actorVisualState({ moving: walking, attackTicks: actor.attackTicks, invulnerableTicks: actor.damaged ? 1 : 0, phase: actor.phase, isHanger: actor.kind === 'hanger', tick });
+  const state = actorVisualState({ moving: walking, attackTicks: actor.attackTicks, invulnerableTicks: actor.damaged ? 1 : 0, phase: actor.phase, isHanger: actor.kind === 'hanger', tick, flashes: flashAllowed(gameSettings().get()) });
   return {
     direction,
     walking: state.walking,

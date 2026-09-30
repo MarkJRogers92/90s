@@ -7,6 +7,7 @@
 import Phaser from 'phaser';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { FusionRevealBanner } from './fusionRevealModel';
+import { flashAllowed, gameSettings } from '../settings/settings';
 
 const DEPTH = 20_500;
 const W = 960;
@@ -45,8 +46,9 @@ export function playFusionBanner(scene: Phaser.Scene, banner: FusionRevealBanner
   const root = scene.add.container(W / 2, offY, [plate, halo, core, headline, detail]).setScrollFactor(0, 0, true).setDepth(DEPTH);
   current = root;
   scene.tweens.add({ targets: root, y: restY, delay: DELAY_MS, duration: 320, ease: 'Back.easeOut' });
-  // The neon flickers on, the way the shop signs do.
-  scene.tweens.add({ targets: [halo, core], alpha: { from: 0.2, to: 1 }, duration: 90, repeat: 3, yoyo: true, delay: DELAY_MS + 200 });
+  // The neon flickers on, the way the shop signs do (a single fade with reduced flashing).
+  if (flashAllowed(gameSettings().get())) scene.tweens.add({ targets: [halo, core], alpha: { from: 0.2, to: 1 }, duration: 90, repeat: 3, yoyo: true, delay: DELAY_MS + 200 });
+  else scene.tweens.add({ targets: [halo, core], alpha: { from: 0.2, to: 1 }, duration: 300, delay: DELAY_MS + 200 });
   scene.tweens.add({
     targets: root, y: offY, alpha: 0, delay: DELAY_MS + HOLD_MS, duration: 360, ease: 'Cubic.easeIn',
     onComplete: () => {

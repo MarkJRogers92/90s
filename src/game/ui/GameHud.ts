@@ -22,6 +22,7 @@ import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel }
 import { buildGameHudModel, collapsedObjective, hudExpanded, wrapLogText, type GameHudModel, type HudOfferDetail } from './gameHudModel';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { itemBlurb } from './itemBlurbs';
+import { blink, flashAllowed, gameSettings } from '../settings/settings';
 
 const HUD_DEPTH = 20_000;
 const SCREEN_W = 960;
@@ -359,7 +360,7 @@ export class GameHud {
     const width = 300;
     const x = (SCREEN_W - width) / 2;
     const y = 34;
-    const on = Math.floor(state.tick / 10) % 2 === 0;
+    const on = blink(state.tick, 10, gameSettings().get());
     const closed = alarm.shutter === 'closed';
     const lifted = alarm.shutter === 'lifted';
     const edge = lifted ? 0x6aff8a : 0xff3a4a;
@@ -373,7 +374,7 @@ export class GameHud {
 
   /** Five star outlines; the wanted ones fill in, and flash when the level changes. */
   private drawStars(g: Phaser.GameObjects.Graphics, wanted: number, right: number, cy: number, tick: number): void {
-    const flashing = tick - this.wantedChangedTick < 40 && Math.floor((tick - this.wantedChangedTick) / 5) % 2 === 0;
+    const flashing = tick - this.wantedChangedTick < 40 && flashAllowed(gameSettings().get()) && Math.floor((tick - this.wantedChangedTick) / 5) % 2 === 0;
     const outer = 5;
     const inner = 2;
     const step = 12;

@@ -13,6 +13,7 @@ import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/procedura
 import { PUNCH_AT_MS, SLOT_Y, benefitsLine, clockInFrame, clockInTime, type ClockInFrame } from './clockInModel';
 import { formatDailyDate } from '../run/dailyShift';
 import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
+import { flashAllowed, gameSettings } from '../settings/settings';
 
 const DEPTH = 20_700;
 const W = 960;
@@ -119,7 +120,7 @@ export class ClockIn {
     this.print[1]?.setPosition(W / 2, top + 88).setVisible(out);
     this.stamp.setPosition(W / 2, top + 122).setVisible(out);
     for (const image of this.title) image.setAlpha(frame.titleAlpha);
-    this.flash.clear().fillStyle(0xffffff, 0.3 * frame.jolt).fillRect(0, 0, W, H);
+    this.flash.clear().fillStyle(0xffffff, flashAllowed(gameSettings().get()) ? 0.3 * frame.jolt : 0).fillRect(0, 0, W, H);
     this.root.setAlpha(frame.alpha);
   }
 

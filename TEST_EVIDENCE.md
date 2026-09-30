@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-09-30 — round 40: the Developer's suit, the rest of reduced flashing
+
+- `reduced-flashing-more` (3 tests, run red first): `blink` holds steady when
+  reduced (HUD alarm banner, wanted stars); the boss card name comes on
+  without the stutter; a hurt actor is steadily see-through, not blinking.
+  Also guarded: the white end of every wind-up (the Roof's tar rings too),
+  the clock-in flash, the fusion banner's neon flicker.
+- `npx tsc --noEmit` clean; `npx vitest run` 1048 passed; build clean.
+- Browser suite on 2 workers: 75 of 76; the failure
+  (`presentation-evidence` capture, canvas not up within 5 s) passed 4/4
+  serially: a load flake in a spec this round does not touch.
+- The Developer's suit recoloured navy -> cream (`recolor_suit.py`);
+  checked on the Helipad (`round37/developer-cream.png`).
+
 ## 2026-09-30 — round 39: Floor 4, the Roof
 
 - New tests, run red first: `floor-specs` (4: the floor table), `roofer`
