@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { ACTOR_TEXTURE_KEYS, ENEMY_TEXTURE_KEYS, type ActorTextureKey } from '../presentation/assets';
 import { actorVisualState } from './visualState';
 
-/** Round 37 display sizes: chosen so the figures match the Mascot's and the Owner's on screen. */
+/** Round 39 display sizes: chosen so the figures match the Mascot's and the Owner's on screen. */
 export const ROOFER_DISPLAY_SIZE = 108;
 export const DEVELOPER_DISPLAY_SIZE = 160;
 
@@ -79,7 +79,7 @@ export function enemySpriteSheet(
       return { idle: ENEMY_TEXTURE_KEYS.shopperIdle, walk: walking ? ENEMY_TEXTURE_KEYS.shopperWalk : null, attack: 'neon:enemy:shopper-attack', walkFrames: 6, ticksPerFrame: 4, displaySize: 76 };
     case 'mascot':
       return { idle: ENEMY_TEXTURE_KEYS.mascotIdle, walk: walking ? ENEMY_TEXTURE_KEYS.mascotWalk : null, attack: 'neon:enemy:mascot-attack', walkFrames: 6, ticksPerFrame: 5, displaySize: 92 };
-    // Round 37: PixelLab grew these canvases (136 and 180 px), so they are drawn larger to keep the figures in scale.
+    // Round 39: PixelLab grew these canvases (136 and 180 px), so they are drawn larger to keep the figures in scale.
     case 'roofer':
       return { idle: ENEMY_TEXTURE_KEYS.rooferIdle, walk: walking ? ENEMY_TEXTURE_KEYS.rooferWalk : null, attack: 'neon:enemy:roofer-attack', walkFrames: 6, ticksPerFrame: 5, displaySize: ROOFER_DISPLAY_SIZE };
     case 'developer':

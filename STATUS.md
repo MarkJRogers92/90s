@@ -7,7 +7,7 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
-Round 37 (2026-09-30): Floor 4, the Roof, is the new finale. Beating the
+Round 39 (2026-09-30): Floor 4, the Roof, is the new finale. Beating the
 Mall Owner now offers the escalator once more, to six rooms out under the
 night sky (Roof Access, Skylight Walk, HVAC Yard, Billboard Deck, Water
 Tower, Helipad). The new Roofer lobs hot tar at where you stand (a landing
@@ -16,16 +16,33 @@ the Developer on the Helipad, the man who bought the mall to knock it down,
 is the win: slams, blueprint volleys, then tar barrages and Roofers. The
 floors are now one table (`sim/wing/floorSpecs.ts`), so the next floor or
 level is an entry plus whatever tsc lists. PixelLab art for the roof, the
-Roofer and the Developer; two new tracks. See TEST_EVIDENCE.md round 37.
+Roofer and the Developer; two new tracks. Dropped items now wait for the
+janitor to step away before they can be picked back up (replacing round 36's
+45-tick lock, which handed them straight back). See TEST_EVIDENCE.md round 39.
 
-Round 36 (2026-09-30): sell and drop. At the Bench Warrant pick one item and
-X / SELL pays half its shelf price (a quarter if stolen, which also sheds its
-heat; a fusion is worth its parts). X anywhere drops the held weapon exactly
-as it was; it stays in the room and is picked back up only after the janitor
-steps away and returns (a browser check caught a 45-tick timer that handed it
-straight back to a janitor standing still). The last weapon is never dropped
-or sold, and the log now says so. 1016 unit tests pass; see TEST_EVIDENCE.md
-round 36. Next: Floor 4, the Roof, as the new finale.
+Round 38 (2026-09-30): the staple gun, mic stand and leaf blower icons are
+redone (PixelLab, 32x32, palette forced from the earlier icons). The 14
+candidate icons came from a fresh PixelLab run, since the round-36 jobs had
+expired (`404 Result not found`). Picked: a stapler silhouette, the classic
+mic on a stand filling the tile, and a handheld blower with a tube nozzle.
+Before and after: `artifacts/neon-overhaul/round38-icon-redos.png`.
+
+Round 37 (2026-09-30): the Flashes: Reduced setting now covers the newer
+effects. Store alarm beacons hold lit instead of alternating, the Radio Shed
+snow freezes, the fusion reveal bursts a third as many sparks and its stamp
+shake follows the Shake setting (off = none), and a blackout fades in and out
+over about a second instead of cutting. 1020 unit tests pass; see
+TEST_EVIDENCE.md round 37.
+
+Round 36 (2026-09-30): sell and drop items. X drops the held weapon as a
+floor pickup (keeps its provenance and fusion, 45-tick pickup lock, the last
+weapon is never dropped). At the Bench Warrant, pick one item and press X or
+click SELL: half the shelf price, a quarter if stolen, a fusion pays the sum
+of its parts. The restart spec's door step now re-centres like
+`enterFirstCombat`. Not done: the staple gun, mic stand and leaf blower icon
+redos (the container's proxy returns 403 for the PixelLab download host, so
+the chosen jobs are still to be fetched). 1016 unit tests pass; see
+TEST_EVIDENCE.md round 36.
 
 Round 35 (2026-09-30): every store plays differently. The seven themed
 stores get twists: Sports Locker's pitching machine fires down the aisle,

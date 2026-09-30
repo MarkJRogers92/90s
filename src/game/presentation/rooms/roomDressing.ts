@@ -55,7 +55,7 @@ export const FACADE_TEXTURES = {
   hardware: { key: 'neon:facade:hardware-hut', file: 'facades/hardware-hut.png', width: 288 },
   toys: { key: 'neon:facade:toy-box', file: 'facades/toy-box.png', width: 288 },
   radio: { key: 'neon:facade:radio-shed', file: 'facades/radio-shed.png', width: 288 },
-  // Round 37: the Roof's back walls (no shops up here).
+  // Round 39: the Roof's back walls (no shops up here).
   roofHvac: { key: 'neon:facade:roof-hvac', file: 'facades/roof-hvac.png', width: 288 },
   roofBillboard: { key: 'neon:facade:roof-billboard', file: 'facades/roof-billboard.png', width: 288 },
   roofTower: { key: 'neon:facade:roof-water-tower', file: 'facades/roof-water-tower.png', width: 288 },
@@ -113,7 +113,7 @@ export const PROP_TEXTURES = {
   waterCooler: { key: 'neon:prop:water-cooler', file: 'props/water-cooler.png', width: 21, height: 55 },
   trayReturn: { key: 'neon:prop:tray-return', file: 'props/tray-return.png', width: 38, height: 54 },
   trashBank: { key: 'neon:prop:trash-bank', file: 'props/trash-bank.png', width: 69, height: 39 },
-  // Round 37: the Roof's stand-ins for mall props that dress collision.
+  // Round 39: the Roof's stand-ins for mall props that dress collision.
   acUnit: { key: 'neon:prop:roof-ac-unit', file: 'props/roof-ac-unit.png', width: 65, height: 53 },
   skylight: { key: 'neon:prop:roof-skylight', file: 'props/roof-skylight.png', width: 118, height: 92 },
   ventStack: { key: 'neon:prop:roof-vent-stack', file: 'props/roof-vent-stack.png', width: 59, height: 64 },

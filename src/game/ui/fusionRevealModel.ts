@@ -41,3 +41,9 @@ export function fusionRevealModel(result: FusionRevealInput, discovery: FusionDi
     : null;
   return { stamp, color, itemDefinitionId: result.resultDefinitionId, parts, banner };
 }
+
+/** Sparks in the reveal's burst: more for bigger fusions, a third as many when flashes are reduced. */
+export function revealSparkCount(parts: number, reducedFlashes: boolean): number {
+  const full = 10 + parts * 4;
+  return reducedFlashes ? Math.max(4, Math.round(full / 3)) : full;
+}

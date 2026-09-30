@@ -82,8 +82,9 @@ export function dropRunWeapon(state: MvpRunState): MvpCommandResult {
   const node = state.inventory.inventory.find((candidate) => candidate.instanceId === id);
   if (!node) return rejected('Nothing in hand to drop.');
   if (isLastWeapon(state, node.instanceId)) {
-    publishRunFeedback(state, keepReason(state, node.instanceId));
-    return rejected(keepReason(state, node.instanceId));
+    const reason = keepReason(state, node.instanceId);
+    publishRunFeedback(state, reason);
+    return rejected(reason);
   }
   remove(state, node.instanceId);
   const player = state.room.combat.player;

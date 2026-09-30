@@ -134,6 +134,12 @@ describe('dropping the held weapon (round 36)', () => {
     // Says why, so the X key never looks broken.
     expect(state.recentChange).toBe('You cannot part with your last weapon.');
   });
+
+  it('says why when X is refused, so the key never feels dead', () => {
+    const state = createMvpRun(5);
+    tickMvpRun(state, { ...idle, drop: true });
+    expect(state.recentChange).toMatch(/last weapon/i);
+  });
 });
 
 describe('the drop key (round 36)', () => {

@@ -18,26 +18,22 @@ Open http://127.0.0.1:4180 and choose **Night Shift** (or **Daily Shift**). If
 port 5173 is taken by another worktree, run the browser gate with
 `PW_PORT=4191 npx playwright test`.
 
-Last gate (round 37): `tsc` clean, 1040 unit tests, `npm run build` passes,
-75 browser tests; see TEST_EVIDENCE.md round 37.
+Last gate (round 39, the Roof): see TEST_EVIDENCE.md round 39.
 
 ## Next up
 
-Round 37 (Floor 4, the Roof) is done; see STATUS.md and the playbook's
-Round 37 section, which says how to add another floor.
+Round 39 (Floor 4, the Roof) is done; see STATUS.md and the playbook's
+Round 39 section, which says how to add another floor.
 
-Round 36 (sell and drop) is done; see STATUS.md. Left over from it:
+Rounds 33-37 finished the owner's list (art pass, fusion spectacle, store
+twists, sell and drop, reduced flashing). What is left:
 
-- Icon redos. Picked staple gun variant A and mic stand variant B
-  (PixelLab jobs bbc92a1e-6f3e-4371-a471-208e384a55f4 and
-  284c02d0-5925-4ae5-9f4e-fb0663313214, download from
-  `https://api.pixellab.ai/mcp/images/<job>/download`). Leaf blower: two new
-  tries (400602cc-639b-4bc2-af1c-4e67f9e1199d backpack,
-  962b3ee2-b74e-4385-8d31-4fb4cc5e18ec handheld) not yet reviewed. Promote
-  like round 33 (binary alpha, manifest sha).
-- Later: reduced-flashing toggle.
+1. ~~Icon redos~~ (done, round 38). Look at them in play at 1x; redo any that still
+   do not read.
+2. Playtest rounds 32-37 (questions below) and tune.
+2b. Browser gate: `night-shift.spec.ts:463` flakes under 2-4 workers (passes alone).
 
-## Round 37 playtest questions
+## Round 39 (the Roof) playtest questions
 
 - Is the Roofer's 54-tick lob readable? Is 1 damage plus a slowing puddle
   too mean with brutes and Statics in the same room?

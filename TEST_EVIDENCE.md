@@ -1,6 +1,6 @@
 # Test evidence
 
-## 2026-09-30 — round 37: Floor 4, the Roof
+## 2026-09-30 — round 39: Floor 4, the Roof
 
 - New tests, run red first: `floor-specs` (4: the floor table), `roofer`
   (5: lob locked at the throw, splash, dodge, tar slows walking not dashing
@@ -33,25 +33,75 @@
 - A full browser run with the sprite sheets registered but not yet on disk
   failed 33 tests on "Failed to process file ... neon:enemy:roofer-idle":
   the zero-console-errors checks catch a missing asset.
+- Merged with main's rounds 36-38: dropped items keep this branch's
+  step-away rule (`awaitingStepOff`) instead of the 45-tick lock.
+
+## 2026-09-30 — round 38: icon redos
+
+- The round-36 PixelLab jobs returned `404 Result not found` (results expire),
+  so the icons were regenerated through the REST API
+  (`POST /v1/generate-image-pixflux`, key from the environment, 14
+  generations, 32x32, `high top-down`, single black outline, detailed
+  shading, palette image built from the 85 other item icons).
+- Promoted as in round 33: sources in `docs/art/neon-overhaul/pixellab/items/`,
+  runtime copies with binary alpha, manifest sha256 and generator note.
+- `npx tsc --noEmit` clean; `npx vitest run` 1021 passed (the store-roster
+  manifest and placeholder checks included); `npm run build` clean. Not
+  checked in a running game at 1x; the before/after is at 6x.
+
+## 2026-09-30 — round 37b: browser gate under load
+
+- Corrects the round-36 note below. The cold open is not what starved: under
+  4 workers on 4 cores it clears in 9-14 s (probe: tick rates and
+  `cinematic` per 4 s). The restart spec failed because ten restarts take
+  about 80 s alone and 3x that under load, past its 150 s budget; the
+  `cinematic` failure at 45 s in the first stress run was that run's timeout.
+- Fixes (tests only): `presentation-evidence.spec.ts:269` budget 360 s;
+  `night-shift.spec.ts:230` cold-open wait 10 s -> 45 s;
+  `night-shift.spec.ts:351` kept the snapshot that showed the lunge cue, since
+  a later snapshot found the brief cue gone (failed 4 of 4 on round 35's code
+  too, so not a regression).
+- Results: restart spec `--workers=4 --repeat-each=8` 8 of 8 (5.5 min);
+  `:230` x3 at 4 workers 3 of 3; `:351` x3 serial 3 of 3. Full browser suite
+  at 2 workers before the `:351` fix: 72 of 74; the other failure, `:463`
+  (offers identical per seed), passes alone (load flake).
+
+## 2026-09-30 — round 37: reduced flashing
+
+- New `tests/unit/reduced-flashing.test.ts` (4), red first (missing exports):
+  `alarmCue` steady flag, `flickerTick`, `revealSparkCount`,
+  `stepBlackoutMix`. `npx tsc --noEmit` clean; `npx vitest run` 1020 passed.
+- Browser (throwaway spec, deleted): with `flashes: reduced, shake: off` saved,
+  the workbench fusion (Storm Soaker reveal) and the Radio Shed store fixture
+  load and run with no page errors. Screens `artifacts/neon-overhaul/round37-*.png`.
+  Also: a refused X (last weapon) now logs why (`sell-drop` +1, red first);
+  1021 unit tests pass.
+  Not eyeballed frame by frame: the alarm hold and blackout fade (covered by
+  unit tests only).
 
 ## 2026-09-30 — round 36: sell and drop
 
-- `sell-drop` (9 tests) and `bench-card-model` cover resale value, selling,
-  the last-weapon rule, and dropping. Two red-first fixes from the browser
-  check: standing on a dropped item for 300 ticks must not pick it up (it
-  did, after the 45-tick timer; now it waits for the janitor to step out of
-  reach), and a refused drop must say why (it was silent).
-- `npx tsc --noEmit` clean; `npx vitest run` 1016 passed (95 files);
-  `npm run build` clean.
-- Browser (app pane, `?fixture=mvp-bench&seed=4242`): X dropped the Party
-  Popper and fell back to the mop; it stayed down through 3 s standing
-  still; X with only the mop left logged YOU CANNOT PART WITH YOUR LAST
-  WEAPON. Bench: picking the RC car showed SELL $10, X paid $30 -> $40 and
-  the car stopped following. The walk-away-and-back pickup is covered by
-  the unit test only (synthetic key holds did not drive the pane).
-- Stress: `PW_PORT=4191 npx playwright test --workers=4 --repeat-each=8
-  tests/browser/presentation-evidence.spec.ts:269` 8 of 8 passed (2.1 min),
-  with nothing being edited.
+- `tests/unit/sell-drop.test.ts` (from b10067a, written red first).
+  `npx tsc --noEmit` clean; `npx vitest run` 1016 passed (95 files);
+  `npm run build` clean (only the usual chunk-size warning).
+- Restart spec `presentation-evidence.spec.ts:269` (Chromium 1194 via a local
+  config with `executablePath`, 4-core container):
+  - serial: passes (1.3 min);
+  - `--workers=2 --repeat-each=4`: 4 of 4 pass;
+  - `--workers=4 --repeat-each=8` (and 4): every run fails in `launchRun`, at
+    the cold-open wait (`cinematic` still true after 45 s), before any door
+    step. Four software-GL Chromiums plus Vite starve four cores, and the
+    cold open runs on frame time. Same cause as `night-shift.spec.ts:230`
+    in round 32. Not a game bug; run this spec with 2 workers here.
+- Browser (throwaway spec, deleted): `?fixture=mvp-workbench&seed=11`, E at
+  the bench, tile 3 (Plasma Globe) picked: SELL $11 button shown, X sold it
+  (cash 60 -> 71, 5 items -> 4, bench stays open). Escape, then X on the
+  floor dropped the held weapon (4 -> 3). No page errors. Screens in
+  `artifacts/neon-overhaul/round36/`.
+- **Icon redos not done**: `curl` to `api.pixellab.ai` gets `CONNECT tunnel
+  failed, response 403` from the sandbox proxy. Jobs still to promote:
+  staple gun `bbc92a1e-...`, mic stand `284c02d0-...`, leaf blower
+  `400602cc-...` (backpack) vs `962b3ee2-...` (handheld).
 
 ## 2026-09-30 — round 35: store twists, fusion logging, boss card
 

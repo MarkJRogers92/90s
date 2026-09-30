@@ -20,9 +20,10 @@ export type AlarmCue = {
 
 const NONE: AlarmCue = { phase: 'none', shutterDrop: 0, countdown: null, flash: false };
 
-export function alarmCue(alarm: StoreAlarm | null, totalTicks: number, tick: number): AlarmCue {
+export function alarmCue(alarm: StoreAlarm | null, totalTicks: number, tick: number, steady = false): AlarmCue {
   if (alarm === null) return NONE;
-  const flash = Math.floor(tick / 10) % 2 === 0;
+  // Reduced flashes hold the beacon lit instead of alternating.
+  const flash = steady || Math.floor(tick / 10) % 2 === 0;
   if (alarm.shutter === 'closed') return { phase: 'locked', shutterDrop: 1, countdown: 'LOCKED IN', flash };
   if (alarm.shutter === 'lifted') return { phase: 'lifted', shutterDrop: 0, countdown: null, flash: false };
   const elapsed = 1 - alarm.ticksLeft / Math.max(1, totalTicks);

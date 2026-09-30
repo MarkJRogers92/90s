@@ -1005,16 +1005,31 @@ From the first real playtest log (21 shifts) and the owner's direction that
 - Browser pane gotcha: a hidden pane throttles rAF to ~1 fps, so the game
   looks broken. Check `document.hidden` before chasing a frame-rate bug.
 
+
 ## Round 36: sell and drop
 
-- `sim/run/resale.ts`: pick one item at the Bench Warrant and X / SELL pays
-  `resaleValue` (half the shelf price per clean part, a quarter per stolen
-  one, at least $1). X anywhere drops the held weapon as a floor item that
-  keeps its provenance and fusion (`MallTokenPickup.node`); it is picked back
-  up only after the janitor steps out of `TOKEN_PICKUP_RADIUS` and returns
-  (`awaitingStepOff`). The last weapon is never dropped or sold, and says so.
+- Rules live in `src/sim/run/resale.ts` (`resaleValue`, `keepReason`; tests in
+  `tests/unit/sell-drop.test.ts`). Half the shelf price, a quarter when
+  stolen, a fusion pays the sum of its parts. The last weapon is never sold
+  or dropped.
+- Drop: `KeyX` in `MvpRunScene.ts` drops the held weapon as a floor pickup
+  with its provenance and fusion and a 45-tick pickup lock.
+- Bench: `sale` in `benchCardModel.ts`, a SELL button in `BenchCard.ts`
+  (pick one tile, X or click). X is in the GameHud and PauseCard legends;
+  PauseCard `CARD_H` is 386.
+- Spec note: `presentation-evidence.spec.ts:269` re-centres with
+  `nudgePlayerY` before the east door. It needs <= 2 workers on 4 cores.
 
-## Round 37: Floor 4, the Roof (the new finale)
+## Round 37: reduced flashing
+
+`flashes: 'reduced'` (Settings) already softened hits and the police wash. It
+now also: holds alarm beacons steady (`alarmCue(..., steady)`), freezes the
+Radio Shed snow (`flickerTick`), cuts fusion-reveal sparks to a third
+(`revealSparkCount`), scales the stamp shake by the Shake setting, and eases
+blackouts over `BLACKOUT_FADE_FRAMES` (`blackoutFade.ts`, applied in
+`MallRoomView.renderLighting`). Sim rules are untouched.
+
+## Round 39: Floor 4, the Roof (the new finale)
 
 Beating the Mall Owner now clears Floor 3 and offers the escalator to the
 Roof. Beating **the Developer** on the Helipad is the win.
@@ -1053,5 +1068,8 @@ Roof. Beating **the Developer** on the Helipad is the win.
   with the other sheets (the game anchors frames at 84% of their height).
 - **Career**: FLOOR 3 CLEARED pays 12 stubs; CLOCKED OUT means the
   Developer is down.
+- **Drops** (on top of round 36): a dropped item is picked back up only after
+  the janitor steps out of `TOKEN_PICKUP_RADIUS` and returns (`awaitingStepOff`),
+  replacing the 45-tick lock.
 - **Fixtures**: `mvp-floor-four`, `-lobby` (HVAC Yard), `-roofer`, `-boss`,
   `-boss-win`.

@@ -55,7 +55,7 @@ import {
 import { DASH_TICKS } from '../../sim/combat/dash';
 import { WATCH_HALF_ANGLE } from '../../sim/combat/mannequin';
 import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
-import { flashAllowed, gameSettings } from '../settings/settings';
+import { flashAllowed, flickerTick, gameSettings, shakeScale } from '../settings/settings';
 import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
 import { attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
@@ -64,7 +64,7 @@ import { WeaponView } from './WeaponView';
 import { enemySpriteSheet } from './ActorSpriteView';
 import { PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
-import type { FusionRevealModel } from '../ui/fusionRevealModel';
+import { revealSparkCount, type FusionRevealModel } from '../ui/fusionRevealModel';
 import { projectileStyle, type ProjectileStyle } from './projectileStyle';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
@@ -814,7 +814,7 @@ export class MvpRunView {
           // Snow: a dark band full of flickering pixels that hides whoever is in it.
           effects.fillStyle(0x12121a, 0.9).fillRect(z.x, top, z.width, height);
           for (let i = 0; i < 140; i += 1) {
-            const n = Math.imul(i * 7919 + index * 31 + state.tick * 104729, 2654435761) >>> 0;
+            const n = Math.imul(i * 7919 + index * 31 + flickerTick(gameSettings().get(), state.tick) * 104729, 2654435761) >>> 0;
             const grey = (n >>> 24) & 0xff;
             effects.fillStyle((grey << 16) | (grey << 8) | grey, 0.9).fillRect(z.x + (n % z.width), top + ((n >>> 12) % height), 3, 2);
           }
@@ -927,7 +927,7 @@ export class MvpRunView {
     // The store alarm after a grab: beacons, the countdown over the door, and
     // the shutter creeping down across it (see alarmCues.ts).
     const alarmHere = state.alarm !== null && state.alarm.storeId === store.templateId ? state.alarm : null;
-    const cue = alarmCue(alarmHere, alarmTicksFor(state), state.tick);
+    const cue = alarmCue(alarmHere, alarmTicksFor(state), state.tick, !flashAllowed(gameSettings().get()));
     if (cue.phase === 'ringing' || cue.phase === 'locked') {
       const red = cue.flash ? 0xff2a3a : 0x6a1a22;
       floor.lineStyle(3, red, 0.9).strokeRect(store.bounds.x, store.bounds.y, store.bounds.width, store.bounds.height);
@@ -2196,7 +2196,7 @@ export class MvpRunView {
       onComplete: () => ring.destroy(),
     });
     // Sparks fly in from all round and then burst out: more for bigger fusions.
-    const count = 10 + reveal.parts * 4;
+    const count = revealSparkCount(reveal.parts, !flashAllowed(gameSettings().get()));
     for (let i = 0; i < count; i += 1) {
       const angle = (i / count) * Math.PI * 2 + Math.random() * 0.3;
       const far = 70 + Math.random() * 30;
@@ -2224,7 +2224,8 @@ export class MvpRunView {
     scene.tweens.add({
       targets: stamp, scale: 1, alpha: 1, delay: icon ? 420 : 120, duration: 140, ease: 'Quad.easeIn',
       onComplete: () => {
-        scene.cameras.main.shake(90, 0.004);
+        const shake = shakeScale(gameSettings().get());
+        if (shake > 0) scene.cameras.main.shake(90, 0.004 * shake);
         const splat = scene.add.graphics().setDepth(depth + 1).setBlendMode(Phaser.BlendModes.ADD);
         splat.lineStyle(2, ink, 0.9).strokeRect(cx - stamp.width / 2 - 6, stampY - stamp.height / 2 - 4, stamp.width + 12, stamp.height + 8);
         scene.tweens.add({ targets: splat, alpha: 0, scale: { from: 1, to: 1.04 }, duration: 500, onComplete: () => splat.destroy() });

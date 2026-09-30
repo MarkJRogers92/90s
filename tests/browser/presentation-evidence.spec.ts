@@ -267,7 +267,9 @@ test('captures the compact 800x600 layout at native canvas scale', async ({ page
 });
 
 test('ten restart cycles keep one opening view, stable listeners, and one ambience group', async ({ page }) => {
-  test.setTimeout(150_000);
+  // About 80 s alone; four parallel software-GL browsers on four cores take
+  // three times that, so the budget has to cover a loaded gate.
+  test.setTimeout(360_000);
   const assertLocalOnly = rejectExternalRequests(page);
   await launchRun(page, { width: 1440, height: 900 });
   await setIntegerCanvasScale(page, 1);
