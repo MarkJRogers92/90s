@@ -1628,3 +1628,5 @@ Archive checks verified 19 native PNGs with binary transparency and at most 32 o
 - `npx vitest run`: 125 files, 1178 tests pass. `npm run build`: passes.
 - Not run: Playwright browser gate; nothing looked at on screen.
 - Shopfronts redrawn with Retro Diffusion (6 images, $0.36); 1178 tests and build pass again.
+- Round 55 twists: `tests/unit/floor-store-twists.test.ts` failed first (no exports, placeholder hints), then 8/8 pass.
+  `npx vitest run`: 126 files, 1186 tests pass. `npm run build`: passes. Browser gate: run pending (see next entry).

@@ -435,5 +435,5 @@ Nine environment prop candidates are available under [docs/art/prop-packs/2026-0
 
 Round 55 (2026-10-01): floor-exclusive stores on floors 2-4 (two per floor,
 `FLOOR_STORE_IDS`), so upstairs no longer reshuffles floor 1's shops. Retro Diffusion
-shopfront art, no store twists yet. 1178 unit tests and `npm run build` pass; the
+shopfront art, and a twist each (glare, chime, mustard, cold snap, rod, pawn). 1178 unit tests and `npm run build` pass; the
 browser gate was not run.

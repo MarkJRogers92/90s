@@ -39,6 +39,16 @@ import {
   SAMPLE_BOWL,
   STUDIO_FLASH_LANE,
   studioFlashPhase,
+  COLD_SNAP_RADIUS,
+  FROSTY_MACHINE,
+  HOCK_PRICE,
+  HOCK_TICKS,
+  LIGHTNING_ROD,
+  MUSTARD_SPILLS,
+  PAWN_COUNTER,
+  ROD_ZAP_TICKS,
+  coldSnapPhase,
+  glareBand,
 } from '../../sim/run/storeTwists';
 import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
@@ -1194,7 +1204,7 @@ export class MvpRunView {
     const floor = this.storeGraphics;
     const light = (x: number, y: number, radius: number, color: number, intensity: number): void =>
       this.openingConcourse?.addLight({ x, y, radius, color, intensity });
-    const labels = ['twist-sample', 'twist-flash', 'twist-parrot', 'twist-skates', 'twist-punch'];
+    const labels = ['twist-sample', 'twist-flash', 'twist-parrot', 'twist-skates', 'twist-punch', 'twist-shades', 'twist-quiet', 'twist-frozen', 'twist-hock'];
     const shown = new Set<string>();
     const label = (key: string, text: string, x: number, y: number): void => {
       this.setLabel(key, text, x, y);
@@ -1286,6 +1296,72 @@ export class MvpRunView {
       case 'cocoa-hut':
         label('twist-punch', twist.purchases % 2 === 1 ? 'NEXT ONE FREE!' : `PUNCH CARD ${twist.purchases % 2}/2`, 60, 330);
         break;
+      // Round 55: the floor-exclusive stores.
+      case 'shade-station': {
+        const band = glareBand(twist);
+        const top = INTERIOR_BOUNDS.y;
+        const height = INTERIOR_BOUNDS.height;
+        effects.fillStyle(0xfff6c0, 0.14).fillRect(band.x, top, band.width, height);
+        effects.fillStyle(0xffffff, 0.12).fillRect(band.x + band.width * 0.35, top, band.width * 0.3, height);
+        light(band.x + band.width / 2, top + height / 2, 120, 0xfff0a0, 0.6);
+        const player = state.room.combat.player;
+        // The janitor's shades.
+        effects.fillStyle(0x101018, 1).fillRect(player.x - 7, player.y - 34, 6, 3).fillRect(player.x + 1, player.y - 34, 6, 3);
+        label('twist-shades', 'SHADES ON', 60, 330);
+        break;
+      }
+      case 'page-turner':
+        label('twist-quiet', state.alarm !== null ? 'ding... ding...' : 'QUIET PLEASE', 60, 330);
+        break;
+      case 'pretzel-pit':
+        for (const spill of MUSTARD_SPILLS) {
+          floor.fillStyle(0xe8b800, 0.6).fillEllipse(spill.x, spill.y, spill.rx * 2, spill.ry * 2);
+          floor.fillStyle(0xfff060, 0.35).fillEllipse(spill.x - spill.rx * 0.3, spill.y - spill.ry * 0.3, spill.rx * 0.6, spill.ry * 0.5);
+        }
+        break;
+      case 'frosty-freeze': {
+        const m = FROSTY_MACHINE;
+        this.twistProp('freezer', PROP_TEXTURES.vending, m.x, m.y + 10, 2.2)?.setTint(0xc0f0ff);
+        const phase = coldSnapPhase(twist);
+        const humming = phase === 'warn';
+        const alpha = humming ? 0.3 + 0.3 * Math.abs(Math.sin(state.tick / 5)) : 0.15;
+        floor.lineStyle(2, 0x9ae8ff, alpha + 0.2).strokeEllipse(m.x, m.y, COLD_SNAP_RADIUS * 2, COLD_SNAP_RADIUS);
+        if (humming || twist.dazzleTicks > 0) floor.fillStyle(0xd8f6ff, alpha * 0.6).fillEllipse(m.x, m.y, COLD_SNAP_RADIUS * 2, COLD_SNAP_RADIUS);
+        light(m.x, m.y - 30, 90, 0x9ae8ff, humming ? 0.9 : 0.4);
+        if (twist.dazzleTicks > 0) label('twist-frozen', 'FROZEN!', state.room.combat.player.x - 30, state.room.combat.player.y - 70);
+        break;
+      }
+      case 'antenna-annex': {
+        const r = LIGHTNING_ROD;
+        const charging = twist.age % ROD_ZAP_TICKS >= ROD_ZAP_TICKS - 30;
+        effects.lineStyle(3, 0x8a8a9a, 1).lineBetween(r.x, r.y, r.x, r.y - 90);
+        effects.fillStyle(charging ? 0xf0ffff : 0x6a8a9a, 1).fillCircle(r.x, r.y - 92, charging ? 6 + Math.sin(state.tick / 2) : 5);
+        floor.lineStyle(1, 0x8affff, 0.25).strokeEllipse(r.x, r.y + 4, 100, 36);
+        light(r.x, r.y - 90, 70, 0x8affff, charging ? 0.9 : 0.3);
+        if (twist.zap) {
+          // A jagged bolt from the rod's tip to whoever it hit.
+          let x = r.x;
+          let y = r.y - 92;
+          for (let i = 1; i <= 5; i += 1) {
+            const nx = r.x + ((twist.zap.x - r.x) * i) / 5 + (i < 5 ? ((state.tick * 7 + i * 13) % 17) - 8 : 0);
+            const ny = r.y - 92 + ((twist.zap.y - 20 - (r.y - 92)) * i) / 5;
+            effects.lineStyle(3, 0xf0ffff, 0.9).lineBetween(x, y, nx, ny);
+            x = nx;
+            y = ny;
+          }
+        }
+        break;
+      }
+      case 'pawn-palace': {
+        const c = PAWN_COUNTER;
+        floor.lineStyle(2, twist.hocked ? 0x6a4a4a : 0xff5a4a, twist.hocked ? 0.35 : 0.6 + 0.3 * Math.sin(state.tick / 10)).strokeEllipse(c.x, c.y + 4, c.radius * 2.4, c.radius * 1.1);
+        if (twist.hockTicks > 0) {
+          effects.fillStyle(0x2a1a1a, 0.8).fillRect(c.x - 30, c.y - 70, 60, 6);
+          effects.fillStyle(0xff5a4a, 1).fillRect(c.x - 30, c.y - 70, (60 * twist.hockTicks) / HOCK_TICKS, 6);
+        }
+        if (!twist.hocked) label('twist-hock', `HOCK A HEART $${HOCK_PRICE}`, c.x - 80, c.y - 100);
+        break;
+      }
       default:
         break;
     }
