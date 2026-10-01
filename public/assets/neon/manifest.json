@@ -3328,5 +3328,15 @@
       44
     ],
     "sha256": "cfc4681b3b9c4c14123f5ee51ba7ee03d3f5e6a7c1e8504c51d5fc2d524456aa"
+  },
+  {
+    "path": "public/assets/neon/props/rack-toppled.png",
+    "source": "docs/art/neon-overhaul/aseprite/rack-toppled-merged.aseprite",
+    "generator": "Pixel Forge merged draft, finished in Aseprite; owner-approved 2026-10-01 (round 54)",
+    "size": [
+      120,
+      70
+    ],
+    "sha256": "716bc312361585140129ad40cc6cda4de7270772d77a3b05c9286ecd9dda46d2"
   }
 ]

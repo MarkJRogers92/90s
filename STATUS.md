@@ -1,5 +1,15 @@
 # Status
 
+## 2026-10-01 — Round 54: palms, the toppled rack, a flaky test (branch `claude/polish-palms-rack-tests`)
+
+Three small fixes on top of `origin/main` (`4d9f981`). Tall props now fade to
+30% (from 50%) as soon as the janitor's body, not just the foot point, is
+behind them, so a palm no longer nets over the janitor. The approved toppled
+clothes rack is wired in for east and west falls (the old turned-over sprite
+stays for falls toward and away from the camera). `districts.test.ts` runs in
+0.6 s instead of 2.3 s, clear of the 5 s timeout. Gameplay and the sim are
+unchanged. See the playbook's Round 54 section and TEST_EVIDENCE.md.
+
 ## 2026-10-01 — Continue no longer flashes the ended run's HUD
 
 A playtest read Continue as reopening a dead (0 HP) run. It does not: the

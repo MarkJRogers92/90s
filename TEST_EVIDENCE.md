@@ -1,5 +1,30 @@
 # Test evidence
 
+## 2026-10-01 — Round 54: palms, the toppled rack, a flaky test
+
+- **Occlusion.** `presentation-occlusion.test.ts` gained 3 tests. Run first
+  against the old helper: 2 failed (the fade only reached 0.52, and a foot
+  point just outside the prop's footprint did not fade); the third (clear in
+  front of the prop, no pop) was a guard and passed. After the change 5/5.
+  In the browser (`?seed=7`, janitor walked behind the north-west palm of the
+  Opening Concourse): before, the half-opaque fronds netted over the janitor;
+  after, the janitor reads cleanly. No console errors.
+- **Toppled rack.** New `tests/unit/toppled-rack.test.ts` (3), failing first on
+  the missing `toppledRackPose` module: an east or west fall uses the side art
+  scaled to the wall (96 px), sat within 10 px of the wall's bottom and
+  mirrored for west; a north or south fall keeps the standing sprite's angle
+  and squash. On screen (`?fixture=mvp-hero&hero=greatest_hits&props=used`):
+  the rack lies lengthwise with its five shirts. A west fall (mirrored) and
+  the north/south poses were verified by unit test only, not on screen.
+- **Districts test.** Its slowest test went from 1891 ms to 9 ms (the
+  statistics) plus a 241 ms wiring check over 200 real runs; the file runs in
+  0.6 s (was 2.3 s).
+- `npx tsc --noEmit` clean; `npx vitest run` 124 files, 1174 passed; build
+  clean (the chunk-size warning was already there; `rack-toppled.png` is in
+  `dist`). Browser: `hero-props.spec.ts` 3/3 and the Opening Concourse spec
+  (the occluder-count check) 1/1 on `PW_PORT=4191`. The full browser suite was
+  not rerun for this round.
+
 ## 2026-10-01 — Continue HUD loading fix
 
 - New `tests/browser/continue-lifecycle.spec.ts` (from the prepared patch,
