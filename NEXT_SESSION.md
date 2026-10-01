@@ -35,7 +35,10 @@ twists, sell and drop, reduced flashing). What is left:
 
 ## Owner's queue (asked for next, 2026-10-01)
 
-Round 47 (tar lead, riskier heists, floor events) is done. Next, in order:
+Round 48 did 1-3 below. Item 4 already exists as the Break Room (5 perks, 4
+locker weapons, ~270 stubs in all); ask the owner what to add to it.
+
+The queue as asked:
 
 1. **First-wing back-wall signs.** First wings reuse the floor's signs
    (Floor 2's Lockdown still says MANAGEMENT). Give each `firstWingNames`
@@ -48,6 +51,12 @@ Round 47 (tar lead, riskier heists, floor events) is done. Next, in order:
    difficulty. Needs PixelLab art (8-dir walk + death).
 4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
    next night, so every night counts toward something.
+
+## Round 48 playtest questions
+
+- Mall Walkers: do you leave them be or pick the fight for the change?
+  The log's `walker` damage says how often it goes wrong.
+- Do recipe hints now show different pairs from night to night?
 
 ## Round 47 playtest questions
 

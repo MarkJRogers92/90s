@@ -9,6 +9,7 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import { wingEventFor } from '../../sim/run/wingEvents';
+import { buildRoomCombatState } from '../../sim/run/rooms';
 import { browserCareer, discoverFusion, perksFor, type FusionDiscovery } from '../career/career';
 import { playFusionBanner } from '../ui/FusionReveal';
 import { sellWorkbenchItem } from '../../sim/run/resale';
@@ -1289,6 +1290,20 @@ export class MvpRunScene extends Phaser.Scene {
         }
       }
       return upstairs;
+    }
+    if (fixture === 'mvp-walker') {
+      // The first Floor 1 mall whose food court has a Mall Walker doing laps (round 48).
+      for (let seed = 1; seed < 200; seed += 1) {
+        const run = createMvpRun(seed);
+        const index = run.wing.rooms.findIndex((room) => room.id === 'food_court');
+        if (!buildRoomCombatState(run.wing, index, 'west', run.inventory, run.seed).enemies.some((enemy) => enemy.kind === 'walker')) continue;
+        while (run.roomIndex < index) {
+          run.room.combat.enemies = [];
+          tickMvpRun(run, { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(run, 'east').accepted) break;
+        }
+        return run;
+      }
     }
     if (fixture === 'mvp-event') {
       // A Floor 2 boss wing with the floor event named in &event= (outage, sprinklers,

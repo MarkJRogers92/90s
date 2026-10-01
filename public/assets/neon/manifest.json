@@ -2388,5 +2388,35 @@
       1440
     ],
     "sha256": "005cc9cee52ef5920d319105fd017098e27ee40d27373222c1096f480023fa51"
+  },
+  {
+    "path": "public/assets/neon/enemies/walker-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-walker-idle.png",
+    "generator": "PixelLab create_character (Mall Walker, 64 px standard, 8 directions), packed by pack_character.py --rotations",
+    "size": [
+      736,
+      92
+    ],
+    "sha256": "7eb7e4f40687c96f77991d0f60eeaa19f7fddff94567388bc0a60982384cecc6"
+  },
+  {
+    "path": "public/assets/neon/enemies/walker-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-walker-walk.png",
+    "generator": "PixelLab animate_character walking-6-frames (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "48b9e216fe3791c7ac352d6a595279b35aee21cd2027ed4c1e2f8e67abf2b77a"
+  },
+  {
+    "path": "public/assets/neon/enemies/walker-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-walker-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "89901ac8cac134dd2e512c5dbaf6d2f1def2c3883a70b86fe41da14f2d6dcd29"
   }
 ]
