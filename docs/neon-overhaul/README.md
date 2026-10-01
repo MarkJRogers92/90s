@@ -1225,3 +1225,52 @@ A biting Mannequin freezes for `MANNEQUIN_BITE_FREEZE_TICKS` (90) in
   Daily Shifts take nothing.
 - The clock-in card names benefits, five at most (`BENEFITS_SHOWN`).
 - Icons: 10 PixelLab `create_image_pixflux` 48x48 (`perk-*`, `vend-*`).
+
+## Round 50: the mall districts (an expansion)
+
+About half the nights, a floor's first wing is its **district** instead: a
+themed wing with its own rooms, stores, items, monster, mini-boss, art and
+music. Boss wings never change, and regular wings draw exactly as before.
+
+| Floor | District | Stores | Monster | Mini-boss (Lockdown room) | Track |
+|---|---|---|---|---|---|
+| 1 | Holiday Village | Candy Cauldron, Novelty Nook | Animatronic Elf | Mall Santa | Silent Mall |
+| 2 | Glamour Row | Glam Snaps, Hair Affair | Perfume Spritzer | The Glamour Queen | Strike a Pose |
+| 3 | Pet Paradise | Pet Palace, Green Thumb | Rabid Poodle | Mr. Whiskers | Feeding Frenzy |
+| 4 | Skate Arena | Skate Shack, Cocoa Hut | Hockey Goon | The Zamboni Driver | Organ on Ice |
+
+- **Sim** (`sim/wing/districts.ts`): `districtRoll(seed, floor, part)` (its own
+  draw, `DISTRICT_CHANCE` 0.5) sets `wing.district`. `generateWing` swaps in
+  the district's names and its two stores (the template shuffle is still drawn,
+  so later draws line up), and a district monster takes `enemyShare` percent
+  of fight slots. `buildRoomCombatState` puts the `miniBoss` in the Lockdown
+  room instead of the elite wave. Checkpoints regenerate it from the seed.
+- **Stores** (`DISTRICT_STORE_TEMPLATES`, never in the regular shuffle): eight
+  stores, 37 new items in `STORE_ROSTER`, 29 more signatures (every store has
+  three or more), and a twist each in `storeTwists.ts`: Candy Cauldron's free
+  sample bowl, Novelty Nook's joy-buzzer tiles (stun guards), Glam Snaps'
+  studio flash (freezes whoever is in the lane), Hair Affair's hairspray haze
+  (sticky guards), Pet Palace's parrot (alarm −60 ticks), Green Thumb's cactus
+  pots (prick everyone), Skate Shack's skates (+35% step), Cocoa Hut's punch
+  card (every second buy free).
+- **Monsters** (`combat/districtEnemies.ts`, perfume in `perfume.ts`): the Elf
+  hops to a marked ring and stomps; the Spritzer keeps away and leaves
+  slowing clouds; the Poodle crouches and dashes a short lane (8° zig); the
+  Goon skates with momentum, body-checks at speed and slaps pucks. Each
+  telegraph reuses a known wind-up shape (`combatBeats.ts`).
+- **Mini-bosses** are `BOSS_CONFIGS` entries (75/120/170/260 hp, under each
+  floor's boss): Santa lobs coal (the tar barrage) from phase 2; the Queen
+  fans seven flash bulbs; Whiskers and the Zamboni Driver charge.
+- **Presentation**: `DISTRICT_LOOKS` in `roomDressing.ts` (walls, floor,
+  light; furniture stays the floor's so collision dressing never moves; the
+  rink uses the mall's furniture and an `ice` floor), `DISTRICT_SPRITES` in
+  `ActorSpriteView.ts`, `DISTRICT_HUD`, PA `district_*` / `miniboss_*`, boss
+  cards, kill stamps, `musicCue` (district track; ×1.06 for its mini-boss).
+- **Art**: Retro Diffusion `rd_plus__default` 288x160 for the 16 facades
+  ($0.06 each); PixelLab characters (64 px monsters on 92 px canvases, 112 px
+  bosses on 160 px; quadrupeds via the dog/cat templates, their deaths built
+  by `quadruped_death.py`); PixelLab 32x32 item icons snapped to the earlier
+  icons' palette. Dev fixtures: `?fixture=mvp-district&floor=N&room=<id>&store=1|2`.
+- **To add a district**: a `DISTRICTS` entry (names, two stores, monster,
+  mini-boss), its stores and stock, a twist each, a monster update, a boss
+  config, then the game tables tsc lists (sprites, HUD, PA, looks, music).

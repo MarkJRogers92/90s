@@ -77,6 +77,18 @@ describe('mall districts (round 50)', () => {
     }
   });
 
+  it('walking into a room already called "The ..." does not say "the The"', async () => {
+    const { enterDoorway, tickMvpRun } = await import('../../src/sim/run/tickMvpRun');
+    const state = districtRun(4);
+    const idle = { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false };
+    while (state.wing.rooms[state.roomIndex]!.id !== 'food_court') {
+      state.room.combat.enemies = [];
+      tickMvpRun(state, idle);
+      expect(enterDoorway(state, 'east').accepted).toBe(true);
+    }
+    expect(state.recentChange).toBe('Entered The Ice Rink.');
+  });
+
   it('a district first wing comes back from a checkpoint as the same district', () => {
     const state = districtRun(2);
     const parsed = parseCheckpoint(JSON.parse(JSON.stringify(serializeCheckpoint(state))));

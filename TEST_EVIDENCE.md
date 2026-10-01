@@ -1,5 +1,27 @@
 # Test evidence
 
+## 2026-10-01 — round 50: the mall districts
+
+- New tests, each run red first: `districts` (5: the roll, rooms/stores/
+  monster, the Lockdown mini-boss, checkpoints, "Entered The Ice Rink"),
+  `district-monsters` (5; caught the Poodle's 18° zig missing a janitor who
+  stood still, now 8°), `district-twists` (10), `district-presentation` (5,
+  including every sprite sheet on disk), district music, and the store tests
+  widened to every store (looks, unique shopfronts, twist hints, eight items,
+  three signature pairs, icons and blurbs for all 37 new items).
+- Changed on purpose (seeds that now roll a district): the Lockdown-wave and
+  LOCKDOWN LIFTED tests, the Floor 3 welcome and fight-music tests pick a
+  usual night; the shuffle test stays on the regular stores.
+- `npx tsc --noEmit` clean; `npx vitest run` 1141 passed; build clean.
+- Browser (2 workers, load average 6-7): 76/76.
+- On screen (`?fixture=mvp-district`): Holiday Village's Carousel Court and
+  Santa's Workshop (MALL SANTA bar), Glamour Row's Makeup Counters with
+  Spritzers winding up, Pet Paradise's Koi Pond with Poodle dash lanes, the
+  Skate Arena's ice rink and the Penalty Box (THE ZAMBONI DRIVER bar).
+- Art spend: Retro Diffusion 16 facades ($0.96, balance $4.43); PixelLab 8
+  characters, ~60 animation jobs (3 dropped by the GPU, not charged) and 37
+  item icons.
+
 ## 2026-10-01 — round 49: the bigger Break Room
 
 - `break-room-plus` (12; all red first: no new perk fields, then no career

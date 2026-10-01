@@ -7,6 +7,14 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 50 (2026-10-01): the mall districts, an expansion. About half the
+nights, each floor's first wing is its district instead: Holiday Village
+(Floor 1), Glamour Row (2), Pet Paradise (3) or the Skate Arena (4), each
+with its own rooms and art, two new stores with a twist each, 37 new items
+(29 more signature pairs), a new monster, a mini-boss in place of the
+Lockdown wave, and its own music track. See the playbook's Round 50 section
+and TEST_EVIDENCE.md round 50.
+
 Round 49 (2026-10-01): a much bigger Break Room. Six new perks (Lookout,
 Deep Pockets, Employee Discount, Bench Technician, Lucky Penny, Second
 Wind), six more locker weapons (10), and a vending machine of one-night

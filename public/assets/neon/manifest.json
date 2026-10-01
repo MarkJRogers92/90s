@@ -3138,5 +3138,155 @@
       736
     ],
     "sha256": "ed1af5a1fc4fdaef5de9af45d991aaf5628f1b2e3d3cc57ce850b3b7735de20a"
+  },
+  {
+    "path": "public/assets/neon/enemies/goon-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-goon-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      736,
+      92
+    ],
+    "sha256": "4110febb5357d2f87001e3ceeafdd5fe6ec712bb229540557a5e47e992d15088"
+  },
+  {
+    "path": "public/assets/neon/enemies/goon-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-goon-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "3418dd4953ecf977df589c314844990e8c4a536d11d7c1d64d78d9fcaf274d23"
+  },
+  {
+    "path": "public/assets/neon/enemies/goon-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-goon-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "2c8a59e822cd6f53846b7eac8727ce9b3b93d53a930d5075f67bae0b89cf865c"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "ce96edb14476a817772fd2d8b9fec29101d4b821d370800bf91a074c5ef977fd"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-walk.png",
+    "generator": "PixelLab animate_character walk-6-frames (cat template; south, west, north, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "513b9550eb7e2e2385f92724973ddb743836c3b0a4ae9174237cd745232edb92"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-death.png",
+    "generator": "Procedural: quadruped_death.py from the packed PixelLab idle strip (PixelLab has no quadruped death template)",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "f1c8b7f5fccb891c0e8be99e957a38a9267af71c69bd1f6b11aecc5fb14977a3"
+  },
+  {
+    "path": "public/assets/neon/enemies/glamour-queen-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-queen-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "27bc4597e5ebabd6f621686f5dc4754b1510558f117b93ec78f64a75f951b4a2"
+  },
+  {
+    "path": "public/assets/neon/enemies/glamour-queen-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-queen-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "dad9e84e82210bb7276053febe0522a92926668c3f35a28bad4da94ce779fe11"
+  },
+  {
+    "path": "public/assets/neon/enemies/glamour-queen-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-queen-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "1a72930b2e84ff8adc910f474a65a92e3e9651b7050971283809efaa98312f7a"
+  },
+  {
+    "path": "public/assets/neon/enemies/poodle-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-poodle-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      736,
+      92
+    ],
+    "sha256": "ceb23f152ff722891fc020f7c02d8e5d58962175f6e451ed7acbd560017e105d"
+  },
+  {
+    "path": "public/assets/neon/enemies/poodle-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-poodle-walk.png",
+    "generator": "PixelLab animate_character running-6-frames (dog template; west and north, the rest borrowed), packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "71f34159d8db0c3277d8bdb20fb5d805479a5f55ed0f4d4a5731a1f522ba9062"
+  },
+  {
+    "path": "public/assets/neon/enemies/poodle-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-poodle-death.png",
+    "generator": "Procedural: quadruped_death.py from the packed PixelLab idle strip (PixelLab has no quadruped death template)",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "50f42c5305cab22f7c89a710038144404289a307d68b4187f7cd79a62b7006f8"
+  },
+  {
+    "path": "public/assets/neon/enemies/zamboni-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-zamboni-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "9fdc6f2065757bab402ae0c728c1920ebcc5fc657b134a9b460e442520338f72"
+  },
+  {
+    "path": "public/assets/neon/enemies/zamboni-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-zamboni-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "3d3c7ad4d7b9f4d1df2fee3e73aa96154f55703e53faa26ff7825faa8daad283"
+  },
+  {
+    "path": "public/assets/neon/enemies/zamboni-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-zamboni-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "8de9817a6b9cee2de63fdee5892c643383bc65f8d0ff4b8ebe1a29cd31af66e7"
   }
 ]
