@@ -1,5 +1,16 @@
 # Test evidence
 
+## 2026-10-01 — round 51: art re-rolls
+
+- Re-generated the Glamour Queen's north walk and the Poodle's south run
+  (both packed sheets now have three real directions), and a feral Mr.
+  Whiskers (best of three PixelLab candidates; the lion-template one lost
+  the bow tie, the third had no legs).
+- `npx tsc --noEmit` clean; `npx vitest run` 1141 passed (the sheets-on-disk
+  test included); build clean.
+- On screen (`?fixture=mvp-district&floor=3&room=security_office`): the new
+  Mr. Whiskers slamming in The Aviary under its MR. WHISKERS bar.
+
 ## 2026-10-01 — round 50: the mall districts
 
 - New tests, each run red first: `districts` (5: the roll, rooms/stores/
