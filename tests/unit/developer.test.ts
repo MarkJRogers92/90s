@@ -46,6 +46,19 @@ describe('the Developer (Floor 4 boss)', () => {
     expect(state.player.health).toBe(5);
   });
 
+  it('leads a moving janitor: the barrage lands where they are heading (round 47)', () => {
+    const state = emptyFixture();
+    state.enemies = [winding(phaseTwoHealth, 1)];
+    const startX = state.player.x;
+    tickRun(state, { ...frame(), moveX: 0, moveY: 1 });
+    const speed = state.player.velocityY!;
+    expect(speed).toBeGreaterThan(0);
+    const [aim] = state.enemies[0]!.tarStrikes!;
+    expect(barrage.leadTicks).toBeGreaterThanOrEqual(20);
+    expect(aim!.x).toBeCloseTo(startX, 5);
+    expect(aim!.y).toBeCloseTo(state.player.y + speed * barrage.leadTicks, 5);
+  });
+
   it('phase three throws more buckets', () => {
     const state = emptyFixture();
     state.enemies = [winding(phaseThreeHealth, 1)];

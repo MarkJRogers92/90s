@@ -33,6 +33,22 @@ twists, sell and drop, reduced flashing). What is left:
 2. Playtest rounds 32-37 (questions below) and tune.
 2b. ~~Browser gate flake~~ (fixed, round 41).
 
+## Owner's queue (asked for next, 2026-10-01)
+
+Do these after round 47 (tar lead, riskier heists, floor events):
+
+1. **First-wing back-wall signs.** First wings reuse the floor's signs
+   (Floor 2's Lockdown still says MANAGEMENT). Give each `firstWingNames`
+   room its own sign text.
+2. **More signature pairs.** Pairs now land (3 signatures, every hint
+   `tookBoth` in the 2026-10-01 night); widen the pool so each night has a
+   new one to chase. See `src/sim/fusion/hybrid.ts` SIGNATURE_*.
+3. **A new Floor 1-2 enemy: the Mall Walker.** Walks a fixed patrol loop and
+   only fights when bumped or hit. Adds variety to the early floors, not
+   difficulty. Needs PixelLab art (8-dir walk + death).
+4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
+   next night, so every night counts toward something.
+
 ## Round 46 playtest questions
 
 - Mannequins now freeze for 1.5 s after a bite. Does Floor 1's back hall

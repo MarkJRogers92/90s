@@ -25,17 +25,28 @@ import { applyHeatFloor, wantedStars } from './wanted';
 export { GETAWAY_CASH_PER_ITEM, GETAWAY_HAUL_BONUS, getawayBonus } from './wanted';
 import { activeStore } from './storeInterior';
 import { MAX_SECURITY_HEAT } from '../shop/types';
+import type { FloorNumber } from '../wing/floorSpecs';
 
-/** Four seconds from the grab to the shutter. */
-export const ALARM_TICKS = 240;
+/**
+ * Ticks from the grab to the shutter, by floor. The 2026-10-01 playtest got
+ * out of every store with 2.6-3.3 s of the old flat 4 s left, so the alarm
+ * shrinks floor by floor to 2.5 s on the Roof.
+ */
+export const ALARM_TICKS_BY_FLOOR: Readonly<Record<FloorNumber, number>> = { 1: 210, 2: 190, 3: 170, 4: 150 };
+/** Floor 1's alarm, the one the shutter cues are drawn against. */
+export const ALARM_TICKS = ALARM_TICKS_BY_FLOOR[1];
 /** What getting locked in on camera adds on top of the theft itself. */
 export const LOCKDOWN_HEAT = 20;
 /** One secured theft is one star. */
 export const RUN_THEFT_HEAT = RUN_SECURED_THEFT_HEAT;
 /** Reinforced Fanny Pack: goods in the pouch are noticed later. */
 export const SMUGGLE_POUCH_ALARM_BONUS = 90;
-/** Ticks a Bargain Hunter at the door waits before its first wind-up. */
-export const ALARM_GUARD_BEAT = 36;
+/**
+ * Ticks a Bargain Hunter at the door waits before its first wind-up, by floor.
+ * It was 36 everywhere, so the janitor was out before the first charge;
+ * upstairs the Hunters are already lining up a charge as you reach the door.
+ */
+export const ALARM_GUARD_BEAT_BY_FLOOR: Readonly<Record<FloorNumber, number>> = { 1: 24, 2: 18, 3: 12, 4: 6 };
 
 export type ShutterState = 'open' | 'closed' | 'lifted';
 
@@ -81,7 +92,7 @@ export function alarmSpawnSpots(store: StoreShape, wanted: number, wave: 'alarm'
 
 /** How long this janitor has from the grab to the shutter. */
 export function alarmTicksFor(state: MvpRunState): number {
-  return ALARM_TICKS + (runOwnsCapability(state, 'smuggle_pouch') ? SMUGGLE_POUCH_ALARM_BONUS : 0);
+  return ALARM_TICKS_BY_FLOOR[state.wing.floor ?? 1] + (runOwnsCapability(state, 'smuggle_pouch') ? SMUGGLE_POUCH_ALARM_BONUS : 0);
 }
 
 function currentStore(state: MvpRunState): WingStoreInstance | null {
@@ -93,7 +104,7 @@ function sendGuards(state: MvpRunState, store: WingStoreInstance, wave: 'alarm' 
   for (const spot of alarmSpawnSpots(store, wantedStars(state.heat), wave)) {
     const id = combat.nextEntityId;
     combat.nextEntityId += 1;
-    combat.enemies.push(spawnSecurityGuard(spot.kind, id, spot.x, spot.y, ALARM_GUARD_BEAT));
+    combat.enemies.push(spawnSecurityGuard(spot.kind, id, spot.x, spot.y, ALARM_GUARD_BEAT_BY_FLOOR[state.wing.floor ?? 1]));
   }
 }
 
