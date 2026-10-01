@@ -18,7 +18,8 @@ import {
 import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH, circleIntersectsRect } from '../core/geometry';
 import { createEnemyStatusState } from '../effects/statuses';
 import type { FusionInventoryState } from '../fusion/types';
-import type { EnemyState, RunState } from '../model';
+import type { EnemyState, MallProp, RunState } from '../model';
+import { createProp, propWalls } from '../combat/props';
 import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
 import { floorNumberOf, floorSpec } from '../wing/floorSpecs';
 import { compileRunLoadout } from './loadout';
@@ -235,6 +236,41 @@ function displayMannequinSpots(
   return chosen;
 }
 
+/** Round 53: how often a regular fight has props to knock over. */
+export const PROP_CHANCE = 0.85;
+/** A rack needs this much clear floor round it, so a fallen one can never wall a corner off. */
+const RACK_CLEARANCE = 120;
+/** Every prop keeps a walkway clear round it. */
+const PROP_CLEARANCE = 40;
+
+/**
+ * The carts, soda machines and racks in a regular fight (round 53): two or
+ * three, each kind at most once, on clear floor away from the doors, the
+ * store fronts, the bench kiosk and every monster. Seed-derived, so the same
+ * night dresses the same way and nothing needs saving.
+ */
+function mallProps(room: WingRoomDefinition, seed: number, roomIndex: number, enemies: readonly EnemyState[]): MallProp[] {
+  if (room.enemySpawns.length === 0 || room.bossAnchor !== null) return [];
+  if (luck(seed, 'props', roomIndex, 0) >= PROP_CHANCE) return [];
+  const spots = displayMannequinSpots(room, seed, roomIndex, enemies, 8, 'prop-spot').filter((spot) =>
+    !room.walls.some((wall) => circleIntersectsRect(spot.x, spot.y, PROP_CLEARANCE, wall))
+    && !(room.store !== null && spot.y < 150)
+    && !(room.benchKiosk && Math.hypot(room.benchKiosk.x - spot.x, room.benchKiosk.y - spot.y) < 110));
+  const kinds = (['cart', 'soda', 'rack'] as const)
+    .map((kind, index) => ({ kind, key: luck(seed, 'prop-kind', roomIndex, index) }))
+    .sort((a, b) => a.key - b.key)
+    .map((entry) => entry.kind)
+    .slice(0, luck(seed, 'props', roomIndex, 1) < 0.5 ? 2 : 3);
+  const props: MallProp[] = [];
+  for (const kind of kinds) {
+    const at = spots.findIndex((spot) => kind !== 'rack' || !room.walls.some((wall) => circleIntersectsRect(spot.x, spot.y, RACK_CLEARANCE, wall)));
+    if (at < 0) continue;
+    const [spot] = spots.splice(at, 1);
+    props.push(createProp(props.length + 1, kind, spot!.x, spot!.y));
+  }
+  return props;
+}
+
 /**
  * Builds one room's combat state directly from the wing room data.
  *
@@ -300,6 +336,8 @@ export function buildRoomCombatState(
     });
   }
 
+  const props = mallProps(room, seed, roomIndex, enemies);
+
   const entry =
     enteringFrom === 'west'
       ? { x: room.playerEntry.x, y: room.playerEntry.y }
@@ -322,7 +360,8 @@ export function buildRoomCombatState(
     },
     enemies,
     projectiles: [],
-    walls: room.walls.map((wall) => ({ ...wall })),
+    walls: [...room.walls.map((wall) => ({ ...wall })), ...propWalls(props)],
+    props,
     nextEntityId: enemies.length + 1,
     roomWasPopulated: enemies.length > 0,
     rewardGranted: false,

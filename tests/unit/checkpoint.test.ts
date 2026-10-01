@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { propWalls } from '../../src/sim/combat/props';
 import { PLAYFIELD_WIDTH } from '../../src/sim/core/geometry';
 import { MAX_SECURITY_HEAT } from '../../src/sim/shop/types';
 import {
@@ -115,7 +116,7 @@ describe('checkpoint serialization', () => {
     expect(restored.status).toBe('playing');
     expect(restored.roomIndex).toBe(2);
     expect(restored.room.roomId).toBe('food_court');
-    expect(restored.room.combat.walls).toEqual(state.wing.rooms[2]!.walls);
+    expect(restored.room.combat.walls).toEqual([...state.wing.rooms[2]!.walls, ...propWalls(restored.room.combat.props ?? [])]);
     expect(restored.room.combat.player.x).toBe(state.wing.rooms[2]!.playerEntry.x);
     expect(restored.room.combat.enemies.map((enemy) => enemy.kind)).toEqual(
       state.room.combat.enemies.map((enemy) => enemy.kind),

@@ -1,4 +1,5 @@
-import type { RunState } from '../model';
+import type { EnemyState, RunState } from '../model';
+import { luredTo, withLure } from './heroes';
 import { isBossKind, updateLpManager } from './boss';
 import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/geometry';
 import { effectiveSpeedMultiplier } from '../effects/statuses';
@@ -56,87 +57,98 @@ export function updateEnemies(state: RunState): void {
     if (!enemy || enemy.health <= 0 || enemy.dormant) {
       continue;
     }
+    // Round 53: scared stiff by a hero fusion, or drawn to Comedy Hour's chicken.
+    if ((enemy.dazedTicks ?? 0) > 0) {
+      enemy.dazedTicks = (enemy.dazedTicks ?? 0) - 1;
+      continue;
+    }
+    const lure = luredTo(state, enemy);
+    if (lure) withLure(state, lure, () => updateEnemyAt(state, index, enemy));
+    else updateEnemyAt(state, index, enemy);
+  }
+}
 
-    if (isBossKind(enemy.kind)) {
-      updateLpManager(state, index);
-      continue;
-    }
+/** One living, awake monster's turn (the body of `updateEnemies`). */
+function updateEnemyAt(state: RunState, index: number, enemy: EnemyState): void {
+  if (isBossKind(enemy.kind)) {
+    updateLpManager(state, index);
+    return;
+  }
 
-    if (enemy.kind === 'mannequin') {
-      updateMannequin(state, enemy);
-      continue;
-    }
+  if (enemy.kind === 'mannequin') {
+    updateMannequin(state, enemy);
+    return;
+  }
 
-    if (enemy.kind === 'static') {
-      updateStatic(state, enemy);
-      continue;
-    }
+  if (enemy.kind === 'static') {
+    updateStatic(state, enemy);
+    return;
+  }
 
-    if (enemy.kind === 'mascot') {
-      updateMascot(state, enemy);
-      continue;
-    }
+  if (enemy.kind === 'mascot') {
+    updateMascot(state, enemy);
+    return;
+  }
 
-    // Round 50: the district monsters.
-    if (enemy.kind === 'elf') {
-      updateElf(state, enemy);
-      continue;
-    }
-    if (enemy.kind === 'spritzer') {
-      updateSpritzer(state, enemy);
-      continue;
-    }
-    if (enemy.kind === 'poodle') {
-      updatePoodle(state, enemy);
-      continue;
-    }
-    if (enemy.kind === 'goon') {
-      updateGoon(state, enemy);
-      continue;
-    }
+  // Round 50: the district monsters.
+  if (enemy.kind === 'elf') {
+    updateElf(state, enemy);
+    return;
+  }
+  if (enemy.kind === 'spritzer') {
+    updateSpritzer(state, enemy);
+    return;
+  }
+  if (enemy.kind === 'poodle') {
+    updatePoodle(state, enemy);
+    return;
+  }
+  if (enemy.kind === 'goon') {
+    updateGoon(state, enemy);
+    return;
+  }
 
-    if (enemy.kind === 'walker') {
-      updateWalker(state, enemy);
-      continue;
-    }
+  if (enemy.kind === 'walker') {
+    updateWalker(state, enemy);
+    return;
+  }
 
-    if (enemy.kind === 'roofer') {
-      updateRoofer(state, enemy);
-      continue;
-    }
+  if (enemy.kind === 'roofer') {
+    updateRoofer(state, enemy);
+    return;
+  }
 
-    if (enemy.kind === 'shopper') {
-      updateShopper(state, enemy);
-      continue;
-    }
+  if (enemy.kind === 'shopper') {
+    updateShopper(state, enemy);
+    return;
+  }
 
-    if (enemy.kind === 'hanger') {
-      const direction = normalizedDirection(state.player.x - enemy.x, state.player.y - enemy.y);
-      // Sticky only slows pursuit. Spitter telegraph and firing timings are
-      // untouched because they never read a movement multiplier.
-      const movement = scaleMovementDelta(
-        direction.x * HANGER_SPEED_PER_TICK,
-        direction.y * HANGER_SPEED_PER_TICK,
-        effectiveSpeedMultiplier(enemy),
-      );
-      const next = moveCircle(enemy, enemy.radius, movement.x, movement.y, state.walls);
-      enemy.x = next.x;
-      enemy.y = next.y;
-      continue;
-    }
+  if (enemy.kind === 'hanger') {
+    const direction = normalizedDirection(state.player.x - enemy.x, state.player.y - enemy.y);
+    // Sticky only slows pursuit. Spitter telegraph and firing timings are
+    // untouched because they never read a movement multiplier.
+    const movement = scaleMovementDelta(
+      direction.x * HANGER_SPEED_PER_TICK,
+      direction.y * HANGER_SPEED_PER_TICK,
+      effectiveSpeedMultiplier(enemy),
+    );
+    const next = moveCircle(enemy, enemy.radius, movement.x, movement.y, state.walls);
+    enemy.x = next.x;
+    enemy.y = next.y;
+    return;
+  }
 
-    enemy.phaseTicks -= 1;
-    if (enemy.phase === 'recover' && enemy.phaseTicks <= 0) {
-      const direction = normalizedDirection(state.player.x - enemy.x, state.player.y - enemy.y);
-      enemy.phase = 'telegraph';
-      enemy.phaseTicks = SPITTER_TELEGRAPH_TICKS;
-      enemy.telegraphAimX = direction.x === 0 && direction.y === 0 ? 1 : direction.x;
-      enemy.telegraphAimY = direction.x === 0 && direction.y === 0 ? 0 : direction.y;
-    } else if (enemy.phase === 'telegraph' && enemy.phaseTicks <= 0) {
-      spawnSpitterProjectile(state, index);
-      enemy.phase = 'recover';
-      enemy.phaseTicks = SPITTER_RECOVER_TICKS;
-    }
+  enemy.phaseTicks -= 1;
+  if (enemy.phase === 'recover' && enemy.phaseTicks <= 0) {
+    const direction = normalizedDirection(state.player.x - enemy.x, state.player.y - enemy.y);
+    enemy.phase = 'telegraph';
+    enemy.phaseTicks = SPITTER_TELEGRAPH_TICKS;
+    enemy.telegraphAimX = direction.x === 0 && direction.y === 0 ? 1 : direction.x;
+    enemy.telegraphAimY = direction.x === 0 && direction.y === 0 ? 0 : direction.y;
+  } else if (enemy.phase === 'telegraph' && enemy.phaseTicks <= 0) {
+    spawnSpitterProjectile(state, index);
+    enemy.phase = 'recover';
+    enemy.phaseTicks = SPITTER_RECOVER_TICKS;
   }
 }
 

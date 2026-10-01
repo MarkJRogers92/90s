@@ -52,6 +52,15 @@ The queue as asked:
 4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
    next night, so every night counts toward something.
 
+## Round 53 playtest questions (hero fusions, props)
+
+- Did you build a hero on purpose? Which move felt best, which weakest?
+- Comedy Hour: is the chicken's pull (260) and burst (8) worth the slot?
+- Movie Night: is a beam every 1.5 s too often, too rare?
+- Props: did you use them, or walk past? Is the soda puddle + shock combo
+  findable? Does a fallen rack ever get in your own way?
+- Not done from the review package: the secret-room encounter (next).
+
 ## Outside review backlog (GPT, 2026-10-01; proposals, not approved)
 
 Round 52 fixed its three bugs. Its design ideas, in its order:

@@ -1275,6 +1275,40 @@ music. Boss wings never change, and regular wings draw exactly as before.
   mini-boss), its stores and stock, a twist each, a monster update, a boss
   config, then the game tables tsc lists (sprites, HUD, PA, looks, music).
 
+## Round 53: hero fusions and mall props
+
+- **Hero fusions** (`sim/fusion/heroPairs.ts`, `heroes.ts`; behaviour in
+  `sim/combat/heroes.ts`). `HERO_FUSIONS` names three signature pairs;
+  `heroOf(id)` finds one at any depth, so fusing more on keeps the move.
+  The central tick calls `heroAttack` when an attack is accepted and
+  `updateHeroes` each tick; state is `RunState.hero` (room-local).
+  - Greatest Hits: `RECORD_MAX` 3 orbiting records (cut 2, every 20 ticks
+    per monster); the next attack flings them (6 each).
+  - Comedy Hour: a decoy thrown up to 180 px, `DECOY_TICKS` 150. Monsters
+    within `DECOY_LURE_RADIUS` 260 update as if the janitor stood there
+    (`withLure`, which also makes the real janitor untouchable through
+    that update); then it bursts (8, radius 80, a shove and a daze).
+  - Movie Night: every `BEAM_COOLDOWN_TICKS` 90, a beam to the first wall
+    (`BEAM_LENGTH` 420, half-width 26): 4 damage and `BEAM_DAZE_TICKS` 60.
+  - `EnemyState.dazedTicks`: a generic stun, skipped by bosses; the enemy
+    update (now `updateEnemyAt`) skips a dazed monster.
+  - The bench says `HERO: ...` first and labels the card HERO FUSION.
+- **Mall props** (`sim/combat/props.ts`, placed by `rooms.ts mallProps`).
+  `PROP_CHANCE` 0.85 of regular fights get two or three of cart / soda /
+  rack, seed-derived, 40 px off any wall (a rack 120, so a fallen one can
+  never close a pocket). Hit by a swing that starts this tick or a player
+  shot passing within 34 px. Cart: rolls (8 px/tick), 5 damage per monster
+  per push. Soda: solid; bursts once, 2 damage and a radius-90 Wet puddle
+  for 600 ticks. Rack: solid; falls away from the hit into a 96x18 wall,
+  5 damage and a daze to anyone under it, who is pushed clear.
+- **View**: `game/view/HeroPropView.ts` (records, chicken, beam and its
+  silhouette, burst, dazed stars, props with their own light). Sounds:
+  `cart_roll`, `soda_burst`, `rack_fall`, `record_spin`, `record_fling`,
+  `squawk`, `decoy_burst`, `projector`. Debug snapshot: `props`, `hero`.
+- **Fixture**: `?fixture=mvp-hero&hero=greatest_hits|comedy_hour|movie_night`
+  (a food court with all three props and no room event; `&props=used`
+  starts them knocked over).
+
 ## Round 52: review fixes
 
 - **Swept movement.** `moveCircle` splits any move into steps of at most

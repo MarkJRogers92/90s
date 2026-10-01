@@ -330,6 +330,9 @@ export type MvpRunDebugSnapshot = {
   }>;
   /** Whether the Bench Warrant preview is open. */
   previewOpen: boolean;
+  /** Round 53: the room's props and the hero fusion's moves. */
+  props: Array<{ kind: string; x: number; y: number; state: string }>;
+  hero: { records: string[]; decoy: boolean; beams: number; beamCooldown: number } | null;
   /**
    * Audio engine state, so acceptance can prove the sound layer actually
    * started rather than only that nothing threw. `created` flips true once a
@@ -436,6 +439,10 @@ export function installMvpRunDebugBridge(
             };
           }),
           previewOpen: state.preview !== null,
+          props: (state.room.combat.props ?? []).map((prop) => ({ kind: prop.kind, x: prop.x, y: prop.y, state: prop.state })),
+          hero: state.room.combat.hero
+            ? { records: state.room.combat.hero.records.map((record) => record.mode), decoy: state.room.combat.hero.decoy !== null, beams: state.room.combat.hero.beams.length, beamCooldown: state.room.combat.hero.beamCooldown }
+            : null,
           audio: (() => {
             const engine = getAudio?.();
             return engine

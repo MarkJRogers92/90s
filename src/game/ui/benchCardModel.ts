@@ -9,6 +9,7 @@
 import { compositeLeaves, fusionPartCount, isCleanPart } from '../../sim/fusion/inventory';
 import { shortItemName } from '../../sim/fusion/hybrid';
 import { nodeDefinitionId } from '../../sim/fusion/inventory';
+import { heroForPair } from '../../sim/fusion/heroes';
 import { itemDefinitionName } from '../../sim/run/economy';
 import type { MvpRunState } from '../../sim/run/types';
 import { keepReason, resaleValue } from '../../sim/run/resale';
@@ -45,6 +46,8 @@ export type BenchCardModel = {
   /** The named result, once the picked pair fuses. */
   readonly result: string | null;
   readonly signature: boolean;
+  /** Round 53: a hero fusion's name, when the pair makes one (it has a move of its own). */
+  readonly hero: string | null;
   /** What the result does, in plain words. */
   readonly lines: readonly string[];
   /** Before/after rows (the Emitter Mount's operation). */
@@ -119,6 +122,7 @@ export function buildBenchCardModel(state: MvpRunState, requestedPage = 0): Benc
       recipe: null,
       result: null,
       signature: false,
+      hero: null,
       lines: [],
       changes: [],
       fee: null,
@@ -143,6 +147,7 @@ export function buildBenchCardModel(state: MvpRunState, requestedPage = 0): Benc
       recipe: 'emitter_mount',
       result: `${primary.name} MOUNTED ON THE ${carrier.name}`,
       signature: false,
+      hero: null,
       lines: ['YOUR SHOTS LEAVE FROM THE CAR,', 'AND YOU STEER IT WITH THE MOUSE.'],
       changes: [
         { label: 'FIRES FROM', before: 'YOU', after: `THE ${carrier.name}` },
@@ -163,6 +168,7 @@ export function buildBenchCardModel(state: MvpRunState, requestedPage = 0): Benc
     recipe: 'hybrid',
     result: preview.resultName.toUpperCase(),
     signature: preview.signature,
+    hero: heroForPair(nodeDefinitionId(composite.primary), nodeDefinitionId(composite.carrier))?.name ?? null,
     lines: preview.highlights,
     changes: [],
     fee: preview.fee,

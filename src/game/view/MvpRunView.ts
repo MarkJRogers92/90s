@@ -43,6 +43,7 @@ import {
 import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
 import { PROP_TEXTURES } from '../presentation/rooms/roomDressing';
+import { HeroPropView } from './HeroPropView';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -132,6 +133,8 @@ export class MvpRunView {
   private readonly usedOfferIcons = new Set<string>();
   /** Mall Mart's carts, one image each, by cart id. */
   private readonly cartImages = new Map<number, Phaser.GameObjects.Image>();
+  /** Round 53: props and hero fusions. */
+  private readonly heroProps: HeroPropView;
   /** Round 35: the themed stores' twist props (machine, toys, booth, oven), by id. */
   private readonly twistImages = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedTwistImages = new Set<string>();
@@ -178,6 +181,7 @@ export class MvpRunView {
     this.feedback = new CombatFeedback(scene);
     this.weapon = new WeaponView(scene);
     this.storeGraphics = scene.add.graphics().setDepth(presentationDepth('decal', 800));
+    this.heroProps = new HeroPropView(scene);
   }
 
   /** Where the janitor stood last frame, for effects fired from outside a sync. */
@@ -270,6 +274,13 @@ export class MvpRunView {
     for (const puddle of state.room.combat.tar ?? []) this.drawTarPuddle(puddle, this.storeGraphics, state.tick);
     // Glamour Row: perfume clouds hang above the floor, so they go on the effect layer.
     for (const cloud of state.room.combat.perfume ?? []) this.drawPerfumeCloud(cloud, this.effectGraphics, state.tick);
+    // Round 53: carts, soda machines, racks, and the hero fusions' moves.
+    this.heroProps.sync(state.room.combat, state.tick, {
+      floor: this.storeGraphics,
+      effects: this.effectGraphics,
+      light: (x, y, radius, color, intensity) => this.openingConcourse?.addLight({ x, y, radius, color, intensity }),
+      shadow: (id, x, y, scale) => this.contactShadow(id, x, y, scale),
+    });
 
     const hangerEvidence: ActorPresentationDebugSnapshot['hangers'] = [];
     this.threats.length = 0;
@@ -2255,6 +2266,7 @@ export class MvpRunView {
   }
 
   public destroy(): void {
+    this.heroProps.destroy();
     for (const image of this.cartImages.values()) image.destroy();
     this.cartImages.clear();
     this.policeGlow?.destroy();

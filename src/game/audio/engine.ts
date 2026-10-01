@@ -331,6 +331,74 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 60, gain: 0.12, cutoff: 1800 }],
     minGapMs: 250,
   },
+  // Round 53: the props.
+  cart_roll: {
+    // Rattling wheels on tile.
+    tones: [{ wave: 'square', from: 140, to: 120, ms: 220, gain: 0.05 }],
+    noise: [{ ms: 260, gain: 0.12, cutoff: 2600, cutoffTo: 1200 }],
+    minGapMs: 200,
+  },
+  soda_burst: {
+    // A can-pop crack and a long fizzing hiss.
+    tones: [{ wave: 'square', from: 900, to: 200, ms: 60, gain: 0.14 }],
+    noise: [
+      { ms: 50, gain: 0.22, cutoff: 6000 },
+      { ms: 600, gain: 0.12, cutoff: 7000, cutoffTo: 2500, atMs: 40 },
+    ],
+    minGapMs: 200,
+  },
+  rack_fall: {
+    // Chrome rail and hangers hitting the floor.
+    tones: [
+      { wave: 'sine', from: 110, to: 45, ms: 220, gain: 0.3 },
+      { wave: 'triangle', from: 2200, to: 2100, ms: 160, gain: 0.05, atMs: 30 },
+      { wave: 'triangle', from: 2600, to: 2500, ms: 140, gain: 0.04, atMs: 90 },
+    ],
+    noise: [{ ms: 200, gain: 0.2, cutoff: 3000, cutoffTo: 600 }],
+    minGapMs: 200,
+  },
+  // Round 53: the hero fusions.
+  record_spin: {
+    // A needle drop: a soft scratch and a rising whirr.
+    tones: [{ wave: 'triangle', from: 300, to: 620, ms: 140, gain: 0.07 }],
+    noise: [{ ms: 90, gain: 0.08, cutoff: 5000 }],
+    minGapMs: 100,
+  },
+  record_fling: {
+    // The drop: a record scratch into a bass hit.
+    tones: [
+      { wave: 'sawtooth', from: 700, to: 250, ms: 120, gain: 0.08 },
+      { wave: 'sawtooth', from: 250, to: 700, ms: 120, gain: 0.08, atMs: 120 },
+      { wave: 'sine', from: 90, to: 40, ms: 300, gain: 0.34, atMs: 230 },
+    ],
+    minGapMs: 200,
+  },
+  squawk: {
+    // A rubber chicken: a squeezed nasal squeal.
+    tones: [
+      { wave: 'square', from: 900, to: 1400, ms: 90, gain: 0.07 },
+      { wave: 'square', from: 1400, to: 700, ms: 220, gain: 0.07, atMs: 90 },
+    ],
+    minGapMs: 250,
+  },
+  decoy_burst: {
+    // A final squawk and a pop of feathers.
+    tones: [
+      { wave: 'square', from: 1600, to: 500, ms: 160, gain: 0.08 },
+      { wave: 'sine', from: 160, to: 50, ms: 200, gain: 0.3, atMs: 40 },
+    ],
+    noise: [{ ms: 160, gain: 0.2, cutoff: 3500, cutoffTo: 800, atMs: 40 }],
+    minGapMs: 200,
+  },
+  projector: {
+    // A film reel clattering up, under a low horror sting.
+    tones: [
+      { wave: 'sawtooth', from: 55, to: 52, ms: 500, gain: 0.12 },
+      { wave: 'sine', from: 466, to: 440, ms: 500, gain: 0.05 },
+    ],
+    noise: [{ ms: 450, gain: 0.07, cutoff: 1800 }],
+    minGapMs: 300,
+  },
   conduction: {
     tones: [
       { wave: 'square', from: 600, to: 900, ms: 45, gain: 0.13 },
