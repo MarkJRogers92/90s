@@ -432,3 +432,8 @@ supersedes the earlier statement that nothing from M5 had been pushed or merged.
 ## 2026-09-30 — Standalone prop packs archived
 
 Nine environment prop candidates are available under [docs/art/prop-packs/2026-09-30](docs/art/prop-packs/2026-09-30/README.md), with PNGs, Aseprite masters, source artwork, compact variants, and a portable handoff. This checkpoint adds documentation assets; game runtime content is unchanged. Publishing evidence is in the asset folder.
+
+Round 55 (2026-10-01): floor-exclusive stores on floors 2-4 (two per floor,
+`FLOOR_STORE_IDS`), so upstairs no longer reshuffles floor 1's shops. Retro Diffusion
+shopfront art, and a twist each (glare, chime, mustard, cold snap, rod, pawn). 1178 unit tests and `npm run build` pass; the
+browser gate was not run.

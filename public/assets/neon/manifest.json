@@ -3338,5 +3338,65 @@
       70
     ],
     "sha256": "716bc312361585140129ad40cc6cda4de7270772d77a3b05c9286ecd9dda46d2"
+  },
+  {
+    "path": "public/assets/neon/facades/shade-station.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-shade-station-1790895842-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "4be9a29dee50d57c9aa1d1d0fc58d1251c23d55c46e76b8a4222c45843f85f69"
+  },
+  {
+    "path": "public/assets/neon/facades/page-turner.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-page-turner-1790895852-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "bb19e4685b6190c336a12483572efe016c4f993fd3d978e43d480fd6c95dc3c5"
+  },
+  {
+    "path": "public/assets/neon/facades/pretzel-pit.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-pretzel-pit-1790895862-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "44b3c5586397bd4fc03c67314d4e74c421b4cbe77dcc33589d3aa9963277e616"
+  },
+  {
+    "path": "public/assets/neon/facades/frosty-freeze.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-frosty-freeze-1790895872-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "74b23df82fb6427531b366aef467235db0c06f5d138854f5722d46b174b0e42e"
+  },
+  {
+    "path": "public/assets/neon/facades/antenna-annex.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-antenna-annex-1790895882-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "05e52d6a590f12d60de68afab6e5f799ace27e5ac39e0e5e35f14ba60ab44aa2"
+  },
+  {
+    "path": "public/assets/neon/facades/pawn-palace.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-pawn-palace-1790895892-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "342a0f6a726d9ac6b957705cecb758a3e11e07922b3a279cb12e6d078de98bda"
   }
 ]

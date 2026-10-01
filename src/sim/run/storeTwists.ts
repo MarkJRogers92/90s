@@ -22,6 +22,14 @@
  * - Slice Station: the oven warns, then blasts heat along the east wall.
  * - Video World: a rewind tile undoes the last hit taken in the store, once.
  *
+ * Round 55, the floor-exclusive stores:
+ * - Shade Station: a band of sun glare sweeps the store and blinds guards.
+ * - Page Turner Books: the alarm is a polite chime, so it runs longer.
+ * - Pretzel Pit: mustard spills slow the janitor and gum up guards.
+ * - Frosty Freeze: the machine hums, then a cold snap freezes everyone near it.
+ * - Antenna Annex: a lightning rod zaps the nearest guard, and anyone hugging it.
+ * - Pawn Palace: wait at the counter to hock half a heart for cash, once a visit.
+ *
  * The twist is room-local like the store alarm: set up on entering a store,
  * dropped on leaving, and never checkpointed. Pure rules over run data.
  */
@@ -80,6 +88,12 @@ export type StoreTwistState = {
   cactusCooldown: number;
   /** Cocoa Hut: things bought this visit (every second one is free). */
   purchases: number;
+  // Round 55: the floor-exclusive stores.
+  /** Antenna Annex: the last bolt's target, for the view, and ticks it stays lit. */
+  zap: { x: number; y: number; ticks: number } | null;
+  /** Pawn Palace: ticks spent at the counter, and whether a heart was hocked this visit. */
+  hockTicks: number;
+  hocked: boolean;
 };
 
 /** The aisle between the two rows of shelves, where the twists stand. */
@@ -212,6 +226,48 @@ export const CACTUS_GUARD_EVERY = 30;
 /** Rental skates: each step carries this much further. */
 export const SKATE_BOOST = 0.35;
 
+// ---- Round 55: the floor-exclusive stores. ---------------------------
+
+// Shade Station.
+export const GLARE_WIDTH = 90;
+/** Ticks for the glare to cross the store once, west to east. */
+export const GLARE_SWEEP_TICKS = 240;
+export const GLARE_STUN_TICKS = 20;
+
+// Page Turner Books.
+/** The alarm is a polite chime: this much longer before the shutter. */
+export const LIBRARY_ALARM_BONUS = 45;
+
+// Pretzel Pit.
+export const MUSTARD_SPILLS: ReadonlyArray<{ readonly x: number; readonly y: number; readonly rx: number; readonly ry: number }> = [
+  { x: 300, y: AISLE_Y, rx: 60, ry: 24 },
+  { x: 660, y: AISLE_Y + 16, rx: 60, ry: 24 },
+];
+/** In mustard the janitor keeps this share of each step. */
+export const MUSTARD_SLOW = 0.5;
+
+// Frosty Freeze.
+export const FROSTY_MACHINE: Vec2 = { x: INTERIOR_BOUNDS.x + INTERIOR_BOUNDS.width - 60, y: AISLE_Y };
+export const COLD_SNAP_RADIUS = 120;
+export const COLD_SNAP_CYCLE_TICKS = 260;
+/** The machine hums and frosts over this long before each snap. */
+export const COLD_SNAP_WARN_TICKS = 60;
+export const COLD_SNAP_FREEZE_TICKS = 40;
+export const COLD_SNAP_GUARD_TICKS = 90;
+
+// Antenna Annex.
+export const LIGHTNING_ROD: Vec2 = { x: 480, y: AISLE_Y };
+export const ROD_ZAP_TICKS = 100;
+export const ROD_RANGE = 240;
+export const ROD_DAMAGE = 3;
+/** Closer than this to the rod when it fires and the janitor is zapped too. */
+export const ROD_TOO_CLOSE = 50;
+
+// Pawn Palace.
+export const PAWN_COUNTER: Vec2 & { readonly radius: number } = { x: 830, y: 330, radius: 30 };
+export const HOCK_TICKS = 60;
+export const HOCK_PRICE = 6;
+
 /** What the log says on walking in, so a twist never ambushes the janitor. */
 export const TWIST_HINTS: Readonly<Record<string, string>> = {
   'arcade-annex': 'One cabinet still takes coins: $2 a play.',
@@ -233,6 +289,12 @@ export const TWIST_HINTS: Readonly<Record<string, string>> = {
   'green-thumb': 'Cactus pots in the aisle: they prick anyone who touches them.',
   'skate-shack': 'Rental skates by the door: you move faster in here.',
   'cocoa-hut': 'Punch card: every second thing you buy here is free.',
+  'shade-station': 'Sun glare sweeps the store. Guards are blinded; you have shades.',
+  'page-turner': 'Quiet, please: the alarm here is a polite chime. You get longer.',
+  'pretzel-pit': 'Mustard on the floor: it slows anyone who wades through it.',
+  'frosty-freeze': 'When the machine hums, step back: the cold snap freezes anyone near it.',
+  'antenna-annex': 'The lightning rod zaps the nearest guard. Do not hug it.',
+  'pawn-palace': 'Wait at the counter to hock half a heart for $6. Once.',
 };
 
 /** The twist for the store the janitor is in, created on first use. */
@@ -265,6 +327,9 @@ function twistFor(state: MvpRunState): StoreTwistState | null {
     dazzleTicks: 0,
     cactusCooldown: 0,
     purchases: 0,
+    zap: null,
+    hockTicks: 0,
+    hocked: false,
   };
   state.room.twist = twist;
   const hint = TWIST_HINTS[store.templateId];
@@ -381,6 +446,21 @@ export function updateStoreTwist(state: MvpRunState, previousPosition: Vec2): vo
       break;
     case 'skate-shack':
       skate(state, previousPosition);
+      break;
+    case 'shade-station':
+      sweepTheGlare(state, twist);
+      break;
+    case 'pretzel-pit':
+      wadeThroughMustard(state, previousPosition);
+      break;
+    case 'frosty-freeze':
+      snapTheCold(state, twist, previousPosition);
+      break;
+    case 'antenna-annex':
+      strikeTheRod(state, twist);
+      break;
+    case 'pawn-palace':
+      hockAHeart(state, twist);
       break;
     default:
       break;
@@ -703,4 +783,106 @@ function skate(state: MvpRunState, previous: Vec2): void {
   const next = moveCircle(player, player.radius, (player.x - previous.x) * SKATE_BOOST, (player.y - previous.y) * SKATE_BOOST, combat.walls);
   player.x = next.x;
   player.y = next.y;
+}
+
+/* ---- Round 55: the floor-exclusive stores' twists --------------------- */
+
+/** Shade Station: where the glare band is this tick. */
+export function glareBand(twist: StoreTwistState): { readonly x: number; readonly width: number } {
+  const travel = INTERIOR_BOUNDS.width - GLARE_WIDTH;
+  return { x: INTERIOR_BOUNDS.x + Math.round((travel * (twist.age % GLARE_SWEEP_TICKS)) / GLARE_SWEEP_TICKS), width: GLARE_WIDTH };
+}
+
+/** Shade Station: guards in the glare are blinded; the janitor wears shades. */
+function sweepTheGlare(state: MvpRunState, twist: StoreTwistState): void {
+  const band = glareBand(twist);
+  for (const enemy of state.room.combat.enemies) {
+    if (enemy.health <= 0 || enemy.dormant || enemy.x < band.x || enemy.x > band.x + band.width) continue;
+    enemy.stunnedTicks = Math.max(enemy.stunnedTicks ?? 0, GLARE_STUN_TICKS);
+    enemy.chargeTicks = 0;
+  }
+}
+
+function inMustard(point: Vec2): boolean {
+  return MUSTARD_SPILLS.some((spill) => ((point.x - spill.x) / spill.rx) ** 2 + ((point.y - spill.y) / spill.ry) ** 2 <= 1);
+}
+
+/** Pretzel Pit: a step in mustard only goes part of the way; guards in it go sticky. */
+function wadeThroughMustard(state: MvpRunState, previous: Vec2): void {
+  const combat = state.room.combat;
+  const player = combat.player;
+  if (!playerDashing(combat) && (inMustard(previous) || inMustard(player))) {
+    player.x = previous.x + (player.x - previous.x) * MUSTARD_SLOW;
+    player.y = previous.y + (player.y - previous.y) * MUSTARD_SLOW;
+  }
+  for (const enemy of combat.enemies) {
+    if (enemy.health > 0 && inMustard(enemy)) applySticky(enemy, 30, 0.5, 0.4);
+  }
+}
+
+/** Frosty Freeze: where the machine is in its cycle (the snap is one tick). */
+export function coldSnapPhase(twist: StoreTwistState): 'idle' | 'warn' | 'snap' {
+  const position = twist.age % COLD_SNAP_CYCLE_TICKS;
+  if (position === 0) return 'snap';
+  return position >= COLD_SNAP_CYCLE_TICKS - COLD_SNAP_WARN_TICKS ? 'warn' : 'idle';
+}
+
+/** Frosty Freeze: the snap freezes the janitor (unless dashing) and any guard near the machine. */
+function snapTheCold(state: MvpRunState, twist: StoreTwistState, previous: Vec2): void {
+  const combat = state.room.combat;
+  const player = combat.player;
+  if (twist.dazzleTicks > 0) {
+    twist.dazzleTicks -= 1;
+    player.x = previous.x;
+    player.y = previous.y;
+  }
+  if (coldSnapPhase(twist) !== 'snap') return;
+  const near = (point: Vec2): boolean => Math.hypot(point.x - FROSTY_MACHINE.x, point.y - FROSTY_MACHINE.y) <= COLD_SNAP_RADIUS;
+  if (near(player) && !playerDashing(combat)) {
+    twist.dazzleTicks = COLD_SNAP_FREEZE_TICKS;
+    publishRunFeedback(state, 'COLD SNAP! Frozen to the spot.');
+  }
+  for (const enemy of combat.enemies) {
+    if (enemy.health > 0 && near(enemy)) {
+      enemy.stunnedTicks = Math.max(enemy.stunnedTicks ?? 0, COLD_SNAP_GUARD_TICKS);
+      enemy.chargeTicks = 0;
+    }
+  }
+}
+
+/** Antenna Annex: every ROD_ZAP_TICKS the rod strikes the nearest guard in range, and anyone hugging it. */
+function strikeTheRod(state: MvpRunState, twist: StoreTwistState): void {
+  if (twist.zap && --twist.zap.ticks <= 0) twist.zap = null;
+  if (twist.age % ROD_ZAP_TICKS !== 0) return;
+  const combat = state.room.combat;
+  const distance = (point: Vec2): number => Math.hypot(point.x - LIGHTNING_ROD.x, point.y - LIGHTNING_ROD.y);
+  let target: EnemyState | null = null;
+  for (const enemy of combat.enemies) {
+    if (enemy.health <= 0 || enemy.dormant || distance(enemy) > ROD_RANGE) continue;
+    if (target === null || distance(enemy) < distance(target)) target = enemy;
+  }
+  if (target) {
+    target.health = Math.max(0, target.health - ROD_DAMAGE);
+    twist.zap = { x: target.x, y: target.y, ticks: 12 };
+  }
+  if (distance(combat.player) <= ROD_TOO_CLOSE && hurtJanitor(state)) {
+    twist.zap = { x: combat.player.x, y: combat.player.y, ticks: 12 };
+    publishRunFeedback(state, 'ZAP! Too close to the rod.');
+  }
+}
+
+/** Pawn Palace: stand at the counter to sell half a heart, once a visit, never the last of it. */
+function hockAHeart(state: MvpRunState, twist: StoreTwistState): void {
+  const player = state.room.combat.player;
+  if (twist.hocked || !within(player, PAWN_COUNTER) || player.health <= 2) {
+    twist.hockTicks = 0;
+    return;
+  }
+  twist.hockTicks += 1;
+  if (twist.hockTicks < HOCK_TICKS) return;
+  twist.hocked = true;
+  player.health -= 1;
+  state.cash += HOCK_PRICE;
+  state.inventory = { ...state.inventory, cash: state.cash };
+  publishRunFeedback(state, `Hocked half a heart for $${HOCK_PRICE}. No refunds.`);
 }

@@ -1621,3 +1621,16 @@ before firing, tightens the allowance from 48 to 12 units, and passes in the
 ## 2026-09-30 — Prop-pack archive verification
 
 Archive checks verified 19 native PNGs with binary transparency and at most 32 opaque colors; 18 are within the supplied shared palette. PNGs and nine editable Aseprite masters were copied byte-for-byte from reviewed local deliverables. Both ZIP CRC checks and 64 Markdown link checks passed. See [publication-verification.json](docs/art/prop-packs/2026-09-30/publication-verification.json) and [SHA256SUMS](docs/art/prop-packs/2026-09-30/SHA256SUMS). No game behavior changed, so game tests and a browser playtest were not run for this archive-only change.
+
+## Round 55 - floor-exclusive stores (2026-10-01, cloud session)
+
+- New `tests/unit/floor-stores.test.ts` failed first (no `FLOOR_STORE_IDS`), then passed.
+- `npx vitest run`: 125 files, 1178 tests pass. `npm run build`: passes.
+- Not run: Playwright browser gate; nothing looked at on screen.
+- Shopfronts redrawn with Retro Diffusion (6 images, $0.36); 1178 tests and build pass again.
+- Round 55 twists: `tests/unit/floor-store-twists.test.ts` failed first (no exports, placeholder hints), then 8/8 pass.
+  `npx vitest run`: 126 files, 1186 tests pass. `npm run build`: passes. Browser gate below.
+- Browser gate (cloud, Chromium at /opt/pw-browsers): 78/82 passed first run. Two failures were my
+  own parallel run clobbering `test-results/`; rerun alone they pass, as does the 550 shutter test.
+  `offers are identical for one seed` (five launches) took 27-30 s on both `main` and this branch
+  against the 30 s default; it now sets a 60 s timeout like the other multi-launch tests.

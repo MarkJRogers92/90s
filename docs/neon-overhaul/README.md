@@ -1383,3 +1383,35 @@ Three small items from the 2026-10-01 playtest and the art backlog.
   best of three: a lion-template candidate lost its bow tie, a third had no
   legs): hunched, snarling, claws out, collar and bow tie kept. Walk on three
   directions; death by `quadruped_death.py` as before.
+
+## Round 55 - floor-exclusive stores
+
+Playtest 2026-10-01: going upstairs felt like floor 1 again. Floors 2-4 now each
+open one of their own two stores in `storefront_a` (`FLOOR_STORE_IDS` in
+`wing/templates.ts`), first and boss wings alike; districts still override.
+Floor 1 and the regular 11-store pool draw exactly as before: the pick uses its
+own rng (`FLOOR_STORE_SALT`), so no other draw moves.
+
+| Floor | Stores |
+|---|---|
+| 2 | Shade Station, Page Turner Books |
+| 3 | Pretzel Pit, Frosty Freeze |
+| 4 | Antenna Annex, Pawn Palace |
+
+- Stock reuses existing items (`STORE_STOCK`); six new signature pairs keep
+  every store at three or more.
+- **Art:** the six shopfronts are Retro Diffusion `rd_plus__default` (288x160,
+  blank sign band, $0.36 for the set), sources in `docs/art/neon-overhaul/retrodiffusion/`.
+- **Twists** (`storeTwists.ts`, tuning knobs are the exported constants):
+  - Shade Station: a sun-glare band sweeps west to east (`GLARE_SWEEP_TICKS`)
+    and blinds guards in it; the janitor wears shades.
+  - Page Turner Books: the alarm runs `LIBRARY_ALARM_BONUS` (45) ticks longer.
+  - Pretzel Pit: mustard spills halve the janitor's steps (`MUSTARD_SLOW`) and
+    make guards sticky.
+  - Frosty Freeze: the machine hums for 1 s, then a cold snap freezes the
+    janitor (0.67 s) and guards (1.5 s) within `COLD_SNAP_RADIUS`.
+  - Antenna Annex: every `ROD_ZAP_TICKS` the rod hits the nearest guard in range
+    for `ROD_DAMAGE`, and the janitor if within `ROD_TOO_CLOSE`.
+  - Pawn Palace: stand at the counter 1 s to sell half a heart for
+    `HOCK_PRICE` ($6), once a visit, never below one heart.
+  Not yet seen in play.

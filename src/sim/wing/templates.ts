@@ -7,6 +7,7 @@
  */
 import type { Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
+import type { FloorNumber } from './floorSpecs';
 import type { WingRoomRole } from './types';
 import { ALL_ROSTER, STORE_STOCK } from '../items/storeRoster';
 
@@ -460,8 +461,28 @@ export const DISTRICT_STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
   themedStore('cocoa-hut', 'Cocoa Hut'),
 ];
 
+/**
+ * Round 55: the floor-exclusive stores. Floors 2-4 each open one of their own
+ * two in storefront_a (wing/generateWing.ts); floor 1 and the regular pool
+ * above never change. Like the district stores they stay out of STORE_TEMPLATES.
+ */
+export const FLOOR_STORE_IDS: Readonly<Partial<Record<FloorNumber, readonly [string, string]>>> = {
+  2: ['shade-station', 'page-turner'],
+  3: ['pretzel-pit', 'frosty-freeze'],
+  4: ['antenna-annex', 'pawn-palace'],
+};
+
+export const FLOOR_STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
+  themedStore('shade-station', 'Shade Station'),
+  themedStore('page-turner', 'Page Turner Books'),
+  themedStore('pretzel-pit', 'Pretzel Pit'),
+  themedStore('frosty-freeze', 'Frosty Freeze'),
+  themedStore('antenna-annex', 'Antenna Annex'),
+  themedStore('pawn-palace', 'Pawn Palace'),
+];
+
 /** Every store that can open anywhere, for lookups by template id. */
-export const ALL_STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [...STORE_TEMPLATES, ...DISTRICT_STORE_TEMPLATES];
+export const ALL_STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [...STORE_TEMPLATES, ...DISTRICT_STORE_TEMPLATES, ...FLOOR_STORE_TEMPLATES];
 
 export function storeTemplate(id: string): AuthoredStoreTemplate | undefined {
   return ALL_STORE_TEMPLATES.find((template) => template.id === id);

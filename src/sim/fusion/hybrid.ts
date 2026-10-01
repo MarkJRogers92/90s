@@ -242,6 +242,13 @@ const AUTHORED_SIGNATURES: Readonly<Record<string, string>> = {
   'cocoa_thermos+marshmallow_shooter': 'Hot Cocoa',
   'cocoa_thermos+slushie_cup': 'Hot and Cold',
   'marshmallow_shooter+whipped_cream': "S'mores",
+  // Round 55: the floor-exclusive stores' third pairs.
+  'mixtape+walkman': 'Road Trip',
+  'duct_tape+staple_gun': 'Bound Edition',
+  'gel_pens+staple_gun': 'Paper Cut',
+  'rc_blimp_remote+satellite_dish': 'Eye in the Sky',
+  'car_battery+jumper_cables': 'Jump Start',
+  'aluminum_bat+golf_club': 'Double Header',
 };
 
 /** Keyed by `pairKey`, so a pair authored in either order still matches. */
