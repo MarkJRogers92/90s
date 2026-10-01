@@ -73,7 +73,9 @@ export type AudioCue =
   | 'record_fling'
   | 'squawk'
   | 'decoy_burst'
-  | 'projector';
+  | 'projector'
+  | 'secret_open'
+  | 'secret_won';
 
 /**
  * The subset of run state a cue decision depends on.
@@ -128,6 +130,8 @@ export type AudioSnapshot = {
   readonly decoy: boolean;
   readonly bursts: number;
   readonly beams: number;
+  /** The secret back room's phase, or null outside it. */
+  readonly secretPhase: 'fight' | 'won' | null;
 };
 
 export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
@@ -185,6 +189,7 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
     decoy: (combat.hero?.decoy ?? null) !== null,
     bursts: combat.hero?.bursts.length ?? 0,
     beams: combat.hero?.beams.length ?? 0,
+    secretPhase: state.room.secret?.phase ?? null,
   };
 }
 
@@ -341,6 +346,8 @@ export function deriveAudioCues(
   if (current.bursts > previous.bursts) cues.push('decoy_burst');
   if (current.decoy && !previous.decoy) cues.push('squawk');
   if (current.beams > previous.beams) cues.push('projector');
+  if (current.secretPhase === 'fight' && previous.secretPhase === null) cues.push('secret_open');
+  if (current.secretPhase === 'won' && previous.secretPhase === 'fight') cues.push('secret_won');
 
   // Entering a room announces itself the way a dying mall would.
   if (current.roomIndex !== previous.roomIndex) {

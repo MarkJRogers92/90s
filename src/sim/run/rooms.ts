@@ -79,6 +79,11 @@ export const WALKER_CHANCE = 0.4;
 export const WALKER_TOP_FLOOR = 2;
 
 /** `healthScale` toughens a floor's authored monsters (see FloorSpec.enemyHealthScale). */
+/** One monster for a wave outside the wing's authored spawns (the secret back room, round 53). */
+export function spawnWaveMonster(spawn: WingEnemySpawn, id: number, healthScale = 1): EnemyState {
+  return spawnEnemy(spawn, id, false, healthScale);
+}
+
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean, healthScale = 1): EnemyState {
   const stats = SPAWN_STATS[spawn.kind];
   const health = Math.round(stats.health * healthScale) * (elite ? ELITE_HEALTH_MULTIPLIER : 1);

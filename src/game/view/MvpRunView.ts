@@ -17,7 +17,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { wingEventFor } from '../../sim/run/wingEvents';
 import { sprinklerStreaks } from './sprinklerRain';
-import { STORE_ENTRANCE_HALF_WIDTH, activeStore, roomStores, storeEntrance } from '../../sim/run/storeInterior';
+import { INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_HALF_WIDTH, activeStore, roomStores, storeEntrance } from '../../sim/run/storeInterior';
 import {
   ARCADE_CABINET,
   ARCADE_PLAY_COST,
@@ -44,6 +44,7 @@ import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
 import { PROP_TEXTURES } from '../presentation/rooms/roomDressing';
 import { HeroPropView } from './HeroPropView';
+import { SECRET_MACHINE, secretMachineHere } from '../../sim/run/secretRoom';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -221,7 +222,8 @@ export class MvpRunView {
     const inside = activeStore(state);
     if (inside) {
       this.drawStore(state, inside.templateId);
-    } else {
+    } else if (!state.room.interior) {
+      // Not in the back room (round 53), which is inside but no store.
       roomStores(room).forEach((_, index) => this.drawStoreEntrance(state, index));
     }
     // Every frame, so a store's carts and labels go away with the store.
@@ -764,6 +766,7 @@ export class MvpRunView {
     }
     this.drawThemedTwist(state, twist);
     this.drawDistrictTwist(state, twist);
+    this.drawSecret(state);
     if (twist?.storeId === 'cinema-snacks') {
       // Butter: greasy yellow sheen streaks across the floor, drawn above the
       // lightmap so the room's darkness does not swallow it.
@@ -778,6 +781,46 @@ export class MvpRunView {
   }
 
   /** A twist prop image, kept by id and dropped once a frame stops drawing it. */
+  /**
+   * Round 53: the suspicious vending machine (a cola machine that flickers
+   * green now and then), and in the back room the countdown, the sealed
+   * grille over the passage, and the way out once it is won.
+   */
+  private drawSecret(state: MvpRunState): void {
+    const shown = new Set<string>();
+    const effects = this.effectGraphics;
+    if (secretMachineHere(state)) {
+      const m = SECRET_MACHINE;
+      const glitch = (state.tick % 97) < 7 || (state.tick % 151) < 4;
+      this.twistProp('secret-machine', PROP_TEXTURES.sodaMachine, m.x, m.y + 30, 0.9)?.setTint(glitch ? 0x8affb0 : 0xffffff);
+      this.openingConcourse?.addLight({ x: m.x, y: m.y, radius: 70, color: glitch ? 0x6aff8a : 0xff6a6a, intensity: glitch ? 0.9 : 0.45 });
+      const player = state.room.combat.player;
+      if (Math.hypot(player.x - m.x, player.y - m.y) < 160) {
+        this.setLabel('secret-hint', '?', m.x - 4, m.y - 40 + Math.sin(state.tick / 8) * 3);
+        shown.add('secret-hint');
+      }
+    }
+    const secret = state.room.secret;
+    if (secret) {
+      const exit = INTERIOR_EXIT;
+      if (secret.phase === 'fight') {
+        const seconds = Math.ceil(secret.ticksLeft / 60);
+        this.setLabel('secret-timer', `SURVIVE ${seconds}`, 480 - 40, INTERIOR_BOUNDS.y + 170);
+        shown.add('secret-timer');
+        // The passage is grilled shut until the clock runs out.
+        effects.fillStyle(0x4a5560, 0.95).fillRect(exit.x, exit.y - 30, exit.width, 34);
+        for (let y = exit.y - 28; y < exit.y + 4; y += 5) effects.fillStyle(0x9aa8b4, 0.9).fillRect(exit.x, y, exit.width, 2);
+        const urgent = seconds <= 5 && state.tick % 30 < 15;
+        this.openingConcourse?.addLight({ x: 480, y: INTERIOR_BOUNDS.y + 90, radius: 200, color: 0xff3a3a, intensity: urgent ? 0.6 : 0.25 });
+      } else {
+        this.setLabel('secret-timer', 'GRAB IT AND GO', 480 - 56, INTERIOR_BOUNDS.y + 170);
+        shown.add('secret-timer');
+        this.drawEscapeChevrons(state, exit, effects);
+      }
+    }
+    for (const id of ['secret-hint', 'secret-timer']) if (!shown.has(id)) this.clearLabel(id);
+  }
+
   private twistProp(id: string, texture: { readonly key: string }, x: number, y: number, scale: number, flipX = false): Phaser.GameObjects.Image | null {
     this.usedTwistImages.add(id);
     let image = this.twistImages.get(id);
@@ -2118,7 +2161,8 @@ export class MvpRunView {
 
   private pruneLabels(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
-    const keep = new Set<string>(['bench']);
+    // The back room's labels (round 53) come and go in drawSecret.
+    const keep = new Set<string>(['bench', 'secret-hint', 'secret-timer']);
     if (state.carrier !== null) {
       keep.add('carrier');
     }

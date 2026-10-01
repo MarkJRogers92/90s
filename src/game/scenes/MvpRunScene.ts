@@ -11,6 +11,7 @@
 import { wingEventFor } from '../../sim/run/wingEvents';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { HERO_FUSIONS } from '../../sim/fusion/heroes';
+import { SECRET_MACHINE, enterSecretRoom, secretFor } from '../../sim/run/secretRoom';
 import { propWalls } from '../../sim/combat/props';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { isHybridPair } from '../../sim/fusion/hybrid';
@@ -1360,6 +1361,23 @@ export class MvpRunScene extends Phaser.Scene {
         // Tough monsters and a janitor who can take it, so the moves can be watched.
         run.room.combat.player.health = 99;
         for (const enemy of run.room.combat.enemies) enemy.health = 200;
+        return run;
+      }
+    }
+    if (fixture === 'mvp-secret') {
+      // Round 53: the first night with a secret, at its machine (`&inside=1`: already through it).
+      for (let seed = 1; seed < 200; seed += 1) {
+        const run = createMvpRun(seed);
+        const secret = secretFor(run.wing);
+        if (!secret) continue;
+        while (run.roomIndex < secret.roomIndex) {
+          run.room.combat.enemies = [];
+          tickMvpRun(run, { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(run, 'east').accepted) break;
+        }
+        run.room.combat.player.x = SECRET_MACHINE.x;
+        run.room.combat.player.y = SECRET_MACHINE.y + 40;
+        if (new URLSearchParams(window.location.search).get('inside') === '1') enterSecretRoom(run);
         return run;
       }
     }

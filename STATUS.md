@@ -7,6 +7,11 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 53b (2026-10-01): the secret back room. About three nights in five,
+a suspicious vending machine stands on the first storefront concourse. E
+opens a service passage into a sealed back room: last 20 seconds of the
+wing's own monsters in waves and a rare item and $15 drop. One try a wing.
+
 Round 53 (2026-10-01): hero fusions and mall props (from the outside
 review's ideas). Three signatures have a move of their own: Greatest Hits
 (records orbit you; the 4th attack flings them), Comedy Hour (a decoy

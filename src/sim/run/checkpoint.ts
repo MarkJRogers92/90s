@@ -68,6 +68,8 @@ export type MvpCheckpoint = {
   readonly perks?: ShiftPerks;
   /** Round 52: the free samples had this wing; absent means none (and on every older save). */
   readonly samplesTaken?: readonly string[];
+  /** Round 53: the secret machines opened this wing; absent means none. */
+  readonly secretsDone?: readonly string[];
 };
 
 export type CheckpointParseResult =
@@ -133,6 +135,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
     carried: state.carried.map((theft) => ({ ...theft })),
     ...(hasPerks(state.perks) ? { perks: { ...state.perks } } : {}),
     ...(state.samplesTaken.length > 0 ? { samplesTaken: [...state.samplesTaken] } : {}),
+    ...(state.secretsDone.length > 0 ? { secretsDone: [...state.secretsDone] } : {}),
   };
 }
 
@@ -288,6 +291,14 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     samplesTaken = [...new Set(value.samplesTaken as string[])];
   }
 
+  let secretsDone: string[] = [];
+  if (value.secretsDone !== undefined) {
+    if (!Array.isArray(value.secretsDone) || !value.secretsDone.every((entry) => typeof entry === 'string' && /^\d+$/.test(entry))) {
+      return fail('Checkpoint secretsDone must be a list of room indexes.');
+    }
+    secretsDone = [...new Set(value.secretsDone as string[])];
+  }
+
   let perks: ShiftPerks = NO_PERKS;
   if (value.perks !== undefined) {
     if (!isRecord(value.perks)) return fail('Checkpoint perks must be an object.');
@@ -422,6 +433,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
       carried: carriedResult.carried,
       ...(hasPerks(perks) ? { perks } : {}),
       ...(samplesTaken.length > 0 ? { samplesTaken } : {}),
+      ...(secretsDone.length > 0 ? { secretsDone } : {}),
     },
   };
 }
@@ -492,6 +504,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     stats: createRunStats(),
     perks: sanitizePerks(checkpoint.perks),
     samplesTaken: [...(checkpoint.samplesTaken ?? [])],
+    secretsDone: [...(checkpoint.secretsDone ?? [])],
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   refreshRunLoadout(state);

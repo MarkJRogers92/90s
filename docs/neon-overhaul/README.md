@@ -1275,6 +1275,25 @@ music. Boss wings never change, and regular wings draw exactly as before.
   mini-boss), its stores and stock, a twist each, a monster update, a boss
   config, then the game tables tsc lists (sprites, HUD, PA, looks, music).
 
+## Round 53b: the secret back room
+
+- `sim/run/secretRoom.ts`: `secretFor(wing)` (seed-derived, `SECRET_CHANCE`
+  0.6) puts a machine at `SECRET_MACHINE` on the first peaceful storefront,
+  with a rare prize. `nearSecretMachine` adds a `secret` interaction; E runs
+  `enterSecretRoom`, which marks it spent (`secretsDone`, checkpointed and
+  optional) and makes the room an interior with `SECRET_STORE_INDEX` (9),
+  which no store has, so `activeStore` stays null and store rules sleep.
+- `updateSecretRoom` (after the store alarm each tick): a wave of
+  `SECRET_WAVE_SIZE` monsters of the wing's own kinds every
+  `SECRET_WAVE_TICKS`, at least 160 px off; at `SECRET_TICKS` (20 s) they
+  vanish, the exit wall lifts, the prize drops and `SECRET_CASH` pays; out
+  the passage is `leaveSecretRoom`.
+- View: `roomDressing.backRoom()` (concrete, crates, lockers, cage, EMPLOYEES
+  ONLY), `MvpRunView.drawSecret` (the flickering machine, `?`, countdown,
+  grille, chevrons out), HUD objective and title card, `secret_open` and
+  `secret_won` sounds, `secretPhase` in the debug snapshot. Fixture:
+  `?fixture=mvp-secret` (`&inside=1`).
+
 ## Round 53: hero fusions and mall props
 
 - **Hero fusions** (`sim/fusion/heroPairs.ts`, `heroes.ts`; behaviour in

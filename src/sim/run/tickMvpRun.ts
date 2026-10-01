@@ -62,6 +62,7 @@ import {
   storeDefinitionOf,
 } from './economy';
 import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
+import { enterSecretRoom, nearSecretMachine, updateSecretRoom } from './secretRoom';
 import { layLow, wantedStars } from './wanted';
 import { updateStalker } from './stalker';
 import { nearArcadeCabinet, playArcadeCabinet, updateStoreTwist } from './storeTwists';
@@ -205,6 +206,10 @@ export function nearestMvpInteraction(state: MvpRunState): MvpInteraction {
     });
   }
 
+  if (nearSecretMachine(state)) {
+    candidates.push({ distance: 0, key: 'secret', interaction: { kind: 'secret', label: 'A suspicious vending machine' } });
+  }
+
   if (nearArcadeCabinet(state)) {
     candidates.push({ distance: 0, key: 'cabinet', interaction: { kind: 'cabinet', label: 'Arcade cabinet' } });
   }
@@ -252,6 +257,8 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
       return enterStore(state, interaction.storeIndex);
     case 'cabinet':
       return playArcadeCabinet(state);
+    case 'secret':
+      return enterSecretRoom(state);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }
@@ -396,6 +403,7 @@ function evaluateStoreBoundary(state: MvpRunState, previousPosition: Vec2): void
     }
   }
   updateStoreAlarm(state);
+  updateSecretRoom(state);
 }
 
 function evaluateRoomClear(state: MvpRunState): void {

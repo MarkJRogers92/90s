@@ -1,5 +1,21 @@
 # Test evidence
 
+## 2026-10-01 — round 53b: the secret back room
+
+- New `tests/unit/secret-room.test.ts` (6), failing first on the missing
+  module: placement (~60% of wings, a peaceful storefront, deterministic),
+  entering seals the room, waves never land within 120 px, outlasting pays
+  the prize and $15 and opens the door, the machine stays spent through a
+  save (an older save loads), sounds, HUD objective and title subtitle.
+- `npx tsc --noEmit` clean; `npx vitest run` 1167 passed; build clean.
+- `PW_PORT=4191 npx playwright test --workers=2`: 80/80, with the new
+  `secret-room.spec.ts` (E at the machine opens the back room; no errors).
+- On screen (`?fixture=mvp-secret`, `&inside=1`): the machine on the West
+  Storefront, the back room (EMPLOYEES ONLY, crates, lockers, the cage),
+  THE BACK ROOM title card, SURVIVE countdown, grilled passage. First look
+  found the concourse's store chevrons drawn inside and the labels pruned
+  every frame; both fixed.
+
 ## 2026-10-01 — round 53: hero fusions and mall props
 
 - New `tests/unit/hero-fusions.test.ts` (6) and `tests/unit/mall-props.test.ts`

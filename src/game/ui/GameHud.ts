@@ -696,7 +696,7 @@ export class GameHud {
       this.titleCard?.images.forEach((image) => image.destroy());
       const room = state.wing.rooms[state.roomIndex];
       // Inside a shop the card names the shop; out on the concourse, the wing.
-      const name = (activeStore(state)?.name ?? room?.name ?? '').toUpperCase();
+      const name = state.room.secret ? 'THE BACK ROOM' : (activeStore(state)?.name ?? room?.name ?? '').toUpperCase();
       // Floor and room events announce themselves in the title card's subtitle.
       const event = roomEventFor(state, state.roomIndex);
       const { text: subtitle, color: subtitleColor } = roomTitleSubtitle(state);

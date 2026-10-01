@@ -399,6 +399,27 @@ const RECIPES: Record<AudioCue, Recipe> = {
     noise: [{ ms: 450, gain: 0.07, cutoff: 1800 }],
     minGapMs: 300,
   },
+  secret_open: {
+    // A rusty hinge giving way, then a low drone from the dark.
+    tones: [
+      { wave: 'sawtooth', from: 220, to: 340, ms: 260, gain: 0.06 },
+      { wave: 'sawtooth', from: 340, to: 180, ms: 220, gain: 0.05, atMs: 260 },
+      { wave: 'sine', from: 62, to: 58, ms: 700, gain: 0.22, atMs: 300 },
+    ],
+    noise: [{ ms: 300, gain: 0.08, cutoff: 1400 }],
+    minGapMs: 500,
+  },
+  secret_won: {
+    // Fluorescents clunking on, then a bright three-note prize sting.
+    tones: [
+      { wave: 'square', from: 120, to: 120, ms: 50, gain: 0.12 },
+      { wave: 'square', from: 784, to: 784, ms: 90, gain: 0.08, atMs: 120 },
+      { wave: 'square', from: 988, to: 988, ms: 90, gain: 0.08, atMs: 210 },
+      { wave: 'triangle', from: 1568, to: 1568, ms: 320, gain: 0.1, atMs: 300 },
+    ],
+    noise: [{ ms: 40, gain: 0.14, cutoff: 5000 }],
+    minGapMs: 500,
+  },
   conduction: {
     tones: [
       { wave: 'square', from: 600, to: 900, ms: 45, gain: 0.13 },
