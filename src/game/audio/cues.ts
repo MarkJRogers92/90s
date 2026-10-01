@@ -64,7 +64,16 @@ export type AudioCue =
   | 'room_clear'
   | 'pa_chime'
   | 'won'
-  | 'died';
+  | 'died'
+  // Round 53: the props and the hero fusions.
+  | 'cart_roll'
+  | 'soda_burst'
+  | 'rack_fall'
+  | 'record_spin'
+  | 'record_fling'
+  | 'squawk'
+  | 'decoy_burst'
+  | 'projector';
 
 /**
  * The subset of run state a cue decision depends on.
@@ -110,6 +119,15 @@ export type AudioSnapshot = {
   readonly clearedRooms: number;
   readonly checkpointKey: string;
   readonly roomIndex: number;
+  /** Round 53: props by what has happened to them, and the hero moves in play. */
+  readonly cartsRolling: number;
+  readonly sodasBroken: number;
+  readonly racksFallen: number;
+  readonly recordsOrbiting: number;
+  readonly recordsFlying: number;
+  readonly decoy: boolean;
+  readonly bursts: number;
+  readonly beams: number;
 };
 
 export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
@@ -159,6 +177,14 @@ export function createAudioSnapshot(state: MvpRunState): AudioSnapshot {
       ? `${state.checkpoint.roomIndex}:${state.checkpoint.tick}`
       : 'none',
     roomIndex: state.roomIndex,
+    cartsRolling: (combat.props ?? []).filter((prop) => prop.state === 'rolling').length,
+    sodasBroken: (combat.props ?? []).filter((prop) => prop.state === 'broken').length,
+    racksFallen: (combat.props ?? []).filter((prop) => prop.state === 'fallen').length,
+    recordsOrbiting: combat.hero?.records.filter((record) => record.mode === 'orbit').length ?? 0,
+    recordsFlying: combat.hero?.records.filter((record) => record.mode === 'flying').length ?? 0,
+    decoy: (combat.hero?.decoy ?? null) !== null,
+    bursts: combat.hero?.bursts.length ?? 0,
+    beams: combat.hero?.beams.length ?? 0,
   };
 }
 
@@ -303,6 +329,18 @@ export function deriveAudioCues(
   if (current.surfaces > previous.surfaces) {
     cues.push('splash');
   }
+
+  // Round 53: the mall fighting back, and the hero fusions' moves.
+  if (current.roomIndex === previous.roomIndex) {
+    if (current.sodasBroken > previous.sodasBroken) cues.push('soda_burst');
+    if (current.racksFallen > previous.racksFallen) cues.push('rack_fall');
+    if (current.cartsRolling > previous.cartsRolling) cues.push('cart_roll');
+  }
+  if (current.recordsFlying > previous.recordsFlying) cues.push('record_fling');
+  else if (current.recordsOrbiting > previous.recordsOrbiting) cues.push('record_spin');
+  if (current.bursts > previous.bursts) cues.push('decoy_burst');
+  if (current.decoy && !previous.decoy) cues.push('squawk');
+  if (current.beams > previous.beams) cues.push('projector');
 
   // Entering a room announces itself the way a dying mall would.
   if (current.roomIndex !== previous.roomIndex) {

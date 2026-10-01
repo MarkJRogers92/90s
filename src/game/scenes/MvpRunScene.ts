@@ -10,6 +10,11 @@
  */
 import { wingEventFor } from '../../sim/run/wingEvents';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
+import { HERO_FUSIONS } from '../../sim/fusion/heroes';
+import { propWalls } from '../../sim/combat/props';
+import { roomEventFor } from '../../sim/run/roomEvents';
+import { isHybridPair } from '../../sim/fusion/hybrid';
+import type { HybridComposite } from '../../sim/fusion/types';
 import { buildRoomCombatState } from '../../sim/run/rooms';
 import { browserCareer, discoverFusion, clockIn, type FusionDiscovery } from '../career/career';
 import { playFusionBanner } from '../ui/FusionReveal';
@@ -1321,6 +1326,40 @@ export class MvpRunScene extends Phaser.Scene {
         }
         const shop = Number(params.get('store') ?? 0);
         if (shop > 0) enterStore(run, shop - 1);
+        return run;
+      }
+    }
+    if (fixture === 'mvp-hero') {
+      // Round 53: the first food court with all three props, holding a hero
+      // fusion (`&hero=greatest_hits|comedy_hour|movie_night`).
+      const hero = HERO_FUSIONS.find((entry) => entry.id === new URLSearchParams(window.location.search).get('hero')) ?? HERO_FUSIONS[0]!;
+      for (let seed = 1; seed < 400; seed += 1) {
+        const run = createMvpRun(seed);
+        const index = run.wing.rooms.findIndex((room) => room.id === 'food_court');
+        if (wingEventFor(run.wing) !== null || roomEventFor(run, index) !== null) continue;
+        if ((buildRoomCombatState(run.wing, index, 'west', run.inventory, run.seed).props ?? []).length < 3) continue;
+        while (run.roomIndex < index) {
+          run.room.combat.enemies = [];
+          tickMvpRun(run, { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(run, 'east').accepted) break;
+        }
+        const [a, b] = hero.pair;
+        const [base, ingredient] = isHybridPair(a, b) ? [a, b] : [b, a];
+        const leaf = (id: string): InventoryLeaf => ({ kind: 'leaf', instanceId: `dev-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: run.tick });
+        const fused: HybridComposite = { kind: 'composite', instanceId: 'dev-hero', recipeId: 'hybrid', createdTick: run.tick, transactionId: 'dev-hero-fusion', primary: leaf(base), carrier: leaf(ingredient) };
+        run.inventory = { ...run.inventory, inventory: [...run.inventory.inventory, fused], selectedPrimaryInstanceId: 'dev-hero', revision: run.inventory.revision + 1 };
+        refreshRunLoadout(run);
+        // `&props=used`: the rack already down and the soda machine burst, to see them.
+        if (new URLSearchParams(window.location.search).get('props') === 'used') {
+          for (const prop of run.room.combat.props ?? []) {
+            if (prop.kind === 'rack') Object.assign(prop, { state: 'fallen', fall: { axis: 'x', sign: 1 } });
+            if (prop.kind === 'soda') prop.state = 'broken';
+          }
+          run.room.combat.walls = [...run.wing.rooms[run.roomIndex]!.walls.map((wall) => ({ ...wall })), ...propWalls(run.room.combat.props ?? [])];
+        }
+        // Tough monsters and a janitor who can take it, so the moves can be watched.
+        run.room.combat.player.health = 99;
+        for (const enemy of run.room.combat.enemies) enemy.health = 200;
         return run;
       }
     }

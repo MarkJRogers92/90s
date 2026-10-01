@@ -81,6 +81,8 @@ export type EnemyState = Vec2 & {
   /** Bargain Hunter: ticks left in a charge, and a wall-stun. */
   chargeTicks?: number;
   stunnedTicks?: number;
+  /** Round 53: scared or knocked silly by a hero fusion; does nothing until it wears off (never a boss). */
+  dazedTicks?: number;
   /** Mall Owner: slam/charge attacks finished so far (every other one charges). */
   bossAttacks?: number;
   /** Mall Owner: the phase-two Mascot Brute has been called in. */
@@ -374,4 +376,59 @@ export type RunState = {
    * (the lightning); kept for CHAIN_ARC_TICKS and never read by any rule.
    */
   chainArcs?: ChainArc[];
+  /** Round 53: carts, soda machines and racks to knock over (regular fights only). */
+  props?: MallProp[];
+  /** Round 53: a hero fusion's records, decoy and beams. Created on its first attack. */
+  hero?: HeroState;
+};
+
+export type MallPropKind = 'cart' | 'soda' | 'rack';
+
+/** A thing in the mall to knock over (round 53). */
+export type MallProp = {
+  id: number;
+  kind: MallPropKind;
+  x: number;
+  y: number;
+  /** cart: standing or rolling; soda: standing or broken; rack: standing or fallen. */
+  state: 'standing' | 'rolling' | 'broken' | 'fallen';
+  vx: number;
+  vy: number;
+  /** A rolling cart's victims this push. */
+  hit: number[];
+  /** A fallen rack: which way it went (1 or -1 along the axis), and the axis. */
+  fall?: { axis: 'x' | 'y'; sign: 1 | -1 };
+};
+
+/** Greatest Hits: a record circling the janitor, or flung out on the drop. */
+export type HeroRecord = {
+  id: number;
+  mode: 'orbit' | 'flying';
+  /** Orbit angle (radians), while orbiting. */
+  angle: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  /** Ticks left in flight. */
+  ticks: number;
+  /** Enemy id to the tick it was last cut (orbit) or hit (flight). */
+  hits: Record<number, number>;
+};
+
+/** Comedy Hour: the rubber chicken on the floor, drawing monsters in. */
+export type HeroDecoy = { x: number; y: number; ticks: number };
+
+/** Movie Night: a projector beam, kept a moment for the view. */
+export type HeroBeam = { x: number; y: number; toX: number; toY: number; ticks: number };
+
+export type HeroState = {
+  records: HeroRecord[];
+  nextRecordId: number;
+  decoy: HeroDecoy | null;
+  decoyCooldown: number;
+  /** Where the last decoy burst, for the view (ticks left to show it). */
+  bursts: { x: number; y: number; ticks: number }[];
+  beams: HeroBeam[];
+  beamCooldown: number;
 };

@@ -26,6 +26,7 @@
  * is unchanged and every save from before still resolves. The same rules
  * apply at every depth, and whatever the base already did is kept.
  */
+import { heroForPair } from './heroPairs';
 import { ITEM_CATALOG } from '../items/catalog';
 import { ALL_ROSTER } from '../items/storeRoster';
 import type {
@@ -580,6 +581,8 @@ export function hybridHighlights(baseId: string, ingredientId: string): string[]
   const limit = maxPartsFor(baseId, ingredientId);
   if (parts > 2) lines.unshift(`${parts}-ITEM FUSION${parts === limit ? ' (THE LIMIT)' : ''}`);
   if (isSignatureFusion(baseId, ingredientId)) lines.unshift('SIGNATURE: +50% DAMAGE, 20% FASTER, ROOM FOR A 5TH PART');
+  const hero = heroForPair(baseId, ingredientId);
+  if (hero) lines.unshift(`HERO: ${hero.line}`);
   return lines.slice(0, 5);
 }
 

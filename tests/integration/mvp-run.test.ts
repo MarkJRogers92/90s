@@ -1,4 +1,5 @@
 import { leaveStore, storeEntrance } from '../../src/sim/run/storeInterior';
+import { propWalls } from '../../src/sim/combat/props';
 import { describe, expect, it } from 'vitest';
 import { BOSS_MAX_HEALTH } from '../../src/sim/combat/boss';
 import { circleIntersectsRect, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../../src/sim/core/geometry';
@@ -150,7 +151,8 @@ describe('deterministic room rebuild', () => {
     const second = buildRoomCombatState(state.wing, 2, 'west', state.inventory, state.seed);
     expect(JSON.stringify(first)).toBe(JSON.stringify(second));
 
-    expect(first.walls).toEqual(room.walls);
+    // Plus the room's props (round 53): a soda machine or a rack is solid.
+    expect(first.walls).toEqual([...room.walls, ...propWalls(first.props ?? [])]);
     expect(first.projectiles).toEqual([]);
     expect(first.surfaces).toEqual([]);
     expect(first.eventQueue).toEqual([]);
@@ -275,7 +277,7 @@ describe('room transitions', () => {
     expect(state.inventory.inventory).toHaveLength(inventorySize);
     expect(state.offerStatus[offer.id]).toBe('consumed');
     expect(state.room.combat.player.health).toBe(4);
-    expect(state.room.combat.walls).toEqual(state.wing.rooms[2]!.walls);
+    expect(state.room.combat.walls).toEqual([...state.wing.rooms[2]!.walls, ...propWalls(state.room.combat.props ?? [])]);
     expect(state.room.combat.selectedPrimaryInstanceId).toBe(selectedPrimary);
     expect(state.checkpoint).toEqual({ roomIndex: 2, tick: state.tick });
 

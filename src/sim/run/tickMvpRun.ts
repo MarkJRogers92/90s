@@ -495,6 +495,9 @@ function evaluateTerminal(state: MvpRunState): void {
 }
 
 /** Applies exactly one deterministic run tick. */
+/** What the props do, said once a night (round 53). */
+export const PROPS_HINT = 'Hit the mall: carts roll, soda machines burst, racks topple.';
+
 export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   if (state.status !== 'playing') {
     return;
@@ -573,6 +576,12 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
 
   // 5. Carrier update: independent seek and bump, or fused pointer steering.
   updateRunCarrier(state, input);
+
+  // 5b. Round 53: the first fight with props says what they are for.
+  if (!state.propsHinted && (state.room.combat.props?.length ?? 0) > 0) {
+    state.propsHinted = true;
+    publishRunFeedback(state, PROPS_HINT);
+  }
 
   // 6. Combat tick, fired from the fused carrier when the run owns one.
   const previousPosition = {

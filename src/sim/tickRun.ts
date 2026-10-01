@@ -8,6 +8,8 @@ import { rememberActiveRootEventAllowance } from './effects/conduction';
 import { drainChildEvents } from './effects/events';
 import { isPlayerProjectile, updatePlayerProjectiles } from './effects/playerProjectiles';
 import { resolvePrimaryAttack } from './effects/resolveAttack';
+import { heroAttack, updateHeroes } from './combat/heroes';
+import { updateProps } from './combat/props';
 import { tickStatuses } from './effects/statuses';
 import { updateSurfaces } from './effects/surfaces';
 
@@ -50,9 +52,10 @@ export function tickRun(
       (projectile) => !isPlayerProjectile(projectile),
     );
   }
-  resolvePrimaryAttack(state, input, attackContext);
+  if (resolvePrimaryAttack(state, input, attackContext)) heroAttack(state, input);
   startDash(state, input, rules.dashCooldownTicks);
   if (!advanceDash(state)) movePlayer(state, input.moveX, input.moveY);
+  updateHeroes(state);
   updateEnemies(state);
   resolveEnemyDamage(state);
 
@@ -68,6 +71,7 @@ export function tickRun(
   state.projectiles.push(...updatePlayerProjectiles(state, stagedPlayerProjectiles));
   state.projectiles.push(...freshShots);
 
+  updateProps(state, input);
   drainChildEvents(state);
   state.enemies = state.enemies.filter((enemy) => enemy.health > 0);
 

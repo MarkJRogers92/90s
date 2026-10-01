@@ -7,6 +7,14 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 53 (2026-10-01): hero fusions and mall props (from the outside
+review's ideas). Three signatures have a move of their own: Greatest Hits
+(records orbit you; the 4th attack flings them), Comedy Hour (a decoy
+chicken pulls monsters off you, then bursts) and Movie Night (a projector
+beam that hurts and scares the aisle stiff). Most regular fights have two or
+three props: carts roll, soda machines burst into a soaking puddle, clothing
+racks topple into a low wall. See the playbook's Round 53 section.
+
 Round 52 (2026-10-01): three bugs from an outside (GPT) review. A mop hit
 could knock a guard through a closed shutter and soft-lock the lockdown
 (`moveCircle` now moves in 4 px steps); the Bench Warrant hid every item past

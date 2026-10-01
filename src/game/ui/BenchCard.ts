@@ -214,7 +214,8 @@ export class BenchCard {
       const resultColor = model.signature ? '#ffd84a' : '#6aff8a';
       const long = model.result.length > 22;
       this.label(slot++, model.result, resultColor, textX, pairY + 10, long ? 1 : 2, 0);
-      if (model.signature) this.label(slot++, 'SIGNATURE FUSION', '#ff3fc8', textX, pairY + 30, 1, 0);
+      if (model.hero) this.label(slot++, 'HERO FUSION - IT HAS A MOVE OF ITS OWN', '#ffd84a', textX, pairY + 30, 1, 0);
+      else if (model.signature) this.label(slot++, 'SIGNATURE FUSION', '#ff3fc8', textX, pairY + 30, 1, 0);
       const lines = model.recipe === 'emitter_mount'
         ? model.changes.map((change) => `${change.label}: ${change.before} > ${change.after}`)
         : model.lines;

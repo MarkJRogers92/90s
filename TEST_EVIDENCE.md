@@ -1,5 +1,24 @@
 # Test evidence
 
+## 2026-10-01 — round 53: hero fusions and mall props
+
+- New `tests/unit/hero-fusions.test.ts` (6) and `tests/unit/mall-props.test.ts`
+  (10), each seen failing first (missing modules, then missing behaviour).
+  `mvp-run` and `checkpoint` wall expectations now include prop walls.
+- `npx tsc --noEmit` clean; `npx vitest run` 1161 passed; build clean.
+- `PW_PORT=4191 npx playwright test --workers=2`: 79/79, including the new
+  `hero-props.spec.ts` (all three props in the fixture's food court; each
+  hero's move appears on the first attack; no console errors).
+- On screen (`?fixture=mvp-hero&hero=...`, `&props=used`): three records
+  orbiting, then flung for 18 on a Hanger; the projector cone and silhouette;
+  the chicken pulling a Hanger off the janitor and a Spitter aiming at it;
+  the cart, soda machine and rack lit, the rack toppled into spilled stock
+  and the machine burst. First look found the props unlit (nearly black);
+  each now carries its own light.
+- Then PixelLab prop art (soda machine, broken soda machine, clothes rack,
+  cart): on screen standing and `&props=used`; gate re-run: 1161 unit,
+  build clean, 79/79 browser.
+
 ## 2026-10-01 — round 52: review fixes (three bugs from an outside review)
 
 - New `tests/unit/review-fixes.test.ts` (4 tests), each seen failing first:
