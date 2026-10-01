@@ -92,6 +92,15 @@ export const PA_LINES = {
   wing_outage: ['POWER OUTAGE. CAMERAS ON BACKUP. PLEASE STAY CALM.'],
   wing_sprinklers: ['FIRE SUPPRESSION ACTIVE. PLEASE DO NOT TOUCH WIRES.'],
   wing_clearance: ['CLEARANCE SALE! EVERYTHING MUST GO. INCLUDING YOU.'],
+  // Round 50: the districts, on arrival and at the mini-boss's door.
+  district_holiday: ['WELCOME TO HOLIDAY VILLAGE. SANTA IS STILL HERE.'],
+  district_glamour: ['GLAMOUR ROW IS OPEN LATE. LOOK FABULOUS. OR ELSE.'],
+  district_pets: ['PET PARADISE: PLEASE DO NOT TAP ON THE GLASS.'],
+  district_rink: ['THE SKATE ARENA IS OPEN. NO ROUGHHOUSING ON THE ICE.'],
+  miniboss_holiday: ['SANTA IS TAKING ONE LAST PHOTO. SMILE.'],
+  miniboss_glamour: ['THE PORTRAIT STUDIO IS NOW BOOKING. FOREVER.'],
+  miniboss_pets: ['FEEDING TIME IN THE AVIARY. YOU ARE THE FOOD.'],
+  miniboss_rink: ['THE ICE IS BEING RESURFACED. CLEAR THE RINK.'],
   idle: [
     'THE MALL CLOSES AT 9 PM. IT IS NOW PAST MIDNIGHT.',
     'PLEASE DO NOT FEED THE MANNEQUINS.',
@@ -178,7 +187,8 @@ export class PaDirector {
     if (current.tick < previous.tick || current.floor !== previous.floor || current.seed !== previous.seed) {
       this.quietStart(current.tick);
       this.lowHealthRoom = -1;
-      // A floor event is news; it beats the welcome.
+      // A district (round 50) greets you first; a floor event is news and beats the floor's welcome.
+      if (state.wing.district && (current.floor !== previous.floor || current.seed !== previous.seed)) return this.say(`district_${state.wing.district}`, current, true);
       const wingEvent = wingEventFor(state.wing);
       if (wingEvent) return this.say(`wing_${wingEvent}`, current, true);
       const welcome = FLOOR_PA[current.floor].arrive;
@@ -191,7 +201,10 @@ export class PaDirector {
     if (current.interior && !previous.interior && current.pair) return this.say('recipe', current, true);
     if (current.roomIndex !== previous.roomIndex) {
       const room = state.wing.rooms[current.roomIndex];
-      if (room?.bossAnchor != null) return this.say(current.firstWing ? 'lockdown' : FLOOR_PA[current.floor].boss, current, true);
+      if (room?.bossAnchor != null) {
+        if (state.wing.district) return this.say(`miniboss_${state.wing.district}`, current, true);
+        return this.say(current.firstWing ? 'lockdown' : FLOOR_PA[current.floor].boss, current, true);
+      }
       const event = roomEventFor(state, current.roomIndex);
       // In an outage every room is dark: the wing's announcement said it once.
       if (event === 'blackout' && wingEventFor(state.wing) !== 'outage') return this.say('blackout', current, true);

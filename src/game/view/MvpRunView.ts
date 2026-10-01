@@ -33,6 +33,12 @@ import {
   pitchWindingUp,
   staticHides,
   type StoreTwistState,
+  BUZZER_TILES,
+  CACTUS_POTS,
+  HAIRSPRAY_ZONES,
+  SAMPLE_BOWL,
+  STUDIO_FLASH_LANE,
+  studioFlashPhase,
 } from '../../sim/run/storeTwists';
 import { alarmCue } from './alarmCues';
 import { policeWash, stalkerCue } from './stalkerCues';
@@ -73,6 +79,7 @@ import type { ConcourseAmbienceSnapshot } from './ConcourseAmbience';
 import { shouldDrawDirectAttackArc } from './visualState';
 import { TAR_PUDDLE_TICKS } from '../../sim/combat/tar';
 import type { TarPuddle } from '../../sim/model';
+import { ELF_HOP_TICKS } from '../../sim/combat/districtEnemies';
 
 type ActorFrameEvidence = {
   readonly spriteActive: boolean;
@@ -96,6 +103,13 @@ export type ActorPresentationDebugSnapshot = {
   readonly activeDeathEffectCount: number;
   readonly depthBands: { readonly tallForeground: number; readonly effect: number };
 };
+
+/** How high an elf in the air is drawn (round 50): a parabola over its leap. Presentation only. */
+function elfLift(enemy: EnemyState): number {
+  if (enemy.kind !== 'elf' || enemy.phase !== 'pursue' || (enemy.chargeTicks ?? 0) <= 0) return 0;
+  const t = 1 - (enemy.chargeTicks ?? 0) / ELF_HOP_TICKS;
+  return Math.sin(t * Math.PI) * 46;
+}
 
 export class MvpRunView {
   private readonly scene: Phaser.Scene;
@@ -254,6 +268,8 @@ export class MvpRunView {
     }
     // Tar is on the floor: the decal layer, under everyone standing in it.
     for (const puddle of state.room.combat.tar ?? []) this.drawTarPuddle(puddle, this.storeGraphics, state.tick);
+    // Glamour Row: perfume clouds hang above the floor, so they go on the effect layer.
+    for (const cloud of state.room.combat.perfume ?? []) this.drawPerfumeCloud(cloud, this.effectGraphics, state.tick);
 
     const hangerEvidence: ActorPresentationDebugSnapshot['hangers'] = [];
     this.threats.length = 0;
@@ -276,7 +292,8 @@ export class MvpRunView {
       const faced = charge ? { x: charge.aimX * 1e-3, y: charge.aimY * 1e-3 } : facing;
       const enemySnapshot: ActorSnapshot = {
         id: `enemy:${enemy.id}`, kind: enemy.kind,
-        x: enemy.x, y: enemy.y, moveX: faced.x, moveY: faced.y,
+        // An elf mid-leap is drawn up its arc; its shadow stays on the floor.
+        x: enemy.x, y: enemy.y - elfLift(enemy), moveX: faced.x, moveY: faced.y,
         attackTicks: 0, damaged: false, phase: enemy.phase,
       };
       const spawnAge = fxTick - this.firstSeen(actorScope, `enemy:${enemy.id}`, fxTick);
@@ -735,6 +752,7 @@ export class MvpRunView {
       this.clearLabel('arcade-play');
     }
     this.drawThemedTwist(state, twist);
+    this.drawDistrictTwist(state, twist);
     if (twist?.storeId === 'cinema-snacks') {
       // Butter: greasy yellow sheen streaks across the floor, drawn above the
       // lightmap so the room's darkness does not swallow it.
@@ -1102,6 +1120,124 @@ export class MvpRunView {
    * the slam ring at the authored reach, the volley's five real angles, and a
    * hanger rearing as it closes to touching range.
    */
+  /** A perfume cloud (Glamour Row): a soft pink haze with drifting sparkles, fading out. */
+  private drawPerfumeCloud(cloud: TarPuddle, graphics: Phaser.GameObjects.Graphics, tick: number): void {
+    const fade = Math.min(1, cloud.ticks / 40);
+    for (let i = 0; i < 4; i += 1) {
+      const a = tick / 40 + i * 1.7;
+      graphics.fillStyle(0xff9ad8, 0.13 * fade).fillCircle(cloud.x + Math.cos(a) * cloud.radius * 0.3, cloud.y - 8 + Math.sin(a) * cloud.radius * 0.18, cloud.radius * (0.7 + 0.08 * i));
+    }
+    graphics.lineStyle(1, 0xffc8ec, 0.35 * fade).strokeEllipse(cloud.x, cloud.y, cloud.radius * 2, cloud.radius * 1.1);
+    for (let i = 0; i < 5; i += 1) {
+      const n = (tick * 3 + i * 47 + Math.round(cloud.x)) % 120;
+      graphics.fillStyle(0xffffff, 0.6 * fade * (1 - n / 120)).fillRect(cloud.x - cloud.radius * 0.6 + ((i * 29) % (cloud.radius * 1.2)), cloud.y - n / 3, 2, 2);
+    }
+  }
+
+  /** Round 50: the district stores' twists (see storeTwists.ts). Shapes and labels; nothing here decides anything. */
+  private drawDistrictTwist(state: MvpRunState, twist: StoreTwistState | null): void {
+    const effects = this.effectGraphics;
+    const floor = this.storeGraphics;
+    const light = (x: number, y: number, radius: number, color: number, intensity: number): void =>
+      this.openingConcourse?.addLight({ x, y, radius, color, intensity });
+    const labels = ['twist-sample', 'twist-flash', 'twist-parrot', 'twist-skates', 'twist-punch'];
+    const shown = new Set<string>();
+    const label = (key: string, text: string, x: number, y: number): void => {
+      this.setLabel(key, text, x, y);
+      shown.add(key);
+    };
+    switch (twist?.storeId) {
+      case 'candy-cauldron': {
+        const b = SAMPLE_BOWL;
+        this.twistProp('bowl', PROP_TEXTURES.gumballStand, b.x, b.y + 10, 1.2);
+        floor.lineStyle(2, twist.sampleUsed ? 0x6a5a6a : 0xff6ad8, twist.sampleUsed ? 0.35 : 0.6 + 0.3 * Math.sin(state.tick / 10)).strokeEllipse(b.x, b.y + 6, b.radius * 2.4, b.radius);
+        if (!twist.sampleUsed) label('twist-sample', 'FREE SAMPLE', b.x - 50, b.y - 90);
+        light(b.x, b.y - 30, 60, 0xff6ad8, twist.sampleUsed ? 0.3 : 0.7);
+        break;
+      }
+      case 'novelty-nook':
+        BUZZER_TILES.forEach((tile, index) => {
+          const ready = (twist.buzzerCharge[index] ?? 0) === 0;
+          const zap = !ready && (twist.buzzerCharge[index] ?? 0) > 100;
+          floor.fillStyle(ready ? 0xffd84a : 0x5a4a2a, ready ? 0.35 : 0.2).fillEllipse(tile.x, tile.y, tile.radius * 2.2, tile.radius);
+          floor.lineStyle(2, ready ? 0xffd84a : 0x8a7a4a, ready ? 0.8 : 0.4).strokeEllipse(tile.x, tile.y, tile.radius * 2.2, tile.radius);
+          if (zap) {
+            // A crackle over the tile just after it went off.
+            for (let i = 0; i < 4; i += 1) {
+              const a = (state.tick * 0.7 + i * 1.6) % (Math.PI * 2);
+              effects.lineStyle(2, 0xfff6a0, 0.9).lineBetween(tile.x, tile.y - 20, tile.x + Math.cos(a) * 26, tile.y - 20 + Math.sin(a) * 14);
+            }
+            light(tile.x, tile.y - 20, 50, 0xfff6a0, 0.9);
+          }
+        });
+        light(480, 120, 260, 0x9a4aff, 0.5);
+        break;
+      case 'glam-snaps': {
+        const lane = STUDIO_FLASH_LANE;
+        const phase = studioFlashPhase(twist);
+        // The umbrella flash on its stand at the west wall.
+        effects.fillStyle(0xf4f0ff, 0.9).fillTriangle(lane.x + 10, lane.y - 30, lane.x + 46, lane.y - 50, lane.x + 46, lane.y - 10);
+        effects.lineStyle(2, 0x2a2a3a, 1).lineBetween(lane.x + 28, lane.y - 30, lane.x + 28, lane.y + lane.height);
+        if (phase === 'warn') {
+          const pulse = 0.1 + 0.1 * Math.sin(state.tick / 3);
+          effects.fillStyle(0xffffff, pulse).fillRect(lane.x, lane.y, lane.width, lane.height);
+          light(lane.x + 40, lane.y - 30, 70, 0xffffff, 0.9);
+          label('twist-flash', 'SMILE!', lane.x + 60, lane.y - 70);
+        } else if (phase === 'pop') {
+          // The pop itself: a white wash over the lane (soft when flashing is reduced).
+          effects.fillStyle(0xffffff, flashAllowed(gameSettings().get()) ? 0.7 : 0.25).fillRect(lane.x, lane.y, lane.width, lane.height);
+          light(lane.x + lane.width / 2, lane.y + lane.height / 2, 300, 0xffffff, 1);
+        }
+        if (twist.dazzleTicks > 0) {
+          const player = state.room.combat.player;
+          for (let i = 0; i < 3; i += 1) {
+            const a = state.tick / 6 + (i * Math.PI * 2) / 3;
+            effects.fillStyle(0xfff6a0, 1).fillCircle(player.x + Math.cos(a) * 18, player.y - 52 + Math.sin(a) * 5, 2.5);
+          }
+        }
+        break;
+      }
+      case 'hair-affair':
+        HAIRSPRAY_ZONES.forEach((zone, index) => {
+          for (let i = 0; i < 6; i += 1) {
+            const drift = Math.sin(state.tick / 50 + i + index) * 10;
+            effects.fillStyle(0xd8e8ff, 0.09).fillEllipse(zone.x + zone.width * ((i + 0.5) / 6) + drift, zone.y + zone.height / 2 + ((i * 13) % 20) - 10, zone.width * 0.45, zone.height * 0.7);
+          }
+          floor.lineStyle(1, 0xb8c8ff, 0.3).strokeRect(zone.x, zone.y, zone.width, zone.height);
+        });
+        break;
+      case 'pet-palace':
+        // The parrot on its perch by the door: one beady eye on the shelves.
+        effects.lineStyle(2, 0x6a4a2a, 1).lineBetween(130, 300, 130, 350).lineBetween(110, 300, 150, 300);
+        effects.fillStyle(0x3aff6a, 1).fillEllipse(130, 286, 18, 24);
+        effects.fillStyle(0xff3a3a, 1).fillCircle(130, 274, 6);
+        effects.fillStyle(0xffd84a, 1).fillTriangle(134, 272, 142, 275, 134, 278);
+        if (state.alarm !== null) label('twist-parrot', 'SQUAWK! THIEF!', 70, 230);
+        break;
+      case 'green-thumb':
+        CACTUS_POTS.forEach((pot) => {
+          floor.fillStyle(0xb85a2a, 1).fillRect(pot.x - 12, pot.y - 4, 24, 14);
+          effects.fillStyle(0x2a8a3a, 1).fillRoundedRect(pot.x - 7, pot.y - 40, 14, 38, 6);
+          effects.fillStyle(0x2a8a3a, 1).fillRoundedRect(pot.x - 17, pot.y - 30, 8, 16, 4).fillRoundedRect(pot.x + 9, pot.y - 34, 8, 14, 4);
+          for (let i = 0; i < 6; i += 1) effects.fillStyle(0xf0f0c0, 1).fillRect(pot.x - 6 + ((i * 5) % 13), pot.y - 36 + i * 5, 1, 1);
+        });
+        break;
+      case 'skate-shack': {
+        const player = state.room.combat.player;
+        // Skates on: blades under the janitor and a cold sheen on the floor.
+        effects.lineStyle(2, 0xd8f0ff, 0.9).lineBetween(player.x - 10, player.y + 4, player.x - 2, player.y + 4).lineBetween(player.x + 2, player.y + 4, player.x + 10, player.y + 4);
+        label('twist-skates', 'SKATES ON', 60, 330);
+        break;
+      }
+      case 'cocoa-hut':
+        label('twist-punch', twist.purchases % 2 === 1 ? 'NEXT ONE FREE!' : `PUNCH CARD ${twist.purchases % 2}/2`, 60, 330);
+        break;
+      default:
+        break;
+    }
+    for (const key of labels) if (!shown.has(key)) this.clearLabel(key);
+  }
+
   /** A tar puddle on the Roof: glossy black, hot at the rim while fresh, fading as it dries. */
   private drawTarPuddle(puddle: TarPuddle, graphics: Phaser.GameObjects.Graphics, tick: number): void {
     const heat = Math.min(1, puddle.ticks / TAR_PUDDLE_TICKS);

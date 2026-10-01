@@ -38,6 +38,10 @@ const PORTRAIT_SHEETS: Readonly<Record<BossKind, string>> = {
   manager: ENEMY_TEXTURE_KEYS.managerIdle,
   owner: ENEMY_TEXTURE_KEYS.ownerIdle,
   developer: ENEMY_TEXTURE_KEYS.developerIdle,
+  santa: ENEMY_TEXTURE_KEYS.santaIdle,
+  glamour_queen: ENEMY_TEXTURE_KEYS.glamourQueenIdle,
+  whiskers: ENEMY_TEXTURE_KEYS.whiskersIdle,
+  zamboni: ENEMY_TEXTURE_KEYS.zamboniIdle,
 };
 
 export class BossIntro {

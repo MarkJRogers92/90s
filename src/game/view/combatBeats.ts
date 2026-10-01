@@ -23,6 +23,8 @@ import { STATIC_BURST_RADIUS, STATIC_TELEGRAPH_TICKS } from '../../sim/combat/st
 import { SHOPPER_CHARGE_TICKS, SHOPPER_TELEGRAPH_TICKS } from '../../sim/combat/shopper';
 import { MASCOT_CHARGE_SPEED_PER_TICK, MASCOT_CHARGE_TICKS, MASCOT_TELEGRAPH_TICKS } from '../../sim/combat/mascot';
 import { ROOFER_LOB_TICKS, TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
+import { ELF_CROUCH_TICKS, ELF_HOP_TICKS, ELF_STOMP_RADIUS, GOON_WINDUP_TICKS, POODLE_CROUCH_TICKS, POODLE_DASH_SPEED, POODLE_DASH_TICKS, SPRITZ_WINDUP_TICKS } from '../../sim/combat/districtEnemies';
+import { PERFUME_CLOUD_RADIUS } from '../../sim/combat/perfume';
 
 /** How far a Bargain Hunter's charge carries: the lane the renderer draws. */
 const SHOPPER_CHARGE_REACH = SHOPPER_CHARGE_TICKS * 9;
@@ -107,6 +109,30 @@ export function enemyWindups(enemy: EnemyState, player: { readonly x: number; re
     // The bucket in the air: a ring where it will land, locked at the throw.
     return enemy.phase === 'telegraph'
       ? [{ kind: 'lob', progress: clamp01(1 - enemy.phaseTicks / ROOFER_LOB_TICKS), ...aim, targetX: enemy.lobX ?? player.x, targetY: enemy.lobY ?? player.y, reach: TAR_SPLASH_RADIUS }]
+      : [];
+  }
+  // Round 50: the district monsters, each drawn with a shape the player already knows.
+  if (enemy.kind === 'elf') {
+    // The landing ring, through the crouch and the whole leap.
+    const crouch = enemy.phase === 'telegraph';
+    const airborne = enemy.phase === 'pursue' && (enemy.chargeTicks ?? 0) > 0;
+    if (!crouch && !airborne) return [];
+    const progress = crouch ? clamp01(1 - enemy.phaseTicks / ELF_CROUCH_TICKS) * 0.6 : 0.6 + 0.4 * clamp01(1 - (enemy.chargeTicks ?? 0) / ELF_HOP_TICKS);
+    return [{ kind: 'lob', progress, ...aim, targetX: enemy.lobX ?? enemy.x, targetY: enemy.lobY ?? enemy.y, reach: ELF_STOMP_RADIUS }];
+  }
+  if (enemy.kind === 'spritzer') {
+    return enemy.phase === 'telegraph'
+      ? [{ kind: 'lob', progress: clamp01(1 - enemy.phaseTicks / SPRITZ_WINDUP_TICKS), ...aim, targetX: enemy.lobX ?? player.x, targetY: enemy.lobY ?? player.y, reach: PERFUME_CLOUD_RADIUS }]
+      : [];
+  }
+  if (enemy.kind === 'poodle') {
+    return enemy.phase === 'telegraph'
+      ? [{ kind: 'charge', progress: clamp01(1 - enemy.phaseTicks / POODLE_CROUCH_TICKS), reach: POODLE_DASH_TICKS * POODLE_DASH_SPEED, ...aim }]
+      : [];
+  }
+  if (enemy.kind === 'goon') {
+    return enemy.phase === 'telegraph'
+      ? [{ kind: 'spit', progress: clamp01(1 - enemy.phaseTicks / GOON_WINDUP_TICKS), ...aim }]
       : [];
   }
   if (enemy.kind === 'mascot') {

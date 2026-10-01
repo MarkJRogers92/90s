@@ -100,7 +100,7 @@ describe('playtest log', () => {
 
 describe('run summary', () => {
   it('reports win rate, where runs die, and what hurts', () => {
-    const room = (roomId: string, hanger: number, glob: number) => ({ roomId, name: roomId, enteredTick: 0, leftTick: 600, kills: 2, damage: { hanger, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob, slam: 0, bossShot: 0, stalker: 0, roofer: 0, walker: 0, barrage: 0, other: 0 } });
+    const room = (roomId: string, hanger: number, glob: number) => ({ roomId, name: roomId, enteredTick: 0, leftTick: 600, kills: 2, damage: { hanger, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob, slam: 0, bossShot: 0, stalker: 0, roofer: 0, walker: 0, elf: 0, perfume: 0, poodle: 0, goon: 0, barrage: 0, other: 0 } });
     const base = { version: 1, startedAt: 'x', seed: 1, ticks: 1200, reachedRoom: 3, bought: ['PARTY POPPER'], stolen: [], dashes: 4, killedBy: 'glob' } as const;
     const summary = summarizeRuns([
       { ...base, outcome: 'dead', rooms: [room('opening_concourse', 0, 0), room('food_court', 2, 4)] },
@@ -116,7 +116,7 @@ describe('run summary', () => {
   });
 
   it('keeps upstairs rooms apart from the downstairs rooms that share their ids', () => {
-    const room = { roomId: 'food_court', name: 'CINEMA LOBBY', enteredTick: 0, leftTick: 600, kills: 1, damage: { hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, walker: 0, barrage: 0, other: 0 } };
+    const room = { roomId: 'food_court', name: 'CINEMA LOBBY', enteredTick: 0, leftTick: 600, kills: 1, damage: { hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, walker: 0, elf: 0, perfume: 0, poodle: 0, goon: 0, barrage: 0, other: 0 } };
     const base = { version: 1, startedAt: 'x', seed: 1, ticks: 600, reachedRoom: 3, bought: [], stolen: [], dashes: 0, killedBy: 'other' } as const;
     const summary = summarizeRuns([
       { ...base, outcome: 'dead', floor: 2, rooms: [room] },

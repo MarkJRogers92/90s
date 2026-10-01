@@ -98,11 +98,18 @@ describe('Floor 3 HUD, PA, pink slip, kill cam', () => {
   });
 
   it('welcomes the janitor to the food court and warns of the Owner', () => {
-    const one = createMvpRun(7);
+    // A night whose Floor 3 first wing is the usual one (a district greets you itself, round 50).
+    const climb = (seed: number) => {
+      const one = createMvpRun(seed);
+      one.status = 'won';
+      const two = ascendToFloorTwo(one);
+      two.status = 'won';
+      return { one, two, top: ascend(two) };
+    };
+    const seed = Array.from({ length: 60 }, (_, i) => i + 1).find((candidate) => !climb(candidate).top.wing.district)!;
+    const { one, two } = climb(seed);
     const director = new PaDirector();
     director.observe(one);
-    one.status = 'won';
-    const two = ascendToFloorTwo(one);
     two.status = 'won';
     director.observe(two);
     const top = ascend(two);

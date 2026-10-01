@@ -11,7 +11,8 @@ export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
 ] as const;
 export type ActorDirection = (typeof ACTOR_DIRECTION_ORDER)[number];
-export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer' | 'walker' | 'lp_agent';
+export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer' | 'walker' | 'lp_agent'
+  | 'elf' | 'spritzer' | 'poodle' | 'goon' | 'santa' | 'glamour_queen' | 'whiskers' | 'zamboni';
 
 export type ActorSnapshot = {
   readonly id: string;
@@ -66,6 +67,21 @@ export function actorTextureKey(kind: ActorKind, walking: boolean): ActorTexture
 /** The Mall Walker's 92 px canvas at the Bargain Hunter's scale (76 px of 96). */
 export const WALKER_DISPLAY_SIZE = 73;
 
+/**
+ * Round 50: the district monsters (92 px PixelLab canvases) and mini-bosses
+ * (160 px), each drawn so the figure sits at the scale of the cast around it.
+ */
+export const DISTRICT_SPRITES: Readonly<Record<'elf' | 'spritzer' | 'poodle' | 'goon' | 'santa' | 'glamour_queen' | 'whiskers' | 'zamboni', { readonly prefix: string; readonly canvas: number; readonly displaySize: number; readonly ticksPerFrame: number }>> = {
+  elf: { prefix: 'elf', canvas: 92, displaySize: 70, ticksPerFrame: 3 },
+  spritzer: { prefix: 'spritzer', canvas: 92, displaySize: 73, ticksPerFrame: 4 },
+  poodle: { prefix: 'poodle', canvas: 92, displaySize: 66, ticksPerFrame: 3 },
+  goon: { prefix: 'goon', canvas: 92, displaySize: 74, ticksPerFrame: 4 },
+  santa: { prefix: 'santa', canvas: 160, displaySize: 132, ticksPerFrame: 6 },
+  glamour_queen: { prefix: 'glamour-queen', canvas: 160, displaySize: 132, ticksPerFrame: 6 },
+  whiskers: { prefix: 'whiskers', canvas: 160, displaySize: 140, ticksPerFrame: 5 },
+  zamboni: { prefix: 'zamboni', canvas: 160, displaySize: 136, ticksPerFrame: 6 },
+};
+
 export function enemySpriteSheet(
   kind: ActorKind,
   walking: boolean,
@@ -86,6 +102,17 @@ export function enemySpriteSheet(
     // Round 39: PixelLab grew these canvases (136 and 180 px), so they are drawn larger to keep the figures in scale.
     case 'roofer':
       return { idle: ENEMY_TEXTURE_KEYS.rooferIdle, walk: walking ? ENEMY_TEXTURE_KEYS.rooferWalk : null, attack: 'neon:enemy:roofer-attack', walkFrames: 6, ticksPerFrame: 5, displaySize: ROOFER_DISPLAY_SIZE };
+    case 'elf':
+    case 'spritzer':
+    case 'poodle':
+    case 'goon':
+    case 'santa':
+    case 'glamour_queen':
+    case 'whiskers':
+    case 'zamboni': {
+      const sprite = DISTRICT_SPRITES[kind];
+      return { idle: `neon:enemy:${sprite.prefix}-idle`, walk: walking ? `neon:enemy:${sprite.prefix}-walk` : null, attack: `neon:enemy:${sprite.prefix}-attack`, walkFrames: 6, ticksPerFrame: sprite.ticksPerFrame, displaySize: sprite.displaySize };
+    }
     case 'walker':
       // Round 48: a 92 px PixelLab canvas, drawn at the Bargain Hunter's scale (76 of 96).
       return { idle: ENEMY_TEXTURE_KEYS.walkerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.walkerWalk : null, attack: 'neon:enemy:walker-attack', walkFrames: 6, ticksPerFrame: 4, displaySize: WALKER_DISPLAY_SIZE };

@@ -26,8 +26,12 @@ import { wingEventFor, type WingEvent } from '../../sim/run/wingEvents';
 import type { BossKind } from '../../sim/combat/boss';
 import { TAR_PUDDLE_TICKS } from '../../sim/combat/tar';
 import { TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
+import { ELF_STOMP_RADIUS } from '../../sim/combat/districtEnemies';
+import type { DistrictId } from '../../sim/wing/districts';
+import { PERFUME_CLOUD_TICKS } from '../../sim/combat/perfume';
+import type { EnemyKind } from '../../sim/model';
 
-export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'roofer' | 'barrage' | 'walker' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'roofer' | 'barrage' | 'walker' | 'elf' | 'perfume' | 'poodle' | 'goon' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -95,6 +99,8 @@ export type RunRecord = {
   readonly part?: 1;
   /** The wing's floor event (round 47), when it had one. */
   readonly event?: WingEvent;
+  /** The district (round 50), when the wing was one. */
+  readonly district?: DistrictId;
   readonly ticks: number;
   readonly reachedRoom: number;
   readonly rooms: readonly RoomLog[];
@@ -133,7 +139,7 @@ type Snapshot = {
   readonly inside: string | null;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, barrage: 0, walker: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, barrage: 0, walker: 0, elf: 0, perfume: 0, poodle: 0, goon: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -189,6 +195,14 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
     const strikes = combat.enemies.reduce((sum, enemy) => sum + (enemy.health > 0 ? enemy.tarStrikes?.length ?? 0 : 0), 0);
     return strikes < previous.bossStrikes ? 'barrage' : 'roofer';
   }
+  // Round 50: the district monsters. A fresh perfume cloud under the janitor is a spritz.
+  const freshPerfume = (combat.perfume ?? []).some((cloud) => cloud.ticks >= PERFUME_CLOUD_TICKS - FRESH_TAR_TICKS && Math.hypot(cloud.x - p.x, cloud.y - p.y) <= cloud.radius);
+  if (freshPerfume) return 'perfume';
+  const near = (kind: EnemyKind, slack: number) => combat.enemies.some((enemy) => enemy.kind === kind && enemy.health > 0 && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + slack);
+  // An elf hurts by landing on the janitor, a poodle by its dash, a goon by a body check.
+  if (near('elf', ELF_STOMP_RADIUS)) return 'elf';
+  if (near('poodle', 6)) return 'poodle';
+  if (near('goon', 6)) return 'goon';
   const touching = combat.enemies.some(
     (enemy) => enemy.kind === 'hanger' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
   );
@@ -420,6 +434,7 @@ export class PlaytestRecorder {
       ...(state.wing.floor !== undefined ? { floor: state.wing.floor } : {}),
       ...(state.wing.part === 1 ? { part: 1 as const } : {}),
       ...(wingEventFor(state.wing) ? { event: wingEventFor(state.wing)! } : {}),
+      ...(state.wing.district ? { district: state.wing.district } : {}),
       ticks: state.tick - this.startTick,
       reachedRoom: state.roomIndex + 1,
       rooms: this.rooms.map((room) => ({ ...room, damage: { ...room.damage } })),

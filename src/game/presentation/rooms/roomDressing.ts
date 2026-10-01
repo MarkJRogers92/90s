@@ -20,6 +20,7 @@ import type { WingStoreInstance } from '../../../sim/wing/types';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
 import type { FloorNumber } from '../../../sim/wing/floorSpecs';
+import type { DistrictId } from '../../../sim/wing/districts';
 
 /* ------------------------------------------------------------------------ */
 /* Stage geometry                                                             */
@@ -60,6 +61,23 @@ export const FACADE_TEXTURES = {
   roofBillboard: { key: 'neon:facade:roof-billboard', file: 'facades/roof-billboard.png', width: 288 },
   roofTower: { key: 'neon:facade:roof-water-tower', file: 'facades/roof-water-tower.png', width: 288 },
   roofAccess: { key: 'neon:facade:roof-access', file: 'facades/roof-access.png', width: 288 },
+  // Round 50: the districts (Retro Diffusion, 288x160): the eight district shopfronts and their back walls.
+  candyCauldron: { key: 'neon:facade:candy-cauldron', file: 'facades/candy-cauldron.png', width: 288 },
+  noveltyNook: { key: 'neon:facade:novelty-nook', file: 'facades/novelty-nook.png', width: 288 },
+  glamSnaps: { key: 'neon:facade:glam-snaps', file: 'facades/glam-snaps.png', width: 288 },
+  hairAffair: { key: 'neon:facade:hair-affair', file: 'facades/hair-affair.png', width: 288 },
+  petPalace: { key: 'neon:facade:pet-palace', file: 'facades/pet-palace.png', width: 288 },
+  greenThumb: { key: 'neon:facade:green-thumb', file: 'facades/green-thumb.png', width: 288 },
+  skateShack: { key: 'neon:facade:skate-shack', file: 'facades/skate-shack.png', width: 288 },
+  cocoaHut: { key: 'neon:facade:cocoa-hut', file: 'facades/cocoa-hut.png', width: 288 },
+  santaSet: { key: 'neon:facade:santa-set', file: 'facades/santa-set.png', width: 288 },
+  holidayWindow: { key: 'neon:facade:holiday-window', file: 'facades/holiday-window.png', width: 288 },
+  perfumeCounter: { key: 'neon:facade:perfume-counter', file: 'facades/perfume-counter.png', width: 288 },
+  fittingRooms: { key: 'neon:facade:fitting-rooms', file: 'facades/fitting-rooms.png', width: 288 },
+  aquariumWall: { key: 'neon:facade:aquarium-wall', file: 'facades/aquarium-wall.png', width: 288 },
+  kennelWall: { key: 'neon:facade:kennel-wall', file: 'facades/kennel-wall.png', width: 288 },
+  rinkBoards: { key: 'neon:facade:rink-boards', file: 'facades/rink-boards.png', width: 288 },
+  zamboniGarage: { key: 'neon:facade:zamboni-garage', file: 'facades/zamboni-garage.png', width: 288 },
 } as const;
 export type FacadeId = keyof typeof FACADE_TEXTURES;
 
@@ -394,6 +412,15 @@ const STORE_LOOKS: Readonly<Record<string, StoreLook>> = {
   'spiral-records': { facade: 'music', neon: NEON.magenta, subtitle: 'MUSIC · MOVIES · MORE', floor: 'carpet', spill: 0xff9ae6, fixture: 'vhsShelf' },
   'slice-station': { facade: 'pizza', neon: NEON.orange, subtitle: 'HOT N READY', floor: 'checker', spill: 0xffd08a, fixture: 'condiments' },
   'video-world': { facade: 'video', neon: NEON.cyan, subtitle: 'BE KIND REWIND', floor: 'carpet', spill: 0xffd9a0, fixture: 'vhsShelf' },
+  // Round 50: the district stores.
+  'candy-cauldron': { facade: 'candyCauldron', neon: NEON.pink, subtitle: 'BULK CANDY BY THE POUND', floor: 'checker', spill: 0xffa8dc, fixture: 'gumballStand' },
+  'novelty-nook': { facade: 'noveltyNook', neon: NEON.violet, subtitle: 'GAGS · GIFTS · GLOW', floor: 'carpet', spill: 0xc89aff, fixture: 'gondola' },
+  'glam-snaps': { facade: 'glamSnaps', neon: NEON.magenta, subtitle: 'PORTRAITS WHILE U WAIT', floor: 'carpet', spill: 0xffd0f0, fixture: 'clothingRack' },
+  'hair-affair': { facade: 'hairAffair', neon: NEON.pink, subtitle: 'CUTS · PERMS · TEASE', floor: 'checker', spill: 0xff9ad8, fixture: 'gondola' },
+  'pet-palace': { facade: 'petPalace', neon: NEON.yellow, subtitle: 'PUPPIES · FISH · BIRDS', floor: 'linoleum', spill: 0xfff0a0, fixture: 'gondola' },
+  'green-thumb': { facade: 'greenThumb', neon: NEON.green, subtitle: 'GARDEN CENTER', floor: 'concrete', spill: 0xb8ffb0, fixture: 'palm' },
+  'skate-shack': { facade: 'skateShack', neon: NEON.cyan, subtitle: 'RENTALS · SHARPENING', floor: 'linoleum', spill: 0xc0e8ff, fixture: 'gondola' },
+  'cocoa-hut': { facade: 'cocoaHut', neon: NEON.orange, subtitle: 'HOT COCOA · PRETZELS', floor: 'checker', spill: 0xffc080, fixture: 'condiments' },
 };
 
 /** The shopfront panel a store template shows on its concourse. */
@@ -557,6 +584,15 @@ const INTERIOR_LOOKS: Readonly<Record<string, InteriorLook>> = {
   'spiral-records': { wall: ['vhsShelf'], sides: 'vhsShelf', corners: ['palm', 'photoBooth', 'bench', 'bin'], ambient: 0x4a2e52 },
   'slice-station': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'trayReturn', 'trashBank', 'drinkingFountain'], ambient: 0x5a3e2e },
   'video-world': { wall: ['vhsShelf'], sides: 'vhsShelf', corners: ['saleSign', 'bin', 'palm', 'directory'], ambient: 0x2e3e5a },
+  // Round 50: the district stores.
+  'candy-cauldron': { wall: ['gumballStand', 'condiments'], sides: 'gumballStand', corners: ['kiddieRide', 'bin', 'gumballStand', 'saleSign'], ambient: 0x5a3a52 },
+  'novelty-nook': { wall: ['gondola', 'photoBooth'], sides: 'gondola', corners: ['bunny', 'saleSign', 'clawMachine', 'bin'], ambient: 0x3a2a5a },
+  'glam-snaps': { wall: ['clothingRack', 'photoBooth'], sides: 'clothingRack', corners: ['palm', 'photoBooth', 'bench', 'directory'], ambient: 0x5a3a5a },
+  'hair-affair': { wall: ['massageChairs', 'gondola'], sides: 'gondola', corners: ['palm', 'waterCooler', 'bench', 'bin'], ambient: 0x5a3a4e },
+  'pet-palace': { wall: ['gondola', 'crates'], sides: 'gondola', corners: ['palm', 'bin', 'crates', 'waterCooler'], ambient: 0x4e4a32 },
+  'green-thumb': { wall: ['palm', 'planter'], sides: 'palm', corners: ['planter', 'palm', 'crates', 'wetFloor'], ambient: 0x2e4a32 },
+  'skate-shack': { wall: ['lockerRow', 'gondola'], sides: 'lockerRow', corners: ['bench', 'waterCooler', 'bin', 'saleSign'], ambient: 0x2e3e5a },
+  'cocoa-hut': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'bench', 'trashBank', 'pretzelCart'], ambient: 0x5a3e2e },
 };
 
 /** Draw size for a prop stood in a store: a little larger than out on the concourse. */
@@ -1111,10 +1147,71 @@ function relabel(facades: readonly DressingFacade[], words: readonly SignWords[]
   });
 }
 
-export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1): DressingPlan {
+/** One back-wall panel of a district room: [art, sign, subtitle, neon colour, window light]. */
+type DistrictPanel = readonly [FacadeId, string, string | undefined, number, number];
+type DistrictRoomLook = { readonly panels: readonly [DistrictPanel, DistrictPanel, DistrictPanel]; readonly floor?: FloorStyle; readonly ambient: number; readonly light: number };
+
+/**
+ * Round 50: each district's rooms. Only the walls, floor and light change;
+ * the room's furniture is its floor's own, so collision dressing never moves.
+ * A room without a look here (the night's Opening Concourse, the storefronts)
+ * keeps its floor's dressing under the district's name.
+ */
+const DISTRICT_LOOKS: Readonly<Record<DistrictId, Partial<Record<WingRoomDefinition['id'], DistrictRoomLook>>>> = {
+  holiday: {
+    food_court: { panels: [['holidayWindow', 'WINTER WONDERLAND', undefined, NEON.cyan, 0xc8e8ff], ['santaSet', 'PHOTOS WITH SANTA', '$9.99', NEON.red, 0xffc890], ['holidayWindow', 'TOYLAND', 'OPEN LATE', NEON.green, 0xc8ffd0]], floor: 'checker', ambient: 0x2a1a24, light: NEON.red },
+    back_hall: { panels: [['service', 'STOCKROOM', 'TOYS', NEON.green, 0xc0ffc8], ['holidayWindow', 'RETURNS', undefined, NEON.red, 0xffb0a0], ['service', 'EXIT', undefined, NEON.green, 0x90ffb0]], floor: 'concrete', ambient: 0x1a1a22, light: NEON.green },
+    security_office: { panels: [['holidayWindow', 'NORTH POLE', undefined, NEON.cyan, 0xc8e8ff], ['santaSet', "SANTA'S WORKSHOP", 'NAUGHTY LIST', NEON.red, 0xffc890], ['holidayWindow', 'NICE LIST', 'EMPTY', NEON.green, 0xc8ffd0]], floor: 'carpet', ambient: 0x2a141c, light: NEON.red },
+  },
+  glamour: {
+    service_corridor: { panels: [['perfumeCounter', 'FRAGRANCES', undefined, NEON.pink, 0xffc8e8], ['perfumeCounter', 'COSMETICS', 'FREE MAKEOVERS', NEON.magenta, 0xffd0f0], ['fittingRooms', 'NEW ARRIVALS', undefined, NEON.violet, 0xd8b8ff]], floor: 'terrazzo', ambient: 0x2a1a2a, light: NEON.pink },
+    food_court: { panels: [['perfumeCounter', 'MAKEOVERS', undefined, NEON.magenta, 0xffd0f0], ['fittingRooms', 'GLAMOUR', 'BIG HAIR SALE', NEON.pink, 0xffc8e8], ['perfumeCounter', 'LIP GLOSS', undefined, NEON.violet, 0xd8b8ff]], floor: 'terrazzo', ambient: 0x2a1626, light: NEON.magenta },
+    back_hall: { panels: [['fittingRooms', 'FITTING ROOMS', undefined, NEON.violet, 0xd8b8ff], ['fittingRooms', 'LIMIT 3 ITEMS', undefined, NEON.pink, 0xffc8e8], ['service', 'EXIT', undefined, NEON.green, 0x90ffb0]], floor: 'carpet', ambient: 0x1c1428, light: NEON.violet },
+    security_office: { panels: [['perfumeCounter', 'PORTRAITS', undefined, NEON.pink, 0xffd0f0], ['fittingRooms', 'GLAMOUR PORTRAITS', 'SIT PRETTY', NEON.magenta, 0xffc8e8], ['perfumeCounter', 'SAY CHEESE', undefined, NEON.pink, 0xffd0f0]], floor: 'carpet', ambient: 0x2a1424, light: NEON.magenta },
+  },
+  pets: {
+    service_corridor: { panels: [['aquariumWall', 'TROPICAL FISH', undefined, NEON.cyan, 0x90e8ff], ['aquariumWall', 'SALTWATER', 'DO NOT TAP', NEON.blue, 0x90c8ff], ['aquariumWall', 'GOLDFISH', '3 FOR $1', NEON.yellow, 0xfff0a0]], floor: 'linoleum', ambient: 0x142430, light: NEON.cyan },
+    food_court: { panels: [['aquariumWall', 'KOI POND', undefined, NEON.cyan, 0x90e8ff], ['kennelWall', 'PLEASE DO NOT', 'FEED THE FISH', NEON.yellow, 0xfff0a0], ['aquariumWall', 'AQUARIUM', undefined, NEON.blue, 0x90c8ff]], floor: 'linoleum', ambient: 0x142a2a, light: NEON.cyan },
+    back_hall: { panels: [['kennelWall', 'KENNELS', undefined, NEON.yellow, 0xffe0a0], ['kennelWall', 'GROOMING', 'WALK-INS', NEON.orange, 0xffc890], ['service', 'EXIT', undefined, NEON.green, 0x90ffb0]], floor: 'concrete', ambient: 0x22201a, light: NEON.yellow },
+    security_office: { panels: [['kennelWall', 'AVIARY', undefined, NEON.green, 0xc8ffb0], ['aquariumWall', 'EXOTIC BIRDS', 'AND ONE CAT', NEON.yellow, 0xfff0a0], ['kennelWall', 'STAFF ONLY', undefined, NEON.red, 0xffb0a0]], floor: 'linoleum', ambient: 0x1e2618, light: NEON.green },
+  },
+  rink: {
+    service_corridor: { panels: [['rinkBoards', 'SKATE RENTAL', 'SIZES 1-13', NEON.cyan, 0xc8e8ff], ['zamboniGarage', 'ICE TIME', '8PM - CLOSE', NEON.blue, 0xb0d0ff], ['rinkBoards', 'NO CHECKING', undefined, NEON.red, 0xffb0b0]], floor: 'linoleum', ambient: 0x18243a, light: NEON.cyan },
+    storefront_a: { panels: [['rinkBoards', 'RINKSIDE', undefined, NEON.cyan, 0xc8e8ff], ['rinkBoards', 'SNACKS', undefined, NEON.orange, 0xffc890], ['rinkBoards', 'SKATES', undefined, NEON.cyan, 0xc8e8ff]], ambient: 0x1a2438, light: NEON.cyan },
+    food_court: { panels: [['rinkBoards', 'HOME', undefined, NEON.red, 0xffb0b0], ['rinkBoards', 'PUBLIC SKATE', 'ALL AGES', NEON.cyan, 0xc8e8ff], ['rinkBoards', 'GUEST', undefined, NEON.blue, 0xb0d0ff]], floor: 'ice', ambient: 0x2a3a52, light: NEON.cyan },
+    storefront_b: { panels: [['rinkBoards', 'BLEACHERS', undefined, NEON.blue, 0xb0d0ff], ['rinkBoards', 'GO TEAM', undefined, NEON.yellow, 0xfff0a0], ['rinkBoards', 'BLEACHERS', undefined, NEON.blue, 0xb0d0ff]], ambient: 0x1a2438, light: NEON.blue },
+    back_hall: { panels: [['zamboniGarage', 'ZAMBONI', 'KEEP CLEAR', NEON.orange, 0xffc890], ['service', 'ICE PLANT', undefined, NEON.cyan, 0xc8e8ff], ['zamboniGarage', 'GARAGE 2', undefined, NEON.yellow, 0xfff0a0]], floor: 'concrete', ambient: 0x141c2a, light: NEON.blue },
+    security_office: { panels: [['rinkBoards', 'PENALTY', undefined, NEON.red, 0xffb0b0], ['rinkBoards', 'BOX', 'TWO MINUTES', NEON.red, 0xffb0b0], ['rinkBoards', 'NO FIGHTING', undefined, NEON.yellow, 0xfff0a0]], floor: 'ice', ambient: 0x2a3650, light: NEON.red },
+  },
+};
+
+/** A room of a district wing: its floor's furniture under the district's walls, floor and light. */
+function districtRoom(base: DressingPlan, room: WingRoomDefinition, district: DistrictId): DressingPlan {
+  const look = DISTRICT_LOOKS[district][room.id];
+  const named = { ...base, areaName: room.name.toUpperCase() };
+  if (!look) return named;
+  // Storefront rooms keep their shops' own fronts; only the light and floor take the district's colour.
+  if (room.store !== null) {
+    return { ...named, ambient: look.ambient, ...(look.floor ? { floor: look.floor } : {}), neonStrips: [...base.neonStrips, { x1: 20, y1: 60, x2: 940, y2: 60, color: look.light }], civilians: false };
+  }
+  const facades = facadeRow(look.panels.map(([facade, text, subtitle, color, spill]) => ({ facade, sign: sign(text, color, subtitle, subtitle ? NEON.warm : undefined, text.length > 12 ? 2 : 3), spill })));
+  return {
+    ...named,
+    ...(look.floor ? { floor: look.floor } : {}),
+    ambient: look.ambient,
+    facades,
+    lights: [...facadeSpillLights(facades), ...doorwayLights(room, look.light), ...ceilingGrid(look.light, 0.4, 150, [160, 380], [240, 480, 720])],
+    neonStrips: [{ x1: 20, y1: 60, x2: 940, y2: 60, color: look.light }],
+    civilians: false,
+  };
+}
+
+export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1, district?: DistrictId): DressingPlan {
   // A shop looks like itself on any floor.
   const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
   if (shop) return storeInterior(room, shop);
+  // The Skate Arena (round 50) is indoors under the skylight, so it starts from the mall's furniture, not the Roof's.
+  if (district) return districtRoom(district === 'rink' ? planFloorOneRoom(room) : FLOOR_DRESSING[floor](planFloorOneRoom(room), room), room, district);
   const plan = FLOOR_DRESSING[floor](planFloorOneRoom(room), room);
   // A first wing (round 45) dresses like its floor but titles each room by the wing's
   // own names, and (round 48) hangs its own signs on the same shopfronts.

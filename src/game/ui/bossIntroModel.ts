@@ -40,6 +40,15 @@ export function bossIntroCopy(kind: BossKind): BossIntroCopy {
       return { directory: "LEVEL 3 - OWNER'S SUITE", name: 'THE MALL OWNER', tagline: 'EVERYTHING YOU SEE IS MINE. INCLUDING YOU.', color: '#ff2a3a' };
     case 'manager':
       return { directory: 'LEVEL 2 - MANAGEMENT OFFICES', name: 'THE MALL MANAGER', tagline: 'THE CUSTOMER IS NEVER RIGHT.', color: '#ff2a3a' };
+    // Round 50: the district mini-bosses, each waiting in its district's Lockdown room.
+    case 'santa':
+      return { directory: "LEVEL 1 - SANTA'S WORKSHOP", name: 'MALL SANTA', tagline: "YOU'VE BEEN VERY, VERY NAUGHTY.", color: '#ff3a3a' };
+    case 'glamour_queen':
+      return { directory: 'LEVEL 2 - PORTRAIT STUDIO', name: 'THE GLAMOUR QUEEN', tagline: 'SAY CHEESE. FOR THE LAST TIME.', color: '#ff3fc8' };
+    case 'whiskers':
+      return { directory: 'LEVEL 3 - THE AVIARY', name: 'MR. WHISKERS', tagline: 'THE PET STORE MASCOT. NOBODY FED HIM.', color: '#ffb02a' };
+    case 'zamboni':
+      return { directory: 'LEVEL 4 - PENALTY BOX', name: 'THE ZAMBONI DRIVER', tagline: 'TIME TO RESURFACE. YOU FIRST.', color: '#3ff0ff' };
     default:
       return { directory: 'LEVEL 1 - SECURITY OFFICE', name: 'LOSS PREVENTION', tagline: 'NO REFUNDS. NO EXCHANGES. NO SURVIVORS.', color: '#ff2a3a' };
   }

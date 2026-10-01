@@ -58,6 +58,10 @@ const REASONS: Record<DamageSource, string> = {
   roofer: 'TARRED ON THE ROOF',
   barrage: 'BURIED IN HOT TAR',
   walker: 'LAPPED BY A MALL WALKER',
+  elf: 'STOMPED BY A HOLIDAY DISPLAY',
+  perfume: 'EXCESSIVE FRAGRANCE EXPOSURE',
+  poodle: 'MAULED BY THE PET OF THE WEEK',
+  goon: 'ROUGHING. TWO MINUTES. FOREVER.',
   other: 'GENERAL POOR ATTITUDE',
 };
 

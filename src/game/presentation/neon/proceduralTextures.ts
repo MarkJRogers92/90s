@@ -27,7 +27,9 @@ export type FloorStyle =
   | 'concrete'
   | 'linoleum'
   /** Floor 4: the roof's tar-and-gravel membrane. */
-  | 'gravel';
+  | 'gravel'
+  /** Round 50: the Skate Arena's rink, scored by skates. */
+  | 'ice';
 
 export function floorTextureKey(style: FloorStyle): string {
   return `floor:${style}`;
@@ -160,7 +162,7 @@ export function ensureFxTextures(scene: Phaser.Scene): void {
       canvas.refresh();
     }
   }
-  for (const style of ['terrazzo', 'checker', 'carpet', 'concrete', 'linoleum', 'gravel'] as const) {
+  for (const style of ['terrazzo', 'checker', 'carpet', 'concrete', 'linoleum', 'gravel', 'ice'] as const) {
     ensureFloorTexture(scene, style);
   }
 }
@@ -350,6 +352,21 @@ function ensureFloorTexture(scene: Phaser.Scene, style: FloorStyle): void {
       context.fillStyle = 'rgba(255,255,255,0.07)';
       context.fillRect(0, 20, size, 1);
       context.fillRect(0, 52, size, 1);
+      break;
+    }
+    case 'ice': {
+      // The rink: blue-white ice with the long curved scratches of a night of skating.
+      context.fillStyle = '#c8dcea';
+      context.fillRect(0, 0, size, size);
+      speckle(['#d8e8f2', '#b8cede', '#e6f0f8'], 240);
+      context.fillStyle = 'rgba(255,255,255,0.55)';
+      for (let i = 0; i < 6; i += 1) {
+        const y = Math.floor(random() * size);
+        const x = Math.floor(random() * 40);
+        for (let k = 0; k < 18; k += 1) context.fillRect(x + k, y + Math.round(Math.sin(k / 5) * 2), 1, 1);
+      }
+      context.fillStyle = 'rgba(70,110,150,0.25)';
+      for (let i = 0; i < 3; i += 1) context.fillRect(Math.floor(random() * size), Math.floor(random() * size), 6, 1);
       break;
     }
     case 'linoleum': {

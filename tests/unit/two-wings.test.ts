@@ -96,7 +96,15 @@ describe('two wings per floor (round 45)', () => {
 describe('the Lockdown card (round 45)', () => {
   it('a won first wing is LOCKDOWN LIFTED with the stairs, never the night\'s win', async () => {
     const { buildShiftCardModel } = await import('../../src/game/ui/shiftCardModel');
-    const state = createMvpRun(5, { part: 1, floor: FINAL_FLOOR });
+    const { killCamStamp } = await import('../../src/game/ui/killCamModel');
+    const seedWith = (district: boolean) => Array.from({ length: 60 }, (_, i) => i + 1).find((seed) => Boolean(createMvpRun(seed, { part: 1, floor: FINAL_FLOOR }).wing.district) === district)!;
+    // A district's first wing (round 50) stamps its mini-boss instead.
+    const district = createMvpRun(seedWith(true), { part: 1, floor: FINAL_FLOOR });
+    walkToTheEnd(district);
+    district.room.combat.enemies = [];
+    tickMvpRun(district, idle);
+    expect(buildShiftCardModel(district)!.headline).toBe(killCamStamp('zamboni'));
+    const state = createMvpRun(seedWith(false), { part: 1, floor: FINAL_FLOOR });
     walkToTheEnd(state);
     state.room.combat.enemies = [];
     tickMvpRun(state, idle);
