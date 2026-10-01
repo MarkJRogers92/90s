@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-10-01 — Continue HUD loading fix
+
+- New `tests/browser/continue-lifecycle.spec.ts` (from the prepared patch,
+  unchanged): a death on the last-heart fixture, back to title, then Continue
+  with asset loading held. Run first WITHOUT the fix: the first test failed at
+  `#mvp-run-hud toBeHidden` (the stale ended HUD was showing); the zero-health
+  test passed (that guard already worked). With the one-line `launchRun`
+  change: 2/2 pass. They also check the stored checkpoint is untouched while
+  loading, the resume matches its health, room, seed and cash, and that a
+  0 HP checkpoint disables Continue without deleting saved progress.
+- `npx tsc --noEmit` clean; build clean; `npx vitest run` 1167/1167 (one
+  earlier run timed out `districts.test.ts` at 5.4 s under machine load; it
+  passes alone in 2.3 s and in the full rerun; pre-existing and unrelated).
+- `PW_PORT=4191 npx playwright test --workers=2`: 82/82.
+
 ## 2026-10-01 — round 53b: the secret back room
 
 - New `tests/unit/secret-room.test.ts` (6), failing first on the missing

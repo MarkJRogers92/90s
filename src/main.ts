@@ -180,7 +180,9 @@ function launchRun(checkpoint: MvpCheckpoint | null, shift: ShiftSeed, daily: st
   runHud.hidden = true;
   wingHud.hidden = true;
   benchHud.hidden = true;
-  mvpHud.hidden = false;
+  // The previous shift's HUD stays hidden while assets load. The new scene
+  // reveals it in MvpRunHud.sync once its authoritative state is ready.
+  mvpHud.hidden = true;
 
   try {
     game = new Phaser.Game({

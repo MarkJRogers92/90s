@@ -52,6 +52,12 @@ The queue as asked:
 4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
    next night, so every night counts toward something.
 
+## From the 2026-10-01 playtest (outside the Continue fix)
+
+- Palms can hide the janitor: a readability pass on tall foreground props.
+- Combat balance is unverified (tool-driven input was too slow to judge).
+- `tests/unit/districts.test.ts` can brush the 5 s Vitest timeout under load.
+
 ## Round 53 playtest questions (hero fusions, props)
 
 - Did you build a hero on purpose? Which move felt best, which weakest?
