@@ -27,7 +27,7 @@ import type { BossKind } from '../../sim/combat/boss';
 import { TAR_PUDDLE_TICKS } from '../../sim/combat/tar';
 import { TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
 
-export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'roofer' | 'barrage' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'roofer' | 'barrage' | 'walker' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -133,7 +133,7 @@ type Snapshot = {
   readonly inside: string | null;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, barrage: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, barrage: 0, walker: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -197,6 +197,11 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
     (enemy) => enemy.kind === 'mannequin' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
   );
   if (mannequin) return 'mannequin';
+  // A Mall Walker only hurts once set off, so one in reach did it.
+  const walker = combat.enemies.some(
+    (enemy) => enemy.kind === 'walker' && enemy.provoked === true && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 4,
+  );
+  if (walker) return 'walker';
   // A Bargain Hunter only hurts mid-charge, so one touching the janitor did it.
   const shopper = combat.enemies.some(
     (enemy) => enemy.kind === 'shopper' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 12,

@@ -9,7 +9,7 @@ import type {
 } from './items/types';
 
 export type RunStatus = 'playing' | 'won' | 'dead';
-export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer';
+export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer' | 'walker';
 export type Vec2 = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 
@@ -67,6 +67,12 @@ export type EnemyState = Vec2 & {
   /** Roofer: where the bucket in the air will land (locked at the throw). */
   lobX?: number;
   lobY?: number;
+  /** Mall Walker: its loop's centre, the corner it heads for, its health while calm, and whether it has been set off. */
+  homeX?: number;
+  homeY?: number;
+  patrolIndex?: number;
+  calmHealth?: number;
+  provoked?: boolean;
   /** Bargain Hunter: ticks left in a charge, and a wall-stun. */
   chargeTicks?: number;
   stunnedTicks?: number;

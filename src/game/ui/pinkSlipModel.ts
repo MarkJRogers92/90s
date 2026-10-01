@@ -57,6 +57,7 @@ const REASONS: Record<DamageSource, string> = {
   stalker: 'WRITTEN UP ONE TIME TOO MANY',
   roofer: 'TARRED ON THE ROOF',
   barrage: 'BURIED IN HOT TAR',
+  walker: 'LAPPED BY A MALL WALKER',
   other: 'GENERAL POOR ATTITUDE',
 };
 

@@ -9,6 +9,7 @@ import { updateShopper } from './shopper';
 import { updateMascot } from './mascot';
 import { updateStatic } from './staticEnemy';
 import { updateRoofer } from './roofer';
+import { WALKER_BACKOFF_TICKS, updateWalker } from './walker';
 import { dryTar } from './tar';
 import {
   circlesOverlap,
@@ -73,6 +74,11 @@ export function updateEnemies(state: RunState): void {
       continue;
     }
 
+    if (enemy.kind === 'walker') {
+      updateWalker(state, enemy);
+      continue;
+    }
+
     if (enemy.kind === 'roofer') {
       updateRoofer(state, enemy);
       continue;
@@ -121,7 +127,10 @@ export function resolveEnemyDamage(state: RunState): void {
     (enemy) =>
       enemy.health > 0 &&
       // A watched mannequin is frozen and harmless; a moving one bites.
-      (enemy.kind === 'hanger' || (enemy.kind === 'mannequin' && enemy.phase === 'pursue')) &&
+      // So is a Mall Walker until it is set off and closing in.
+      (enemy.kind === 'hanger'
+        || (enemy.kind === 'mannequin' && enemy.phase === 'pursue')
+        || (enemy.kind === 'walker' && enemy.provoked === true && enemy.phase === 'pursue')) &&
       circlesOverlap(
         state.player.x,
         state.player.y,
@@ -136,6 +145,13 @@ export function resolveEnemyDamage(state: RunState): void {
     state.player.invulnerableTicks = PLAYER_INVULNERABILITY_TICKS;
     // Every mannequin in on the bite is caught in the act and holds still.
     for (const enemy of touching) if (enemy.kind === 'mannequin') freezeAfterBite(enemy);
+    // A walker that landed one steps back a beat.
+    for (const enemy of touching) {
+      if (enemy.kind === 'walker') {
+        enemy.stunnedTicks = WALKER_BACKOFF_TICKS;
+        enemy.phase = 'recover';
+      }
+    }
   }
 }
 

@@ -11,7 +11,7 @@ export const ACTOR_DIRECTION_ORDER = [
   'south', 'southwest', 'west', 'northwest', 'north', 'northeast', 'east', 'southeast',
 ] as const;
 export type ActorDirection = (typeof ACTOR_DIRECTION_ORDER)[number];
-export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer' | 'lp_agent';
+export type ActorKind = 'alex' | 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer' | 'walker' | 'lp_agent';
 
 export type ActorSnapshot = {
   readonly id: string;
@@ -83,6 +83,9 @@ export function enemySpriteSheet(
     // Round 39: PixelLab grew these canvases (136 and 180 px), so they are drawn larger to keep the figures in scale.
     case 'roofer':
       return { idle: ENEMY_TEXTURE_KEYS.rooferIdle, walk: walking ? ENEMY_TEXTURE_KEYS.rooferWalk : null, attack: 'neon:enemy:roofer-attack', walkFrames: 6, ticksPerFrame: 5, displaySize: ROOFER_DISPLAY_SIZE };
+    case 'walker':
+      // Round 48: a 64 px PixelLab regular, drawn at shopper size.
+      return { idle: ENEMY_TEXTURE_KEYS.walkerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.walkerWalk : null, attack: 'neon:enemy:walker-attack', walkFrames: 6, ticksPerFrame: 4, displaySize: 76 };
     case 'developer':
       return { idle: ENEMY_TEXTURE_KEYS.developerIdle, walk: walking ? ENEMY_TEXTURE_KEYS.developerWalk : null, attack: 'neon:enemy:developer-attack', walkFrames: 6, ticksPerFrame: 6, displaySize: DEVELOPER_DISPLAY_SIZE };
     case 'owner':
