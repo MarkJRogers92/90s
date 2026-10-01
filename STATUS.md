@@ -7,6 +7,14 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 48 (2026-10-01): the owner's queue. First wings hang their own
+back-wall signs; 17 more signature pairs give every store three or more, so
+recipe hints change night to night; and the Mall Walker (new PixelLab
+sprites) power-walks laps through Floor 1-2 fights, harmless until bumped
+or hit, carrying the most change of any regular. The queue's "unlocks
+screen" already exists as the Break Room. 1103 unit tests; browser 75/76
+with 1 load timeout that passes serially; see TEST_EVIDENCE.md round 48.
+
 Round 47 (2026-10-01): floor events. Most wings after the first roll a power
 outage (dark, alarms a second slower), sprinklers (every enemy Wet, so
 anything that conducts chains) or a clearance sale (30% off, an extra

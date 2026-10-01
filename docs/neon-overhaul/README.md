@@ -1188,3 +1188,20 @@ A biting Mannequin freezes for `MANNEQUIN_BITE_FREEZE_TICKS` (90) in
   `ALARM_GUARD_BEAT_BY_FLOOR` (24/18/12/6) in `src/sim/run/heist.ts`.
 - **Fix**: leaf ids are fresh across the night (`freshLeafInstanceId`):
   re-buying an item on a later floor used to break every later fusion.
+
+## Round 48: the owner's queue (signs, pairs, the Mall Walker)
+
+- **First-wing signs**: `FIRST_WING_SIGNS` in `roomDressing.ts` (by floor and
+  room, left to right) relabels the floor's own shopfronts on part-1 wings;
+  colours, panels and light are untouched.
+- **Signature pairs**: 17 more in `AUTHORED_SIGNATURES` (`hybrid.ts`); every
+  store template now stocks at least three (test: `more-signatures`). Hints
+  stay occasional: `pairUpStock` rolls `RECIPE_HINT_ODDS` before marking a
+  whole pair too.
+- **The Mall Walker** (`combat/walker.ts`, 16 hp): calm, it walks a 220x100
+  loop round its spawn and does not count for `hasLivingEnemies`; touched or
+  hit it is `provoked`, chases at 120 px/s, hurts 1 on touch, then backs off
+  `WALKER_BACKOFF_TICKS` (45). Worth 8 change. `WALKER_CHANCE` (0.4) of
+  Floor 1-2 regular fights (`rooms.ts`). Log source `walker`; pink slip
+  LAPPED BY A MALL WALKER. Sprites: PixelLab character
+  `287ef491-a0c0-4326-a4f6-2b5fd114f5db` (64 px standard, 92 px canvas).

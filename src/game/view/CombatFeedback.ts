@@ -32,7 +32,7 @@ import {
   type SpritePose,
   type TrackedAttack,
 } from './combatBeats';
-import { DEVELOPER_DISPLAY_SIZE, ROOFER_DISPLAY_SIZE } from './ActorSpriteView';
+import { DEVELOPER_DISPLAY_SIZE, ROOFER_DISPLAY_SIZE, WALKER_DISPLAY_SIZE } from './ActorSpriteView';
 
 type Tracked = { health: number; x: number; y: number; kind: EnemyState['kind'] };
 
@@ -87,6 +87,7 @@ function deathSheet(kind: EnemyState['kind']): string {
                 : kind === 'owner' ? ENEMY_TEXTURE_KEYS.ownerDeath
                   : kind === 'roofer' ? ENEMY_TEXTURE_KEYS.rooferDeath
                     : kind === 'developer' ? ENEMY_TEXTURE_KEYS.developerDeath
+                    : kind === 'walker' ? ENEMY_TEXTURE_KEYS.walkerDeath
               : ENEMY_TEXTURE_KEYS.lpManagerDeath;
 }
 
@@ -335,8 +336,9 @@ export class CombatFeedback {
     // so pixel scale and the feet row come from the idle frame.
     // The mannequin and the upper-floor cast are 96 px PixelLab canvases.
     const bigCanvas = death.kind === 'mannequin' || death.kind === 'static' || death.kind === 'shopper' || death.kind === 'manager' || death.kind === 'mascot' || death.kind === 'owner';
-    const idleFrame = death.kind === 'developer' ? 180 : death.kind === 'roofer' ? 136 : death.kind === 'owner' ? 128 : bigCanvas ? 96 : 64;
-    const shown = death.kind === 'developer' ? DEVELOPER_DISPLAY_SIZE : death.kind === 'roofer' ? ROOFER_DISPLAY_SIZE : death.kind === 'owner' ? 150 : isBossKind(death.kind) ? 128 : death.kind === 'mascot' ? 92 : death.kind === 'shopper' ? 76 : bigCanvas ? 72 : 64;
+    // The Mall Walker (round 48) is a 92 px canvas, drawn at shopper scale.
+    const idleFrame = death.kind === 'walker' ? 92 : death.kind === 'developer' ? 180 : death.kind === 'roofer' ? 136 : death.kind === 'owner' ? 128 : bigCanvas ? 96 : 64;
+    const shown = death.kind === 'developer' ? DEVELOPER_DISPLAY_SIZE : death.kind === 'roofer' ? ROOFER_DISPLAY_SIZE : death.kind === 'owner' ? 150 : isBossKind(death.kind) ? 128 : death.kind === 'mascot' ? 92 : death.kind === 'shopper' ? 76 : death.kind === 'walker' ? WALKER_DISPLAY_SIZE : bigCanvas ? 72 : 64;
     const scale = shown / idleFrame;
     const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
     const image = this.scene.add.image(death.x, death.y, key).setDepth(presentationDepth('actor', death.y - 1)).setScale(scale);

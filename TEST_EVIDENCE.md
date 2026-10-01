@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-10-01 — round 48: first-wing signs, more pairs, the Mall Walker
+
+- Each ran red first: `first-wing-signs` (2: Floor 2's Lockdown said
+  MANAGEMENT; Floor 1's Kiosk Alley matched its boss wing); `more-signatures`
+  (Mall Mart stocked 1 pair); `mall-walker` (6; no module).
+- `recipe-hints` caught that hints would mark 613 of 800 stores (they are
+  meant to be occasional): the hint odds now gate whole pairs too.
+- `npx tsc --noEmit` clean; `npx vitest run` 1103 passed; build clean.
+- Browser (load average 8-10, 2 workers): 75/76; "actor presentation ...
+  first Food Court fight" passed serially.
+- Art: PixelLab character `287ef491-...` (1 + 9 animation generations, one
+  west death dropped by the GPU and redone free); packed to 92 px sheets;
+  manifest +3 entries. On screen (`?fixture=mvp-walker`): the Walker in the
+  Food Court at shopper scale; no console errors.
+
 ## 2026-10-01 — round 47: floor events, barrage lead, heists, fusion ids
 
 - Each ran red first: `developer` "leads a moving janitor" (no

@@ -48,6 +48,8 @@ export const MALL_TOKEN_VALUE: Readonly<Record<EnemyKind, number>> = {
   owner: 0,
   roofer: 3,
   developer: 0,
+  // Pocket change for the arcade: the best payout of any regular.
+  walker: 8,
 };
 
 /** The janitor sweeps up anything within this distance of their feet. */

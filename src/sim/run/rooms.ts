@@ -32,6 +32,7 @@ import { ROOFER_HEALTH, ROOFER_RADIUS } from '../combat/roofer';
 import { LOCKDOWN_SIZE } from '../wing/floorSpecs';
 import { createWingRng } from '../wing/rng';
 import { wingEventFor } from './wingEvents';
+import { calmWalker, spawnWalker } from '../combat/walker';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -66,6 +67,10 @@ const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; rad
 };
 
 /** `healthScale` toughens a floor's authored monsters (see FloorSpec.enemyHealthScale). */
+/** The Mall Walker (round 48) strolls through this share of Floor 1-2 regular fights. */
+export const WALKER_CHANCE = 0.4;
+export const WALKER_TOP_FLOOR = 2;
+
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean, healthScale = 1): EnemyState {
   const stats = SPAWN_STATS[spawn.kind];
   const health = Math.round(stats.health * healthScale) * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
@@ -161,7 +166,8 @@ function spawnBoss(id: number, x: number, y: number, kind: BossKind = 'lp_manage
 
 /** True while any enemy in the room still has health. */
 export function hasLivingEnemies(combat: RunState): boolean {
-  return combat.enemies.some((enemy) => enemy.health > 0);
+  // A calm Mall Walker is not a fight: leave it to its laps, or start one.
+  return combat.enemies.some((enemy) => enemy.health > 0 && !calmWalker(enemy));
 }
 
 /**
@@ -260,6 +266,12 @@ export function buildRoomCombatState(
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
     enemies.push(spawnMannequin(enemies.length + 1, spot.x, spot.y));
+  }
+  // Floors 1-2: now and then a Mall Walker doing laps through a regular fight.
+  if (floorNumberOf(wing) <= WALKER_TOP_FLOOR && room.enemySpawns.length > 0 && room.bossAnchor === null && luck(seed, 'walker', roomIndex, 0) < WALKER_CHANCE) {
+    for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies, 1, 'walker-spot')) {
+      enemies.push(spawnWalker(enemies.length + 1, spot.x, spot.y));
+    }
   }
   // A clearance sale (a floor event) sends a Bargain Hunter into every regular fight.
   if (wingEventFor(wing) === 'clearance' && room.enemySpawns.length > 0 && room.bossAnchor === null) {
