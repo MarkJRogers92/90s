@@ -70,7 +70,7 @@ export type StoreTwistState = {
   /** Slice Station: the blast that last burned the janitor (one burn a blast). */
   burnedBlast: number;
   // Round 50: the district stores.
-  /** Candy Cauldron: the free sample has been had this visit. */
+  /** Candy Cauldron: the free sample has been had (once a wing, see samplesTaken). */
   sampleUsed: boolean;
   /** Novelty Nook: ticks until each buzzer tile can zap again. */
   buzzerCharge: number[];
@@ -260,7 +260,7 @@ function twistFor(state: MvpRunState): StoreTwistState | null {
     lastHit: 0,
     rewindUsed: false,
     burnedBlast: -1,
-    sampleUsed: false,
+    sampleUsed: state.samplesTaken.includes(sampleKey(state)),
     buzzerCharge: BUZZER_TILES.map(() => 0),
     dazzleTicks: 0,
     cactusCooldown: 0,
@@ -602,11 +602,18 @@ const within = (point: Vec2, spot: Vec2 & { readonly radius: number }, extra = 0
 const inRect = (point: Vec2, rect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }): boolean =>
   point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height;
 
-/** Candy Cauldron: one free sample a visit, half a heart, only when it helps. */
+/** Which store's bowl this is: the room and the storefront slot, within the wing. */
+const sampleKey = (state: MvpRunState): string => `${state.roomIndex}:${state.room.storeIndex}`;
+
+/**
+ * Candy Cauldron: one free sample a wing, half a heart, only when it helps.
+ * Round 52: it stays had through leaving and coming back, and through a save.
+ */
 function takeASample(state: MvpRunState, twist: StoreTwistState): void {
   const player = state.room.combat.player;
   if (twist.sampleUsed || !within(player, SAMPLE_BOWL, player.radius) || player.health >= runMaxHealth(state)) return;
   twist.sampleUsed = true;
+  state.samplesTaken.push(sampleKey(state));
   player.health += 1;
   publishRunFeedback(state, 'A free sample. Half a heart back.');
 }

@@ -66,6 +66,8 @@ export type MvpCheckpoint = {
   readonly carried: CarriedTheft[];
   /** Break Room perks; absent means none (and on every older save). */
   readonly perks?: ShiftPerks;
+  /** Round 52: the free samples had this wing; absent means none (and on every older save). */
+  readonly samplesTaken?: readonly string[];
 };
 
 export type CheckpointParseResult =
@@ -130,6 +132,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
     offerStatus: { ...state.offerStatus },
     carried: state.carried.map((theft) => ({ ...theft })),
     ...(hasPerks(state.perks) ? { perks: { ...state.perks } } : {}),
+    ...(state.samplesTaken.length > 0 ? { samplesTaken: [...state.samplesTaken] } : {}),
   };
 }
 
@@ -277,6 +280,14 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
   ) {
     return fail('Checkpoint suspicion is out of range.');
   }
+  let samplesTaken: string[] = [];
+  if (value.samplesTaken !== undefined) {
+    if (!Array.isArray(value.samplesTaken) || !value.samplesTaken.every((entry) => typeof entry === 'string' && /^\d+:\d+$/.test(entry))) {
+      return fail('Checkpoint samplesTaken must be a list of "room:store" entries.');
+    }
+    samplesTaken = [...new Set(value.samplesTaken as string[])];
+  }
+
   let perks: ShiftPerks = NO_PERKS;
   if (value.perks !== undefined) {
     if (!isRecord(value.perks)) return fail('Checkpoint perks must be an object.');
@@ -410,6 +421,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
       offerStatus: offerStatusResult.offerStatus,
       carried: carriedResult.carried,
       ...(hasPerks(perks) ? { perks } : {}),
+      ...(samplesTaken.length > 0 ? { samplesTaken } : {}),
     },
   };
 }
@@ -479,6 +491,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     stalker: null,
     stats: createRunStats(),
     perks: sanitizePerks(checkpoint.perks),
+    samplesTaken: [...(checkpoint.samplesTaken ?? [])],
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   refreshRunLoadout(state);

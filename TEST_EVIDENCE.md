@@ -1,5 +1,21 @@
 # Test evidence
 
+## 2026-10-01 — round 52: review fixes (three bugs from an outside review)
+
+- New `tests/unit/review-fixes.test.ts` (4 tests), each seen failing first:
+  the mop knocked a guard to y 404 past a shutter at 360 (now stops short and
+  the lockdown lifts once it is beaten); a 48 px shove crossed a 4 px wall;
+  `buildBenchCardModel` had no pages; three Cauldron visits healed 4, 5, 6
+  (now 4, 4, 4, kept through a save; an older save without the field loads).
+- `npx tsc --noEmit` clean; `npx vitest run` 1145 passed (item-drops' bench
+  test now expects nine a page); build clean.
+- `PW_PORT=4191 npx playwright test --workers=2`: 76/76.
+- On screen (`?fixture=mvp-workbench&items=20`): PAGE 1/3 with arrows; E, E,
+  1, Q, 2 picked the Broom (page 3) and the Wallet (page 2) into a Discount
+  Broom preview; the mouse arrow turns pages. The first try found number keys
+  using the old page when pressed in the same frame as Q/E; fixed (a page
+  turn rebuilds the card's model at once). No console errors.
+
 ## 2026-10-01 — round 51: art re-rolls
 
 - Re-generated the Glamour Queen's north walk and the Poodle's south run

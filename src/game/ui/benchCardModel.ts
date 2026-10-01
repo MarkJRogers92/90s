@@ -32,7 +32,13 @@ export type BenchTile = {
 };
 
 export type BenchCardModel = {
+  /** This page's tiles, keyed 1-9 (round 52: the bench pages, so nothing owned is hidden). */
   readonly tiles: readonly BenchTile[];
+  /** The page shown (0-based, clamped) and how many there are. */
+  readonly page: number;
+  readonly pageCount: number;
+  /** The picked pair, wherever their pages are. */
+  readonly picked: { readonly first: BenchTile | null; readonly second: BenchTile | null };
   readonly primary: BenchIngredient | null;
   readonly carrier: BenchIngredient | null;
   readonly recipe: 'emitter_mount' | 'hybrid' | null;
@@ -54,24 +60,27 @@ export type BenchCardModel = {
   readonly sale: { readonly value: number; readonly allowed: boolean; readonly reason: string } | null;
 };
 
-/** The most tiles the card shows; the number keys pick the first nine, a click any. */
-export const BENCH_TILE_LIMIT = 16;
+/** Tiles on one bench page: one per number key, so every tile has a key. */
+export const BENCH_TILE_LIMIT = 9;
 
 function ingredient(itemDefinitionId: string, provenance: string): BenchIngredient {
   return { itemDefinitionId, name: itemDefinitionName(itemDefinitionId).toUpperCase(), provenance: provenance.toUpperCase() };
 }
 
-export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
+export function buildBenchCardModel(state: MvpRunState, requestedPage = 0): BenchCardModel | null {
   const bench = state.workbench;
   const preview = state.preview;
   if (!bench && !preview) return null;
   const firstId = bench?.firstId ?? preview?.primaryInstanceId ?? null;
   const secondId = bench?.secondId ?? preview?.carrierInstanceId ?? null;
 
-  const tiles = state.inventory.inventory.slice(0, BENCH_TILE_LIMIT).map((node, index): BenchTile => {
+  const owned = state.inventory.inventory;
+  const pageCount = Math.max(1, Math.ceil(owned.length / BENCH_TILE_LIMIT));
+  const page = Math.max(0, Math.min(pageCount - 1, Math.floor(requestedPage)));
+  const allTiles = owned.map((node, index): BenchTile => {
     const leaf = compositeLeaves(node)[0]!;
     return {
-      key: index + 1,
+      key: (index % BENCH_TILE_LIMIT) + 1,
       instanceId: node.instanceId,
       // A hybrid's icon is built from the fusion itself (every part stacked).
       iconDefinitionId: node.kind === 'composite' && node.recipeId === 'hybrid' ? nodeDefinitionId(node) : leaf.itemDefinitionId,
@@ -84,16 +93,25 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
     };
   });
 
+  const tiles = allTiles.slice(page * BENCH_TILE_LIMIT, (page + 1) * BENCH_TILE_LIMIT);
+  const picked = {
+    first: allTiles.find((tile) => tile.pick === 'first') ?? null,
+    second: allTiles.find((tile) => tile.pick === 'second') ?? null,
+  };
+
   const soloNode = firstId !== null && secondId === null ? state.inventory.inventory.find((node) => node.instanceId === firstId) : undefined;
   const reason = soloNode ? keepReason(state, soloNode.instanceId) : '';
   const base = {
     tiles,
+    page,
+    pageCount,
+    picked,
     cash: state.cash,
     warning: 'PERMANENT - BOTH ITEMS ARE CONSUMED, NO REFUNDS',
     sale: soloNode ? { value: resaleValue(soloNode), allowed: reason === '', reason } : null,
   };
   if (!preview) {
-    const picked = tiles.filter((tile) => tile.pick !== null).length;
+    const pickedCount = allTiles.filter((tile) => tile.pick !== null).length;
     return {
       ...base,
       primary: null,
@@ -108,7 +126,7 @@ export function buildBenchCardModel(state: MvpRunState): BenchCardModel | null {
       affordable: false,
       hint: bench?.message
         ? bench.message.toUpperCase()
-        : picked === 0 ? 'PICK TWO ITEMS TO FUSE (CLICK OR 1-9)' : 'PICK A SECOND ITEM, OR X TO SELL THIS ONE',
+        : pickedCount === 0 ? 'PICK TWO ITEMS TO FUSE (CLICK OR 1-9)' : 'PICK A SECOND ITEM, OR X TO SELL THIS ONE',
     };
   }
 

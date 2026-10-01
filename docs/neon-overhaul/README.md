@@ -1275,6 +1275,22 @@ music. Boss wings never change, and regular wings draw exactly as before.
   mini-boss), its stores and stock, a twist each, a monster update, a boss
   config, then the game tables tsc lists (sprites, HUD, PA, looks, music).
 
+## Round 52: review fixes
+
+- **Swept movement.** `moveCircle` splits any move into steps of at most
+  `MAX_STEP` (4 px), each with the old axis-by-axis wall check. Ordinary
+  steps (under 4 px a tick) are unchanged; a mop's 48 px knockback can no
+  longer hop a dropped shutter.
+- **Bench pages.** `buildBenchCardModel(state, page)` returns nine tiles a
+  page (`BENCH_TILE_LIMIT`, one per number key) plus `page`, `pageCount` and
+  `picked` (the pair, wherever it is). `BenchCard` keeps the page, Q/E or
+  the arrow keys or the < > buttons turn it, and a turn rebuilds the model at
+  once so a number key in the same frame picks off the new page. Dev:
+  `?fixture=mvp-workbench&items=20`.
+- **One sample a wing.** `MvpRunState.samplesTaken` ("room:store") is set by
+  the Candy Cauldron and checkpointed (optional; older saves load as none).
+  A new wing starts empty.
+
 ## Round 51: art re-rolls
 
 - The Glamour Queen's north walk and the Rabid Poodle's south run (dropped by

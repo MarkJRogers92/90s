@@ -124,6 +124,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: FloorNumb
     stalker: null,
     stats: options.carry ? { ...options.carry.stats, combo: 0, lastHitTick: -Infinity } : createRunStats(),
     perks,
+    samplesTaken: [],
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   // A fresh floor always opens at full health, under this run's own cap.

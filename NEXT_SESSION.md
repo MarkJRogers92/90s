@@ -52,6 +52,16 @@ The queue as asked:
 4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
    next night, so every night counts toward something.
 
+## Outside review backlog (GPT, 2026-10-01; proposals, not approved)
+
+Round 52 fixed its three bugs. Its design ideas, in its order:
+1. An optional guided first shift (fight, buy vs steal, one fusion).
+2. Three to five signature fusions with their own mechanic.
+3. One route choice per floor: a risky shortcut vs the longer shopping route.
+4. Late-game tuning against strong builds (wait for playtest logs).
+5. Clearer wanted consequences (next star, hot-goods Heat floor).
+6. Unlocks as play-style choices and optional challenges.
+
 ## Round 50 playtest questions (the districts)
 
 - Do the districts feel like new places, not reskins? Which is best/worst?

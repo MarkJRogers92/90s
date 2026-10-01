@@ -24,6 +24,18 @@ export function moveCircle(
   deltaY: number,
   walls: Rect[],
 ): Vec2 {
+  // A long move (a mop's knockback) goes in short steps, so it cannot hop a
+  // thin wall such as a dropped shutter; an ordinary step is one step.
+  const steps = Math.max(1, Math.ceil(Math.hypot(deltaX, deltaY) / MAX_STEP));
+  let at: Vec2 = { x: position.x, y: position.y };
+  for (let step = 0; step < steps; step += 1) at = stepCircle(at, radius, deltaX / steps, deltaY / steps, walls);
+  return at;
+}
+
+/** The longest stretch moveCircle checks in one go: thinner than any wall. */
+const MAX_STEP = 4;
+
+function stepCircle(position: Vec2, radius: number, deltaX: number, deltaY: number, walls: Rect[]): Vec2 {
   let x = Math.max(radius, Math.min(PLAYFIELD_WIDTH - radius, position.x + deltaX));
   if (isBlocked(walls, x, position.y, radius)) {
     x = position.x;
