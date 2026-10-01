@@ -1274,3 +1274,13 @@ music. Boss wings never change, and regular wings draw exactly as before.
 - **To add a district**: a `DISTRICTS` entry (names, two stores, monster,
   mini-boss), its stores and stock, a twist each, a monster update, a boss
   config, then the game tables tsc lists (sprites, HUD, PA, looks, music).
+
+## Round 51: art re-rolls
+
+- The Glamour Queen's north walk and the Rabid Poodle's south run (dropped by
+  PixelLab's GPU in round 50, so they borrowed a neighbour) are re-generated
+  into their animation groups and re-packed.
+- Mr. Whiskers is a new PixelLab character (`aaf35aa7-...`, cat template,
+  best of three: a lion-template candidate lost its bow tie, a third had no
+  legs): hunched, snarling, claws out, collar and bow tie kept. Walk on three
+  directions; death by `quadruped_death.py` as before.

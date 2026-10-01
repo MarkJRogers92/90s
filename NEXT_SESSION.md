@@ -60,9 +60,8 @@ The queue as asked:
 - Monsters: is the Elf's ring readable, the Spritzer's cloud annoying, the
   Poodle's dash fair, the Goon's slapshot dodgeable?
 - Store twists: do you use the sample bowl, the buzzers, the punch card?
-- Art to redo: the Glamour Queen's north walk and the Poodle's south run
-  (PixelLab dropped them; each borrows a neighbour), and Mr. Whiskers reads
-  cute rather than feral.
+- Round 51 re-rolled the Queen's north walk, the Poodle's south run and a
+  feral Mr. Whiskers. Does he read as a boss now?
 
 ## Round 49 playtest questions
 

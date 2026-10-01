@@ -3170,36 +3170,6 @@
     "sha256": "2c8a59e822cd6f53846b7eac8727ce9b3b93d53a930d5075f67bae0b89cf865c"
   },
   {
-    "path": "public/assets/neon/enemies/whiskers-idle.png",
-    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-idle.png",
-    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
-    "size": [
-      1280,
-      160
-    ],
-    "sha256": "ce96edb14476a817772fd2d8b9fec29101d4b821d370800bf91a074c5ef977fd"
-  },
-  {
-    "path": "public/assets/neon/enemies/whiskers-walk.png",
-    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-walk.png",
-    "generator": "PixelLab animate_character walk-6-frames (cat template; south, west, north, mirrored), packed by pack_character.py",
-    "size": [
-      960,
-      1280
-    ],
-    "sha256": "513b9550eb7e2e2385f92724973ddb743836c3b0a4ae9174237cd745232edb92"
-  },
-  {
-    "path": "public/assets/neon/enemies/whiskers-death.png",
-    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-death.png",
-    "generator": "Procedural: quadruped_death.py from the packed PixelLab idle strip (PixelLab has no quadruped death template)",
-    "size": [
-      1120,
-      1280
-    ],
-    "sha256": "f1c8b7f5fccb891c0e8be99e957a38a9267af71c69bd1f6b11aecc5fb14977a3"
-  },
-  {
     "path": "public/assets/neon/enemies/glamour-queen-idle.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-queen-idle.png",
     "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
@@ -3217,7 +3187,7 @@
       960,
       1280
     ],
-    "sha256": "dad9e84e82210bb7276053febe0522a92926668c3f35a28bad4da94ce779fe11"
+    "sha256": "bbdf23dc5a2f90cc0063bf20fc7a2361d903d4285f4b084d00834d0cd3f60cef"
   },
   {
     "path": "public/assets/neon/enemies/glamour-queen-death.png",
@@ -3242,12 +3212,12 @@
   {
     "path": "public/assets/neon/enemies/poodle-walk.png",
     "source": "docs/art/neon-overhaul/pixellab/anim-poodle-walk.png",
-    "generator": "PixelLab animate_character running-6-frames (dog template; west and north, the rest borrowed), packed by pack_character.py",
+    "generator": "PixelLab animate_character running-6-frames (dog template; south, west, north, mirrored), packed by pack_character.py",
     "size": [
       552,
       736
     ],
-    "sha256": "71f34159d8db0c3277d8bdb20fb5d805479a5f55ed0f4d4a5731a1f522ba9062"
+    "sha256": "35f6b540071b7d3958c04090fec9aea7d500f613c5a7870261c9e0e5ed59aff8"
   },
   {
     "path": "public/assets/neon/enemies/poodle-death.png",
@@ -3288,5 +3258,35 @@
       1280
     ],
     "sha256": "8de9817a6b9cee2de63fdee5892c643383bc65f8d0ff4b8ebe1a29cd31af66e7"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-idle.png",
+    "generator": "PixelLab create_character (Mr. Whiskers, feral re-roll round 51, cat template), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "f67c67eae590a6ce375785a751b1961a5ac16d4dbf4a0425aca8be2dc47dc3b3"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-walk.png",
+    "generator": "PixelLab animate_character walk-6-frames (cat template; south, west, north, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "ca6bf5eeb97408ecdd1961a42981d212532ea96a7ae42d58e4daa0b8d72fb747"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-death.png",
+    "generator": "Procedural: quadruped_death.py from the packed PixelLab idle strip (PixelLab has no quadruped death template)",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "a9c7a4ed427cf36e1e1933d4a4917151f53596fb846756c62efc54c1073e31c9"
   }
 ]
