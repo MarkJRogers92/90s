@@ -110,7 +110,7 @@ describe('enemies and bosses drop items (round 32)', () => {
     expect(dropped).toBeGreaterThan(0);
   });
 
-  it('the bench shows up to sixteen things, and a fused tile says how many items it holds', () => {
+  it('the bench shows nine things a page, and a fused tile says how many items it holds', () => {
     const state = createMvpRun(5);
     const extra = ITEM_CATALOG.slice(30, 44).map((item): InventoryLeaf => ({ kind: 'leaf', instanceId: `x-${item.id}`, itemDefinitionId: item.id, acquisitionKind: 'purchased', sourceLocationId: 'test', sourceStockId: item.id, acquisitionTick: 0 }));
     state.inventory = { ...state.inventory, inventory: [...state.inventory.inventory, ...extra], revision: state.inventory.revision + 1 };
@@ -119,7 +119,8 @@ describe('enemies and bosses drop items (round 32)', () => {
     state.room.combat.player.y = kiosk.y;
     expect(openRunWorkbench(state).accepted).toBe(true);
     const card = buildBenchCardModel(state)!;
-    expect(card.tiles.length).toBe(Math.min(16, state.inventory.inventory.length));
+    expect(card.tiles.length).toBe(Math.min(9, state.inventory.inventory.length));
+    expect(card.pageCount).toBe(Math.ceil(state.inventory.inventory.length / 9));
     expect(card.tiles.every((tile) => tile.parts >= 1)).toBe(true);
   });
 });

@@ -159,4 +159,6 @@ export type MvpRunState = {
   /** What the janitor's career brought to this shift (checkpointed; rides the escalator). */
   /** Break Room perks; the one-shot charges in it are spent during the night. */
   perks: ShiftPerks;
+  /** Round 52: the free samples had this wing, as "room:store" (checkpointed). */
+  samplesTaken: string[];
 };

@@ -9,6 +9,7 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import { wingEventFor } from '../../sim/run/wingEvents';
+import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { buildRoomCombatState } from '../../sim/run/rooms';
 import { browserCareer, discoverFusion, clockIn, type FusionDiscovery } from '../career/career';
 import { playFusionBanner } from '../ui/FusionReveal';
@@ -231,6 +232,11 @@ class MvpRunInputAdapter {
       }
       if (event.code === 'KeyX') {
         this.benchCard.act('sell');
+        return;
+      }
+      // Round 52: more than nine things pages the bench.
+      if (event.code === 'KeyQ' || event.code === 'ArrowLeft' || event.code === 'KeyE' || event.code === 'ArrowRight') {
+        this.benchCard.act(event.code === 'KeyQ' || event.code === 'ArrowLeft' ? 'prev' : 'next');
         return;
       }
       // Number keys pick items on the bench instead of switching weapons.
@@ -511,7 +517,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.inputAdapter.benchCard = {
       isOpen: () => bench.open,
       buttonAt: (x, y) => bench.buttonAt(x, y),
-      act: (action) => (action === 'fuse' ? this.confirmFusion() : action === 'cancel' ? this.cancelFusion() : action === 'sell' ? this.sellBenchItem() : this.pickBenchItem(action.pick)),
+      act: (action) => (action === 'fuse' ? this.confirmFusion() : action === 'cancel' ? this.cancelFusion() : action === 'sell' ? this.sellBenchItem() : action === 'prev' || action === 'next' ? bench.turnPage(action === 'prev' ? -1 : 1) : this.pickBenchItem(action.pick)),
       tileForKey: (key) => bench.tileForKey(key),
     };
     this.paTicker = new PaTicker(this, (cue) => this.audio?.play(cue));
@@ -1148,7 +1154,10 @@ export class MvpRunScene extends Phaser.Scene {
     if (fixture === 'mvp-workbench') {
       // At the service-corridor Bench Warrant holding a shooter and three
       // modifiers, with cash to spare, so any fusion can be tried at once.
-      const ids = ['pump_soaker', 'plasma_globe', 'gel_pens', 'party_popper'];
+      // `&items=N` fills the bag to N things (round 52: the bench's pages).
+      const fill = Number(new URLSearchParams(window.location.search).get('items') ?? 0);
+      const base = ['pump_soaker', 'plasma_globe', 'gel_pens', 'party_popper'];
+      const ids = [...base, ...ITEM_CATALOG.map((item) => item.id).filter((id) => !base.includes(id)).slice(0, Math.max(0, fill - base.length - 1))];
       state.inventory = {
         ...state.inventory,
         inventory: [

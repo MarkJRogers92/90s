@@ -7,6 +7,13 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 52 (2026-10-01): three bugs from an outside (GPT) review. A mop hit
+could knock a guard through a closed shutter and soft-lock the lockdown
+(`moveCircle` now moves in 4 px steps); the Bench Warrant hid every item past
+the 16th (it now pages, nine a page, Q/E or the arrows); and the Candy
+Cauldron's sample came back every visit (now once per store per wing, kept in
+the checkpoint as `samplesTaken`). See TEST_EVIDENCE.md round 52.
+
 Round 50 (2026-10-01): the mall districts, an expansion. About half the
 nights, each floor's first wing is its district instead: Holiday Village
 (Floor 1), Glamour Row (2), Pet Paradise (3) or the Skate Arena (4), each

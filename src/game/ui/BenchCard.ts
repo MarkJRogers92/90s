@@ -24,7 +24,7 @@ const CARD_Y = (H - CARD_H) / 2;
 const GREEN = 0x6aff8a;
 
 /** A card button, or a click on one of your item tiles. */
-export type BenchCardAction = 'fuse' | 'sell' | 'cancel' | { readonly pick: string };
+export type BenchCardAction = 'fuse' | 'sell' | 'cancel' | 'prev' | 'next' | { readonly pick: string };
 type Rect = { x: number; y: number; w: number; h: number; action: BenchCardAction };
 
 export class BenchCard {
@@ -38,6 +38,10 @@ export class BenchCard {
   private targets: Rect[] = [];
   private hovered: BenchCardAction | null = null;
   private model: BenchCardModel | null = null;
+  /** Round 52: the page of items shown; back to the first each time the bench opens. */
+  private page = 0;
+  /** The run last drawn, so a page turn re-keys the tiles before the next frame. */
+  private state: MvpRunState | null = null;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -63,12 +67,20 @@ export class BenchCard {
     const hit = [...this.buttons, ...this.targets].find((b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h);
     if (hit?.action === 'fuse' && !this.canFuse) return null;
     if (hit?.action === 'sell' && !this.canSell) return null;
+    if ((hit?.action === 'prev' || hit?.action === 'next') && (this.model?.pageCount ?? 1) < 2) return null;
     return hit?.action ?? null;
   }
 
   /** The tile behind number key `key` (1-9), when the bench is open. */
   public tileForKey(key: number): string | null {
     return this.model?.tiles.find((tile) => tile.key === key)?.instanceId ?? null;
+  }
+
+  /** Turns the item page (wrapping), when there is more than one. */
+  public turnPage(delta: number): void {
+    const count = this.model?.pageCount ?? 1;
+    this.page = (((this.page + delta) % count) + count) % count;
+    if (this.state) this.model = buildBenchCardModel(this.state, this.page);
   }
 
   public hover(x: number, y: number): void {
@@ -91,13 +103,16 @@ export class BenchCard {
   }
 
   public sync(state: MvpRunState): void {
-    this.model = buildBenchCardModel(state);
+    this.state = state;
+    this.model = buildBenchCardModel(state, this.page);
     if (!this.model) {
+      this.page = 0;
       this.openedAt = null;
       this.buttons = [];
       this.root.setVisible(false);
       return;
     }
+    this.page = this.model.page;
     const now = this.scene.time.now;
     if (this.openedAt === null) this.openedAt = now;
     this.root.setVisible(true);
@@ -167,20 +182,29 @@ export class BenchCard {
     this.label(slot++, 'VOID THE WARRANTY - FUSE ANY TWO ITEMS', '#9a8fb4', W / 2, top + 64, 1);
 
     // Your items: numbered tiles, picked ones lit cyan (first) and yellow (second).
-    // More than nine things: smaller tiles, so up to sixteen fit on one row.
-    const tileSize = model.tiles.length > 9 ? 40 : TILE;
-    const gap = model.tiles.length > 9 ? 6 : 10;
+    // Round 52: nine to a page (one per number key); more than that pages with Q/E.
+    const tileSize = TILE;
+    const gap = 10;
     const rowW = model.tiles.length * tileSize + Math.max(0, model.tiles.length - 1) * gap;
     const tilesY = top + 84;
     model.tiles.forEach((tile, index) => {
       slot = this.tileWell(slot, tile, W / 2 - rowW / 2 + index * (tileSize + gap), tilesY, now, tileSize);
     });
+    if (model.pageCount > 1) {
+      this.label(slot++, `PAGE ${model.page + 1}/${model.pageCount}  Q/E`, '#ffd84a', CARD_X + CARD_W - 24, top + 64, 1, 1);
+      for (const [action, x, glyph] of [['prev', CARD_X + 12, '<'], ['next', CARD_X + CARD_W - 44, '>']] as const) {
+        const hot = this.hovered === action;
+        g.fillStyle(hot ? YELLOW : 0x140d22, hot ? 0.35 : 1).fillRect(x, tilesY, 32, TILE);
+        g.lineStyle(2, YELLOW, 1).strokeRect(x + 1, tilesY + 1, 30, TILE - 2);
+        this.label(slot++, glyph, '#ffd84a', x + 16, tilesY + TILE / 2, 3);
+        this.targets.push({ x, y: tilesY, w: 32, h: TILE, action });
+      }
+    }
 
     // The pair and what it makes.
     const pairY = tilesY + TILE + 34;
     const left = CARD_X + 36;
-    const first = model.tiles.find((tile) => tile.pick === 'first') ?? null;
-    const second = model.tiles.find((tile) => tile.pick === 'second') ?? null;
+    const { first, second } = model.picked;
     slot = this.iconWell(slot, first?.iconDefinitionId ?? null, left, pairY, CYAN);
     this.label(slot++, '+', '#ffd84a', left + 100, pairY + 42, 4);
     slot = this.iconWell(slot, second?.iconDefinitionId ?? null, left + 124, pairY, YELLOW);
