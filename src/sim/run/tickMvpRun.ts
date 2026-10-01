@@ -458,6 +458,8 @@ function bossDefeated(state: MvpRunState): boolean {
   if (currentRoom(state).bossAnchor === null) {
     return false;
   }
+  // A first wing's last room is the Lockdown: won when its whole wave is down (round 45).
+  if (state.wing.part === 1) return !hasLivingEnemies(state.room.combat);
   return !state.room.combat.enemies.some(
     (enemy) => isBossKind(enemy.kind) && enemy.health > 0,
   );

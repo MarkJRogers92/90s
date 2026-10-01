@@ -82,6 +82,8 @@ export type GeneratedWing = {
   readonly seed: number;
   /** The floor above the ground floor this wing is on (see floorSpecs.ts); absent means floor 1 (the original wing). */
   readonly floor?: Exclude<FloorNumber, 1>;
+  /** 1: the floor's first wing, ending in the Lockdown (round 45). Absent: the floor's boss wing, as every save from before. */
+  readonly part?: 1;
   readonly rooms: readonly WingRoomDefinition[];
   readonly startingCash: number;
 };

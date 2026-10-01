@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateWing } from '../../src/sim/wing/generateWing';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
-import { ascend, canAscend } from '../../src/sim/run/floors';
+import { ascend, canAscend, climbToBossWing } from '../../src/sim/run/floors';
 import { parseCheckpoint, restoreMvpRun, serializeCheckpoint } from '../../src/sim/run/checkpoint';
 import { buildRoomCombatState } from '../../src/sim/run/rooms';
 import { FINAL_FLOOR, floorSpec } from '../../src/sim/wing/floorSpecs';
@@ -50,9 +50,13 @@ describe('Floor 4: the Roof', () => {
   it('the escalator opens after the Owner, and the Roof is the top', () => {
     const below = wonFloorThree();
     expect(canAscend(below)).toBe(true);
-    const roof = ascend(below);
-    expect(roof.wing.floor).toBe(4);
-    expect(roof.seed).toBe(floorSpec(4).seedFrom(below.seed));
+    // Up the escalator to the Roof's first wing (round 45), then its stairs to the boss wing.
+    const first = ascend(below);
+    expect(first.wing.floor).toBe(4);
+    expect(first.wing.part).toBe(1);
+    expect(first.seed).toBe(floorSpec(4).seedFrom(below.seed));
+    const roof = climbToBossWing(below);
+    expect(roof.wing.part).toBeUndefined();
     expect(roof.cash).toBe(120);
     expect(roof.stats.kills).toBe(40);
     roof.status = 'won';

@@ -17,6 +17,19 @@ export type FloorNumber = 1 | 2 | 3 | 4;
 
 export const FLOOR_NUMBERS: readonly FloorNumber[] = Object.freeze([1, 2, 3, 4]);
 
+/**
+ * Round 45: each floor is two wings. The first (`part: 1`) is the lighter half
+ * under its own names and ends in the Lockdown, a sealed room of
+ * LOCKDOWN_SIZE elites; clearing it opens the stairs to the floor's boss wing.
+ * Playtest 2026-09-30: floors took 2-4 minutes; the owner wanted ~1.5x.
+ */
+export const LOCKDOWN_SIZE = 5;
+
+/** The boss wing's seed from the same floor's first-wing seed. */
+export function bossWingSeed(firstWingSeed: number): number {
+  return (Math.imul(firstWingSeed | 0, 43) + 15485863) | 0;
+}
+
 /** Beating this floor's boss clocks the janitor out. */
 export const FINAL_FLOOR: FloorNumber = 4;
 
@@ -24,6 +37,8 @@ type WingRng = ReturnType<typeof createWingRng>;
 
 export type FloorSpec = {
   readonly roomNames: Readonly<Record<WingRoomRole, string>>;
+  /** The first wing's rooms (round 45), in wing order; its last room is the Lockdown. */
+  readonly firstWingNames: Readonly<Record<WingRoomRole, string>>;
   readonly bossKind: BossKind;
   /**
    * Health multiplier for the floor's authored monsters (not bosses, mannequin
@@ -49,6 +64,7 @@ export type FloorSpec = {
 const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   1: {
     roomNames: ROOM_NAMES,
+    firstWingNames: { service_corridor: 'West Entrance', storefront_a: 'Fountain Court', food_court: 'Kiosk Alley', storefront_b: 'Garden Court', back_hall: 'Freight Hall', security_office: 'Customer Service' },
     bossKind: 'lp_manager',
     enemyHealthScale: 1,
     rareOnShelf: false,
@@ -59,6 +75,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   // The Upper Level: Hangers give way to the Static, Spitters to Bargain Hunters.
   2: {
     roomNames: FLOOR_TWO_ROOM_NAMES,
+    firstWingNames: { service_corridor: 'Mezzanine', storefront_a: 'Skybridge West', food_court: 'Gallery Walk', storefront_b: 'Skybridge East', back_hall: 'Elevator Bank', security_office: 'Mezzanine Office' },
     bossKind: 'manager',
     enemyHealthScale: 1.15,
     rareOnShelf: false,
@@ -74,6 +91,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   // Food Court After Dark mixes everything, plus Mascot Brutes in place of either familiar monster.
   3: {
     roomNames: FLOOR_THREE_ROOM_NAMES,
+    firstWingNames: { service_corridor: 'Snack Bar', storefront_a: 'Dessert Row', food_court: 'Ball Pit', storefront_b: 'Prep Kitchen', back_hall: 'Freezer Aisle', security_office: 'Walk-In Cooler' },
     bossKind: 'owner',
     enemyHealthScale: 1.3,
     rareOnShelf: true,
@@ -89,6 +107,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   // The Roof: Roofers lob tar from where the Spitters stood; brutes and Statics still come up.
   4: {
     roomNames: ROOF_ROOM_NAMES,
+    firstWingNames: { service_corridor: 'Service Ladder', storefront_a: 'Antenna Row', food_court: 'Duct Maze', storefront_b: 'Satellite Deck', back_hall: 'Gravel Yard', security_office: 'Elevator Housing' },
     bossKind: 'developer',
     enemyHealthScale: 1.5,
     rareOnShelf: true,

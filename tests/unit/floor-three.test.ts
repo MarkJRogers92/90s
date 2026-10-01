@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateWing } from '../../src/sim/wing/generateWing';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
-import { ascend, ascendToFloorTwo, canAscend, floorThreeSeed } from '../../src/sim/run/floors';
+import { ascend, ascendToFloorTwo, canAscend, floorThreeSeed, climbToBossWing } from '../../src/sim/run/floors';
 import { parseCheckpoint, restoreMvpRun, serializeCheckpoint } from '../../src/sim/run/checkpoint';
 import { enterDoorway } from '../../src/sim/run/tickMvpRun';
 import { PLAYER_MAX_HEALTH } from '../../src/sim/run/rooms';
@@ -47,7 +47,7 @@ describe('Floor 3: Food Court After Dark', () => {
 
   it('opens the escalator after floor 2, and (since the Roof) after floor 3 too', () => {
     expect(canAscend(wonFloorTwo())).toBe(true);
-    const three = ascend(wonFloorTwo());
+    const three = climbToBossWing(wonFloorTwo());
     expect(canAscend(three)).toBe(false);
     three.status = 'won';
     expect(canAscend(three)).toBe(true);
@@ -66,8 +66,8 @@ describe('Floor 3: Food Court After Dark', () => {
     expect(above.room.combat.player.health).toBe(PLAYER_MAX_HEALTH + 2);
   });
 
-  it('puts the Mall Owner in the last room', () => {
-    const state = ascend(wonFloorTwo());
+  it('puts the Mall Owner in the last room (of the boss wing)', () => {
+    const state = climbToBossWing(wonFloorTwo());
     for (let guard = 0; guard < 6 && state.roomIndex < state.wing.rooms.length - 1; guard += 1) {
       state.room.combat.enemies = [];
       if (!enterDoorway(state, 'east').accepted) break;
