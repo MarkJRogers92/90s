@@ -1,5 +1,16 @@
 # Status
 
+## 2026-10-01 — Continue no longer flashes the ended run's HUD
+
+A playtest read Continue as reopening a dead (0 HP) run. It does not: the
+checkpoint parser already rejects 0 HP, and death keeps the last living
+room-boundary checkpoint, so Continue resumed Kiosk Alley at 6/6 HP and $30.
+The defect was the DOM HUD: `launchRun` un-hid `#mvp-run-hud` before the new
+scene existed, so the previous run's 0/6 HP and "Shift ended" stayed on screen
+while assets loaded. `launchRun` now keeps it hidden; `MvpRunHud.sync`
+reveals it on the new scene's first authoritative frame. Checkpoint recovery
+and storage rules are unchanged. See TEST_EVIDENCE.md.
+
 ## 2026-09-27 — Claude neon overhaul (branch `claude/neon-overhaul`)
 
 Night Shift now renders every room as a lit, dressed 90s mall instead of the
