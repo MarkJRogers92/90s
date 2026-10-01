@@ -18,6 +18,7 @@
  * Pure rules over run data; nothing here reads the renderer.
  */
 import type { InventoryLeaf } from '../fusion/types';
+import { freshLeafInstanceId } from '../fusion/inventory';
 import { isBossKind } from '../combat/boss';
 import { ITEM_CATALOG } from '../items/catalog';
 import { RARE_ROSTER } from '../items/storeRoster';
@@ -66,9 +67,8 @@ function foundLeaf(state: MvpRunState, itemDefinitionId: string, source: string)
 }
 
 function own(state: MvpRunState, leaf: InventoryLeaf): void {
-  // Two finds in one tick get distinct ids.
-  let instanceId = leaf.instanceId;
-  for (let n = 2; state.inventory.inventory.some((node) => node.instanceId === instanceId); n += 1) instanceId = `${leaf.instanceId}-${n}`;
+  // Two finds in one tick, or the same tick in another wing, get distinct ids.
+  const instanceId = freshLeafInstanceId(state.inventory, leaf.instanceId);
   state.inventory = {
     ...state.inventory,
     inventory: [...state.inventory.inventory, { ...leaf, instanceId }],

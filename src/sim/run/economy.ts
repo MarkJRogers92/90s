@@ -7,7 +7,7 @@
  * a rejected command leaves cash, Heat, suspicion, offers, inventory, and the
  * player untouched.
  */
-import { compositeLeaves } from '../fusion/inventory';
+import { compositeLeaves, freshLeafInstanceId } from '../fusion/inventory';
 import { definitionFor } from '../items/registry';
 import type { InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
@@ -24,6 +24,7 @@ import type { WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/t
 import { refreshRunLoadout } from './loadout';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { blueLightOfferId } from './roomEvents';
+import { CLEARANCE_PRICE_SCALE, wingEventFor } from './wingEvents';
 import { HEAT_PER_STAR, WANTED_SURCHARGE_PER_STAR, applyHeatFloor, getawayBonus, wantedStars } from './wanted';
 
 /**
@@ -146,7 +147,9 @@ export function holdsPairPartner(state: MvpRunState, offer: WingOffer): boolean 
 
 export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
   // A wanted janitor pays a surcharge: two dollars a star.
-  const price = offer.price + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state);
+  // A clearance sale (a floor event) marks the tag down before anything else.
+  const tag = wingEventFor(state.wing) === 'clearance' ? Math.ceil(offer.price * CLEARANCE_PRICE_SCALE) : offer.price;
+  const price = tag + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state);
   // BLUE LIGHT SPECIAL: this shift's one half-price item.
   const special = blueLightOfferId(state) === offer.id;
   const shelf = special ? Math.ceil(price / 2) : price;
@@ -229,7 +232,7 @@ export function buyRunOffer(state: MvpRunState, offerId: string): MvpCommandResu
   const room = roomOfOffer(state, offer.id);
   const leaf: InventoryLeaf = {
     kind: 'leaf',
-    instanceId: `mvp-purchased-${offer.id}`,
+    instanceId: freshLeafInstanceId(state.inventory, `mvp-purchased-${offer.id}`),
     itemDefinitionId: offer.itemDefinitionId,
     acquisitionKind: 'purchased',
     sourceLocationId: offer.storeId,
@@ -306,15 +309,17 @@ export function secureRunThefts(
     return rejected(INSIDE_STORE_REASON);
   }
 
-  const leaves: InventoryLeaf[] = held.map((theft) => ({
+  const leaves: InventoryLeaf[] = [];
+  for (const theft of held) leaves.push({
     kind: 'leaf',
-    instanceId: `mvp-stolen-${theft.sourceOfferId}`,
+    // Fresh against what is owned and what is already in this haul.
+    instanceId: freshLeafInstanceId({ ...state.inventory, inventory: [...state.inventory.inventory, ...leaves] }, `mvp-stolen-${theft.sourceOfferId}`),
     itemDefinitionId: theft.itemDefinitionId,
     acquisitionKind: 'stolen',
     sourceLocationId: store.templateId,
     sourceStockId: theft.sourceOfferId,
     acquisitionTick: state.tick,
-  }));
+  });
   for (const theft of held) {
     state.offerStatus[theft.sourceOfferId] = 'consumed';
   }

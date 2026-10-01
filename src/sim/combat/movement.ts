@@ -46,6 +46,8 @@ export function movePlayer(state: RunState, moveX: number, moveY: number): void 
     direction.y * speed,
     state.walls,
   );
+  state.player.velocityX = next.x - state.player.x;
+  state.player.velocityY = next.y - state.player.y;
   state.player.x = next.x;
   state.player.y = next.y;
 }

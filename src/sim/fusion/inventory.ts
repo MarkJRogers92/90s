@@ -148,6 +148,32 @@ function nextCompositeIdIsFresh(state: FusionInventoryState, forestIds: Readonly
   });
 }
 
+/**
+ * `base`, or `base-2`, `base-3`... : the first id no item, fused part or past
+ * fusion record of this night has used. Shelf ids repeat from wing to wing
+ * (`<store>-<item>`), so buying the same item again on a later floor used to
+ * reuse an id inside a fused weapon, and every fusion after it failed the
+ * inventory check.
+ */
+export function freshLeafInstanceId(state: Pick<FusionInventoryState, 'inventory' | 'committedTransactions'>, base: string): string {
+  const used = new Set<string>();
+  const walk = (node: FusionInventoryNode): void => {
+    used.add(node.instanceId);
+    if (node.kind === 'composite') {
+      walk(node.primary);
+      walk(node.carrier);
+    }
+  };
+  state.inventory.forEach(walk);
+  for (const record of state.committedTransactions) {
+    used.add(record.primaryInstanceId);
+    used.add(record.carrierInstanceId);
+  }
+  let id = base;
+  for (let n = 2; used.has(id); n += 1) id = `${base}-${n}`;
+  return id;
+}
+
 export function isValidFusionInventoryState(state: FusionInventoryState): boolean {
   if (
     !Array.isArray(state.inventory) ||

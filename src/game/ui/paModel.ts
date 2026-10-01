@@ -12,6 +12,7 @@
  * Phaser.
  */
 import { roomEventFor } from '../../sim/run/roomEvents';
+import { wingEventFor } from '../../sim/run/wingEvents';
 import { COMBO_MILESTONE } from '../../sim/run/combo';
 import type { MvpRunState } from '../../sim/run/types';
 import { hotItemCount, wantedStars } from '../../sim/run/wanted';
@@ -87,6 +88,10 @@ export const PA_LINES = {
   stairs: ['THIS WAY TO THE REST OF THE FLOOR. NO REFUNDS.'],
   roof: ['WELCOME TO THE ROOF. MIND THE EDGE. AND THE TAR.'],
   upstairs: ['WELCOME TO THE UPPER LEVEL. PLEASE HOLD THE HANDRAIL.'],
+  // Floor events (round 47), announced as the wing starts.
+  wing_outage: ['POWER OUTAGE. CAMERAS ON BACKUP. PLEASE STAY CALM.'],
+  wing_sprinklers: ['FIRE SUPPRESSION ACTIVE. PLEASE DO NOT TOUCH WIRES.'],
+  wing_clearance: ['CLEARANCE SALE! EVERYTHING MUST GO. INCLUDING YOU.'],
   idle: [
     'THE MALL CLOSES AT 9 PM. IT IS NOW PAST MIDNIGHT.',
     'PLEASE DO NOT FEED THE MANNEQUINS.',
@@ -173,6 +178,9 @@ export class PaDirector {
     if (current.tick < previous.tick || current.floor !== previous.floor || current.seed !== previous.seed) {
       this.quietStart(current.tick);
       this.lowHealthRoom = -1;
+      // A floor event is news; it beats the welcome.
+      const wingEvent = wingEventFor(state.wing);
+      if (wingEvent) return this.say(`wing_${wingEvent}`, current, true);
       const welcome = FLOOR_PA[current.floor].arrive;
       if (welcome && current.floor !== previous.floor) return this.say(welcome, current, true);
       // Up the stairs from a first wing to the same floor's boss wing.
@@ -185,7 +193,8 @@ export class PaDirector {
       const room = state.wing.rooms[current.roomIndex];
       if (room?.bossAnchor != null) return this.say(current.firstWing ? 'lockdown' : FLOOR_PA[current.floor].boss, current, true);
       const event = roomEventFor(state, current.roomIndex);
-      if (event === 'blackout') return this.say('blackout', current, true);
+      // In an outage every room is dark: the wing's announcement said it once.
+      if (event === 'blackout' && wingEventFor(state.wing) !== 'outage') return this.say('blackout', current, true);
       if (event === 'blue_light') return this.say('blue_light', current, true);
       // Now and then, the mall has something to say about the next room.
       if ((current.seed + current.roomIndex) % 2 === 0) return this.say('room', current);

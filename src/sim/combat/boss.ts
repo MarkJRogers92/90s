@@ -86,6 +86,11 @@ export type BossConfig = {
     readonly counts: readonly [number, number, number];
     readonly spread: number;
     readonly lobTicks: number;
+    /**
+     * Aims where a walking janitor will be this many ticks on, not where they
+     * stand: a straight-line run lands in the ring, a turn or a dash escapes.
+     */
+    readonly leadTicks: number;
   };
 };
 
@@ -162,7 +167,7 @@ export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
     summonHealth: 20,
     summonRadius: 15,
     summonCountPhase2: 1,
-    tarBarrage: { counts: [2, 3, 5], spread: 72, lobTicks: 60 },
+    tarBarrage: { counts: [2, 3, 5], spread: 72, lobTicks: 60, leadTicks: 45 },
   },
 };
 
@@ -409,11 +414,13 @@ function updateOwnerCharge(
 }
 
 /**
- * The Developer's barrage: one ring on the janitor, the rest around it, turned
- * a little each time so no two barrages leave the same safe spots.
+ * The Developer's barrage: one ring where the janitor is heading, the rest
+ * around it, turned a little each time so no two barrages leave the same safe
+ * spots. Standing still, the ring is on the janitor.
  */
 function throwTarBarrage(state: RunState, boss: EnemyState, barrage: NonNullable<BossConfig['tarBarrage']>, count: number): void {
-  const { x, y } = state.player;
+  const x = Math.max(0, Math.min(PLAYFIELD_WIDTH, state.player.x + (state.player.velocityX ?? 0) * barrage.leadTicks));
+  const y = Math.max(0, Math.min(PLAYFIELD_HEIGHT, state.player.y + (state.player.velocityY ?? 0) * barrage.leadTicks));
   const turn = (boss.bossAttacks ?? 0) * 0.7;
   const strikes = [{ x, y, ticks: barrage.lobTicks }];
   for (let index = 1; index < count; index += 1) {

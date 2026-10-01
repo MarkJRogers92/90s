@@ -1,5 +1,24 @@
 # Test evidence
 
+## 2026-10-01 — round 47: floor events, barrage lead, heists, fusion ids
+
+- Each ran red first: `developer` "leads a moving janitor" (no
+  `velocityY`); `heist-risk` (2; no per-floor tables, then an off-by-one on
+  the guards' first tick); `fusion-repeat-ids` (the inventory failed
+  validation after re-buying a fused item: the playtest bug); `floor-events`
+  (6; no module, then the recorder field); `floor-events-presentation` (2).
+- The first event roll used two draws and clustered (Floor 1: 8 of 16 seeds
+  clearance); one draw now gives ~70% events spread evenly (200 seeds a
+  wing: 41-57 each).
+- Changed on purpose: `room-events` skips outage wings; three
+  `mvp-economy` wallet tests and one `mvp-run` rebuild test moved to seed 8
+  (seeds 9 and 7 now roll a clearance sale).
+- `npx tsc --noEmit` clean; `npx vitest run` 1093 passed; build clean.
+- Browser (load average 10-15, 2 workers): 73/76; the 3 failures (civilians
+  evacuate, offers per seed, 800x600 capture) passed serially (3/3).
+- On screen (`?fixture=mvp-event`): sprinkler spray over the Cinema Lobby,
+  and an outage Cinema Lobby in flashlight view; no console errors.
+
 ## 2026-10-01 — round 46: mannequins freeze after a bite
 
 - `mannequin` gains "freezes after a bite": one bite, then 90 ticks frozen

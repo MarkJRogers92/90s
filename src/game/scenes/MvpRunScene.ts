@@ -8,6 +8,7 @@
  * mirrors room-boundary checkpoints through the provided store. Damage,
  * movement, economy, and state transitions stay in `src/sim`.
  */
+import { wingEventFor } from '../../sim/run/wingEvents';
 import { browserCareer, discoverFusion, perksFor, type FusionDiscovery } from '../career/career';
 import { playFusionBanner } from '../ui/FusionReveal';
 import { sellWorkbenchItem } from '../../sim/run/resale';
@@ -1288,6 +1289,21 @@ export class MvpRunScene extends Phaser.Scene {
         }
       }
       return upstairs;
+    }
+    if (fixture === 'mvp-event') {
+      // A Floor 2 boss wing with the floor event named in &event= (outage, sprinklers,
+      // clearance), standing in its first fight with the monsters still there.
+      const wanted = new URLSearchParams(window.location.search).get('event');
+      for (let seed = 1; seed < 500; seed += 1) {
+        const evented = createMvpRun(seed, { floor: 2 });
+        if (wingEventFor(evented.wing) !== wanted) continue;
+        while (evented.wing.rooms[evented.roomIndex]?.id !== 'food_court') {
+          evented.room.combat.enemies = [];
+          tickMvpRun(evented, { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(evented, 'east').accepted) break;
+        }
+        return evented;
+      }
     }
     if (fixture === 'mvp-boss-door') {
       // The room before the boss, cleared, at its east door: walk in for the title card.

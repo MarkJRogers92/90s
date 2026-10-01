@@ -26,6 +26,8 @@ import { circleIntersectsRect } from '../core/geometry';
 import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
 import { collectItemDrops, dropItemsForDeaths } from './drops';
+import { SPRINKLER_WET_TICKS, wingEventFor } from './wingEvents';
+import { applyWet } from '../effects/statuses';
 import { stepCombo } from './combo';
 import { freezeDeep } from '../items/types';
 import { LOCKER_SOURCE_LOCATION, roomClearHeal, runDashCooldown, runMaxHealth } from './perks';
@@ -565,6 +567,10 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     x: state.room.combat.player.x,
     y: state.room.combat.player.y,
   };
+  // Sprinklers (a floor event): everyone is soaked before the blows land, so they conduct.
+  if (wingEventFor(state.wing) === 'sprinklers') {
+    for (const enemy of state.room.combat.enemies) if (enemy.health > 0) applyWet(enemy, SPRINKLER_WET_TICKS);
+  }
   const livingBeforeCombat = markLivingEnemies(state);
   const healthBeforeCombat = state.room.combat.player.health;
   tickRun(

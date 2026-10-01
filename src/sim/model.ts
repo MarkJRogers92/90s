@@ -35,6 +35,9 @@ export type PlayerState = Vec2 & {
   dashCooldownTicks?: number;
   dashX?: number;
   dashY?: number;
+  /** How far the last walk step actually moved (per tick), for leading shots. */
+  velocityX?: number;
+  velocityY?: number;
 };
 
 /**

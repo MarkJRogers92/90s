@@ -7,6 +7,16 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 47 (2026-10-01): floor events. Most wings after the first roll a power
+outage (dark, alarms a second slower), sprinklers (every enemy Wet, so
+anything that conducts chains) or a clearance sale (30% off, an extra
+Bargain Hunter per fight); the PA and title cards announce them. The
+Developer's barrage leads a moving janitor, alarms shrink floor by floor
+(3.5 s to 2.5 s) with the door Hunters quicker upstairs, and a bug is fixed:
+re-buying an item on a later floor no longer blocks every fusion. 1093 unit
+tests; browser 73/76 with 3 load timeouts that pass serially; see
+TEST_EVIDENCE.md round 47.
+
 Round 46 (2026-10-01): a Mannequin that bites the janitor freezes for 1.5 s,
 so one bump is one hit. Mannequins were Floor 1's top source of damage in
 every log (3-5 health in the back hall, one death). 1081 unit tests; see

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { runOfferPrice } from '../../src/sim/run/economy';
 import { blueLightOfferId, roomEventFor } from '../../src/sim/run/roomEvents';
+import { wingEventFor } from '../../src/sim/run/wingEvents';
 
 const COMBAT = new Set(['food_court', 'back_hall']);
 const STORES = new Set(['storefront_a', 'storefront_b']);
@@ -14,6 +15,8 @@ function eventsFor(seed: number) {
 describe('room events', () => {
   it('only black out combat rooms and only run specials in stores, at most one of each', () => {
     for (let seed = 1; seed <= 60; seed += 1) {
+      // A power outage (a floor event, round 47) blacks out the whole wing on purpose.
+      if (wingEventFor(createMvpRun(seed).wing) === 'outage') continue;
       const events = eventsFor(seed);
       const blackouts = events.filter((e) => e.event === 'blackout');
       const specials = events.filter((e) => e.event === 'blue_light');

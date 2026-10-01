@@ -19,7 +19,8 @@ import {
 } from '../../sim/run/economy';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { COMBO_MILESTONE, COMBO_WINDOW_TICKS, comboBonusFor } from '../../sim/run/combo';
-import { blueLightOfferId } from '../../sim/run/roomEvents';
+import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
+import { CLEARANCE_PRICE_SCALE, wingEventFor } from '../../sim/run/wingEvents';
 import { alarmTicksFor } from '../../sim/run/heist';
 import { hotHeatFloor, hotItemCount, isHotNode, wantedStars } from '../../sim/run/wanted';
 import { STALKER_MIN_STARS } from '../../sim/run/stalker';
@@ -421,4 +422,21 @@ export function hudExpanded(input: {
 /** The one objective the collapsed chip keeps in view: the first still to do. */
 export function collapsedObjective(model: GameHudModel): string | undefined {
   return model.objectives.find((objective) => !objective.done)?.text;
+}
+
+/**
+ * The room title card's second line. A floor event (round 47) names itself on
+ * every card of its wing; otherwise a room event, otherwise the room count.
+ */
+export function roomTitleSubtitle(state: MvpRunState): { readonly text: string; readonly color: string } {
+  const wingEvent = wingEventFor(state.wing);
+  if (wingEvent === 'outage') return { text: 'POWER OUTAGE - STAY IN YOUR FLASHLIGHT', color: '#ff5a6a' };
+  if (wingEvent === 'sprinklers') return { text: 'SPRINKLERS ON - EVERYTHING CONDUCTS', color: '#6ad8ff' };
+  if (wingEvent === 'clearance') {
+    return { text: `CLEARANCE SALE - ${Math.round((1 - CLEARANCE_PRICE_SCALE) * 100)}% OFF, MORE SHOPPERS`, color: '#ffd23f' };
+  }
+  const event = roomEventFor(state, state.roomIndex);
+  if (event === 'blackout') return { text: 'BLACKOUT - STAY IN YOUR FLASHLIGHT', color: '#ff5a6a' };
+  if (event === 'blue_light') return { text: 'BLUE LIGHT SPECIAL - ONE ITEM HALF PRICE', color: '#6a9aff' };
+  return { text: `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`, color: '#3ff0ff' };
 }

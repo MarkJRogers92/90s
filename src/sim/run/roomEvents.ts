@@ -11,6 +11,7 @@
  * restores agree automatically.
  */
 import { luck } from './luck';
+import { wingEventFor } from './wingEvents';
 import type { MvpRunState } from './types';
 
 export type RoomEvent = 'blackout' | 'blue_light';
@@ -36,6 +37,9 @@ function blueLightRoomIndex(state: MvpRunState): number | null {
 }
 
 export function roomEventFor(state: MvpRunState, roomIndex: number): RoomEvent | null {
+  // A power outage (a floor event) blacks out every room but the stores and the boss.
+  const room = state.wing.rooms[roomIndex];
+  if (wingEventFor(state.wing) === 'outage' && room && room.store === null && room.bossAnchor === null) return 'blackout';
   if (blackoutRoomIndex(state) === roomIndex) return 'blackout';
   if (blueLightRoomIndex(state) === roomIndex) return 'blue_light';
   return null;

@@ -15,6 +15,8 @@ import { ITEM_CATALOG } from '../../sim/items/catalog';
 import type { EnemyState, ProjectileState, Rect, SurfacePatchState } from '../../sim/model';
 import type { MvpRunState } from '../../sim/run/types';
 import { alarmTicksFor } from '../../sim/run/heist';
+import { wingEventFor } from '../../sim/run/wingEvents';
+import { sprinklerStreaks } from './sprinklerRain';
 import { STORE_ENTRANCE_HALF_WIDTH, activeStore, roomStores, storeEntrance } from '../../sim/run/storeInterior';
 import {
   ARCADE_CABINET,
@@ -206,6 +208,14 @@ export class MvpRunView {
     }
     // Every frame, so a store's carts and labels go away with the store.
     this.drawStoreTwist(state);
+
+    // Sprinklers (a floor event): pale streaks of spray over the whole room.
+    if (wingEventFor(state.wing) === 'sprinklers') {
+      this.effectGraphics.lineStyle(1.5, 0xb4e6ff, 0.5);
+      for (const streak of sprinklerStreaks(state.tick)) {
+        this.effectGraphics.lineBetween(streak.x, streak.y, streak.x - 2, streak.y + streak.length);
+      }
+    }
 
     if (room.benchKiosk) {
       const pulse = 0.35 + 0.25 * Math.sin(state.tick / 12);

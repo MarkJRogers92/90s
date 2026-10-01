@@ -22,6 +22,7 @@ import { activeStore } from '../../sim/run/storeInterior';
 import { shelvedSignaturePair } from '../../sim/run/recipeHints';
 import { wantedStars } from '../../sim/run/wanted';
 import type { FloorNumber } from '../../sim/wing/floorSpecs';
+import { wingEventFor, type WingEvent } from '../../sim/run/wingEvents';
 import type { BossKind } from '../../sim/combat/boss';
 import { TAR_PUDDLE_TICKS } from '../../sim/combat/tar';
 import { TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
@@ -92,6 +93,8 @@ export type RunRecord = {
   readonly floor?: Exclude<FloorNumber, 1>;
   /** 1 on a floor's first wing (round 45). */
   readonly part?: 1;
+  /** The wing's floor event (round 47), when it had one. */
+  readonly event?: WingEvent;
   readonly ticks: number;
   readonly reachedRoom: number;
   readonly rooms: readonly RoomLog[];
@@ -411,6 +414,7 @@ export class PlaytestRecorder {
       outcome,
       ...(state.wing.floor !== undefined ? { floor: state.wing.floor } : {}),
       ...(state.wing.part === 1 ? { part: 1 as const } : {}),
+      ...(wingEventFor(state.wing) ? { event: wingEventFor(state.wing)! } : {}),
       ticks: state.tick - this.startTick,
       reachedRoom: state.roomIndex + 1,
       rooms: this.rooms.map((room) => ({ ...room, damage: { ...room.damage } })),
