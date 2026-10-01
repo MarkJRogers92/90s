@@ -28,6 +28,7 @@ import {
   SECURITY_OFFICE_VARIANT,
   STORE_TEMPLATES,
   STOREFRONT_ROLES,
+  storeTemplate,
   WALL_THICKNESS,
 } from './templates';
 import {
@@ -46,6 +47,7 @@ import type {
 } from './types';
 import { validateWingGraph } from './validateWingGraph';
 import { floorSpec, type FloorNumber } from './floorSpecs';
+import { districtRoll, districtSpec, type DistrictSpec } from './districts';
 
 const STOREFRONT_VARIANT_ID = 'storefront-open-plan';
 const STARTING_CASH = 30;
@@ -191,6 +193,7 @@ function chooseCombatSpawns(
   variant: AuthoredRoomVariant,
   floor: FloorNumber = 1,
   fullStrength = floorSpec(floor).fullStrength,
+  district: DistrictSpec | null = null,
 ): WingEnemySpawn[] {
   const drawn = nextInt(
     rng,
@@ -212,9 +215,11 @@ function chooseCombatSpawns(
     const kindIndex =
       slot.kinds.length === 1 ? 0 : nextInt(rng, 0, slot.kinds.length - 1);
     const authored = slot.kinds[kindIndex]!;
+    const kind = floorSpec(floor).enemyKind(authored, rng);
     return {
       slotId: slot.slotId,
-      kind: floorSpec(floor).enemyKind(authored, rng),
+      // A district's own monster takes its share of the slots (one more draw, district wings only).
+      kind: district && nextInt(rng, 0, 99) < district.enemyShare ? district.enemyKind : kind,
       x: slot.x,
       y: slot.y,
     };
@@ -293,7 +298,9 @@ function storefrontRoom(
 /** `part` 1 is the floor's first wing (round 45): its own names, drawn fight sizes, a Lockdown at the end. */
 export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): GeneratedWing {
   const rng = createWingRng(seed);
-  roomNames = part === 1 ? floorSpec(floor).firstWingNames : floorSpec(floor).roomNames;
+  const districtId = districtRoll(seed, floor, part);
+  const district = districtId ? districtSpec(districtId) : null;
+  roomNames = district ? district.roomNames : part === 1 ? floorSpec(floor).firstWingNames : floorSpec(floor).roomNames;
   const fullStrength = part !== 1 && floorSpec(floor).fullStrength;
 
   const combatVariants = new Map<CombatRoomRole, AuthoredRoomVariant>();
@@ -304,7 +311,9 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
   }
 
   const templateOrder = shuffleIndices(rng, STORE_TEMPLATES.length);
+  // The shuffle is drawn either way, so a district wing's later draws line up with any other's.
   const storefrontTemplates = STOREFRONT_ROLES.map((_, storefrontIndex) => {
+    if (district) return storeTemplate(district.stores[storefrontIndex]!)!;
     const templateIndex = templateOrder[storefrontIndex]!;
     return STORE_TEMPLATES[templateIndex]!;
   });
@@ -327,7 +336,7 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
   for (const role of REGULAR_COMBAT_ROOM_ROLES) {
     combatSpawns.set(
       role,
-      chooseCombatSpawns(rng, combatVariants.get(role)!, floor, fullStrength),
+      chooseCombatSpawns(rng, combatVariants.get(role)!, floor, fullStrength, district),
     );
   }
 
@@ -402,6 +411,7 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
     seed,
     ...(floor === 1 ? {} : { floor }),
     ...(part === 1 ? { part } : {}),
+    ...(districtId ? { district: districtId } : {}),
     rooms,
     startingCash: STARTING_CASH,
   });

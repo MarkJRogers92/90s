@@ -44,7 +44,7 @@ export const VOLLEY_ANGLE_OFFSETS_DEGREES = [-30, -15, 0, 15, 30] as const;
  * the Mall Manager on the upper floor is tougher, reaches further, volleys
  * wider from its first phase, and calls in Bargain Hunters instead of Hangers.
  */
-export type BossKind = 'lp_manager' | 'manager' | 'owner' | 'developer';
+export type BossKind = 'lp_manager' | 'manager' | 'owner' | 'developer' | 'santa' | 'glamour_queen' | 'whiskers' | 'zamboni';
 
 export type BossConfig = {
   readonly maxHealth: number;
@@ -169,10 +169,91 @@ export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
     summonCountPhase2: 1,
     tarBarrage: { counts: [2, 3, 5], spread: 72, lobTicks: 60, leadTicks: 45 },
   },
+  // Round 50: the district mini-bosses, waiting in each district's Lockdown
+  // room. Each is easier than its floor's boss and calls in its district's monster.
+  // Holiday Village: a belly bump, a fan of candy canes, lumps of coal lobbed
+  // like the Developer's tar, and an elf from the sack.
+  santa: {
+    maxHealth: 75,
+    radius: 26,
+    pursueSpeedPerTick: 0.85,
+    slamTelegraphTicks: 34,
+    slamReach: 60,
+    slamDamage: 2,
+    slamRecoverTicks: 86,
+    slamRecoverTicksPhase3: 58,
+    volleyAngles: [-30, -15, 0, 15, 30],
+    volleySpeedPerTick: 2.5,
+    volleyCadence: [null, 150, 115],
+    summonKind: 'elf',
+    summonHealth: 14,
+    summonRadius: 13,
+    summonCountPhase2: 1,
+    tarBarrage: { counts: [0, 2, 3], spread: 64, lobTicks: 56, leadTicks: 30 },
+  },
+  // Glamour Row: a hair whip and a wide fan of flash bulbs; she calls a Spritzer.
+  glamour_queen: {
+    maxHealth: 120,
+    radius: 24,
+    pursueSpeedPerTick: 1.0,
+    slamTelegraphTicks: 30,
+    slamReach: 64,
+    slamDamage: 2,
+    slamRecoverTicks: 80,
+    slamRecoverTicksPhase3: 54,
+    volleyAngles: [-45, -30, -15, 0, 15, 30, 45],
+    volleySpeedPerTick: 2.6,
+    volleyCadence: [170, 125, 95],
+    summonKind: 'spritzer',
+    summonHealth: 16,
+    summonRadius: 13,
+    summonCountPhase2: 1,
+  },
+  // Pet Paradise: a paw swipe, hairballs, and from phase two a pounce across
+  // the room that a wall stops dead; the kennel door lets out a poodle.
+  whiskers: {
+    maxHealth: 170,
+    radius: 30,
+    pursueSpeedPerTick: 1.15,
+    slamTelegraphTicks: 28,
+    slamReach: 70,
+    slamDamage: 2,
+    slamRecoverTicks: 78,
+    slamRecoverTicksPhase3: 52,
+    volleyAngles: [-20, 0, 20],
+    volleySpeedPerTick: 2.4,
+    volleyCadence: [null, 150, 110],
+    summonKind: 'poodle',
+    summonHealth: 12,
+    summonRadius: 12,
+    summonCountPhase2: 1,
+    charge: { speedPerTick: 10, ticks: 30, damage: 2, stunTicks: 90, shockwaveTrays: 6 },
+  },
+  // Skate Arena: the scraper, a fan of pucks, and long charges down the ice;
+  // a Hockey Goon comes off the bench.
+  zamboni: {
+    maxHealth: 260,
+    radius: 30,
+    pursueSpeedPerTick: 0.9,
+    slamTelegraphTicks: 34,
+    slamReach: 72,
+    slamDamage: 2,
+    slamRecoverTicks: 84,
+    slamRecoverTicksPhase3: 56,
+    volleyAngles: [-30, -15, 0, 15, 30],
+    volleySpeedPerTick: 3.0,
+    volleyCadence: [160, 120, 90],
+    summonKind: 'goon',
+    summonHealth: 22,
+    summonRadius: 14,
+    summonCountPhase2: 1,
+    charge: { speedPerTick: 9, ticks: 40, damage: 2, stunTicks: 100, shockwaveTrays: 8 },
+  },
 };
 
 export function isBossKind(kind: EnemyKind): kind is BossKind {
-  return kind === 'lp_manager' || kind === 'manager' || kind === 'owner' || kind === 'developer';
+  return kind === 'lp_manager' || kind === 'manager' || kind === 'owner' || kind === 'developer'
+    || kind === 'santa' || kind === 'glamour_queen' || kind === 'whiskers' || kind === 'zamboni';
 }
 
 export function isBoss(enemy: Pick<EnemyState, 'kind'>): boolean {
@@ -293,6 +374,9 @@ function placeSummon(
   return occupiedFallback ?? clampSummon(bossX + offsetX, bossY + offsetY);
 }
 
+/** Called-in monsters whose first wind-up waits a beat (a brute, a Roofer, the district monsters). */
+const SUMMONS_THAT_WAIT: ReadonlySet<EnemyKind> = new Set<EnemyKind>(['mascot', 'roofer', 'elf', 'spritzer', 'poodle', 'goon']);
+
 function summonPhaseThreeHangers(state: RunState, enemyIndex: number, count: number = BOSS_SUMMON_OFFSETS.length): void {
   const boss = state.enemies[enemyIndex];
   if (!boss) {
@@ -311,8 +395,8 @@ function summonPhaseThreeHangers(state: RunState, enemyIndex: number, count: num
       health: config.summonHealth,
       radius: config.summonRadius,
       // A called-in brute or Roofer needs a beat before its first charge or throw.
-      phase: config.summonKind === 'mascot' || config.summonKind === 'roofer' ? 'recover' : 'pursue',
-      phaseTicks: config.summonKind === 'mascot' || config.summonKind === 'roofer' ? 50 : 0,
+      phase: SUMMONS_THAT_WAIT.has(config.summonKind) ? 'recover' : 'pursue',
+      phaseTicks: SUMMONS_THAT_WAIT.has(config.summonKind) ? 50 : 0,
       cooldownTicks: 0,
       telegraphAimX: 0,
       telegraphAimY: 0,

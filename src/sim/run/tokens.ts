@@ -51,6 +51,15 @@ export const MALL_TOKEN_VALUE: Readonly<Record<EnemyKind, number>> = {
   developer: 0,
   // Pocket change for the arcade: the best payout of any regular.
   walker: 8,
+  // Round 50: the district monsters pay like their kin; mini-bosses drop a rare instead.
+  elf: 2,
+  spritzer: 3,
+  poodle: 2,
+  goon: 4,
+  santa: 0,
+  glamour_queen: 0,
+  whiskers: 0,
+  zamboni: 0,
 };
 
 /** The janitor sweeps up anything within this distance of their feet. */

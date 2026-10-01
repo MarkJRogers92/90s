@@ -146,7 +146,14 @@ export function holdsPairPartner(state: MvpRunState, offer: WingOffer): boolean 
     && state.inventory.inventory.some((node) => node.kind === 'leaf' && node.itemDefinitionId === offer.pairedWith);
 }
 
+/** Cocoa Hut (round 50): the punch card's next purchase is the free one. */
+function punchCardFree(state: MvpRunState, offer: WingOffer): boolean {
+  const twist = state.room.twist;
+  return offer.storeId === 'cocoa-hut' && twist?.storeId === 'cocoa-hut' && twist.purchases % 2 === 1;
+}
+
 export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
+  if (punchCardFree(state, offer)) return 0;
   // A wanted janitor pays a surcharge: two dollars a star.
   // A clearance sale (a floor event) marks the tag down before anything else.
   const tag = wingEventFor(state.wing) === 'clearance' ? Math.ceil(offer.price * CLEARANCE_PRICE_SCALE) : offer.price;
@@ -243,6 +250,7 @@ export function buyRunOffer(state: MvpRunState, offerId: string): MvpCommandResu
   };
   state.cash -= price;
   state.offerStatus[offer.id] = 'consumed';
+  if (offer.storeId === 'cocoa-hut' && state.room.twist?.storeId === 'cocoa-hut') state.room.twist.purchases += 1;
   withInventory(state, [...state.inventory.inventory, leaf]);
 
   const message = `Bought ${itemDefinitionName(offer.itemDefinitionId)} for $${price}.`;

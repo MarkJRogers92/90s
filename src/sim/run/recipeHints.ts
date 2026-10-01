@@ -8,7 +8,7 @@
  * item's own authored price. Seeded, so the same mall pairs the same way.
  */
 import { signatureFusions } from '../fusion/hybrid';
-import { STORE_TEMPLATES } from '../wing/templates';
+import { storeTemplate } from '../wing/templates';
 import type { WingOffer, WingStoreInstance } from '../wing/types';
 import type { MvpRunState } from './types';
 
@@ -27,7 +27,7 @@ export function pairUpStock(
   seed: number,
 ): { store: WingStoreInstance; offers: WingOffer[] } {
   const { store, offers } = shop;
-  const template = STORE_TEMPLATES.find((candidate) => candidate.id === store.templateId);
+  const template = storeTemplate(store.templateId);
   const unchanged = { store, offers: [...offers] };
   if (!template) return unchanged;
   const stock = new Set(template.offers.map((offer) => offer.itemDefinitionId));

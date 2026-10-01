@@ -13,7 +13,7 @@ import {
 } from '../../src/sim/run/drops';
 import { markLivingEnemies } from '../../src/sim/run/tokens';
 import { ITEM_CATALOG } from '../../src/sim/items/catalog';
-import { STORE_TEMPLATES } from '../../src/sim/wing/templates';
+import { ALL_STORE_TEMPLATES } from '../../src/sim/wing/templates';
 import { isValidFusionInventoryState, isCleanPart } from '../../src/sim/fusion/inventory';
 import { hotItemCount } from '../../src/sim/run/wanted';
 import { parseCheckpoint, restoreMvpRun, serializeCheckpoint } from '../../src/sim/run/checkpoint';
@@ -35,7 +35,7 @@ function killAt(state: MvpRunState, kind: 'hanger' | 'shopper' | 'lp_manager', x
 describe('enemies and bosses drop items (round 32)', () => {
   it('rare items exist only as drops: no store sells them', () => {
     expect(RARE_ITEM_IDS.length).toBeGreaterThanOrEqual(8);
-    const sold = new Set(STORE_TEMPLATES.flatMap((store) => store.offers.map((offer) => offer.itemDefinitionId)));
+    const sold = new Set(ALL_STORE_TEMPLATES.flatMap((store) => store.offers.map((offer) => offer.itemDefinitionId)));
     for (const id of RARE_ITEM_IDS) {
       expect(ITEM_CATALOG.some((item) => item.id === id), id).toBe(true);
       expect(sold.has(id), id).toBe(false);

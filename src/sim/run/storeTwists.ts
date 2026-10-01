@@ -30,7 +30,7 @@ import { moveCircle } from '../combat/movement';
 import { playerDashing } from '../combat/dash';
 import { normalizedDirection } from '../core/geometry';
 import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
-import { createEnemyStatusState } from '../effects/statuses';
+import { applySticky, createEnemyStatusState } from '../effects/statuses';
 import type { EnemyState, Vec2 } from '../model';
 import { publishRunFeedback } from './economy';
 import { luck } from './luck';
@@ -69,6 +69,17 @@ export type StoreTwistState = {
   rewindUsed: boolean;
   /** Slice Station: the blast that last burned the janitor (one burn a blast). */
   burnedBlast: number;
+  // Round 50: the district stores.
+  /** Candy Cauldron: the free sample has been had this visit. */
+  sampleUsed: boolean;
+  /** Novelty Nook: ticks until each buzzer tile can zap again. */
+  buzzerCharge: number[];
+  /** Glam Snaps: ticks the janitor stays frozen after the flash. */
+  dazzleTicks: number;
+  /** Green Thumb: ticks until the cacti can prick a guard again. */
+  cactusCooldown: number;
+  /** Cocoa Hut: things bought this visit (every second one is free). */
+  purchases: number;
 };
 
 /** The aisle between the two rows of shelves, where the twists stand. */
@@ -161,6 +172,46 @@ const OVEN_ENEMY_EVERY = 20;
 // Video World.
 export const REWIND_TILE: Vec2 & { readonly radius: number } = { x: 150, y: 335, radius: 26 };
 
+// ---- Round 50: the district stores. ----------------------------------
+
+// Candy Cauldron.
+export const SAMPLE_BOWL: Vec2 & { readonly radius: number } = { x: 830, y: AISLE_Y, radius: 26 };
+
+// Novelty Nook.
+export const BUZZER_TILES: ReadonlyArray<Vec2 & { readonly radius: number }> = [
+  { x: 300, y: AISLE_Y, radius: 22 }, { x: 480, y: AISLE_Y + 14, radius: 22 }, { x: 660, y: AISLE_Y, radius: 22 },
+];
+export const BUZZER_STUN_TICKS = 70;
+export const BUZZER_RECHARGE_TICKS = 120;
+
+// Glam Snaps.
+/** The backdrop lane across the aisle that the studio flash lights up. */
+export const STUDIO_FLASH_LANE = { x: INTERIOR_BOUNDS.x, y: AISLE_Y - 34, width: INTERIOR_BOUNDS.width, height: 68 } as const;
+export const STUDIO_FLASH_CYCLE_TICKS = 220;
+/** The umbrella glows this long before the pop. */
+export const STUDIO_FLASH_WARN_TICKS = 50;
+export const DAZZLE_TICKS = 36;
+
+// Hair Affair.
+export const HAIRSPRAY_ZONES: ReadonlyArray<{ readonly x: number; readonly y: number; readonly width: number; readonly height: number }> = [
+  { x: 280, y: AISLE_Y - 42, width: 150, height: 84 },
+  { x: 540, y: AISLE_Y - 42, width: 150, height: 84 },
+];
+
+// Pet Palace.
+/** The parrot shouts THIEF: the alarm here is this much shorter. */
+export const PARROT_ALARM_CUT = 60;
+
+// Green Thumb.
+export const CACTUS_POTS: ReadonlyArray<Vec2 & { readonly radius: number }> = [
+  { x: 300, y: AISLE_Y, radius: 18 }, { x: 560, y: AISLE_Y + 20, radius: 18 }, { x: 760, y: AISLE_Y - 12, radius: 18 },
+];
+export const CACTUS_GUARD_EVERY = 30;
+
+// Skate Shack.
+/** Rental skates: each step carries this much further. */
+export const SKATE_BOOST = 0.35;
+
 /** What the log says on walking in, so a twist never ambushes the janitor. */
 export const TWIST_HINTS: Readonly<Record<string, string>> = {
   'arcade-annex': 'One cabinet still takes coins: $2 a play.',
@@ -174,6 +225,14 @@ export const TWIST_HINTS: Readonly<Record<string, string>> = {
   'spiral-records': 'Stand in the listening booth to get in the groove.',
   'slice-station': 'The oven by the east wall runs hot. Watch for the glow.',
   'video-world': 'A REWIND tile by the door: it undoes your last hit here.',
+  'candy-cauldron': 'Free samples in the bowl by the east wall. One per customer.',
+  'novelty-nook': 'Joy buzzers in the aisle tiles: guards who step on one get zapped.',
+  'glam-snaps': 'Smile! The studio flash pops across the aisle. Watch the umbrella glow.',
+  'hair-affair': 'Hairspray hangs in the aisle: guards wading through it get stuck.',
+  'pet-palace': 'The parrot is watching. It will shout THIEF the moment you grab.',
+  'green-thumb': 'Cactus pots in the aisle: they prick anyone who touches them.',
+  'skate-shack': 'Rental skates by the door: you move faster in here.',
+  'cocoa-hut': 'Punch card: every second thing you buy here is free.',
 };
 
 /** The twist for the store the janitor is in, created on first use. */
@@ -201,6 +260,11 @@ function twistFor(state: MvpRunState): StoreTwistState | null {
     lastHit: 0,
     rewindUsed: false,
     burnedBlast: -1,
+    sampleUsed: false,
+    buzzerCharge: BUZZER_TILES.map(() => 0),
+    dazzleTicks: 0,
+    cactusCooldown: 0,
+    purchases: 0,
   };
   state.room.twist = twist;
   const hint = TWIST_HINTS[store.templateId];
@@ -299,6 +363,24 @@ export function updateStoreTwist(state: MvpRunState, previousPosition: Vec2): vo
       break;
     case 'mall-mart':
       rollCarts(state, twist, previousPosition);
+      break;
+    case 'candy-cauldron':
+      takeASample(state, twist);
+      break;
+    case 'novelty-nook':
+      buzzTheTiles(state, twist);
+      break;
+    case 'glam-snaps':
+      popTheFlash(state, twist, previousPosition);
+      break;
+    case 'hair-affair':
+      sprayTheAisle(state);
+      break;
+    case 'green-thumb':
+      prickWithCacti(state, twist);
+      break;
+    case 'skate-shack':
+      skate(state, previousPosition);
       break;
     default:
       break;
@@ -512,4 +594,106 @@ function rewindTheTape(state: MvpRunState, twist: StoreTwistState): void {
     publishRunFeedback(state, 'REWOUND: that last hit never happened.');
   }
   twist.lastHealth = player.health;
+}
+
+/* ---- Round 50: the district stores' twists --------------------------- */
+
+const within = (point: Vec2, spot: Vec2 & { readonly radius: number }, extra = 0): boolean => Math.hypot(point.x - spot.x, point.y - spot.y) <= spot.radius + extra;
+const inRect = (point: Vec2, rect: { readonly x: number; readonly y: number; readonly width: number; readonly height: number }): boolean =>
+  point.x >= rect.x && point.x <= rect.x + rect.width && point.y >= rect.y && point.y <= rect.y + rect.height;
+
+/** Candy Cauldron: one free sample a visit, half a heart, only when it helps. */
+function takeASample(state: MvpRunState, twist: StoreTwistState): void {
+  const player = state.room.combat.player;
+  if (twist.sampleUsed || !within(player, SAMPLE_BOWL, player.radius) || player.health >= runMaxHealth(state)) return;
+  twist.sampleUsed = true;
+  player.health += 1;
+  publishRunFeedback(state, 'A free sample. Half a heart back.');
+}
+
+/** Novelty Nook: a guard on a charged tile is buzzed still; the janitor only hears it. */
+function buzzTheTiles(state: MvpRunState, twist: StoreTwistState): void {
+  twist.buzzerCharge = twist.buzzerCharge.map((ticks) => Math.max(0, ticks - 1));
+  BUZZER_TILES.forEach((tile, index) => {
+    if (twist.buzzerCharge[index]! > 0) return;
+    const victim = state.room.combat.enemies.find((enemy) => enemy.health > 0 && !enemy.dormant && within(enemy, tile));
+    if (!victim) return;
+    victim.stunnedTicks = BUZZER_STUN_TICKS;
+    victim.chargeTicks = 0;
+    victim.phase = 'recover';
+    twist.buzzerCharge[index] = BUZZER_RECHARGE_TICKS;
+  });
+}
+
+/** Glam Snaps: where the studio flash is in its cycle. */
+export function studioFlashPhase(twist: StoreTwistState): 'idle' | 'warn' | 'pop' {
+  const position = twist.age % STUDIO_FLASH_CYCLE_TICKS;
+  if (position === 0) return 'pop';
+  return position >= STUDIO_FLASH_CYCLE_TICKS - STUDIO_FLASH_WARN_TICKS ? 'warn' : 'idle';
+}
+
+/** Glam Snaps: the pop freezes anyone in the backdrop lane for a beat, guards included. */
+function popTheFlash(state: MvpRunState, twist: StoreTwistState, previous: Vec2): void {
+  const combat = state.room.combat;
+  const player = combat.player;
+  if (twist.dazzleTicks > 0) {
+    twist.dazzleTicks -= 1;
+    player.x = previous.x;
+    player.y = previous.y;
+  }
+  if (studioFlashPhase(twist) !== 'pop') return;
+  if (inRect(player, STUDIO_FLASH_LANE) && !playerDashing(combat)) {
+    twist.dazzleTicks = DAZZLE_TICKS;
+    publishRunFeedback(state, 'FLASH! Hold that pose.');
+  }
+  for (const enemy of combat.enemies) {
+    if (enemy.health > 0 && inRect(enemy, STUDIO_FLASH_LANE)) {
+      enemy.stunnedTicks = Math.max(enemy.stunnedTicks ?? 0, DAZZLE_TICKS);
+      enemy.chargeTicks = 0;
+    }
+  }
+}
+
+/** Hair Affair: the haze glues guards in place while they wade through it. */
+function sprayTheAisle(state: MvpRunState): void {
+  for (const enemy of state.room.combat.enemies) {
+    if (enemy.health > 0 && HAIRSPRAY_ZONES.some((zone) => inRect(enemy, zone))) applySticky(enemy, 30, 0.5, 0.4);
+  }
+}
+
+/** Green Thumb: a cactus pricks the janitor (and shoves them off it) and any guard it touches. */
+function prickWithCacti(state: MvpRunState, twist: StoreTwistState): void {
+  const combat = state.room.combat;
+  const player = combat.player;
+  for (const pot of CACTUS_POTS) {
+    if (!within(player, pot, player.radius)) continue;
+    hurtJanitor(state);
+    const away = normalizedDirection(player.x - pot.x, player.y - pot.y);
+    const push = away.x === 0 && away.y === 0 ? { x: 0, y: 1 } : away;
+    const next = moveCircle(player, player.radius, push.x * 12, push.y * 12, combat.walls);
+    player.x = next.x;
+    player.y = next.y;
+  }
+  if (twist.cactusCooldown > 0) {
+    twist.cactusCooldown -= 1;
+    return;
+  }
+  let pricked = false;
+  for (const enemy of combat.enemies) {
+    if (enemy.health > 0 && !enemy.dormant && CACTUS_POTS.some((pot) => within(enemy, pot, enemy.radius))) {
+      enemy.health = Math.max(0, enemy.health - 1);
+      pricked = true;
+    }
+  }
+  if (pricked) twist.cactusCooldown = CACTUS_GUARD_EVERY;
+}
+
+/** Skate Shack: every step glides a little further (a dash goes where it points). */
+function skate(state: MvpRunState, previous: Vec2): void {
+  const combat = state.room.combat;
+  const player = combat.player;
+  if (playerDashing(combat)) return;
+  const next = moveCircle(player, player.radius, (player.x - previous.x) * SKATE_BOOST, (player.y - previous.y) * SKATE_BOOST, combat.walls);
+  player.x = next.x;
+  player.y = next.y;
 }

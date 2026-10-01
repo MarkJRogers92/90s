@@ -8,6 +8,7 @@
 import type { Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
 import type { FloorNumber } from './floorSpecs';
+import type { DistrictId } from './districts';
 
 export type WingRoomRole =
   | 'service_corridor'
@@ -29,7 +30,7 @@ export type WingDoorway = {
 
 export type WingEnemySpawn = {
   readonly slotId: string;
-  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper' | 'mascot' | 'roofer';
+  readonly kind: 'hanger' | 'spitter' | 'static' | 'shopper' | 'mascot' | 'roofer' | 'elf' | 'spritzer' | 'poodle' | 'goon';
   readonly x: number;
   readonly y: number;
 };
@@ -84,6 +85,8 @@ export type GeneratedWing = {
   readonly floor?: Exclude<FloorNumber, 1>;
   /** 1: the floor's first wing, ending in the Lockdown (round 45). Absent: the floor's boss wing, as every save from before. */
   readonly part?: 1;
+  /** Round 50: a first wing that is its floor's district (wing/districts.ts). Absent: the usual first wing. */
+  readonly district?: DistrictId;
   readonly rooms: readonly WingRoomDefinition[];
   readonly startingCash: number;
 };

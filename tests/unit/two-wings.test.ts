@@ -40,7 +40,9 @@ describe('two wings per floor (round 45)', () => {
   });
 
   it('the first wing ends in the Lockdown: a wave of elites, no boss', () => {
-    const first = createMvpRun(5, { part: 1, floor: 2 });
+    // A usual first wing (a district's Lockdown holds a mini-boss instead, round 50).
+    const seed = Array.from({ length: 50 }, (_, i) => i + 1).find((candidate) => !createMvpRun(candidate, { part: 1, floor: 2 }).wing.district)!;
+    const first = createMvpRun(seed, { part: 1, floor: 2 });
     const last = first.wing.rooms.length - 1;
     const combat = buildRoomCombatState(first.wing, last, 'west', first.inventory, first.seed);
     expect(combat.enemies.some((enemy) => isBossKind(enemy.kind))).toBe(false);

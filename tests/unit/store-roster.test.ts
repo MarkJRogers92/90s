@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { ITEM_CATALOG } from '../../src/sim/items/catalog';
 import { validateCatalog } from '../../src/sim/items/validateCatalog';
 import { fusionPairFor, hybridDefinition, shortItemName } from '../../src/sim/fusion/hybrid';
-import { AUTHORED_OFFER_BANDS, STORE_TEMPLATES } from '../../src/sim/wing/templates';
+import { AUTHORED_OFFER_BANDS, ALL_STORE_TEMPLATES, STORE_TEMPLATES } from '../../src/sim/wing/templates';
 import { generateRunWing, roomStores } from '../../src/sim/run/storeInterior';
 import { ITEM_ICON_FILES } from '../../src/game/presentation/assets';
 import { itemBlurb } from '../../src/game/ui/itemBlurbs';
@@ -10,13 +10,13 @@ import { itemBlurb } from '../../src/game/ui/itemBlurbs';
 import { existsSync, readFileSync } from 'node:fs';
 import { FACADE_TEXTURES, hasStoreLook, storeFacade } from '../../src/game/presentation/rooms/roomDressing';
 
-const template = (id: string) => STORE_TEMPLATES.find((candidate) => candidate.id === id)!;
+const template = (id: string) => ALL_STORE_TEMPLATES.find((candidate) => candidate.id === id)!;
 const stocks = (id: string) => template(id).offers.map((offer) => offer.itemDefinitionId);
 
 describe('a mall full of themed stores (round 32)', () => {
   it('has at least eleven stores, each with a look of its own', () => {
-    expect(STORE_TEMPLATES.length).toBeGreaterThanOrEqual(11);
-    for (const store of STORE_TEMPLATES) expect(hasStoreLook(store.id), store.id).toBe(true);
+    expect(ALL_STORE_TEMPLATES.length).toBeGreaterThanOrEqual(11);
+    for (const store of ALL_STORE_TEMPLATES) expect(hasStoreLook(store.id), store.id).toBe(true);
   });
 
   it('no item still wears a placeholder icon', () => {
@@ -26,8 +26,8 @@ describe('a mall full of themed stores (round 32)', () => {
   });
 
   it('every store has a shopfront of its own, drawn for it', () => {
-    const facades = STORE_TEMPLATES.map((store) => storeFacade(store.id));
-    expect(new Set(facades).size).toBe(STORE_TEMPLATES.length);
+    const facades = ALL_STORE_TEMPLATES.map((store) => storeFacade(store.id));
+    expect(new Set(facades).size).toBe(ALL_STORE_TEMPLATES.length);
     for (const facade of facades) expect(existsSync(`public/assets/neon/${FACADE_TEXTURES[facade].file}`), facade).toBe(true);
   });
 
@@ -41,7 +41,7 @@ describe('a mall full of themed stores (round 32)', () => {
   });
 
   it('every themed store has at least eight things so its shelves change shift to shift', () => {
-    for (const store of STORE_TEMPLATES) {
+    for (const store of ALL_STORE_TEMPLATES) {
       if (['mall-mart', 'cinema-snacks', 'arcade-annex', 'department-outlet'].includes(store.id)) continue;
       expect(store.offers.length, store.id).toBeGreaterThanOrEqual(8);
       expect(new Set(store.offers.map((offer) => offer.itemDefinitionId)).size, store.id).toBe(store.offers.length);
@@ -55,7 +55,7 @@ describe('a mall full of themed stores (round 32)', () => {
   });
 
   it('no four offers in a row share a shelf spot', () => {
-    for (const store of STORE_TEMPLATES) {
+    for (const store of ALL_STORE_TEMPLATES) {
       for (let start = 0; start + 4 <= store.offers.length; start += 1) {
         const spots = store.offers.slice(start, start + 4).map((offer) => `${offer.position.x},${offer.position.y}`);
         expect(new Set(spots).size, `${store.id} @${start}`).toBe(4);
@@ -70,7 +70,7 @@ describe('a mall full of themed stores (round 32)', () => {
       expect(itemBlurb(item.id), `${item.id} blurb`).not.toBe('');
       expect(shortItemName(item.id), `${item.id} noun`).not.toBe(item.id);
     }
-    for (const store of STORE_TEMPLATES) {
+    for (const store of ALL_STORE_TEMPLATES) {
       for (const offer of store.offers) expect(AUTHORED_OFFER_BANDS[offer.itemDefinitionId], offer.itemDefinitionId).toBeDefined();
     }
   });
@@ -98,6 +98,7 @@ describe('a mall full of themed stores (round 32)', () => {
       expect(new Set(shops).size, `seed ${seed}`).toBe(4);
       shops.forEach((shop) => seen.add(shop));
     }
+    // Boss wings shuffle the regular stores; the district stores open only in their districts.
     expect([...seen].sort()).toEqual(STORE_TEMPLATES.map((store) => store.id).sort());
   });
 });
