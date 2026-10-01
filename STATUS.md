@@ -7,6 +7,11 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 46 (2026-10-01): a Mannequin that bites the janitor freezes for 1.5 s,
+so one bump is one hit. Mannequins were Floor 1's top source of damage in
+every log (3-5 health in the back hall, one death). 1081 unit tests; see
+TEST_EVIDENCE.md round 46.
+
 Round 45 (2026-10-01): every floor is two wings. The first is the lighter
 half under its own names and ends in the Lockdown, a sealed room of five
 elites; clearing it opens the stairs to the floor's boss wing. The night

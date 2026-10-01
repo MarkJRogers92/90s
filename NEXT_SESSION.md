@@ -33,6 +33,21 @@ twists, sell and drop, reduced flashing). What is left:
 2. Playtest rounds 32-37 (questions below) and tune.
 2b. ~~Browser gate flake~~ (fixed, round 41).
 
+## Round 46 playtest questions
+
+- Mannequins now freeze for 1.5 s after a bite. Does Floor 1's back hall
+  still eat 3-5 health? Is the freeze readable (it creaks when it wakes)?
+
+## Round 45 answers (2026-10-01 log, a full night on seed 153774)
+
+- Length: floors took 5.4 / 5.0 / 3.6 / 3.6 min, 17.6 min of play in all
+  (was ~10). On target; leave it.
+- Lockdowns cost 2-3 health except Floor 3's Walk-In Cooler (7: two Mascot
+  charges and three globs).
+- Pairs work: three signatures (Greatest Hits, Hydro Mop, Deep Dish), and
+  every recipe hint followed that night had `tookBoth: true`.
+- The Developer's tar barrage hit 0 times in 3 finales; Roofers once.
+
 ## Round 45 playtest questions
 
 - Does a floor now feel ~1.5x longer, and is that the right length?

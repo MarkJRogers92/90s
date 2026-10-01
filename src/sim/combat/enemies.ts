@@ -4,7 +4,7 @@ import { normalizedDirection, PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH } from '../core/
 import { effectiveSpeedMultiplier } from '../effects/statuses';
 import { moveCircle, scaleMovementDelta } from './movement';
 import { playerDashing } from './dash';
-import { updateMannequin } from './mannequin';
+import { freezeAfterBite, updateMannequin } from './mannequin';
 import { updateShopper } from './shopper';
 import { updateMascot } from './mascot';
 import { updateStatic } from './staticEnemy';
@@ -117,7 +117,7 @@ export function resolveEnemyDamage(state: RunState): void {
   if (state.player.invulnerableTicks > 0 || playerDashing(state)) {
     return;
   }
-  const touchingHanger = state.enemies.some(
+  const touching = state.enemies.filter(
     (enemy) =>
       enemy.health > 0 &&
       // A watched mannequin is frozen and harmless; a moving one bites.
@@ -131,9 +131,11 @@ export function resolveEnemyDamage(state: RunState): void {
         enemy.radius,
       ),
   );
-  if (touchingHanger) {
+  if (touching.length > 0) {
     state.player.health -= 1;
     state.player.invulnerableTicks = PLAYER_INVULNERABILITY_TICKS;
+    // Every mannequin in on the bite is caught in the act and holds still.
+    for (const enemy of touching) if (enemy.kind === 'mannequin') freezeAfterBite(enemy);
   }
 }
 

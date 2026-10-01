@@ -1,5 +1,15 @@
 # Test evidence
 
+## 2026-10-01 — round 46: mannequins freeze after a bite
+
+- `mannequin` gains "freezes after a bite": one bite, then 90 ticks frozen
+  in 'recover' and harmless past the 60-tick invulnerability, then it bites
+  again if still in reach. Ran red first (no `MANNEQUIN_BITE_FREEZE_TICKS`),
+  then once more on an off-by-one in the test (the bite tick plus 90).
+- Adjacent: `mannequin`, `mannequin-spawns`, `audio-cues`, `grab-and-run`
+  55 passed. `npx tsc --noEmit` clean; `npx vitest run` 1081 passed.
+- The dev page reloads with no console errors.
+
 ## 2026-10-01 — round 45: two wings a floor
 
 - `two-wings` (9 tests; the sim and card ones run red first): first wings
