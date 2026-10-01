@@ -13,11 +13,15 @@ const SIZE = 48;
 const PAD = 4;
 const BASE = 32;
 const MINI = 16;
-/** Where the stacked items sit: bottom-right, then up the right, then along the bottom. */
+/**
+ * Where the stacked items sit: bottom-right, then up the right, then along the
+ * bottom, and (only a five-part signature fills it) the top-left corner.
+ */
 const MINI_SPOTS = [
   { x: 28, y: 28 },
   { x: 28, y: 12 },
   { x: 12, y: 28 },
+  { x: 12, y: 12 },
 ];
 
 type Drawable = CanvasImageSource & { width: number; height: number };

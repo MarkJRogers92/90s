@@ -4,16 +4,19 @@
  * the part count. Pure: the Phaser texture is drawn from this plan by
  * `fusedIconTexture.ts`.
  */
-import { hybridParts } from '../../sim/fusion/hybrid';
+import { containsSignature, hybridParts } from '../../sim/fusion/hybrid';
 
 export type FusedIconPlan = {
   readonly baseItemId: string;
-  /** Every other item in the fusion, in the order they went in (at most three). */
+  /** Every other item in the fusion, in the order they went in (at most four, in a signature). */
   readonly stackedItemIds: readonly string[];
   readonly parts: number;
   readonly glow: { readonly color: number; readonly width: number };
   readonly textureKey: string;
 };
+
+/** A fusion holding a signature glows hot pink, whatever its size (round 43). */
+const SIGNATURE_GLOW = { color: 0xff3fc8, width: 3 };
 
 /** Green for two items, cyan for three, gold for the full four. */
 const GLOWS: Readonly<Record<number, { color: number; width: number }>> = {
@@ -36,7 +39,7 @@ export function fusedIconPlan(itemDefinitionId: string): FusedIconPlan | null {
     baseItemId: baseItemId!,
     stackedItemIds,
     parts,
-    glow: GLOWS[Math.min(4, parts)]!,
+    glow: containsSignature(itemDefinitionId) ? { ...SIGNATURE_GLOW, width: parts >= 5 ? 4 : SIGNATURE_GLOW.width } : GLOWS[Math.min(4, parts)]!,
     textureKey: `neon:fused:${itemDefinitionId}`,
   };
 }

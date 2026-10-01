@@ -1,5 +1,21 @@
 # Test evidence
 
+## 2026-10-01 — round 43: the signature tier
+
+- `signature-tier` (5 tests, run red first): the Hydro Mop's swing, shot and
+  cooldown match the plain rule x1.5 / x0.8; it beats the same-role
+  non-signature (mop + popper); a further fusion does not compound; a
+  signature chain takes a fifth part, a plain one stops at four; the bench
+  card leads with the tier and the glow is not a plain fusion's colour.
+- Changed on purpose: `deep-fusion` now refuses the fifth on a non-signature
+  chain (mop + popper) and adds a five-part signature chain;
+  `fused-icon`'s glow progression uses soaker + popper (soaker + globe is the
+  Storm Soaker).
+- `npx tsc --noEmit` clean; `npx vitest run` 1065 passed; build clean; full
+  browser suite on 4 workers 76 passed.
+- On screen: `fusion-bench.png` (the Storm Soaker card leads with the tier),
+  `fusion-fused.png` (discovery banner; the hotbar icon glows pink).
+
 ## 2026-10-01 — round 42: a harder finale, tar in the log
 
 - `roof-tuning` (4 tests, run red first): a Roofer bucket and the Developer

@@ -22,9 +22,10 @@ describe('a fused item looks fused (round 34)', () => {
   });
 
   it('the glow grows with the part count', () => {
-    const two = fusedIconPlan('hybrid__pump_soaker__plasma_globe')!.glow;
-    const three = fusedIconPlan('hybrid__(hybrid__pump_soaker__plasma_globe)__gel_pens')!.glow;
-    const four = fusedIconPlan('hybrid__(hybrid__(hybrid__pump_soaker__plasma_globe)__gel_pens)__wide_nozzle')!.glow;
+    // Soaker + popper is not a named pair (a signature glows its own pink).
+    const two = fusedIconPlan('hybrid__pump_soaker__party_popper')!.glow;
+    const three = fusedIconPlan('hybrid__(hybrid__pump_soaker__party_popper)__gel_pens')!.glow;
+    const four = fusedIconPlan('hybrid__(hybrid__(hybrid__pump_soaker__party_popper)__gel_pens)__wide_nozzle')!.glow;
     expect(two.width).toBeLessThan(three.width);
     expect(three.width).toBeLessThan(four.width);
     expect(new Set([two.color, three.color, four.color]).size).toBe(3);

@@ -85,9 +85,10 @@ describe('fusing things that are already fused', () => {
     expect(hybridFee(2, false)).toBeGreaterThan(hybridFee(2, true));
   });
 
-  it('at the Bench Warrant: mop + soaker, then + globe, then + grease, and a fifth is refused', () => {
-    const run = atBench(leaf('pump_soaker'), leaf('plasma_globe'), leaf('grease_gun'), leaf('box_cutter'));
-    expect(fuse(run, 'janitor_mop', 'pump_soaker').accepted).toBe(true);
+  it('at the Bench Warrant: mop + popper, then + globe, then + grease, and a fifth is refused', () => {
+    // Mop + popper is not a named pair, so this fusion stops at four (a signature would take five).
+    const run = atBench(leaf('party_popper'), leaf('plasma_globe'), leaf('grease_gun'), leaf('box_cutter'));
+    expect(fuse(run, 'janitor_mop', 'party_popper').accepted).toBe(true);
     expect(fuse(run, 'janitor_mop', 'plasma_globe').accepted).toBe(true);
     expect(fusionPartCount(nodeWith(run, 'janitor_mop'))).toBe(3);
     expect(fuse(run, 'janitor_mop', 'grease_gun').accepted).toBe(true);
@@ -97,7 +98,17 @@ describe('fusing things that are already fused', () => {
     expect(run.room.combat.compiledLoadout.primary.definitionId).toBe(definitionFor(run.room.combat.compiledLoadout.primary.definitionId)!.id);
     const refused = fuse(run, 'janitor_mop', 'box_cutter');
     expect(refused.accepted).toBe(false);
-    expect(refused.accepted ? '' : refused.reason).toMatch(/four/i);
+    expect(refused.accepted ? '' : refused.reason).toMatch(/at most 4 items/i);
+    expect(isValidFusionInventoryState(run.inventory)).toBe(true);
+  });
+
+  it('a fusion holding a signature takes a fifth part (round 43)', () => {
+    const run = atBench(leaf('pump_soaker'), leaf('plasma_globe'), leaf('grease_gun'), leaf('box_cutter'));
+    expect(fuse(run, 'janitor_mop', 'pump_soaker').accepted).toBe(true);
+    expect(fuse(run, 'janitor_mop', 'plasma_globe').accepted).toBe(true);
+    expect(fuse(run, 'janitor_mop', 'grease_gun').accepted).toBe(true);
+    expect(fuse(run, 'janitor_mop', 'box_cutter').accepted).toBe(true);
+    expect(fusionPartCount(nodeWith(run, 'janitor_mop'))).toBe(5);
     expect(isValidFusionInventoryState(run.inventory)).toBe(true);
   });
 

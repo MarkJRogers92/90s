@@ -1091,3 +1091,21 @@ damage a fight: 4-part fusions by floor 2 had outgrown the monsters.
   the boss's buckets in the air just dropped. Before this both were `other`.
   Pink slips: TARRED ON THE ROOF, BURIED IN HOT TAR.
 
+## Round 43: signatures are the best fusions (playtest 2026-09-30)
+
+At +1 damage a named pair lost to any random 4-part fusion, and 0 of 8
+recipe hints were followed. Now (`sim/fusion/hybrid.ts`):
+
+- When a signature pair is formed, `signatureTier` raises the plain rule's
+  result by `SIGNATURE_DAMAGE_SCALE` (x1.5, rounded up, swing and shots) and
+  `SIGNATURE_COOLDOWN_SCALE` (x0.8 cooldown, at least 8 ticks). Applied once:
+  fusing more onto it builds on the boosted stats.
+- `maxPartsFor`: anything that `containsSignature` holds `SIGNATURE_MAX_PARTS`
+  (5); everything else stops at `MAX_FUSION_PARTS` (4). The fifth part's icon
+  sits in the top-left spot; names go to MK V.
+- The bench card leads with SIGNATURE: +50% DAMAGE, 20% FASTER, ROOM FOR A 5TH
+  PART; a fusion holding a signature glows hot pink (`fusedIcon.ts`).
+- Still to do (pieces 2 and 3 of the plan): the shelf card naming the pair's
+  payoff and a discount on the second half; Lost & Found rares and cash to
+  stubs.
+
