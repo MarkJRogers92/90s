@@ -333,6 +333,8 @@ export type MvpRunDebugSnapshot = {
   /** Round 53: the room's props and the hero fusion's moves. */
   props: Array<{ kind: string; x: number; y: number; state: string }>;
   hero: { records: string[]; decoy: boolean; beams: number; beamCooldown: number } | null;
+  /** The secret back room's phase, or null outside it. */
+  secretPhase: 'fight' | 'won' | null;
   /**
    * Audio engine state, so acceptance can prove the sound layer actually
    * started rather than only that nothing threw. `created` flips true once a
@@ -443,6 +445,7 @@ export function installMvpRunDebugBridge(
           hero: state.room.combat.hero
             ? { records: state.room.combat.hero.records.map((record) => record.mode), decoy: state.room.combat.hero.decoy !== null, beams: state.room.combat.hero.beams.length, beamCooldown: state.room.combat.hero.beamCooldown }
             : null,
+          secretPhase: state.room.secret?.phase ?? null,
           audio: (() => {
             const engine = getAudio?.();
             return engine

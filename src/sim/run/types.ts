@@ -7,6 +7,7 @@
  * projectiles, and surfaces live in the wrapped combat state and are rebuilt
  * from the seed on every transition.
  */
+import type { SecretRoomState } from './secretRoom';
 import type { CarrierState } from '../carrier/car';
 import type { FusionInventoryState, FusionProposal } from '../fusion/types';
 import type { RunState } from '../model';
@@ -48,6 +49,8 @@ export type MvpRoomState = {
   storeIndex: number;
   /** The store's twist while inside (see storeTwists.ts). Never checkpointed. */
   twist: StoreTwistState | null;
+  /** Round 53: the secret back room, while the janitor is in it. */
+  secret?: SecretRoomState | null;
 };
 
 /** Renderer-neutral held input for exactly one fixed simulation tick. */
@@ -86,6 +89,7 @@ export type MvpInteraction =
   | { readonly kind: 'bench'; readonly label: string }
   | { readonly kind: 'store'; readonly storeIndex: number; readonly label: string }
   | { readonly kind: 'cabinet'; readonly label: string }
+  | { readonly kind: 'secret'; readonly label: string }
   | { readonly kind: 'none'; readonly label: string };
 
 /** Every run command reports its own outcome; the HUD never infers success. */
@@ -161,6 +165,8 @@ export type MvpRunState = {
   perks: ShiftPerks;
   /** Round 53: the props have been explained this night (not checkpointed). */
   propsHinted?: boolean;
+  /** Round 53: the secret machines opened this wing, by room index (checkpointed). */
+  secretsDone: string[];
   /** Round 52: the free samples had this wing, as "room:store" (checkpointed). */
   samplesTaken: string[];
 };

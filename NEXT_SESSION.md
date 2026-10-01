@@ -59,7 +59,8 @@ The queue as asked:
 - Movie Night: is a beam every 1.5 s too often, too rare?
 - Props: did you use them, or walk past? Is the soda puddle + shock combo
   findable? Does a fallen rack ever get in your own way?
-- Not done from the review package: the secret-room encounter (next).
+- The back room: did you find the machine? Is 20 seconds of waves worth a
+  rare item, or too risky with low health (there is no way out early)?
 
 ## Outside review backlog (GPT, 2026-10-01; proposals, not approved)
 

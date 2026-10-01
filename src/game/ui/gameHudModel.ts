@@ -218,7 +218,13 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
       done: state.status === 'won',
     },
   ];
-  if (room?.id === 'security_office') {
+  const secret = state.room.secret;
+  if (secret) {
+    // Round 53: the back room.
+    objectives.push(secret.phase === 'fight'
+      ? { text: `SURVIVE THE BACK ROOM  ${Math.ceil(secret.ticksLeft / 60)}S`, done: false }
+      : { text: 'GRAB THE PRIZE AND GET OUT', done: true });
+  } else if (room?.id === 'security_office') {
     objectives.push({ text: floorHud.boss, done: boss === null && state.room.cleared });
   } else if (fightHere) {
     objectives.push({
@@ -455,6 +461,7 @@ export function collapsedObjective(model: GameHudModel): string | undefined {
  * every card of its wing; otherwise a room event, otherwise the room count.
  */
 export function roomTitleSubtitle(state: MvpRunState): { readonly text: string; readonly color: string } {
+  if (state.room.secret) return { text: 'LAST 20 SECONDS - THE PRIZE IS YOURS', color: '#ff5a6a' };
   const wingEvent = wingEventFor(state.wing);
   if (wingEvent === 'outage') return { text: 'POWER OUTAGE - STAY IN YOUR FLASHLIGHT', color: '#ff5a6a' };
   if (wingEvent === 'sprinklers') return { text: 'SPRINKLERS ON - EVERYTHING CONDUCTS', color: '#6ad8ff' };

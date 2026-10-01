@@ -21,6 +21,7 @@ import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
 import type { FloorNumber } from '../../../sim/wing/floorSpecs';
 import type { DistrictId } from '../../../sim/wing/districts';
+import { SECRET_STORE_INDEX } from '../../../sim/run/secretRoom';
 
 /* ------------------------------------------------------------------------ */
 /* Stage geometry                                                             */
@@ -674,6 +675,47 @@ function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null
   };
 }
 
+/**
+ * The secret back room (round 53): bare concrete, stacked stock, lockers and
+ * a confiscation cage, one caged work light swinging over it, and a red
+ * EMPLOYEES ONLY over the passage out.
+ */
+function backRoom(): DressingPlan {
+  const b = INTERIOR_BOUNDS;
+  const door = INTERIOR_EXIT;
+  const props: DressingProp[] = [];
+  const wall: PropId[] = ['crates', 'lockerRow', 'filingCabinets', 'crates', 'confiscationCage', 'lockerRow', 'crates', 'filingCabinets', 'crates', 'lockerRow', 'crates'];
+  wall.forEach((prop, index) => props.push({ id: `back-${index}`, prop, x: b.x + 60 + index * 76, y: b.y + 34, ...sized(prop, 1.1) }));
+  for (const [side, x] of [['w', b.x + 30], ['e', b.x + b.width - 30]] as const) {
+    props.push({ id: `side-${side}-0`, prop: 'crates', x, y: b.y + 170, ...sized('crates', 1.1), flipX: side === 'e' });
+    props.push({ id: `side-${side}-1`, prop: side === 'w' ? 'janitorCart' : 'floorBuffer', x, y: b.y + 270, ...sized(side === 'w' ? 'janitorCart' : 'floorBuffer', 1.2), flipX: side === 'e' });
+  }
+  props.push(
+    { id: 'corner-cooler', prop: 'waterCooler', x: door.x - 70, y: door.y - 10, ...sized('waterCooler', 1.2) },
+    { id: 'corner-bin', prop: 'bin', x: door.x + door.width + 70, y: door.y - 6, ...sized('bin', 1.3) },
+  );
+  const lights: PointLight[] = [
+    { x: 480, y: 170, radius: 260, color: 0xffe0a0, intensity: 0.55 },
+    { x: door.x + door.width / 2, y: door.y + 4, radius: 110, color: 0xff3a3a, intensity: 0.6, squash: 0.6 },
+  ];
+  return {
+    themeId: 'store_interior',
+    areaName: 'THE BACK ROOM',
+    floor: 'concrete',
+    ambient: 0x2a2630,
+    facades: [],
+    props,
+    lights,
+    neonStrips: [
+      { x1: door.x - 30, y1: door.y, x2: door.x + door.width + 30, y2: door.y, color: NEON.red },
+    ],
+    neonRings: [],
+    floorSigns: [{ ...sign('EMPLOYEES ONLY', NEON.red, 'NO CUSTOMERS BEYOND THIS POINT', NEON.yellow, 3), x: 480, y: -64 }],
+    storeZone: null,
+    civilians: false,
+  };
+}
+
 function foodCourt(room: WingRoomDefinition): DressingPlan {
   const facades = facadeRow([
     { facade: 'pizza', sign: sign('PIZZA PALACE', NEON.orange, 'HOT SLICES 99C', NEON.yellow), spill: 0xffb070 },
@@ -1212,6 +1254,8 @@ function districtRoom(base: DressingPlan, room: WingRoomDefinition, district: Di
 }
 
 export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1, district?: DistrictId): DressingPlan {
+  // Round 53: through the suspicious vending machine.
+  if (insideStore === SECRET_STORE_INDEX) return backRoom();
   // A shop looks like itself on any floor.
   const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
   if (shop) return storeInterior(room, shop);
