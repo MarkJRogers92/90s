@@ -148,10 +148,11 @@ export class ShiftCard {
     const floor = floorOf(state);
     this.record = recordShift(this.career.load(), {
       score: model.score,
-      won: model.won && floor === FINAL_FLOOR,
-      floorCleared: floor > 1 || model.ascend,
-      floorTwoCleared: floor >= 3 || (floor === 2 && model.ascend),
-      floorThreeCleared: floor >= 4 || (floor === 3 && model.ascend),
+      // A Lockdown clear (stairs) is never the night's win, even on the Roof.
+      won: model.won && floor === FINAL_FLOOR && !model.ascend,
+      floorCleared: floor > 1 || (model.ascend && !model.stairs),
+      floorTwoCleared: floor >= 3 || (floor === 2 && model.ascend && !model.stairs),
+      floorThreeCleared: floor >= 4 || (floor === 3 && model.ascend && !model.stairs),
       kills: state.stats.kills,
       bestCombo: state.stats.bestCombo,
       seconds: model.seconds,
@@ -268,7 +269,7 @@ export class ShiftCard {
       const y = CARD_Y + oy + CARD_H - 64;
       const specs: Array<{ action: ShiftCardAction; key: string; text: string; x: number }> = [
         model.ascend
-          ? { action: 'ascend', key: 'R', text: 'ESCALATOR', x: W / 2 - 200 }
+          ? { action: 'ascend', key: 'R', text: model.stairs ? 'STAIRS' : 'ESCALATOR', x: W / 2 - 200 }
           : { action: 'retry', key: 'R', text: model.won ? 'NEW SHIFT' : 'RETRY', x: W / 2 - 200 },
         { action: 'title', key: 'T', text: model.ascend ? 'CLOCK OUT' : 'TITLE', x: W / 2 + 20 },
       ];

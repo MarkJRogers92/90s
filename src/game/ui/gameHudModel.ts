@@ -27,7 +27,7 @@ import { activeStore, roomStores } from '../../sim/run/storeInterior';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
-import { floorNumberOf, type FloorNumber } from '../../sim/wing/floorSpecs';
+import { floorNumberOf, floorSpec, type FloorNumber } from '../../sim/wing/floorSpecs';
 import { signatureName } from '../../sim/fusion/hybrid';
 import { PAIR_DEAL_SCALE, holdsPairPartner } from '../../sim/run/economy';
 import type { WingOffer } from '../../sim/wing/types';
@@ -150,6 +150,16 @@ const ROOF_SHORT_NAMES: Readonly<Record<WingRoomId, string>> = {
   security_office: 'HELIPAD',
 };
 
+/**
+ * A first wing (round 45): its map names from the floor table (the first word
+ * of each), the last room marked LOCKDOWN, and the Lockdown objectives.
+ */
+function firstWingHud(floor: FloorNumber): { readonly short: Readonly<Record<WingRoomId, string>>; readonly reach: string; readonly boss: string } {
+  const names = floorSpec(floor).firstWingNames;
+  const short = Object.fromEntries(Object.entries(names).map(([id, name]) => [id, id === 'security_office' ? 'LOCKDOWN' : name.split(' ')[0]!.toUpperCase()])) as Record<WingRoomId, string>;
+  return { short, reach: 'REACH THE LOCKDOWN', boss: 'SURVIVE THE LOCKDOWN' };
+}
+
 /** Each floor's map names and its two objectives: reach the boss, then beat it. */
 const FLOOR_HUD: Readonly<Record<FloorNumber, { readonly short: Readonly<Record<WingRoomId, string>>; readonly reach: string; readonly boss: string }>> = {
   1: { short: GROUND_SHORT_NAMES, reach: 'REACH SECURITY', boss: 'STOP LOSS PREVENTION' },
@@ -174,7 +184,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const fightHere = (room?.enemySpawns.length ?? 0) > 0 || room?.bossAnchor != null;
 
   const floor = floorNumberOf(state.wing);
-  const floorHud = FLOOR_HUD[floor];
+  const floorHud = state.wing.part === 1 ? firstWingHud(floor) : FLOOR_HUD[floor];
   const objectives: HudObjective[] = [
     {
       text: `${floorHud.reach}  ${state.roomIndex + 1}/${state.wing.rooms.length}`,

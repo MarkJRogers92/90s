@@ -90,6 +90,8 @@ export type RunRecord = {
   readonly outcome: 'won' | 'dead' | 'quit';
   /** Present (2 or 3) only for shifts above the ground floor. */
   readonly floor?: Exclude<FloorNumber, 1>;
+  /** 1 on a floor's first wing (round 45). */
+  readonly part?: 1;
   readonly ticks: number;
   readonly reachedRoom: number;
   readonly rooms: readonly RoomLog[];
@@ -408,6 +410,7 @@ export class PlaytestRecorder {
       seed: state.seed,
       outcome,
       ...(state.wing.floor !== undefined ? { floor: state.wing.floor } : {}),
+      ...(state.wing.part === 1 ? { part: 1 as const } : {}),
       ticks: state.tick - this.startTick,
       reachedRoom: state.roomIndex + 1,
       rooms: this.rooms.map((room) => ({ ...room, damage: { ...room.damage } })),

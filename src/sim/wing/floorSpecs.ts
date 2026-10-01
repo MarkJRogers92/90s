@@ -64,7 +64,7 @@ export type FloorSpec = {
 const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   1: {
     roomNames: ROOM_NAMES,
-    firstWingNames: { service_corridor: 'West Entrance', storefront_a: 'Fountain Court', food_court: 'Kiosk Alley', storefront_b: 'Garden Court', back_hall: 'Freight Hall', security_office: 'Customer Service' },
+    firstWingNames: { service_corridor: 'Opening Concourse', storefront_a: 'Fountain Court', food_court: 'Kiosk Alley', storefront_b: 'Garden Court', back_hall: 'Freight Hall', security_office: 'Customer Service' },
     bossKind: 'lp_manager',
     enemyHealthScale: 1,
     rareOnShelf: false,

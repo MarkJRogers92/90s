@@ -20,6 +20,8 @@ export type ShiftCardModel = {
   readonly won: boolean;
   /** A won floor 1 or 2: the escalator is running, and RETRY becomes UP THE ESCALATOR. */
   readonly ascend: boolean;
+  /** The next wing is up the stairs (the same floor's boss wing), not the escalator. */
+  readonly stairs: boolean;
   readonly score: number;
   readonly seconds: number;
   readonly headline: string;
@@ -81,14 +83,18 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
   if (state.status === 'playing' || !summary) return null;
   const won = summary.status === 'won';
   const floor = floorOf(state);
-  const ascend = won && floor < FINAL_FLOOR;
+  // A first wing's Lockdown leads on up the stairs to the same floor's boss (round 45).
+  const firstWing = state.wing.part === 1;
+  const ascend = won && (firstWing || floor < FINAL_FLOOR);
+  // Rooms of every wing below this one: two wings a floor.
+  const wingsBelow = (floor - 1) * 2 + (firstWing ? 0 : 1);
   const room = state.wing.rooms[summary.roomIndex];
   const where = (room?.store?.name ?? room?.name ?? 'THE MALL').toUpperCase();
   const seconds = Math.floor(summary.tick / TICKS_PER_SECOND);
   const score = scoreFor({
     // A clear below the final floor is not yet the win: its bonus waits for the last boss.
-    won: won && floor === FINAL_FLOOR,
-    roomsReached: summary.roomIndex + 1 + (floor - 1) * state.wing.rooms.length,
+    won: won && floor === FINAL_FLOOR && !firstWing,
+    roomsReached: summary.roomIndex + 1 + wingsBelow * state.wing.rooms.length,
     kills: state.stats.kills,
     bestCombo: state.stats.bestCombo,
     cash: summary.cash,
@@ -98,10 +104,13 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
   return {
     won,
     ascend,
+    stairs: ascend && firstWing,
     score,
     seconds,
-    headline: ascend ? 'FLOOR CLEARED' : won ? 'CLOCKED OUT' : 'SHIFT OVER',
-    subline: ascend
+    headline: ascend && firstWing ? 'LOCKDOWN LIFTED' : ascend ? 'FLOOR CLEARED' : won ? 'CLOCKED OUT' : 'SHIFT OVER',
+    subline: ascend && firstWing
+      ? 'THE STAIRS ARE OPEN...'
+      : ascend
       ? 'THE ESCALATOR IS RUNNING...'
       : won
         ? 'THE OWNER HAS LEFT THE BUILDING'
@@ -110,7 +119,7 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
       { label: 'TIME', value: formatShiftTime(summary.tick) },
       // How far into the wing the shift got. The cleared count lags on a win
       // (the boss room is not yet marked cleared), which read as 5/6.
-      { label: 'REACHED', value: `${floor > 1 ? `FLOOR ${floor} - ` : ''}${summary.roomIndex + 1}/${state.wing.rooms.length}` },
+      { label: 'REACHED', value: `${floor > 1 ? `FLOOR ${floor} ` : ''}${firstWing ? 'WING 1 ' : ''}${floor > 1 || firstWing ? '- ' : ''}${summary.roomIndex + 1}/${state.wing.rooms.length}` },
       { label: 'KILLS', value: `${state.stats.kills}` },
       { label: 'BEST COMBO', value: `X${state.stats.bestCombo}` },
       { label: 'CASH', value: `$${summary.cash}` },

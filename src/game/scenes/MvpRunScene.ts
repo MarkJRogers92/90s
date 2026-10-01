@@ -31,7 +31,7 @@ import { PaTicker } from '../ui/PaTicker';
 import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
-import { ascend, canAscend, floorOf } from '../../sim/run/floors';
+import { ascend, canAscend, climbToBossWing, floorOf, nextIsBossWing } from '../../sim/run/floors';
 import { FINAL_FLOOR } from '../../sim/wing/floorSpecs';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
@@ -468,7 +468,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.run =
       launch?.checkpoint !== null && launch?.checkpoint !== undefined
         ? restoreMvpRun(launch.checkpoint)
-        : createMvpRun(this.seed, { perks: this.shiftPerks() });
+        : createMvpRun(this.seed, { part: 1, perks: this.shiftPerks() });
     this.run = this.applyDevFixture(this.run);
     this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
@@ -774,7 +774,7 @@ export class MvpRunScene extends Phaser.Scene {
     const cleared = this.store.clear();
     // Re-read the career: the Break Room is only open between shifts, but a
     // retry should still start with everything the janitor owns.
-    this.run = createMvpRun(this.seed, { perks: this.shiftPerks() });
+    this.run = createMvpRun(this.seed, { part: 1, perks: this.shiftPerks() });
     this.startClockIn(won ? 'new-shift' : 'retry', false);
     // A fresh run has no previous tick to compare against, so the next sync
     // would read every field as a change and fire a burst of cues.
@@ -800,6 +800,8 @@ export class MvpRunScene extends Phaser.Scene {
    */
   private ascend(): void {
     if (!canAscend(this.run)) return;
+    // A first wing's stairs lead to the same floor's boss wing: a fade, not the escalator ride.
+    const stairs = nextIsBossWing(this.run);
     this.endBeatPlayed = false;
     this.stopClockIn();
     this.endKillCam();
@@ -818,8 +820,14 @@ export class MvpRunScene extends Phaser.Scene {
     this.runView?.resetForRun();
     this.syncCheckpoint();
     this.syncView();
-    // Ride up before the landing appears; the run waits underneath.
     this.ride?.destroy();
+    this.ride = null;
+    if (stairs) {
+      this.cameras.main.fadeIn(900, 7, 5, 12);
+      this.audio?.play('pa_chime');
+      return;
+    }
+    // Ride up before the landing appears; the run waits underneath.
     this.ride = new EscalatorRide(this, floorOf(this.run) as RideFloor);
     this.audio?.play('escalator');
   }
@@ -1009,6 +1017,36 @@ export class MvpRunScene extends Phaser.Scene {
       return state;
     }
     const fixture = new URLSearchParams(window.location.search).get('fixture');
+    // Every fixture below was authored on a floor's boss wing; a new shift now
+    // opens on the first wing (round 45), so fixtures start from the boss wing.
+    if (fixture && fixture !== 'mvp-lockdown' && state.wing.part === 1 && state.tick === 0) {
+      state = createMvpRun(state.seed, { perks: state.perks });
+    }
+    if (fixture === 'mvp-lockdown') {
+      // At the Lockdown door of a first wing (&floor=N), every fight before it cleared.
+      let run = state;
+      for (let floor = 1; floor < Number(new URLSearchParams(window.location.search).get('floor') ?? 1) && floor < FINAL_FLOOR; floor += 1) {
+        run.status = 'won';
+        run = ascend(run);
+        run.status = 'won';
+        run = ascend(run);
+      }
+      let guard = 0;
+      while (run.roomIndex < run.wing.rooms.length - 2 && guard < 10) {
+        guard += 1;
+        run.room.combat.enemies = [];
+        tickMvpRun(run, { moveX: 0, moveY: 0, aimX: run.room.combat.player.x, aimY: run.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(run, 'east').accepted) break;
+      }
+      run.room.combat.enemies = [];
+      tickMvpRun(run, { moveX: 0, moveY: 0, aimX: run.room.combat.player.x, aimY: run.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+      const door = run.wing.rooms[run.roomIndex]!.doorways.find((entry) => entry.side === 'east');
+      if (door) {
+        run.room.combat.player.x = door.rect.x - 40;
+        run.room.combat.player.y = door.rect.y + door.rect.height / 2;
+      }
+      return run;
+    }
     if (fixture === 'mvp-storefront') {
       // Inside the first store, at the shelf with the straightest run to the door.
       if (enterDoorway(state, 'east').accepted && enterStore(state, 0).accepted) {
@@ -1032,7 +1070,7 @@ export class MvpRunScene extends Phaser.Scene {
       let run = state;
       for (let floor = 1; floor < Number(params.get('floor') ?? 1) && floor < FINAL_FLOOR; floor += 1) {
         run.status = 'won';
-        run = ascend(run);
+        run = climbToBossWing(run);
       }
       let guard = 0;
       while (guard < 10) {
@@ -1160,7 +1198,7 @@ export class MvpRunScene extends Phaser.Scene {
       let roof = state;
       for (let floor = 1; floor < 4; floor += 1) {
         roof.status = 'won';
-        roof = ascend(roof);
+        roof = climbToBossWing(roof);
       }
       if (fixture !== 'mvp-floor-four') {
         const stop = fixture === 'mvp-floor-four-lobby' || fixture === 'mvp-floor-four-roofer' ? 'food_court' : roof.wing.rooms.at(-1)?.id;
@@ -1194,9 +1232,9 @@ export class MvpRunScene extends Phaser.Scene {
     if (fixture === 'mvp-floor-three' || fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-brute' || fixture === 'mvp-floor-three-boss' || fixture === 'mvp-floor-three-boss-win') {
       // Straight up both escalators, optionally on to the Arcade fight or the Mall Owner.
       state.status = 'won';
-      const upstairs = ascend(state);
+      const upstairs = climbToBossWing(state);
       upstairs.status = 'won';
-      const top = ascend(upstairs);
+      const top = climbToBossWing(upstairs);
       if (fixture !== 'mvp-floor-three') {
         const stop = fixture === 'mvp-floor-three-lobby' || fixture === 'mvp-floor-three-brute' ? 'food_court' : top.wing.rooms.at(-1)?.id;
         let guard = 0;
@@ -1229,7 +1267,7 @@ export class MvpRunScene extends Phaser.Scene {
     if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-boss' || fixture === 'mvp-floor-two-boss-win') {
       // Straight up the escalator, optionally on to the Cinema Lobby fight or the Mall Manager.
       state.status = 'won';
-      const upstairs = ascend(state);
+      const upstairs = climbToBossWing(state);
       if (fixture !== 'mvp-floor-two') {
         const stop = fixture === 'mvp-floor-two-lobby' ? 'food_court' : upstairs.wing.rooms.at(-1)?.id;
         let guard = 0;

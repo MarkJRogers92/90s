@@ -7,6 +7,13 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 45 (2026-10-01): every floor is two wings. The first is the lighter
+half under its own names and ends in the Lockdown, a sealed room of five
+elites; clearing it opens the stairs to the floor's boss wing. The night
+still opens in the Opening Concourse. 1080 unit tests; the browser suite
+passed with load-related timeouts that pass serially (load average 20-32);
+see TEST_EVIDENCE.md round 45.
+
 Round 44 (2026-10-01): shelf deals and late-game money. A recipe-hint item's
 store card now says what the pair makes (pink), and the second half is 25%
 off once you hold the first. Floors 3 and 4 each shelve one rare for $45

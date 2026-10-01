@@ -76,7 +76,8 @@ export const STOREFRONT_ROLES: readonly WingRoomRole[] = [
 ];
 
 export const ROOM_NAMES: Readonly<Record<WingRoomRole, string>> = {
-  service_corridor: 'Opening Concourse',
+  // Floor 1's boss wing: the night opens in the first wing's Opening Concourse (round 45).
+  service_corridor: 'East Concourse',
   storefront_a: 'West Storefront',
   food_court: 'Food Court',
   storefront_b: 'East Storefront',

@@ -1132,3 +1132,28 @@ Roof run visited no store at all.
   `store=spiral-records&at=record_toss&seed=1` for a pair card,
   `store=mall-mart&at=trapper_keeper&floor=3&seed=7` for a rare.
 
+## Round 45: two wings a floor (owner's ask: floors ~1.5x longer)
+
+- **Sim** (`floorSpecs.ts`, `generateWing`, `rooms.ts`, `floors.ts`): a floor
+  is a first wing (`GeneratedWing.part: 1`) and the boss wing (no `part`, so
+  every save from before is a boss wing). The first wing has its own names
+  (`FloorSpec.firstWingNames`; Floor 1's opens in the Opening Concourse, its
+  boss wing now starts in the East Concourse), drawn rather than
+  full-strength fights, and ends in the **Lockdown**: `LOCKDOWN_SIZE` (5)
+  elites of the floor's mix in a ring, won when the room is clear
+  (`bossDefeated`). `ascend`: first wing -> the same floor's boss wing
+  (`bossWingSeed`), boss wing -> the next floor's first wing.
+  `climbToBossWing` for fixtures and tests that mean "the floor-N boss".
+  One rare a floor, in the boss wing. Checkpoints carry `part`.
+- **Game**: new shifts start on part 1; dev fixtures start from the boss wing
+  (so every existing fixture keeps its meaning) and `?fixture=mvp-lockdown
+  &floor=N` stands at a Lockdown door. The stairs are a fade, not the
+  escalator. Shift card: LOCKDOWN LIFTED / STAIRS, REACHED "WING 1 - n/6",
+  scoring counts every wing below, and a Roof Lockdown clear is never the
+  night's win (it would have paid CLOCKED OUT). HUD: REACH / SURVIVE THE
+  LOCKDOWN, first-wing map names; PA lockdown and stairs lines; first-wing
+  room titles from the wing's names; the controls card on Floor 1's first
+  wing only; the playtest log keys first-wing rooms as `<floor>a:<room>`.
+- **Known gap**: a first wing reuses its floor's dressing, so its back-wall
+  signs are the boss wing's (Floor 2's Lockdown room still says MANAGEMENT).
+

@@ -103,7 +103,8 @@ export function summarizeRuns(records: readonly RunRecord[]): RunSummary {
   const roomNames: Record<string, string> = {};
   for (const record of records) {
     // Upstairs rooms reuse the downstairs ids, so they are keyed apart.
-    const key = (roomId: string): string => (record.floor === undefined ? roomId : `${record.floor}:${roomId}`);
+    // A first wing reuses the room ids too (round 45), so it gets an 'a' after its floor.
+    const key = (roomId: string): string => (record.part === 1 ? `${record.floor ?? 1}a:${roomId}` : record.floor === undefined ? roomId : `${record.floor}:${roomId}`);
     for (const room of record.rooms) roomNames[key(room.roomId)] = room.name;
     if (record.outcome === 'dead') {
       const room = key(record.rooms.at(-1)?.roomId ?? 'unknown');

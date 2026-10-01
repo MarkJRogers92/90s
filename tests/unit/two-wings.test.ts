@@ -90,3 +90,38 @@ describe('two wings per floor (round 45)', () => {
     expect(JSON.stringify(generateRunWing(9, 2, 1))).toBe(JSON.stringify(generateRunWing(9, 2, 1)));
   });
 });
+
+describe('the Lockdown card (round 45)', () => {
+  it('a won first wing is LOCKDOWN LIFTED with the stairs, never the night\'s win', async () => {
+    const { buildShiftCardModel } = await import('../../src/game/ui/shiftCardModel');
+    const state = createMvpRun(5, { part: 1, floor: FINAL_FLOOR });
+    walkToTheEnd(state);
+    state.room.combat.enemies = [];
+    tickMvpRun(state, idle);
+    expect(state.status).toBe('won');
+    const card = buildShiftCardModel(state)!;
+    expect(card.headline).toBe('LOCKDOWN LIFTED');
+    expect(card.ascend).toBe(true);
+    expect(card.stairs).toBe(true);
+    expect(card.rows.find((row) => row.label === 'REACHED')?.value).toMatch(/WING 1 - 6\/6/);
+  });
+});
+
+describe('the first wing on the HUD, the PA and the log (round 45)', () => {
+  it('the HUD sends you to the Lockdown and names the first wing\'s rooms', async () => {
+    const { buildGameHudModel } = await import('../../src/game/ui/gameHudModel');
+    const hud = buildGameHudModel(createMvpRun(5, { part: 1 }));
+    expect(hud.objectives[0]!.text).toMatch(/^REACH THE LOCKDOWN/);
+    expect(hud.rooms.at(-1)!.short).toBe('LOCKDOWN');
+    expect(hud.rooms[0]!.short).toBe('OPENING');
+    expect(buildGameHudModel(createMvpRun(5)).objectives[0]!.text).toMatch(/^REACH SECURITY/);
+  });
+
+  it('the log keeps a first wing\'s rooms apart from the boss wing\'s', async () => {
+    const { summarizeRuns } = await import('../../src/game/playtest/log');
+    const room = { roomId: 'food_court', name: 'x', enteredTick: 0, leftTick: 60, kills: 0, damage: {} as never };
+    const base = { version: 1, startedAt: 'x', seed: 1, ticks: 60, reachedRoom: 3, bought: [], stolen: [], dashes: 0, killedBy: null, outcome: 'won', rooms: [room] } as const;
+    const summary = summarizeRuns([{ ...base, floor: 2 }, { ...base, floor: 2, part: 1 }] as never);
+    expect(Object.keys(summary.avgSecondsByRoom).sort()).toEqual(['2:food_court', '2a:food_court']);
+  });
+});

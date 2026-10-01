@@ -129,11 +129,13 @@ describe('seeded wing generation', () => {
     expect(() => validateWingGraph(wing)).not.toThrow();
   });
 
-  it('presents the safe entry room as the Opening Concourse without changing its identity', () => {
-    const first = generateWing(7).rooms[0]!;
+  it('presents the night\'s safe entry room as the Opening Concourse without changing its identity', () => {
+    // Since round 45 the night opens on Floor 1's first wing; its boss wing starts in the East Concourse.
+    const first = generateWing(7, 1, 1).rooms[0]!;
     expect(first.id).toBe('service_corridor');
     expect(first.name).toBe('Opening Concourse');
-    expect(ROOM_NAMES.service_corridor).toBe('Opening Concourse');
+    expect(generateWing(7).rooms[0]!.name).toBe('East Concourse');
+    expect(ROOM_NAMES.service_corridor).toBe('East Concourse');
   });
 
   it('lines up the fixed doorway topology without walls or other doors overlapping', () => {
