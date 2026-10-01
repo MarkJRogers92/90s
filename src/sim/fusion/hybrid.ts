@@ -542,6 +542,11 @@ export function shortItemName(id: string): string {
   return NOUNS[id] ?? DEFINITIONS.get(id)?.name ?? id;
 }
 
+/** A named pair's signature name, in either order, or null. */
+export function signatureName(a: string, b: string): string | null {
+  return SIGNATURES[pairKey(a, b)] ?? null;
+}
+
 /** Every named combination, for the Break Room's fusion log. */
 export function signatureFusions(): Array<{ readonly name: string; readonly itemIds: readonly [string, string] }> {
   return Object.entries(SIGNATURES).map(([key, name]) => {

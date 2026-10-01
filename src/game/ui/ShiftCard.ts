@@ -157,6 +157,7 @@ export class ShiftCard {
       seconds: model.seconds,
       mall: this.lastMallSeed,
       wanted: wantedStars(state.heat),
+      cash: state.cash,
       fusions: state.inventory.inventory
         .filter((node) => node.kind === 'composite' && node.recipeId === 'hybrid')
         .map(nodeDefinitionId),

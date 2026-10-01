@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-10-01 — round 44: shelf deals and late-game money
+
+- `shelf-deals` (6 tests; the four new rules run red first): the second half
+  of a pair is x0.75 once the first is held; the store card names the pair's
+  signature and adds 25% OFF once it applies (the janitor walked in through
+  the real doors and shop door); floors 3-4 shelve exactly one rare at $45
+  and floors 1-2 none, seeded, never over a recipe-hint half; a clock-out
+  pays a stub per $20 left, a shift that did not clock out pays nothing.
+- `npx tsc --noEmit` clean; `npx vitest run` 1071 passed; build clean; full
+  browser suite on 4 workers 76 passed.
+- On screen (`artifacts/neon-overhaul/round44/`): `pair-card.png` (Vinyl
+  Record: PAIRS WITH MIXTAPE -> GREATEST HITS), `rare-card.png` (a floor-3
+  Mall Mart Trapper Keeper, $45, NEED $15 MORE - OR GRAB & RUN).
+
 ## 2026-10-01 — round 43: the signature tier
 
 - `signature-tier` (5 tests, run red first): the Hydro Mop's swing, shot and

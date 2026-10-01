@@ -28,6 +28,9 @@ import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
 import { runPassiveItems, runWeaponSlots } from '../../sim/run/weapons';
 import { itemBlurb } from './itemBlurbs';
 import { floorNumberOf, type FloorNumber } from '../../sim/wing/floorSpecs';
+import { signatureName } from '../../sim/fusion/hybrid';
+import { PAIR_DEAL_SCALE, holdsPairPartner } from '../../sim/run/economy';
+import type { WingOffer } from '../../sim/wing/types';
 
 export type HeartState = 'full' | 'half' | 'empty';
 
@@ -77,6 +80,8 @@ export type HudOfferDetail = {
   /** Why you cannot buy, or what stealing it will cost. */
   readonly note: string;
   readonly canBuy: boolean;
+  /** A recipe-hint half: what the pair makes, and the deal once it applies. */
+  readonly pair?: string;
 };
 
 export type HudPrompt = {
@@ -299,6 +304,16 @@ function comboFor(state: MvpRunState): GameHudModel['combo'] {
   return { count: combo, remaining, nextBonusAt, nextBonus: comboBonusFor(nextBonusAt) };
 }
 
+/** The store card's pink line for a recipe-hint half (round 44). */
+function pairLine(state: MvpRunState, offer: WingOffer): { pair: string } | Record<string, never> {
+  if (!offer.pairedWith) return {};
+  const name = signatureName(offer.itemDefinitionId, offer.pairedWith);
+  if (!name) return {};
+  const partner = itemDefinitionName(offer.pairedWith).toUpperCase();
+  const deal = holdsPairPartner(state, offer) ? ` - ${Math.round((1 - PAIR_DEAL_SCALE) * 100)}% OFF` : '';
+  return { pair: `PAIRS WITH ${partner} -> ${name.toUpperCase()}: +50% DMG${deal}` };
+}
+
 function promptFor(state: MvpRunState): HudPrompt {
   if (state.status !== 'playing' || state.paused || state.preview !== null) return null;
   const interaction = nearestMvpInteraction(state);
@@ -327,6 +342,7 @@ function promptFor(state: MvpRunState): HudPrompt {
           kind: ITEM_CATALOG.find((definition) => definition.id === offer.itemDefinitionId)?.base ? 'WEAPON' : 'PASSIVE',
           note,
           canBuy: short <= 0,
+          ...pairLine(state, offer),
         },
       };
     }

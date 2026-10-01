@@ -7,6 +7,12 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 44 (2026-10-01): shelf deals and late-game money. A recipe-hint item's
+store card now says what the pair makes (pink), and the second half is 25%
+off once you hold the first. Floors 3 and 4 each shelve one rare for $45
+(buy it or steal it), and clocking out pays a stub for every $20 left. 1071
+unit and 76 browser tests pass; see TEST_EVIDENCE.md round 44.
+
 Round 43 (2026-10-01): signature fusions are the best fusions. A named pair
 now hits half again as hard and attacks a fifth faster (once, when formed),
 has room for a fifth part, says so on the bench card and glows hot pink. The
