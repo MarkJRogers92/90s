@@ -78,6 +78,13 @@ export const FACADE_TEXTURES = {
   aquariumWall: { key: 'neon:facade:aquarium-wall', file: 'facades/aquarium-wall.png', width: 288 },
   kennelWall: { key: 'neon:facade:kennel-wall', file: 'facades/kennel-wall.png', width: 288 },
   rinkBoards: { key: 'neon:facade:rink-boards', file: 'facades/rink-boards.png', width: 288 },
+  // Round 55: the floor-exclusive stores (placeholder recolours of existing fronts until redrawn).
+  shadeStation: { key: 'neon:facade:shade-station', file: 'facades/shade-station.png', width: 288 },
+  pageTurner: { key: 'neon:facade:page-turner', file: 'facades/page-turner.png', width: 288 },
+  pretzelPit: { key: 'neon:facade:pretzel-pit', file: 'facades/pretzel-pit.png', width: 288 },
+  frostyFreeze: { key: 'neon:facade:frosty-freeze', file: 'facades/frosty-freeze.png', width: 288 },
+  antennaAnnex: { key: 'neon:facade:antenna-annex', file: 'facades/antenna-annex.png', width: 288 },
+  pawnPalace: { key: 'neon:facade:pawn-palace', file: 'facades/pawn-palace.png', width: 288 },
   zamboniGarage: { key: 'neon:facade:zamboni-garage', file: 'facades/zamboni-garage.png', width: 288 },
 } as const;
 export type FacadeId = keyof typeof FACADE_TEXTURES;
@@ -429,6 +436,13 @@ const STORE_LOOKS: Readonly<Record<string, StoreLook>> = {
   'green-thumb': { facade: 'greenThumb', neon: NEON.green, subtitle: 'GARDEN CENTER', floor: 'concrete', spill: 0xb8ffb0, fixture: 'palm' },
   'skate-shack': { facade: 'skateShack', neon: NEON.cyan, subtitle: 'RENTALS · SHARPENING', floor: 'linoleum', spill: 0xc0e8ff, fixture: 'gondola' },
   'cocoa-hut': { facade: 'cocoaHut', neon: NEON.orange, subtitle: 'HOT COCOA · PRETZELS', floor: 'checker', spill: 0xffc080, fixture: 'condiments' },
+  // Round 55: the floor-exclusive stores.
+  'shade-station': { facade: 'shadeStation', neon: NEON.yellow, subtitle: 'LOOK COOL · SEE LESS', floor: 'carpet', spill: 0xfff0a0, fixture: 'clothingRack' },
+  'page-turner': { facade: 'pageTurner', neon: NEON.violet, subtitle: 'BOOKS · ZINES · PENS', floor: 'carpet', spill: 0xc89aff, fixture: 'vhsShelf' },
+  'pretzel-pit': { facade: 'pretzelPit', neon: NEON.orange, subtitle: 'SALTED · TWISTED', floor: 'checker', spill: 0xffc080, fixture: 'condiments' },
+  'frosty-freeze': { facade: 'frostyFreeze', neon: NEON.cyan, subtitle: 'FROZEN YOGURT', floor: 'checker', spill: 0xc0f0ff, fixture: 'vending' },
+  'antenna-annex': { facade: 'antennaAnnex', neon: NEON.green, subtitle: 'DISHES · COILS · RADIOS', floor: 'concrete', spill: 0xb8ffc8, fixture: 'vhsShelf' },
+  'pawn-palace': { facade: 'pawnPalace', neon: NEON.red, subtitle: 'WE BUY GOLD', floor: 'concrete', spill: 0xffb0a0, fixture: 'gondola' },
 };
 
 /** The shopfront panel a store template shows on its concourse. */
@@ -601,6 +615,13 @@ const INTERIOR_LOOKS: Readonly<Record<string, InteriorLook>> = {
   'green-thumb': { wall: ['palm', 'planter'], sides: 'palm', corners: ['planter', 'palm', 'crates', 'wetFloor'], ambient: 0x2e4a32 },
   'skate-shack': { wall: ['lockerRow', 'gondola'], sides: 'lockerRow', corners: ['bench', 'waterCooler', 'bin', 'saleSign'], ambient: 0x2e3e5a },
   'cocoa-hut': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'bench', 'trashBank', 'pretzelCart'], ambient: 0x5a3e2e },
+  // Round 55: the floor-exclusive stores.
+  'shade-station': { wall: ['clothingRack'], sides: 'clothingRack', corners: ['palm', 'bench', 'directory', 'bin'], ambient: 0x4e4a32 },
+  'page-turner': { wall: ['vhsShelf', 'gondola'], sides: 'vhsShelf', corners: ['bench', 'palm', 'bin', 'directory'], ambient: 0x3a2e52 },
+  'pretzel-pit': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'pretzelCart', 'trashBank', 'drinkingFountain'], ambient: 0x5a3e2e },
+  'frosty-freeze': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'trayReturn', 'trashBank', 'waterCooler'], ambient: 0x2e4a5a },
+  'antenna-annex': { wall: ['vhsShelf', 'atm'], sides: 'gondola', corners: ['atm', 'payphone', 'crates', 'waterCooler'], ambient: 0x2e4a3a },
+  'pawn-palace': { wall: ['gondola', 'crates'], sides: 'gondola', corners: ['crates', 'bin', 'saleSign', 'janitorCart'], ambient: 0x4a3a32 },
 };
 
 /** Draw size for a prop stood in a store: a little larger than out on the concourse. */

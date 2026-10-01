@@ -18,7 +18,7 @@ import {
   storeEntrance,
 } from '../../src/sim/run/storeInterior';
 import { generateWing } from '../../src/sim/wing/generateWing';
-import { STORE_TEMPLATES } from '../../src/sim/wing/templates';
+import { ALL_STORE_TEMPLATES, STORE_TEMPLATES } from '../../src/sim/wing/templates';
 import { circleIntersectsRect } from '../../src/sim/core/geometry';
 import { moveCircle } from '../../src/sim/combat/movement';
 import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
@@ -61,7 +61,7 @@ describe('store interiors', () => {
         const shops = wing.rooms.flatMap((room) => roomStores(room).map((store) => store.templateId));
         expect(new Set(shops).size).toBe(shops.length);
         expect(shops).toHaveLength(4);
-        for (const shop of shops) expect(STORE_TEMPLATES.some((template) => template.id === shop)).toBe(true);
+        for (const shop of shops) expect(ALL_STORE_TEMPLATES.some((template) => template.id === shop)).toBe(true);
         for (const room of wing.rooms) {
           if (!room.store) continue;
           expect(roomStores(room)[0]).toBe(room.store);

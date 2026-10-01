@@ -233,6 +233,13 @@ export const TWIST_HINTS: Readonly<Record<string, string>> = {
   'green-thumb': 'Cactus pots in the aisle: they prick anyone who touches them.',
   'skate-shack': 'Rental skates by the door: you move faster in here.',
   'cocoa-hut': 'Punch card: every second thing you buy here is free.',
+  // Round 55: the floor-exclusive stores have no twist yet; the hint says so.
+  'shade-station': 'No tricks in here. Take your time.',
+  'page-turner': 'Quiet, please. Nothing in here bites.',
+  'pretzel-pit': 'Nothing odd in here but the smell of salt.',
+  'frosty-freeze': 'The machine hums. Nothing in here is a trap.',
+  'antenna-annex': 'Every dish points at the sky. Nothing else to watch for.',
+  'pawn-palace': 'The counter guy is only watching the door.',
 };
 
 /** The twist for the store the janitor is in, created on first use. */

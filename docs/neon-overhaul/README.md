@@ -1383,3 +1383,23 @@ Three small items from the 2026-10-01 playtest and the art backlog.
   best of three: a lion-template candidate lost its bow tie, a third had no
   legs): hunched, snarling, claws out, collar and bow tie kept. Walk on three
   directions; death by `quadruped_death.py` as before.
+
+## Round 55 - floor-exclusive stores
+
+Playtest 2026-10-01: going upstairs felt like floor 1 again. Floors 2-4 now each
+open one of their own two stores in `storefront_a` (`FLOOR_STORE_IDS` in
+`wing/templates.ts`), first and boss wings alike; districts still override.
+Floor 1 and the regular 11-store pool draw exactly as before: the pick uses its
+own rng (`FLOOR_STORE_SALT`), so no other draw moves.
+
+| Floor | Stores |
+|---|---|
+| 2 | Shade Station, Page Turner Books |
+| 3 | Pretzel Pit, Frosty Freeze |
+| 4 | Antenna Annex, Pawn Palace |
+
+- Stock reuses existing items (`STORE_STOCK`); six new signature pairs keep
+  every store at three or more.
+- **Placeholder art:** the six shopfronts are hue-shifted copies of existing
+  fronts (manifest says PLACEHOLDER). Redraw with Retro Diffusion.
+- **No twists yet:** their `TWIST_HINTS` say so honestly. Not yet seen in play.

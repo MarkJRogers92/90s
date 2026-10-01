@@ -299,4 +299,11 @@ export const STORE_STOCK: Readonly<Record<string, readonly string[]>> = {
   'green-thumb': ['hedge_trimmer', 'watering_can', 'seed_spreader', 'garden_gnome', 'fertilizer', 'garden_hose', 'leaf_blower', 'duct_tape'],
   'skate-shack': ['hockey_puck', 'figure_skate', 'ice_pack', 'skate_lace', 'hockey_stick', 'sweatband', 'football', 'lacrosse_stick'],
   'cocoa-hut': ['cocoa_thermos', 'marshmallow_shooter', 'pretzel_rod', 'whipped_cream', 'slushie_cup', 'bubble_bath', 'popcorn_bucket', 'soda_gun'],
+  // Round 55: the floor-exclusive stores (each only on its own floor).
+  'shade-station': ['flash_camera', 'soft_focus_lens', 'laser_pointer', 'sweatband', 'mixtape', 'walkman', 'paint_marker', 'gel_pens'],
+  'page-turner': ['staple_gun', 'gel_pens', 'paint_marker', 'laser_pointer', 'mixtape', 'receipt_wallet', 'yo_yo', 'duct_tape'],
+  'pretzel-pit': ['pretzel_rod', 'whipped_cream', 'cocoa_thermos', 'marshmallow_shooter', 'soda_gun', 'hot_sauce', 'ketchup_bottle', 'slushie_cup'],
+  'frosty-freeze': ['ice_pack', 'slushie_cup', 'whipped_cream', 'cheese_pump', 'popcorn_bucket', 'dough_roller', 'pop_rocks', 'party_popper'],
+  'antenna-annex': ['satellite_dish', 'tesla_coil_kit', 'nine_volt_pack', 'rc_blimp_remote', 'boombox', 'anti_static_strap', 'jumper_cables', 'car_battery'],
+  'pawn-palace': ['claw_hammer', 'pipe_wrench', 'nail_gun', 'golf_club', 'aluminum_bat', 'camcorder', 'walkman', 'box_cutter'],
 };

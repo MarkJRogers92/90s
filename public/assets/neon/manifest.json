@@ -3338,5 +3338,65 @@
       70
     ],
     "sha256": "716bc312361585140129ad40cc6cda4de7270772d77a3b05c9286ecd9dda46d2"
+  },
+  {
+    "path": "public/assets/neon/facades/shade-station.png",
+    "source": "public/assets/neon/facades/boutique.png",
+    "generator": "PLACEHOLDER: hue-shifted copy of the boutique shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "8234f3b3f8a61c700f64a038c219fe8aeccad8db223c303fab728f4c3dc643ab"
+  },
+  {
+    "path": "public/assets/neon/facades/page-turner.png",
+    "source": "public/assets/neon/facades/music-store.png",
+    "generator": "PLACEHOLDER: hue-shifted copy of the music-store shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "b6bb104b1cd4780bca8104155b236d77dd1ba16115b6db64fb8ec2c3fd77c0f1"
+  },
+  {
+    "path": "public/assets/neon/facades/pretzel-pit.png",
+    "source": "public/assets/neon/facades/pizza-counter.png",
+    "generator": "PLACEHOLDER: hue-shifted copy of the pizza-counter shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "c7f73e9a691dd006eea4bd760245e48fd5ca347fc24f75d1d418c010bc53e4fb"
+  },
+  {
+    "path": "public/assets/neon/facades/frosty-freeze.png",
+    "source": "public/assets/neon/facades/cinema-concession.png",
+    "generator": "PLACEHOLDER: hue-shifted copy of the cinema-concession shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "67270d2f4d3898cc95ca332cc00d2ffb597a55ffe57f72db5974ba48f056c637"
+  },
+  {
+    "path": "public/assets/neon/facades/antenna-annex.png",
+    "source": "public/assets/neon/facades/radio-shed.png",
+    "generator": "PLACEHOLDER: hue-shifted copy of the radio-shed shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "d1bed49dae09f258eea36d8d1047783334d1fa12d53ce8c38cdc3fc1b41a9617"
+  },
+  {
+    "path": "public/assets/neon/facades/pawn-palace.png",
+    "source": "public/assets/neon/facades/hardware-hut.png",
+    "generator": "PLACEHOLDER: hue-shifted copy of the hardware-hut shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "ab28773f72104355adf9d7a371ce08652ab2200bcea9b85bcff03656100720fe"
   }
 ]

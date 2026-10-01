@@ -1621,3 +1621,9 @@ before firing, tightens the allowance from 48 to 12 units, and passes in the
 ## 2026-09-30 — Prop-pack archive verification
 
 Archive checks verified 19 native PNGs with binary transparency and at most 32 opaque colors; 18 are within the supplied shared palette. PNGs and nine editable Aseprite masters were copied byte-for-byte from reviewed local deliverables. Both ZIP CRC checks and 64 Markdown link checks passed. See [publication-verification.json](docs/art/prop-packs/2026-09-30/publication-verification.json) and [SHA256SUMS](docs/art/prop-packs/2026-09-30/SHA256SUMS). No game behavior changed, so game tests and a browser playtest were not run for this archive-only change.
+
+## Round 55 - floor-exclusive stores (2026-10-01, cloud session)
+
+- New `tests/unit/floor-stores.test.ts` failed first (no `FLOOR_STORE_IDS`), then passed.
+- `npx vitest run`: 125 files, 1178 tests pass. `npm run build`: passes.
+- Not run: Playwright browser gate; nothing looked at on screen.

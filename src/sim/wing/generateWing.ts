@@ -26,6 +26,7 @@ import {
   ROOM_VARIANTS,
   ROOM_WIDTH,
   SECURITY_OFFICE_VARIANT,
+  FLOOR_STORE_IDS,
   STORE_TEMPLATES,
   STOREFRONT_ROLES,
   storeTemplate,
@@ -295,6 +296,8 @@ function storefrontRoom(
   };
 }
 
+const FLOOR_STORE_SALT = 0x55f10a;
+
 /** `part` 1 is the floor's first wing (round 45): its own names, drawn fight sizes, a Lockdown at the end. */
 export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): GeneratedWing {
   const rng = createWingRng(seed);
@@ -310,10 +313,15 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
     combatVariants.set(role, authoredVariants[variantIndex]!);
   }
 
+  // Round 55: floors 2-4 open one of their own stores first. It has its own rng so no other draw moves.
+  const floorStores = FLOOR_STORE_IDS[floor];
+  const floorStoreId = floorStores ? floorStores[nextInt(createWingRng((seed ^ FLOOR_STORE_SALT) | 0), 0, floorStores.length - 1)] : null;
+
   const templateOrder = shuffleIndices(rng, STORE_TEMPLATES.length);
   // The shuffle is drawn either way, so a district wing's later draws line up with any other's.
   const storefrontTemplates = STOREFRONT_ROLES.map((_, storefrontIndex) => {
     if (district) return storeTemplate(district.stores[storefrontIndex]!)!;
+    if (storefrontIndex === 0 && floorStoreId) return storeTemplate(floorStoreId)!;
     const templateIndex = templateOrder[storefrontIndex]!;
     return STORE_TEMPLATES[templateIndex]!;
   });
