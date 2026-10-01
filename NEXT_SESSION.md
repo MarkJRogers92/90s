@@ -33,6 +33,13 @@ twists, sell and drop, reduced flashing). What is left:
 2. Playtest rounds 32-37 (questions below) and tune.
 2b. ~~Browser gate flake~~ (fixed, round 41).
 
+## Round 43 playtest questions
+
+- Do you chase signature pairs now? The log's recipe hints show `tookBoth`
+  and fusions show `signature`.
+- Is a signature too strong next to the floor scaling (x1.5 damage plus a
+  fifth part)?
+
 ## Round 42 playtest questions
 
 - Is the Developer now the hardest fight of the night (target ~30 s, a few

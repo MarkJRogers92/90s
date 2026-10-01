@@ -41,6 +41,16 @@ export const HYBRID_BASE_FEE = 5;
 export const HYBRID_CLEAN_DISCOUNT = 2;
 /** The most items one fused thing can hold. */
 export const MAX_FUSION_PARTS = 4;
+/**
+ * The signature tier (round 43): a named pair is the best fusion there is.
+ * When one is formed it hits half again as hard and attacks a fifth faster
+ * than the plain rule would make it (once; fusing more onto it builds on the
+ * boosted stats), and anything holding one has room for a fifth part.
+ * Playtest 2026-09-30: at +1 damage, 0 of 8 recipe hints were followed.
+ */
+export const SIGNATURE_DAMAGE_SCALE = 1.5;
+export const SIGNATURE_COOLDOWN_SCALE = 0.8;
+export const SIGNATURE_MAX_PARTS = 5;
 /** What each item past the second adds to a fusion's fee. */
 export const HYBRID_FEE_PER_EXTRA_PART = 3;
 
@@ -221,7 +231,20 @@ export function isSignatureFusion(baseId: string, ingredientId: string): boolean
   return pairKey(baseId, ingredientId) in SIGNATURES;
 }
 
-const MARKS = ['', '', '', 'MK III', 'MK IV'];
+/** Whether a fused id holds a signature pair anywhere inside it. */
+export function containsSignature(id: string): boolean {
+  const parts = hybridParts(id);
+  return parts !== null && (isSignatureFusion(parts.baseId, parts.ingredientId) || containsSignature(parts.baseId) || containsSignature(parts.ingredientId));
+}
+
+/** The most items fusing these two could hold: one more when a signature is in it. */
+export function maxPartsFor(baseId: string, ingredientId: string): number {
+  return isSignatureFusion(baseId, ingredientId) || containsSignature(baseId) || containsSignature(ingredientId)
+    ? SIGNATURE_MAX_PARTS
+    : MAX_FUSION_PARTS;
+}
+
+const MARKS = ['', '', '', 'MK III', 'MK IV', 'MK V'];
 
 function adjectiveFor(id: string): string {
   return ADJECTIVES[rootItemId(id)] ?? 'Fused';
@@ -360,11 +383,27 @@ function combinedPayload(a: ProjectilePayloadEffect | null, b: ProjectilePayload
   return only ? ownPayload(only, id, bonus) : null;
 }
 
+/** A named pair, raised to the signature tier: every hit harder, every attack sooner. */
+function signatureTier(definition: ItemDefinition): ItemDefinition {
+  const harder = (damage: number) => Math.ceil(damage * SIGNATURE_DAMAGE_SCALE);
+  return {
+    ...definition,
+    ...(definition.base ? { base: { ...definition.base, damage: harder(definition.base.damage), cooldownTicks: Math.max(8, Math.round(definition.base.cooldownTicks * SIGNATURE_COOLDOWN_SCALE)) } } : {}),
+    effects: definition.effects.map((effect) => (effect.kind === 'projectile_payload' ? { ...effect, damage: harder(effect.damage) } : effect)),
+  };
+}
+
 function build(base: ItemDefinition, ingredient: ItemDefinition): ItemDefinition {
+  const plain = buildPlain(base, ingredient);
+  return isSignatureFusion(base.id, ingredient.id) ? signatureTier(plain) : plain;
+}
+
+function buildPlain(base: ItemDefinition, ingredient: ItemDefinition): ItemDefinition {
   const id = hybridDefinitionId(base.id, ingredient.id);
   const name = hybridName(base, ingredient);
   const roles = [fusionRole(base), fusionRole(ingredient)] as const;
-  const signature = isSignatureFusion(base.id, ingredient.id) ? 1 : 0;
+  // The signature bonus is the tier applied in `build`, not a flat +1 here.
+  const signature = 0;
   const summary = summaryFor(base, ingredient);
   const [baseRole, ingredientRole] = roles;
   // A base that was already fused keeps what it did (round 32).
@@ -452,10 +491,10 @@ export function hybridDefinition(baseId: string, ingredientId: string): ItemDefi
   return definition;
 }
 
-/** True when the pair, in this order, is a legal hybrid of at most MAX_FUSION_PARTS items. */
+/** True when the pair, in this order, is a legal hybrid of at most `maxPartsFor` items. */
 export function isHybridPair(baseId: string, ingredientId: string): boolean {
   if (baseId === ingredientId) return false;
-  if (hybridPartCount(baseId) + hybridPartCount(ingredientId) > MAX_FUSION_PARTS) return false;
+  if (hybridPartCount(baseId) + hybridPartCount(ingredientId) > maxPartsFor(baseId, ingredientId)) return false;
   const base = fusedDefinitionFor(baseId);
   const ingredient = fusedDefinitionFor(ingredientId);
   if (!base || !ingredient) return false;
@@ -474,7 +513,7 @@ export function hybridHighlights(baseId: string, ingredientId: string): string[]
   if (roles[0] === 'ranged' && roles[1] === 'ranged' && payload) lines.push(`ONE ${payload.angularOffsetsRadians.length}-PRONG VOLLEY, ${payload.damage} DAMAGE EACH`);
   else if (roles[0] === 'melee' && roles[1] === 'melee') lines.push(`ONE HEAVY SWING, ${definition.base!.damage} DAMAGE`);
   else if (roles[0] === 'melee' && payload) lines.push(`EVERY SWING ALSO FIRES ${payload.payloadKind === 'water' ? 'WATER' : 'A SHOT'}`);
-  else if (definition.base) lines.push(`${definition.base.damage + 0} DAMAGE PER HIT (+1 FUSED)`);
+  else if (definition.base) lines.push(`${definition.base.damage} DAMAGE PER HIT (${isSignatureFusion(baseId, ingredientId) ? 'SIGNATURE' : '+1 FUSED'})`);
   for (const effect of definition.effects) {
     if (effect.kind === 'status_modifier') lines.push(`STICKY LASTS ${Math.round(effect.ticks / 60 * 10) / 10}S (OVERCLOCKED)`);
     if (effect.kind === 'conductive_reaction') lines.push(`CHAINS TO ${effect.maxAdditionalTargets} MORE TARGETS (OVERCLOCKED)`);
@@ -489,9 +528,10 @@ export function hybridHighlights(baseId: string, ingredientId: string): string[]
   if ([baseId, ingredientId].includes('receipt_wallet')) lines.push('BIGGER DISCOUNT: $3 OFF EVERY PURCHASE');
   if ([baseId, ingredientId].includes('fanny_pack')) lines.push('CARRY ONE MORE STOLEN ITEM');
   if (ingredient.effects.length > 0 && roles[1] === 'mod') lines.push(`${ingredient.name.toUpperCase()} NO LONGER BOOSTS YOUR OTHER WEAPONS`);
-  if (isSignatureFusion(baseId, ingredientId)) lines.unshift('SIGNATURE FUSION: +1 DAMAGE');
   const parts = hybridPartCount(baseId) + hybridPartCount(ingredientId);
-  if (parts > 2) lines.unshift(`${parts}-ITEM FUSION${parts === MAX_FUSION_PARTS ? ' (THE LIMIT)' : ''}`);
+  const limit = maxPartsFor(baseId, ingredientId);
+  if (parts > 2) lines.unshift(`${parts}-ITEM FUSION${parts === limit ? ' (THE LIMIT)' : ''}`);
+  if (isSignatureFusion(baseId, ingredientId)) lines.unshift('SIGNATURE: +50% DAMAGE, 20% FASTER, ROOM FOR A 5TH PART');
   return lines.slice(0, 5);
 }
 

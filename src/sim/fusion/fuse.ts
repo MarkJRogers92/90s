@@ -10,7 +10,7 @@ import { resolveEmitterMount } from './emitterMount';
 import {
   HYBRID_BASE_FEE,
   HYBRID_CLEAN_DISCOUNT,
-  MAX_FUSION_PARTS,
+  maxPartsFor,
   fusedDefinitionFor,
   fusionPairFor,
   hybridDefinition,
@@ -63,8 +63,9 @@ function resolveHybrid(state: FusionInventoryState, baseInstanceId: string, ingr
     return rejected('not_a_part', 'The RC car is already carrying the shot: an Emitter Mount cannot be fused again.');
   }
   const parts = fusionPartCount(base) + fusionPartCount(ingredient);
-  if (parts > MAX_FUSION_PARTS) {
-    return rejected('too_many_parts', `Too much warranty to void: one fusion holds at most four items (this would be ${parts}).`);
+  const limit = maxPartsFor(nodeDefinitionId(base), nodeDefinitionId(ingredient));
+  if (parts > limit) {
+    return rejected('too_many_parts', `Too much warranty to void: this fusion holds at most ${limit} items (this would be ${parts}).`);
   }
   const definition = hybridDefinition(nodeDefinitionId(base), nodeDefinitionId(ingredient));
   const clean = isCleanPart(base) && isCleanPart(ingredient);
@@ -146,8 +147,9 @@ export function resolveFusion(
     return rejected('same_item', `Two ${firstDefinition.name}s do not make anything new.`);
   }
   const parts = fusionPartCount(firstPart) + fusionPartCount(secondPart);
-  if (parts > MAX_FUSION_PARTS) {
-    return rejected('too_many_parts', `Too much warranty to void: one fusion holds at most four items (this would be ${parts}).`);
+  const limit = maxPartsFor(nodeDefinitionId(firstPart), nodeDefinitionId(secondPart));
+  if (parts > limit) {
+    return rejected('too_many_parts', `Too much warranty to void: this fusion holds at most ${limit} items (this would be ${parts}).`);
   }
   const pair = fusionPairFor(firstDefinition, secondDefinition);
   if (pair.recipe === null) return rejected('unsupported_pair', pair.reason);

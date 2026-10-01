@@ -7,6 +7,12 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 43 (2026-10-01): signature fusions are the best fusions. A named pair
+now hits half again as hard and attacks a fifth faster (once, when formed),
+has room for a fifth part, says so on the bench card and glows hot pink. The
+playtest had 0 of 8 recipe hints followed at the old +1 damage. 1065 unit and
+76 browser tests pass; see TEST_EVIDENCE.md round 43.
+
 Round 42 (2026-10-01): the finale is the hardest fight. The 2026-09-30
 playtest won two full nights with the Developer down in about 20 s and
 upstairs fights costing 0-2 damage, so regular monsters now get x1.15 /
