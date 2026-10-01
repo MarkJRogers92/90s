@@ -34,7 +34,25 @@ export function mannequinWatched(state: RunState, enemy: EnemyState): boolean {
   return along >= WATCH_COS && hasLineOfSight(state.player.x, state.player.y, enemy.x, enemy.y, state.walls);
 }
 
+/**
+ * After a bite it holds the pose, harmless, for 1.5 s: half a second past the
+ * janitor's invulnerability, so one bump is one hit and there is time to turn
+ * and watch it before it creaks back to life.
+ */
+export const MANNEQUIN_BITE_FREEZE_TICKS = 90;
+
+/** A moving mannequin that just bit the janitor stops dead. */
+export function freezeAfterBite(enemy: EnemyState): void {
+  enemy.stunnedTicks = MANNEQUIN_BITE_FREEZE_TICKS;
+  enemy.phase = 'recover';
+}
+
 export function updateMannequin(state: RunState, enemy: EnemyState): void {
+  if ((enemy.stunnedTicks ?? 0) > 0) {
+    enemy.stunnedTicks = (enemy.stunnedTicks ?? 0) - 1;
+    enemy.phase = 'recover';
+    return;
+  }
   if (mannequinWatched(state, enemy)) {
     enemy.phase = 'recover';
     return;

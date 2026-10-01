@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { MANNEQUIN_SPEED_PER_TICK, mannequinWatched } from '../../src/sim/combat/mannequin';
+import { MANNEQUIN_BITE_FREEZE_TICKS, MANNEQUIN_SPEED_PER_TICK, mannequinWatched } from '../../src/sim/combat/mannequin';
 import { tickRun } from '../../src/sim/tickRun';
 import type { EnemyState, InputFrame } from '../../src/sim/model';
 import { emptyFixture, frame } from '../helpers';
@@ -47,6 +47,23 @@ describe('the mannequin', () => {
     unwatched.enemies = [mannequin({ x: unwatched.player.x + 20, y: unwatched.player.y })];
     tickRun(unwatched, aimAt(unwatched.player.x - 200, unwatched.player.y));
     expect(unwatched.player.health).toBe(5);
+  });
+
+  it('freezes after a bite, long enough to break away, and creaks back to life', () => {
+    const state = emptyFixture();
+    state.enemies = [mannequin({ x: state.player.x + 20, y: state.player.y })];
+    const away = aimAt(state.player.x - 200, state.player.y);
+    tickRun(state, away);
+    expect(state.player.health).toBe(5);
+    const bitten = { x: state.enemies[0]!.x, y: state.enemies[0]!.y };
+    // Caught: it holds still and harmless past the janitor's invulnerability.
+    for (let tick = 0; tick < MANNEQUIN_BITE_FREEZE_TICKS; tick += 1) tickRun(state, away);
+    expect(MANNEQUIN_BITE_FREEZE_TICKS).toBeGreaterThan(60);
+    expect(state.player.health).toBe(5);
+    expect(state.enemies[0]!).toMatchObject({ x: bitten.x, y: bitten.y, phase: 'recover' });
+    // Still standing in reach when it wakes: it bites again.
+    tickRun(state, away);
+    expect(state.player.health).toBe(4);
   });
 
   it('is shoved back by the mop like a Hanger', () => {
