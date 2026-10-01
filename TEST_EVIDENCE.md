@@ -1629,4 +1629,8 @@ Archive checks verified 19 native PNGs with binary transparency and at most 32 o
 - Not run: Playwright browser gate; nothing looked at on screen.
 - Shopfronts redrawn with Retro Diffusion (6 images, $0.36); 1178 tests and build pass again.
 - Round 55 twists: `tests/unit/floor-store-twists.test.ts` failed first (no exports, placeholder hints), then 8/8 pass.
-  `npx vitest run`: 126 files, 1186 tests pass. `npm run build`: passes. Browser gate: run pending (see next entry).
+  `npx vitest run`: 126 files, 1186 tests pass. `npm run build`: passes. Browser gate below.
+- Browser gate (cloud, Chromium at /opt/pw-browsers): 78/82 passed first run. Two failures were my
+  own parallel run clobbering `test-results/`; rerun alone they pass, as does the 550 shutter test.
+  `offers are identical for one seed` (five launches) took 27-30 s on both `main` and this branch
+  against the 30 s default; it now sets a 60 s timeout like the other multi-launch tests.

@@ -472,6 +472,8 @@ test('Opening Concourse sorts the player and carrier by their own feet', async (
 });
 
 test('offers are identical for one seed and vary across seeds', async ({ page }) => {
+  // Five full launches: ~28 s on a slow machine, too close to the 30 s default.
+  test.setTimeout(60_000);
   const errors = collectErrors(page);
 
   await launchRun(page, '/?fixture=mvp-storefront&seed=4242');
