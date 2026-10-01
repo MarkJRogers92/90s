@@ -103,6 +103,8 @@ export const PROP_TEXTURES = {
   sodaMachineBroken: { key: 'neon:prop:soda-machine-broken', file: 'props/soda-machine-broken.png', width: 57, height: 86 },
   rackOfClothes: { key: 'neon:prop:rack-of-clothes', file: 'props/rack-of-clothes.png', width: 60, height: 75 },
   mallCart: { key: 'neon:prop:mall-cart', file: 'props/mall-cart.png', width: 37, height: 44 },
+  // Round 54: a rack lying on its side (Forge + Aseprite), drawn for east and west falls.
+  rackToppled: { key: 'neon:prop:rack-toppled', file: 'props/rack-toppled.png', width: 120, height: 70 },
   // Round 31: PixelLab animate_image strips (9 frames, frame 0 the original sprite).
   arcadeCabinet: { key: 'neon:prop:arcade-cabinet-anim', file: 'props/arcade-cabinet-anim.png', width: 27, height: 59, frames: 9 },
   clawMachine: { key: 'neon:prop:claw-machine-anim', file: 'props/claw-machine-anim.png', width: 32, height: 57, frames: 9 },

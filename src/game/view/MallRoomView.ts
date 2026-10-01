@@ -16,6 +16,7 @@ import type { MvpRunState } from '../../sim/run/types';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, NEON_CIVILIAN_KEYS, characterFrameSize, type CivilianTextureKey } from '../presentation/assets';
 import { presentationDepth } from '../presentation/depth';
+import { presentationOcclusionAlpha } from '../presentation/occlusion';
 import { GLOW_DEPTH, LightingLayer, type PointLight } from '../presentation/lighting/LightingLayer';
 import { FX_TEXTURES, ensureFxTextures, ensureNeonSign, ensurePixelLabel, floorTextureKey, type NeonSignSpec } from '../presentation/neon/proceduralTextures';
 import {
@@ -53,8 +54,8 @@ import { stepBlackoutMix } from './blackoutFade';
 type Layer = Phaser.GameObjects.Container;
 type Occluder = {
   readonly object: Phaser.GameObjects.Image;
+  /** The prop's sprite box; its bottom edge is the base the actor sorts against. */
   readonly rect: { x: number; y: number; width: number; height: number };
-  readonly baseY: number;
 };
 
 export type MallRoomAmbienceSnapshot = ConcourseAmbienceSnapshot & {
@@ -437,7 +438,6 @@ export class MallRoomView {
       this.occluders.push({
         object: image,
         rect: { x: prop.x - width / 2, y: prop.y - height, width, height },
-        baseY: prop.y,
       });
     }
   }
@@ -501,9 +501,10 @@ export class MallRoomView {
   public render(snapshot: MvpRunState): void {
     const foot = snapshot.room.combat.player;
     for (const occluder of this.occluders) {
-      const r = occluder.rect;
-      const behind = foot.y < occluder.baseY && foot.x > r.x && foot.x < r.x + r.width && foot.y > r.y;
-      occluder.object.setAlpha(behind ? 0.5 : 1);
+      // Ease toward the target so a prop fades rather than pops as the janitor walks behind it.
+      const target = presentationOcclusionAlpha('tallForeground', foot, occluder.rect);
+      const alpha = occluder.object.alpha;
+      occluder.object.setAlpha(Math.abs(target - alpha) < 0.02 ? target : alpha + (target - alpha) * 0.3);
     }
     for (const entry of this.pulsing) {
       entry.object.setAlpha(entry.base * (0.82 + 0.18 * Math.sin((snapshot.tick + entry.seed * 41) / 17)));
