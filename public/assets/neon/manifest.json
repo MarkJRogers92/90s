@@ -3341,62 +3341,62 @@
   },
   {
     "path": "public/assets/neon/facades/shade-station.png",
-    "source": "public/assets/neon/facades/boutique.png",
-    "generator": "PLACEHOLDER: hue-shifted copy of the boutique shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-shade-station-1790895842-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
     "size": [
       288,
       160
     ],
-    "sha256": "8234f3b3f8a61c700f64a038c219fe8aeccad8db223c303fab728f4c3dc643ab"
+    "sha256": "4be9a29dee50d57c9aa1d1d0fc58d1251c23d55c46e76b8a4222c45843f85f69"
   },
   {
     "path": "public/assets/neon/facades/page-turner.png",
-    "source": "public/assets/neon/facades/music-store.png",
-    "generator": "PLACEHOLDER: hue-shifted copy of the music-store shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-page-turner-1790895852-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
     "size": [
       288,
       160
     ],
-    "sha256": "b6bb104b1cd4780bca8104155b236d77dd1ba16115b6db64fb8ec2c3fd77c0f1"
+    "sha256": "bb19e4685b6190c336a12483572efe016c4f993fd3d978e43d480fd6c95dc3c5"
   },
   {
     "path": "public/assets/neon/facades/pretzel-pit.png",
-    "source": "public/assets/neon/facades/pizza-counter.png",
-    "generator": "PLACEHOLDER: hue-shifted copy of the pizza-counter shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-pretzel-pit-1790895862-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
     "size": [
       288,
       160
     ],
-    "sha256": "c7f73e9a691dd006eea4bd760245e48fd5ca347fc24f75d1d418c010bc53e4fb"
+    "sha256": "44b3c5586397bd4fc03c67314d4e74c421b4cbe77dcc33589d3aa9963277e616"
   },
   {
     "path": "public/assets/neon/facades/frosty-freeze.png",
-    "source": "public/assets/neon/facades/cinema-concession.png",
-    "generator": "PLACEHOLDER: hue-shifted copy of the cinema-concession shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-frosty-freeze-1790895872-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
     "size": [
       288,
       160
     ],
-    "sha256": "67270d2f4d3898cc95ca332cc00d2ffb597a55ffe57f72db5974ba48f056c637"
+    "sha256": "74b23df82fb6427531b366aef467235db0c06f5d138854f5722d46b174b0e42e"
   },
   {
     "path": "public/assets/neon/facades/antenna-annex.png",
-    "source": "public/assets/neon/facades/radio-shed.png",
-    "generator": "PLACEHOLDER: hue-shifted copy of the radio-shed shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-antenna-annex-1790895882-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
     "size": [
       288,
       160
     ],
-    "sha256": "d1bed49dae09f258eea36d8d1047783334d1fa12d53ce8c38cdc3fc1b41a9617"
+    "sha256": "05e52d6a590f12d60de68afab6e5f799ace27e5ac39e0e5e35f14ba60ab44aa2"
   },
   {
     "path": "public/assets/neon/facades/pawn-palace.png",
-    "source": "public/assets/neon/facades/hardware-hut.png",
-    "generator": "PLACEHOLDER: hue-shifted copy of the hardware-hut shopfront (ImageMagick -modulate); redraw with Retro Diffusion (round 55)",
+    "source": "docs/art/neon-overhaul/retrodiffusion/floor-pawn-palace-1790895892-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 55 floor-store art)",
     "size": [
       288,
       160
     ],
-    "sha256": "ab28773f72104355adf9d7a371ce08652ab2200bcea9b85bcff03656100720fe"
+    "sha256": "342a0f6a726d9ac6b957705cecb758a3e11e07922b3a279cb12e6d078de98bda"
   }
 ]

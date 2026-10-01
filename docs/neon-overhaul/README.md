@@ -1400,6 +1400,6 @@ own rng (`FLOOR_STORE_SALT`), so no other draw moves.
 
 - Stock reuses existing items (`STORE_STOCK`); six new signature pairs keep
   every store at three or more.
-- **Placeholder art:** the six shopfronts are hue-shifted copies of existing
-  fronts (manifest says PLACEHOLDER). Redraw with Retro Diffusion.
+- **Art:** the six shopfronts are Retro Diffusion `rd_plus__default` (288x160,
+  blank sign band, $0.36 for the set), sources in `docs/art/neon-overhaul/retrodiffusion/`.
 - **No twists yet:** their `TWIST_HINTS` say so honestly. Not yet seen in play.

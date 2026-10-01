@@ -28,8 +28,8 @@ Last gate (round 39, the Roof): see TEST_EVIDENCE.md round 39.
 
 ## Next up
 
-Round 55 added floor-exclusive stores (floors 2-4) with PLACEHOLDER shopfronts
-and no twists: redraw the six fronts and give them twists. Playtest: do floors
+Round 55 added floor-exclusive stores (floors 2-4) with Retro Diffusion shopfronts
+and no twists: give them twists. Playtest: do floors
 2-4 now feel different to shop in?
 
 Round 39 (Floor 4, the Roof) is done; see STATUS.md and the playbook's
