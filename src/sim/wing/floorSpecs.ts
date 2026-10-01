@@ -25,6 +25,13 @@ type WingRng = ReturnType<typeof createWingRng>;
 export type FloorSpec = {
   readonly roomNames: Readonly<Record<WingRoomRole, string>>;
   readonly bossKind: BossKind;
+  /**
+   * Health multiplier for the floor's authored monsters (not bosses, mannequin
+   * displays or security), so the fights keep pace with the fusions a janitor
+   * has built by then. Playtest 2026-09-30: floors 2-4 were cleared with 0-2
+   * damage a fight.
+   */
+  readonly enemyHealthScale: number;
   /** Every fight at its variant's maximum count instead of a drawn one. */
   readonly fullStrength: boolean;
   /**
@@ -41,6 +48,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   1: {
     roomNames: ROOM_NAMES,
     bossKind: 'lp_manager',
+    enemyHealthScale: 1,
     fullStrength: false,
     enemyKind: (kind) => kind,
     seedFrom: (seed) => seed,
@@ -49,6 +57,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   2: {
     roomNames: FLOOR_TWO_ROOM_NAMES,
     bossKind: 'manager',
+    enemyHealthScale: 1.15,
     fullStrength: true,
     enemyKind: (kind, rng) => {
       const roll = nextInt(rng, 0, 99);
@@ -62,6 +71,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   3: {
     roomNames: FLOOR_THREE_ROOM_NAMES,
     bossKind: 'owner',
+    enemyHealthScale: 1.3,
     fullStrength: true,
     enemyKind: (kind, rng) => {
       const roll = nextInt(rng, 0, 99);
@@ -75,6 +85,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
   4: {
     roomNames: ROOF_ROOM_NAMES,
     bossKind: 'developer',
+    enemyHealthScale: 1.5,
     fullStrength: true,
     enemyKind: (kind, rng) => {
       const roll = nextInt(rng, 0, 99);

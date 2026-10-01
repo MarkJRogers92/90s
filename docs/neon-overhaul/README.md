@@ -1047,7 +1047,7 @@ Roof. Beating **the Developer** on the Helipad is the win.
   bucket leaves a puddle (`combat/tar.ts`: `RunState.tar`, up to 6,
   `TAR_PUDDLE_TICKS` 300) that slows walking to `TAR_SLOW` 0.55; dashes are
   not slowed. Roofers take Spitter slots on the Roof (45%).
-- **The Developer** (`BOSS_CONFIGS.developer`, 240 hp): slam and a
+- **The Developer** (`BOSS_CONFIGS.developer`, 340 hp since round 42): slam and a
   five-blueprint fan; from phase 2 every other attack is a `tarBarrage`
   (3 rings, 5 in phase 3, 72 px around the janitor, 60 ticks, landing like
   a Roofer's). Calls one Roofer at phase 2, two more at phase 3.
@@ -1073,3 +1073,21 @@ Roof. Beating **the Developer** on the Helipad is the win.
   replacing the 45-tick lock.
 - **Fixtures**: `mvp-floor-four`, `-lobby` (HVAC Yard), `-roofer`, `-boss`,
   `-boss-win`.
+
+## Round 42: the finale is the hardest fight (playtest 2026-09-30)
+
+Two full four-floor nights were won with the Developer down in 19-21 s for
+0-3 damage, the easiest boss of the night, and floors 2-4 cleared with 0-2
+damage a fight: 4-part fusions by floor 2 had outgrown the monsters.
+
+- **Floor toughness**: `FloorSpec.enemyHealthScale` (1, 1.15, 1.3, 1.5)
+  multiplies the health of a floor's authored monsters in `spawnEnemy`
+  (rounded, before the elite x2). Bosses keep their configs; mannequin
+  displays and wanted-level security are heist mechanics and stay as they are.
+- **The Developer**: 340 hp (was 240); `tarBarrage.counts` per phase
+  `[2, 3, 5]`, so the barrage starts in phase one.
+- **Playtest log**: damage sources `roofer` (a bucket) and `barrage` (the
+  Developer's), told apart by a fresh puddle under the janitor and whether
+  the boss's buckets in the air just dropped. Before this both were `other`.
+  Pink slips: TARRED ON THE ROOF, BURIED IN HOT TAR.
+

@@ -788,7 +788,7 @@ test('the Roof boss room spawns the Developer', async ({ page }) => {
   const state = await runSnapshot(page);
   expect(state.floor).toBe(4);
   expect(state.enemies.some((enemy) => enemy.kind === 'developer')).toBe(true);
-  await expect(page.locator('#mvp-run-boss')).toContainText('HP 240/240');
+  await expect(page.locator('#mvp-run-boss')).toContainText('HP 340/340');
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
 });

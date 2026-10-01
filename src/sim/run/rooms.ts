@@ -62,9 +62,10 @@ const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; rad
   roofer: { health: ROOFER_HEALTH, radius: ROOFER_RADIUS, phase: 'recover', phaseTicks: 70 },
 };
 
-function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean): EnemyState {
+/** `healthScale` toughens a floor's authored monsters (see FloorSpec.enemyHealthScale). */
+function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean, healthScale = 1): EnemyState {
   const stats = SPAWN_STATS[spawn.kind];
-  const health = stats.health * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
+  const health = Math.round(stats.health * healthScale) * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
   return {
     ...(elite ? { elite: true } : {}),
     id,
@@ -220,12 +221,13 @@ export function buildRoomCombatState(
   const projected = compileRunLoadout(inventory);
   const compiledLoadout = projected.compiledLoadout;
 
+  const floor = floorSpec(floorNumberOf(wing));
   const enemies = room.enemySpawns.map((spawn, index) =>
-    spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE),
+    spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE, floor.enemyHealthScale),
   );
   if (room.bossAnchor) {
-    // Loss Prevention downstairs; the Mall Manager runs the upper level; the Mall Owner owns the roof.
-    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, floorSpec(floorNumberOf(wing)).bossKind));
+    // Each floor's own boss (the floor table), at its own config's health.
+    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, floor.bossKind));
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
     enemies.push(spawnMannequin(enemies.length + 1, spot.x, spot.y));

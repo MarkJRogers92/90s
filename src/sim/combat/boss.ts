@@ -77,13 +77,13 @@ export type BossConfig = {
   /** How many summons a phase-two call brings (0 or absent: none). */
   readonly summonCountPhase2?: number;
   /**
-   * The Developer's tar barrage: from phase two, every other attack throws
-   * buckets instead of slamming. One ring locks on the janitor and the rest
-   * circle it at `spread`; they all land `lobTicks` later as a Roofer's do.
+   * The Developer's tar barrage: every other attack throws buckets instead of
+   * slamming, `counts[phase - 1]` of them (0: that phase only slams). One ring
+   * locks on the janitor and the rest circle it at `spread`; they all land
+   * `lobTicks` later as a Roofer's do.
    */
   readonly tarBarrage?: {
-    readonly countPhase2: number;
-    readonly countPhase3: number;
+    readonly counts: readonly [number, number, number];
     readonly spread: number;
     readonly lobTicks: number;
   };
@@ -144,7 +144,9 @@ export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
   },
   // Floor 4: the man who bought the dead mall to knock it down, on the helipad.
   developer: {
-    maxHealth: 240,
+    // Playtest 2026-09-30: at 240 he fell in about 20 s for 0-3 damage, the
+    // easiest boss of the night. 340 puts him past the Owner.
+    maxHealth: 340,
     radius: 26,
     pursueSpeedPerTick: 1.0,
     slamTelegraphTicks: 34,
@@ -160,7 +162,7 @@ export const BOSS_CONFIGS: Readonly<Record<BossKind, BossConfig>> = {
     summonHealth: 20,
     summonRadius: 15,
     summonCountPhase2: 1,
-    tarBarrage: { countPhase2: 3, countPhase3: 5, spread: 72, lobTicks: 60 },
+    tarBarrage: { counts: [2, 3, 5], spread: 72, lobTicks: 60 },
   },
 };
 
@@ -517,8 +519,9 @@ export function updateLpManager(state: RunState, enemyIndex: number): void {
         boss.phaseTicks = BOSS_PURSUE_TICKS;
         return;
       }
-      if (config.tarBarrage && bossPhase >= 2 && attacks % 2 === 1) {
-        throwTarBarrage(state, boss, config.tarBarrage, bossPhase === 3 ? config.tarBarrage.countPhase3 : config.tarBarrage.countPhase2);
+      const buckets = config.tarBarrage?.counts[bossPhase - 1] ?? 0;
+      if (config.tarBarrage && buckets > 0 && attacks % 2 === 1) {
+        throwTarBarrage(state, boss, config.tarBarrage, buckets);
         boss.phase = 'recover';
         boss.phaseTicks = bossPhase === 3 ? config.slamRecoverTicksPhase3 : config.slamRecoverTicks;
         return;

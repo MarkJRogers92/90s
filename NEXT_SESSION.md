@@ -33,6 +33,13 @@ twists, sell and drop, reduced flashing). What is left:
 2. Playtest rounds 32-37 (questions below) and tune.
 2b. ~~Browser gate flake~~ (fixed, round 41).
 
+## Round 42 playtest questions
+
+- Is the Developer now the hardest fight of the night (target ~30 s, a few
+  hits taken)? The log's `barrage` column shows whether his tar lands.
+- Do floors 2-4 feel tougher without becoming a slog (x1.15 / x1.3 / x1.5)?
+- What does the `roofer` column say about the HVAC Yard and Water Tower?
+
 ## Round 39 (the Roof) playtest questions
 
 - Is the Roofer's 54-tick lob readable? Is 1 damage plus a slowing puddle

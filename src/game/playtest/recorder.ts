@@ -23,8 +23,10 @@ import { shelvedSignaturePair } from '../../sim/run/recipeHints';
 import { wantedStars } from '../../sim/run/wanted';
 import type { FloorNumber } from '../../sim/wing/floorSpecs';
 import type { BossKind } from '../../sim/combat/boss';
+import { TAR_PUDDLE_TICKS } from '../../sim/combat/tar';
+import { TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
 
-export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'roofer' | 'barrage' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -112,6 +114,8 @@ type Snapshot = {
   readonly health: number;
   readonly living: ReadonlySet<number>;
   readonly enemyShots: number;
+  /** The Developer's tar buckets in the air: a drop means a barrage just landed. */
+  readonly bossStrikes: number;
   readonly dashTicks: number;
   readonly stalkerPhase: string | null;
   readonly writeUps: number;
@@ -124,7 +128,7 @@ type Snapshot = {
   readonly inside: string | null;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, barrage: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -134,6 +138,7 @@ function snapshot(state: MvpRunState): Snapshot {
     health: combat.player.health,
     living: new Set(combat.enemies.filter((enemy) => enemy.health > 0).map((enemy) => enemy.id)),
     enemyShots: combat.projectiles.filter((shot) => shot.faction === 'enemy').length,
+    bossStrikes: combat.enemies.reduce((sum, enemy) => sum + (enemy.health > 0 ? enemy.tarStrikes?.length ?? 0 : 0), 0),
     dashTicks: combat.player.dashTicks ?? 0,
     stalkerPhase: state.stalker?.phase ?? null,
     writeUps: state.stalker?.writeUps ?? 0,
@@ -162,6 +167,9 @@ function heldItemFrom(state: MvpRunState, storeId: string, itemId: string): bool
   return state.inventory.inventory.some((node) => compositeLeaves(node).some((leaf) => leaf.sourceLocationId === storeId && leaf.itemDefinitionId === itemId));
 }
 
+/** How old a tar puddle can be and still be the splash that just landed. */
+const FRESH_TAR_TICKS = 10;
+
 /** What most plausibly dealt a hit, from the state around it. */
 function classify(state: MvpRunState, previous: Snapshot, amount: number): DamageSource {
   const combat = state.room.combat;
@@ -169,6 +177,13 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
   // A write-up is counted by the stalker himself, so it is never mistaken for
   // whatever else happens to be standing next to the janitor.
   if ((state.stalker?.writeUps ?? 0) > previous.writeUps) return 'stalker';
+  // Tar lands as a fresh puddle under the janitor: the Developer's barrage if
+  // his buckets in the air just went down, a Roofer's bucket otherwise.
+  const freshTar = (combat.tar ?? []).some((puddle) => puddle.ticks >= TAR_PUDDLE_TICKS - FRESH_TAR_TICKS && Math.hypot(puddle.x - p.x, puddle.y - p.y) <= TAR_SPLASH_RADIUS + p.radius);
+  if (freshTar) {
+    const strikes = combat.enemies.reduce((sum, enemy) => sum + (enemy.health > 0 ? enemy.tarStrikes?.length ?? 0 : 0), 0);
+    return strikes < previous.bossStrikes ? 'barrage' : 'roofer';
+  }
   const touching = combat.enemies.some(
     (enemy) => enemy.kind === 'hanger' && Math.hypot(enemy.x - p.x, enemy.y - p.y) <= enemy.radius + p.radius + 2,
   );

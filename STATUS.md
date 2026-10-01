@@ -7,6 +7,14 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 42 (2026-10-01): the finale is the hardest fight. The 2026-09-30
+playtest won two full nights with the Developer down in about 20 s and
+upstairs fights costing 0-2 damage, so regular monsters now get x1.15 /
+x1.3 / x1.5 health on floors 2 / 3 / 4, and the Developer has 340 hp (was
+240) with a tar barrage from phase one. The playtest log now records tar
+hits as `roofer` and `barrage` instead of `other`. 1059 unit and 76 browser
+tests pass; see TEST_EVIDENCE.md round 42.
+
 Round 41 (2026-09-30): the small things. The depth-sort browser test no
 longer flakes under load (it judged a second, later snapshot), start-up
 canvas waits get 20 s instead of 5, and checkpoint validation closes the
