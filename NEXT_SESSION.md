@@ -1,11 +1,17 @@
 # Next session
 
-## Start here (updated 2026-09-30)
+## Start here (updated 2026-10-01)
 
-Round 32 is on branch `claude/great-cori-w923cb` (pushed; not merged). It
-builds on `origin/main` at `6e4f14f` (PR #18). On the owner's Mac the repo
-is `~/code/90s`; make sure the checkout is on `main` (or this branch) before
-playing, since an old Codex branch shows the pre-neon game.
+`origin/main` is at round 53b plus the Continue HUD fix (`4d9f981`). Round 54
+(palms fade, the toppled rack art, a flaky test) is on branch
+`claude/polish-palms-rack-tests`, not yet merged. On the owner's Mac the repo
+is `~/code/90s`; make sure the checkout is on `main` (or a branch off it)
+before playing, since an old Codex branch shows the pre-neon game. Other
+sessions merge to `main` too, so `git fetch` and compare before merging.
+
+**The biggest open item is a human playtest of rounds 50-54** (the questions
+below). Switch on recording in the title screen's Playtest stats panel, play a
+night or two, press Copy, and tune from the log, as round 45 did.
 
 Read [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first. It
 is the playbook: architecture, art pipeline, and a section per round with its
@@ -54,9 +60,20 @@ The queue as asked:
 
 ## From the 2026-10-01 playtest (outside the Continue fix)
 
-- Palms can hide the janitor: a readability pass on tall foreground props.
 - Combat balance is unverified (tool-driven input was too slow to judge).
-- `tests/unit/districts.test.ts` can brush the 5 s Vitest timeout under load.
+- Palms hiding the janitor and the `districts.test.ts` timeout: fixed in
+  round 54.
+
+## Round 54 playtest questions (props, the rack)
+
+- Palms, pillars, the fountain: do they now fade enough to see the janitor,
+  or too much? (`OCCLUSION_MIN_ALPHA` is 0.3.) Monsters behind a prop still
+  hide; should a prop fade for them too?
+- The fallen rack: does it read as a rack lying down, and does it block you
+  where it looks like it does? Falls toward or away from the camera still use
+  the old turned-over sprite and have not been looked at on screen.
+- Art still waiting (Forge, `~/Desktop/art/finals/`): the arcade cabinets
+  (pick `-A-v9`, `-B-v3` or the combined one first).
 
 ## Round 53 playtest questions (hero fusions, props)
 

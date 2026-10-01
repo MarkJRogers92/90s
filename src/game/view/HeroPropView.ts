@@ -12,6 +12,7 @@ import { PROP_TEXTURES } from '../presentation/rooms/roomDressing';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
+import { toppledRackPose } from './toppledRack';
 
 export type HeroPropLayers = {
   /** On the floor, under everyone. */
@@ -113,19 +114,17 @@ export class HeroPropView {
       layers.shadow(id, prop.x, prop.y + 10, 1.3);
       return;
     }
-    // Toppled: the same rack on its side, its top the way it fell, flat on the floor.
+    // Toppled: lying lengthwise (the approved side-on art) for an east or west
+    // fall, the standing sprite turned over for a fall toward or away from the camera.
     const wall = propWall(prop)!;
-    const image = this.image(id, usableTextureKey(this.scene.textures, PROP_TEXTURES.rackOfClothes.key));
+    const pose = toppledRackPose(wall, prop.fall!);
+    const image = this.image(id, usableTextureKey(this.scene.textures, (pose.art === 'side' ? PROP_TEXTURES.rackToppled : PROP_TEXTURES.rackOfClothes).key));
     if (!image) return;
     used.add(id);
     const cx = wall.x + wall.width / 2;
     const cy = wall.y + wall.height / 2;
-    const fall = prop.fall!;
-    const angle = fall.axis === 'x' ? fall.sign * 90 : fall.sign > 0 ? 180 : 0;
-    // Falling away from the camera it is seen end-on, so it is squashed.
-    const squash = fall.axis === 'y' && fall.sign < 0 ? 0.55 : 1;
-    image.setOrigin(0.5, 0.5).setAngle(angle).setScale(1.25, 1.25 * squash).setPosition(Math.round(cx), Math.round(cy))
-      .setDepth(presentationDepth('lowProp', cy));
+    image.setOrigin(0.5, pose.originY).setAngle(pose.angle).setFlipX(pose.flipX).setScale(pose.scaleX, pose.scaleY)
+      .setPosition(Math.round(pose.x), Math.round(pose.y)).setDepth(presentationDepth('lowProp', cy));
     floor.fillStyle(0x000000, 0.3).fillEllipse(cx + 2, cy + 4, wall.width + 10, wall.height + 10);
   }
 

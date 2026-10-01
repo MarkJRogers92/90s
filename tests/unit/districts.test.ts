@@ -4,7 +4,7 @@ import { buildRoomCombatState } from '../../src/sim/run/rooms';
 import { parseCheckpoint, restoreMvpRun, serializeCheckpoint } from '../../src/sim/run/checkpoint';
 import { roomStores } from '../../src/sim/run/storeInterior';
 import { BOSS_CONFIGS, isBossKind } from '../../src/sim/combat/boss';
-import { DISTRICT_FOR_FLOOR, districtSpec } from '../../src/sim/wing/districts';
+import { DISTRICT_FOR_FLOOR, districtRoll, districtSpec } from '../../src/sim/wing/districts';
 import { FLOOR_NUMBERS, floorSpec, type FloorNumber } from '../../src/sim/wing/floorSpecs';
 import { DISTRICT_STORE_TEMPLATES } from '../../src/sim/wing/templates';
 import type { MvpRunState } from '../../src/sim/run/types';
@@ -21,20 +21,31 @@ function districtRun(floor: FloorNumber): MvpRunState {
 describe('mall districts (round 50)', () => {
   it('each floor has its own district, and about half the nights a first wing is it', () => {
     expect(new Set(FLOOR_NUMBERS.map((floor) => DISTRICT_FOR_FLOOR[floor])).size).toBe(4);
+    // The statistics run on the cheap roll; building 800 full runs for them took
+    // ~2 s and brushed the 5 s timeout when the machine was busy.
     for (const floor of FLOOR_NUMBERS) {
       let districts = 0;
       for (let seed = 1; seed <= 200; seed += 1) {
-        const first = createMvpRun(seed, { floor, part: 1 }).wing;
-        if (first.district) {
+        const roll = districtRoll(seed, floor, 1);
+        if (roll) {
           districts += 1;
-          expect(first.district).toBe(DISTRICT_FOR_FLOOR[floor]);
+          expect(roll).toBe(DISTRICT_FOR_FLOOR[floor]);
         }
         // The same night always rolls the same way, and a boss wing never is one.
-        expect(createMvpRun(seed, { floor, part: 1 }).wing.district).toBe(first.district);
-        if (seed <= 20) expect(createMvpRun(seed, { floor }).wing.district).toBeUndefined();
+        expect(districtRoll(seed, floor, 1)).toBe(roll);
+        expect(districtRoll(seed, floor, undefined)).toBeNull();
       }
       expect(districts, `floor ${floor}`).toBeGreaterThan(60);
       expect(districts, `floor ${floor}`).toBeLessThan(140);
+    }
+  });
+
+  it('createMvpRun applies the roll: a first wing is its district exactly when the roll says so', () => {
+    for (const floor of FLOOR_NUMBERS) {
+      for (let seed = 1; seed <= 25; seed += 1) {
+        expect(createMvpRun(seed, { floor, part: 1 }).wing.district ?? null, `floor ${floor} seed ${seed}`).toBe(districtRoll(seed, floor, 1));
+        expect(createMvpRun(seed, { floor }).wing.district).toBeUndefined();
+      }
     }
   });
 

@@ -1275,6 +1275,30 @@ music. Boss wings never change, and regular wings draw exactly as before.
   mini-boss), its stores and stock, a twist each, a monster update, a boss
   config, then the game tables tsc lists (sprites, HUD, PA, looks, music).
 
+## Round 54: polish (palms, the toppled rack, a flaky test)
+
+Three small items from the 2026-10-01 playtest and the art backlog.
+
+- **Tall props fade properly.** A palm at 50% opacity laid a green net of
+  fronds over the janitor standing behind it. `MallRoomView.render` now uses
+  `presentationOcclusionAlpha` (it was tested but unused; the view had an
+  inline copy). Knobs in `presentation/occlusion.ts`: `OCCLUSION_MIN_ALPHA`
+  (0.3, was 0.5), `ACTOR_HALF_WIDTH` (14: the fade starts when the janitor's
+  body, not just the foot point, slips behind the prop), and an edge ramp.
+  The view eases toward the target (30% a frame) so props fade, not pop.
+  Applies to every occluder (fountain, pillar, bunny, crates, photo booth...).
+  Monsters behind a prop do not fade it; only the janitor does.
+- **The approved toppled rack** (Forge, finished in Aseprite) is in:
+  `props/rack-toppled.png` (120x70, `PROP_TEXTURES.rackToppled`, source
+  `docs/art/neon-overhaul/aseprite/rack-toppled-merged.aseprite`). The pure
+  `view/toppledRack.ts` picks the pose: an east or west fall shows the art
+  scaled to the wall's 96 px, mirrored for west; a fall toward or away from the
+  camera keeps the old turned-over standing sprite, since a side-on rack would
+  lie across the aisle there. Dev: `?fixture=mvp-hero&props=used` (an east fall).
+- **`districts.test.ts` no longer brushes the 5 s timeout.** Its odds check
+  built about 800 full runs (1.9 s); it now runs on `districtRoll` and a
+  smaller test confirms `createMvpRun` applies the roll.
+
 ## Round 53b: the secret back room
 
 - `sim/run/secretRoom.ts`: `secretFor(wing)` (seed-derived, `SECRET_CHANCE`
