@@ -15,8 +15,11 @@ import { roomEventFor } from '../../sim/run/roomEvents';
 import type { MvpRunState } from '../../sim/run/types';
 import { isBossKind } from '../../sim/combat/boss';
 import { floorNumberOf, type FloorNumber } from '../../sim/wing/floorSpecs';
+import { districtSpec } from '../../sim/wing/districts';
 
-export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout' | 'upstairs' | 'manager' | 'topfloor' | 'owner' | 'roof' | 'developer';
+export type MusicTrackId = 'muzak' | 'combat' | 'boss' | 'blackout' | 'upstairs' | 'manager' | 'topfloor' | 'owner' | 'roof' | 'developer'
+  // Round 50: each district's fights, and its mini-boss at a faster tempo.
+  | 'holiday' | 'glamour' | 'pets' | 'rink';
 
 export type MusicCue = {
   readonly track: MusicTrackId | 'silent';
@@ -47,11 +50,14 @@ export function musicCue(state: MvpRunState): MusicCue {
   const tension = living.some((enemy) => enemy.kind === 'mannequin' && enemy.phase === 'pursue');
   const danger = state.room.combat.player.health <= LAST_HEART ? 0.3 : 0;
   const boss = living.find((enemy) => isBossKind(enemy.kind));
+  const district = state.wing.district;
   if (boss) {
     const phase = boss.bossPhase ?? 1;
+    // A district's mini-boss plays the district's own track, pushed harder.
+    const miniBoss = district !== undefined && boss.kind === districtSpec(district).miniBoss;
     return {
-      track: boss.kind === 'developer' ? 'developer' : boss.kind === 'owner' ? 'owner' : boss.kind === 'manager' ? 'manager' : 'boss',
-      tempoScale: phase === 3 ? 1.12 : phase === 2 ? 1.05 : 1,
+      track: miniBoss ? district : boss.kind === 'developer' ? 'developer' : boss.kind === 'owner' ? 'owner' : boss.kind === 'manager' ? 'manager' : 'boss',
+      tempoScale: (miniBoss ? 1.06 : 1) * (phase === 3 ? 1.12 : phase === 2 ? 1.05 : 1),
       volume,
       intensity: Math.min(1, (phase === 3 ? 1 : phase === 2 ? 0.7 : 0.4) + danger),
       tension,
@@ -59,7 +65,7 @@ export function musicCue(state: MvpRunState): MusicCue {
   }
   if (living.length > 0) {
     const intensity = Math.min(1, 0.25 + living.length * 0.18 + danger);
-    const track = roomEventFor(state, state.roomIndex) === 'blackout' ? 'blackout' : FIGHT_TRACKS[floorNumberOf(state.wing)];
+    const track = roomEventFor(state, state.roomIndex) === 'blackout' ? 'blackout' : district ?? FIGHT_TRACKS[floorNumberOf(state.wing)];
     return { track, tempoScale: 1, volume, intensity, tension };
   }
   return { track: 'muzak', tempoScale: 1, volume, intensity: 0.5, tension: false };

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { enterDoorway, tickMvpRun } from '../../src/sim/run/tickMvpRun';
 import { enterStore, roomStores } from '../../src/sim/run/storeInterior';
-import { STORE_TEMPLATES } from '../../src/sim/wing/templates';
+import { ALL_STORE_TEMPLATES } from '../../src/sim/wing/templates';
 import {
   BALL_DAMAGE_ENEMY,
   GROOVE_TICKS,
@@ -69,7 +69,7 @@ function dummy(state: MvpRunState, x: number, y: number, health = 40): EnemyStat
 
 describe('store twists for the seven themed stores (round 35)', () => {
   it('every store announces a twist on the way in', () => {
-    for (const store of STORE_TEMPLATES) expect(TWIST_HINTS[store.id], store.id).toBeTruthy();
+    for (const store of ALL_STORE_TEMPLATES) expect(TWIST_HINTS[store.id], store.id).toBeTruthy();
   });
 
   it('Sports Locker: the pitching machine winds up, then fires a ball down the aisle', () => {

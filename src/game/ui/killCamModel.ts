@@ -54,5 +54,10 @@ export function slowMoMs(realMs: number): number {
 }
 
 export function killCamStamp(kind: BossKind): string {
+  // Round 50: the district mini-bosses.
+  if (kind === 'santa') return 'SEASON CANCELLED';
+  if (kind === 'glamour_queen') return 'PHOTO SHOOT OVER';
+  if (kind === 'whiskers') return 'NINE LIVES USED';
+  if (kind === 'zamboni') return 'GAME MISCONDUCT';
   return kind === 'developer' ? 'DEMOLITION CANCELLED' : kind === 'owner' ? 'GOING OUT OF BUSINESS' : kind === 'manager' ? "YOU'RE FIRED" : 'LOSS PREVENTED';
 }

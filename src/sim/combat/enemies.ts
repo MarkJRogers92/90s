@@ -10,6 +10,8 @@ import { updateMascot } from './mascot';
 import { updateStatic } from './staticEnemy';
 import { updateRoofer } from './roofer';
 import { WALKER_BACKOFF_TICKS, updateWalker } from './walker';
+import { updateElf, updateGoon, updatePoodle, updateSpritzer } from './districtEnemies';
+import { fadePerfume } from './perfume';
 import { dryTar } from './tar';
 import {
   circlesOverlap,
@@ -48,6 +50,7 @@ function spawnSpitterProjectile(state: RunState, enemyIndex: number): void {
 
 export function updateEnemies(state: RunState): void {
   dryTar(state);
+  fadePerfume(state);
   for (let index = 0; index < state.enemies.length; index += 1) {
     const enemy = state.enemies[index];
     if (!enemy || enemy.health <= 0 || enemy.dormant) {
@@ -71,6 +74,24 @@ export function updateEnemies(state: RunState): void {
 
     if (enemy.kind === 'mascot') {
       updateMascot(state, enemy);
+      continue;
+    }
+
+    // Round 50: the district monsters.
+    if (enemy.kind === 'elf') {
+      updateElf(state, enemy);
+      continue;
+    }
+    if (enemy.kind === 'spritzer') {
+      updateSpritzer(state, enemy);
+      continue;
+    }
+    if (enemy.kind === 'poodle') {
+      updatePoodle(state, enemy);
+      continue;
+    }
+    if (enemy.kind === 'goon') {
+      updateGoon(state, enemy);
       continue;
     }
 

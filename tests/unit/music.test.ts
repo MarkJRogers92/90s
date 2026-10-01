@@ -5,6 +5,7 @@ import { musicCue } from '../../src/game/audio/musicState';
 import { TRACKS, stepTimes } from '../../src/game/audio/music';
 import { roomEventFor } from '../../src/sim/run/roomEvents';
 import { ascend, ascendToFloorTwo } from '../../src/sim/run/floors';
+import { wingEventFor } from '../../src/sim/run/wingEvents';
 
 function boss(overrides: Partial<EnemyState> = {}): EnemyState {
   return {
@@ -144,10 +145,25 @@ describe('step scheduling', () => {
   });
 });
 
+describe('district music (round 50)', () => {
+  it('a district plays its own track in fights, and pushes it harder for its mini-boss', () => {
+    let state = createMvpRun(1, { part: 1, floor: 2 });
+    // A district night without a power outage (that plays Lights Out instead).
+    for (let seed = 2; !state.wing.district || wingEventFor(state.wing) === 'outage'; seed += 1) state = createMvpRun(seed, { part: 1, floor: 2 });
+    state.room.combat.enemies = [{ id: 1, kind: 'spritzer', x: 600, y: 300, health: 16, radius: 13, phase: 'recover', phaseTicks: 10, cooldownTicks: 0, telegraphAimX: 0, telegraphAimY: 0 }];
+    expect(musicCue(state).track).toBe('glamour');
+    state.room.combat.enemies = [{ id: 2, kind: 'glamour_queen', x: 600, y: 300, health: 100, radius: 24, phase: 'pursue', phaseTicks: 10, cooldownTicks: 0, telegraphAimX: 0, telegraphAimY: 0, bossPhase: 1 }];
+    expect(musicCue(state)).toMatchObject({ track: 'glamour' });
+    expect(musicCue(state).tempoScale).toBeGreaterThan(1);
+  });
+});
+
 describe('top floor music', () => {
   const topFloor = () => {
     const two = ascendToFloorTwo(Object.assign(createMvpRun(7), { status: 'won' as const }));
-    return ascend(Object.assign(two, { status: 'won' as const }));
+    const first = ascend(Object.assign(two, { status: 'won' as const }));
+    // On to Floor 3's boss wing: a first wing may be a district with its own music (round 50).
+    return ascend(Object.assign(first, { status: 'won' as const }));
   };
 
   it('plays Arcade After Dark in Floor 3 fights, muzak between them', () => {

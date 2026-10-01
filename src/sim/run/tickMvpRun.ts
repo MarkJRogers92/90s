@@ -327,7 +327,8 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
   // destination's deterministic spot, never by carrying a position across.
   parkRunCarrier(state);
 
-  const message = `Entered the ${destination.name}.`;
+  // A room already called "The ..." (a district's, round 50) keeps its own article.
+  const message = `Entered ${/^the /i.test(destination.name) ? destination.name : `the ${destination.name}`}.`;
   publishRunFeedback(state, message);
   return { accepted: true, message };
 }

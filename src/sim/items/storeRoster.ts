@@ -202,6 +202,60 @@ export const STORE_ROSTER: readonly RosterEntry[] = [
   modifier({ id: 'rewind_button', name: 'Universal Remote', noun: 'Universal Remote', adjective: 'Rewound', blurb: 'SHOTS REWIND FOR A SECOND HIT', band: [14, 22], effect: { kind: 'trajectory_replay', stage: 'trajectory', priority: 0, sourceItemId: 'rewind_button', label: 'one return pass (activates once per root)', returnPasses: 1, activatesOncePerRoot: true } }),
   shooter({ id: 'laserdisc', name: 'Laserdisc', noun: 'Laserdisc', adjective: 'Widescreen', blurb: 'BIG SHINY DISC', band: [12, 18], kind: 'physical', prongs: [0], damage: 5, speed: 4.4, radius: 8, lifetime: 60, cooldown: 42 }),
   melee({ id: 'late_fee_stamp', name: 'Late Fee Stamp', noun: 'Stamp', adjective: 'Late', blurb: 'QUICK STAMP SMACK', band: [5, 9], damage: 3, cooldown: 16, range: 50, degrees: 35 }),
+  // ---- Round 50: the district stores. -----------------------------------
+
+  // Candy Cauldron (Holiday Village, Floor 1): bulk bins and jawbreakers.
+  shooter({ id: 'gumball_launcher', name: 'Gumball Launcher', noun: 'Gumballs', adjective: 'Gumball', blurb: 'THREE-WAY GUMBALL SPRAY', band: [9, 13], kind: 'physical', prongs: [-10, 0, 10], damage: 1, speed: 4.5, radius: 4, lifetime: 40, cooldown: 22 }),
+  melee({ id: 'candy_cane', name: 'Giant Candy Cane', noun: 'Candy Cane', adjective: 'Peppermint', blurb: 'HOOKED STRIPED SWING', band: [8, 12], damage: 4, cooldown: 22, range: 70, degrees: 40 }),
+  shooter({ id: 'jawbreaker', name: 'Jawbreaker', noun: 'Jawbreaker', adjective: 'Jaw-Breaking', blurb: 'ROCK-HARD CANDY BALL', band: [10, 14], kind: 'physical', prongs: [0], damage: 5, speed: 4.2, radius: 6, lifetime: 60, cooldown: 40 }),
+  modifier({ id: 'taffy_puller', name: 'Salt Water Taffy', noun: 'Taffy', adjective: 'Taffy', blurb: 'HITS STRETCH ENEMIES STICKY', band: [8, 12], effect: sticky('taffy_puller', 160, 0.55, 0.45) }),
+  modifier({ id: 'pop_rocks', name: 'Popping Candy', noun: 'Popping Candy', adjective: 'Crackling', blurb: 'FASTER, FIZZIER SHOTS', band: [6, 10], effect: geometry('pop_rocks', 1, 1.25) }),
+
+  // Novelty Nook (Holiday Village, Floor 1): gag gifts and black lights.
+  shooter({ id: 'whoopee_cushion', name: 'Whoopee Cushion', noun: 'Cushion', adjective: 'Rude', blurb: 'THREE-WAY RUDE SOUND WAVE', band: [6, 10], kind: 'physical', prongs: [-15, 0, 15], damage: 1, speed: 3.2, radius: 8, lifetime: 30, cooldown: 30 }),
+  modifier({ id: 'joy_buzzer', name: 'Joy Buzzer', noun: 'Buzzer', adjective: 'Buzzing', blurb: 'WET ENEMIES SHOCK EACH OTHER', band: [8, 12], effect: { kind: 'conductive_reaction', stage: 'reaction', priority: 0, sourceItemId: 'joy_buzzer', label: 'conductive chain (one start per root, one additional Wet target)', chainStartsPerRoot: 1, maxAdditionalTargets: 1, baseRange: 100, visitsEachTargetOnce: true } }),
+  shooter({ id: 'lava_lamp', name: 'Lava Lamp', noun: 'Lava Lamp', adjective: 'Groovy', blurb: 'SLOW GLOOPY BLOB - MAKES ENEMIES WET', band: [12, 16], kind: 'water', prongs: [0], damage: 3, speed: 2.5, radius: 9, lifetime: 80, cooldown: 36, wetTicks: 120 }),
+  melee({ id: 'rubber_chicken', name: 'Rubber Chicken', noun: 'Chicken', adjective: 'Squawking', blurb: 'FLOPPY WIDE WHACK', band: [7, 11], damage: 4, cooldown: 24, range: 74, degrees: 50 }),
+  modifier({ id: 'silly_string', name: 'Silly String', noun: 'String', adjective: 'Stringy', blurb: 'HITS TANGLE ENEMIES', band: [6, 10], effect: sticky('silly_string', 140, 0.6, 0.5) }),
+
+  // Glam Snaps (Glamour Row, Floor 2): the soft-focus photo studio.
+  shooter({ id: 'flash_camera', name: 'Studio Flash', noun: 'Flash', adjective: 'Glamour', blurb: 'THREE-WAY FLASH BURST', band: [12, 16], kind: 'physical', prongs: [-12, 0, 12], damage: 2, speed: 5.0, radius: 6, lifetime: 22, cooldown: 30 }),
+  melee({ id: 'photo_backdrop', name: 'Laser Backdrop', noun: 'Backdrop', adjective: 'Backdropped', blurb: 'HUGE SWEEPING BACKDROP', band: [10, 14], damage: 4, cooldown: 34, range: 100, degrees: 60 }),
+  modifier({ id: 'soft_focus_lens', name: 'Soft-Focus Lens', noun: 'Lens', adjective: 'Soft-Focus', blurb: 'BIGGER, DREAMIER SHOTS', band: [10, 14], effect: geometry('soft_focus_lens', 3, 0.9) }),
+  melee({ id: 'tripod', name: 'Camera Tripod', noun: 'Tripod', adjective: 'Three-Legged', blurb: 'LONG THREE-LEGGED JAB', band: [11, 15], damage: 6, cooldown: 36, range: 96, degrees: 16 }),
+
+  // Hair Affair (Glamour Row, Floor 2): the salon.
+  shooter({ id: 'hairspray', name: 'Extra-Hold Hairspray', noun: 'Hairspray', adjective: 'Extra-Hold', blurb: 'THREE-WAY AEROSOL MIST', band: [9, 13], kind: 'physical', prongs: [-6, 0, 6], damage: 1, speed: 3.5, radius: 6, lifetime: 30, cooldown: 14 }),
+  melee({ id: 'curling_iron', name: 'Curling Iron', noun: 'Curling Iron', adjective: 'Curled', blurb: 'HOT CURLING JAB', band: [10, 14], damage: 5, cooldown: 24, range: 64, degrees: 25 }),
+  modifier({ id: 'blow_dryer', name: 'Blow Dryer', noun: 'Blow Dryer', adjective: 'Blown-Out', blurb: 'FASTER, HOTTER SHOTS', band: [12, 16], effect: geometry('blow_dryer', 2, 1.3) }),
+  modifier({ id: 'styling_gel', name: 'Styling Gel', noun: 'Gel', adjective: 'Gelled', blurb: 'HITS GEL ENEMIES IN PLACE', band: [8, 12], effect: sticky('styling_gel', 150, 0.5, 0.4) }),
+  melee({ id: 'salon_scissors', name: 'Salon Scissors', noun: 'Shears', adjective: 'Snipping', blurb: 'FAST SNIPPING CUTS', band: [8, 12], damage: 2, cooldown: 10, range: 54, degrees: 30 }),
+
+  // Pet Palace (Pet Paradise, Floor 3): puppies in the window.
+  shooter({ id: 'squeaky_toy', name: 'Squeaky Toy', noun: 'Squeaky', adjective: 'Squeaky', blurb: 'BOUNCING SQUEAKY TOY', band: [7, 11], kind: 'physical', prongs: [0], damage: 3, speed: 4.8, radius: 5, lifetime: 60, cooldown: 24 }),
+  melee({ id: 'fish_net', name: 'Aquarium Net', noun: 'Net', adjective: 'Netted', blurb: 'WIDE NETTING SCOOP', band: [9, 13], damage: 3, cooldown: 26, range: 86, degrees: 55 }),
+  shooter({ id: 'flea_spray', name: 'Flea Spray', noun: 'Flea Spray', adjective: 'Flea-Free', blurb: 'THREE-WAY MIST - MAKES ENEMIES WET', band: [9, 13], kind: 'water', prongs: [-8, 0, 8], damage: 1, speed: 4.0, radius: 5, lifetime: 30, cooldown: 18, wetTicks: 120 }),
+  modifier({ id: 'catnip', name: 'Catnip Pouch', noun: 'Catnip', adjective: 'Dopey', blurb: 'HITS MAKE ENEMIES DOPEY AND SLOW', band: [7, 11], effect: sticky('catnip', 130, 0.55, 0.45) }),
+  melee({ id: 'dog_leash', name: 'Retractable Leash', noun: 'Leash', adjective: 'Leashed', blurb: 'LONG LASHING LEASH', band: [9, 13], damage: 4, cooldown: 22, range: 104, degrees: 12 }),
+
+  // Green Thumb (Pet Paradise, Floor 3): the garden centre.
+  melee({ id: 'hedge_trimmer', name: 'Hedge Trimmer', noun: 'Trimmer', adjective: 'Trimmed', blurb: 'BUZZING WIDE TRIM', band: [16, 22], damage: 4, cooldown: 16, range: 70, degrees: 45 }),
+  shooter({ id: 'watering_can', name: 'Watering Can', noun: 'Watering Can', adjective: 'Watered', blurb: 'GENTLE SHOWER - SOAKS ENEMIES', band: [8, 12], kind: 'water', prongs: [-10, 0, 10], damage: 1, speed: 3.2, radius: 6, lifetime: 40, cooldown: 22, wetTicks: 180 }),
+  shooter({ id: 'seed_spreader', name: 'Seed Spreader', noun: 'Spreader', adjective: 'Seeded', blurb: 'FIVE-WAY SEED SCATTER', band: [10, 14], kind: 'physical', prongs: [-24, -12, 0, 12, 24], damage: 1, speed: 5.0, radius: 2, lifetime: 28, cooldown: 26 }),
+  shooter({ id: 'garden_gnome', name: 'Garden Gnome', noun: 'Gnome', adjective: 'Gnomish', blurb: 'HEAVY CERAMIC GNOME', band: [14, 20], kind: 'physical', prongs: [0], damage: 7, speed: 3.2, radius: 8, lifetime: 60, cooldown: 50 }),
+  modifier({ id: 'fertilizer', name: 'Miracle Fertilizer', noun: 'Fertilizer', adjective: 'Overgrown', blurb: 'SHOTS GROW BIGGER', band: [9, 13], effect: geometry('fertilizer', 4, 0.9) }),
+
+  // Skate Shack (Skate Arena, Floor 4): rentals and pucks.
+  shooter({ id: 'hockey_puck', name: 'Hockey Puck', noun: 'Puck', adjective: 'Slapshot', blurb: 'FAST SLIDING PUCK', band: [11, 15], kind: 'physical', prongs: [0], damage: 4, speed: 7.0, radius: 4, lifetime: 55, cooldown: 26 }),
+  melee({ id: 'figure_skate', name: 'Figure Skate', noun: 'Skate', adjective: 'Bladed', blurb: 'BLADED SPIN KICK', band: [14, 18], damage: 6, cooldown: 30, range: 58, degrees: 70 }),
+  modifier({ id: 'ice_pack', name: 'Ice Pack', noun: 'Ice Pack', adjective: 'Frozen', blurb: 'HITS FREEZE ENEMIES SLOW', band: [9, 13], effect: sticky('ice_pack', 180, 0.5, 0.4) }),
+  melee({ id: 'skate_lace', name: 'Skate Laces', noun: 'Laces', adjective: 'Laced', blurb: 'LONG WHIPPING LACE', band: [7, 11], damage: 3, cooldown: 14, range: 98, degrees: 10 }),
+
+  // Cocoa Hut (Skate Arena, Floor 4): rinkside snacks.
+  shooter({ id: 'cocoa_thermos', name: 'Cocoa Thermos', noun: 'Thermos', adjective: 'Scalding', blurb: 'SCALDING COCOA SPLASH - MAKES ENEMIES WET', band: [10, 14], kind: 'water', prongs: [0], damage: 3, speed: 3.6, radius: 7, lifetime: 50, cooldown: 26, wetTicks: 160 }),
+  shooter({ id: 'marshmallow_shooter', name: 'Marshmallow Shooter', noun: 'Marshmallows', adjective: 'Puffy', blurb: 'TWIN PUFFY MARSHMALLOWS', band: [8, 12], kind: 'physical', prongs: [-6, 6], damage: 2, speed: 4.6, radius: 5, lifetime: 45, cooldown: 20 }),
+  melee({ id: 'pretzel_rod', name: 'Giant Pretzel Rod', noun: 'Pretzel Rod', adjective: 'Salted', blurb: 'QUICK SALTY JAB', band: [5, 9], damage: 3, cooldown: 14, range: 66, degrees: 20 }),
+  modifier({ id: 'whipped_cream', name: 'Whipped Cream', noun: 'Whipped Cream', adjective: 'Whipped', blurb: 'FLUFFIER, BIGGER SHOTS', band: [7, 11], effect: geometry('whipped_cream', 3, 0.95) }),
 ];
 
 /**
@@ -236,4 +290,13 @@ export const STORE_STOCK: Readonly<Record<string, readonly string[]>> = {
   'spiral-records': ['electric_guitar', 'record_toss', 'mic_stand', 'drumsticks', 'mixtape', 'cd_shuriken', 'fog_machine', 'keytar'],
   'slice-station': ['pizza_cutter', 'pizza_peel', 'cheese_pump', 'soda_gun', 'dough_roller', 'pepperoni_launcher', 'hot_sauce', 'ketchup_bottle', 'slushie_cup'],
   'video-world': ['vhs_tape', 'cardboard_standee', 'popcorn_bucket', 'rewind_button', 'laserdisc', 'late_fee_stamp', 'vhs_rewinder', 'paint_marker'],
+  // Round 50: the district stores (each only in its own district's wings).
+  'candy-cauldron': ['gumball_launcher', 'candy_cane', 'jawbreaker', 'taffy_puller', 'pop_rocks', 'party_popper', 'slime_tub', 'slushie_cup'],
+  'novelty-nook': ['whoopee_cushion', 'joy_buzzer', 'lava_lamp', 'rubber_chicken', 'silly_string', 'plasma_globe', 'slinky', 'fog_machine'],
+  'glam-snaps': ['flash_camera', 'photo_backdrop', 'soft_focus_lens', 'tripod', 'camcorder', 'laser_pointer', 'cardboard_standee', 'paint_marker'],
+  'hair-affair': ['hairspray', 'curling_iron', 'blow_dryer', 'styling_gel', 'salon_scissors', 'bubble_bath', 'wide_nozzle', 'gel_pens'],
+  'pet-palace': ['squeaky_toy', 'fish_net', 'flea_spray', 'catnip', 'dog_leash', 'laser_pointer', 'tennis_ball_launcher', 'slime_tub'],
+  'green-thumb': ['hedge_trimmer', 'watering_can', 'seed_spreader', 'garden_gnome', 'fertilizer', 'garden_hose', 'leaf_blower', 'duct_tape'],
+  'skate-shack': ['hockey_puck', 'figure_skate', 'ice_pack', 'skate_lace', 'hockey_stick', 'sweatband', 'football', 'lacrosse_stick'],
+  'cocoa-hut': ['cocoa_thermos', 'marshmallow_shooter', 'pretzel_rod', 'whipped_cream', 'slushie_cup', 'bubble_bath', 'popcorn_bucket', 'soda_gun'],
 };

@@ -13,6 +13,8 @@ import { FINAL_FLOOR } from '../../sim/wing/floorSpecs';
 import { wantedStars } from '../../sim/run/wanted';
 import { scoreFor } from '../score/score';
 import type { RunRecord } from '../playtest/recorder';
+import { killCamStamp } from './killCamModel';
+import { districtSpec } from '../../sim/wing/districts';
 
 export type ShiftCardRow = { readonly label: string; readonly value: string };
 
@@ -107,7 +109,8 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
     stairs: ascend && firstWing,
     score,
     seconds,
-    headline: ascend && firstWing ? 'LOCKDOWN LIFTED' : ascend ? 'FLOOR CLEARED' : won ? 'CLOCKED OUT' : 'SHIFT OVER',
+    // A district's mini-boss (round 50) gets its own stamp, the kill cam's.
+    headline: ascend && firstWing && state.wing.district ? killCamStamp(districtSpec(state.wing.district).miniBoss) : ascend && firstWing ? 'LOCKDOWN LIFTED' : ascend ? 'FLOOR CLEARED' : won ? 'CLOCKED OUT' : 'SHIFT OVER',
     subline: ascend && firstWing
       ? 'THE STAIRS ARE OPEN...'
       : ascend

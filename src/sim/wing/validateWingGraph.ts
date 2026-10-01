@@ -488,9 +488,11 @@ function validateCombatRoom(room: WingRoomDefinition): void {
         `spawn slot ${spawn.slotId} in room ${room.id} is not authored by variant ${variant.id}`,
       );
     }
-    // Upstairs substitutes fill the slot of the monster they replace.
-    const slotKind = spawn.kind === 'static' ? 'hanger' : spawn.kind === 'shopper' || spawn.kind === 'roofer' ? 'spitter' : spawn.kind === 'mascot' ? 'hanger' : spawn.kind;
-    if (spawn.kind !== 'mascot' && !authoredSlot.kinds.includes(slotKind)) {
+    // Upstairs substitutes fill the slot of the monster they replace; a
+    // district monster (round 50) may take any slot.
+    const district = spawn.kind === 'elf' || spawn.kind === 'spritzer' || spawn.kind === 'poodle' || spawn.kind === 'goon';
+    const slotKind = spawn.kind === 'static' ? 'hanger' : spawn.kind === 'shopper' || spawn.kind === 'roofer' ? 'spitter' : spawn.kind === 'mascot' || district ? 'hanger' : spawn.kind;
+    if (spawn.kind !== 'mascot' && !district && !authoredSlot.kinds.includes(slotKind)) {
       fail(
         `spawn slot ${spawn.slotId} in room ${room.id} uses kind ${spawn.kind} outside its authored band`,
       );

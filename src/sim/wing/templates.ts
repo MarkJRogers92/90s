@@ -443,3 +443,26 @@ export const STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
   themedStore('slice-station', 'Slice Station'),
   themedStore('video-world', 'Video World'),
 ];
+
+/**
+ * Round 50: the district stores. Each only ever opens in its own district's
+ * wings (wing/districts.ts), never in the regular shuffle above, so the
+ * regular wings draw exactly as before.
+ */
+export const DISTRICT_STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [
+  themedStore('candy-cauldron', 'Candy Cauldron'),
+  themedStore('novelty-nook', 'Novelty Nook'),
+  themedStore('glam-snaps', 'Glam Snaps'),
+  themedStore('hair-affair', 'Hair Affair'),
+  themedStore('pet-palace', 'Pet Palace'),
+  themedStore('green-thumb', 'Green Thumb'),
+  themedStore('skate-shack', 'Skate Shack'),
+  themedStore('cocoa-hut', 'Cocoa Hut'),
+];
+
+/** Every store that can open anywhere, for lookups by template id. */
+export const ALL_STORE_TEMPLATES: readonly AuthoredStoreTemplate[] = [...STORE_TEMPLATES, ...DISTRICT_STORE_TEMPLATES];
+
+export function storeTemplate(id: string): AuthoredStoreTemplate | undefined {
+  return ALL_STORE_TEMPLATES.find((template) => template.id === id);
+}

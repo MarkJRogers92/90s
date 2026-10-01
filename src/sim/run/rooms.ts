@@ -33,6 +33,8 @@ import { LOCKDOWN_SIZE } from '../wing/floorSpecs';
 import { createWingRng } from '../wing/rng';
 import { wingEventFor } from './wingEvents';
 import { calmWalker, spawnWalker } from '../combat/walker';
+import { ELF_HEALTH, ELF_RADIUS, GOON_HEALTH, GOON_RADIUS, POODLE_HEALTH, POODLE_RADIUS, SPRITZER_HEALTH, SPRITZER_RADIUS } from '../combat/districtEnemies';
+import { districtSpec } from '../wing/districts';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -64,13 +66,18 @@ const SPAWN_STATS: Readonly<Record<WingEnemySpawn['kind'], { health: number; rad
   mascot: { health: MASCOT_HEALTH, radius: MASCOT_RADIUS, phase: 'recover', phaseTicks: 60 },
   // A Roofer's first bucket waits too, so the Roof's rooms can be read before tar flies.
   roofer: { health: ROOFER_HEALTH, radius: ROOFER_RADIUS, phase: 'recover', phaseTicks: 70 },
+  // Round 50: the district monsters each wait a beat too.
+  elf: { health: ELF_HEALTH, radius: ELF_RADIUS, phase: 'recover', phaseTicks: 50 },
+  spritzer: { health: SPRITZER_HEALTH, radius: SPRITZER_RADIUS, phase: 'recover', phaseTicks: 60 },
+  poodle: { health: POODLE_HEALTH, radius: POODLE_RADIUS, phase: 'recover', phaseTicks: 45 },
+  goon: { health: GOON_HEALTH, radius: GOON_RADIUS, phase: 'recover', phaseTicks: 60 },
 };
 
-/** `healthScale` toughens a floor's authored monsters (see FloorSpec.enemyHealthScale). */
 /** The Mall Walker (round 48) strolls through this share of Floor 1-2 regular fights. */
 export const WALKER_CHANCE = 0.4;
 export const WALKER_TOP_FLOOR = 2;
 
+/** `healthScale` toughens a floor's authored monsters (see FloorSpec.enemyHealthScale). */
 function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean, healthScale = 1): EnemyState {
   const stats = SPAWN_STATS[spawn.kind];
   const health = Math.round(stats.health * healthScale) * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
@@ -257,7 +264,10 @@ export function buildRoomCombatState(
   const enemies = room.enemySpawns.map((spawn, index) =>
     spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE, floor.enemyHealthScale),
   );
-  if (room.bossAnchor && wing.part === 1) {
+  if (room.bossAnchor && wing.part === 1 && wing.district) {
+    // A district's Lockdown room (round 50) holds its mini-boss instead.
+    enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, districtSpec(wing.district).miniBoss));
+  } else if (room.bossAnchor && wing.part === 1) {
     // A first wing ends in the Lockdown: a ring of elites instead of the boss.
     enemies.push(...lockdownWave(wing, room, enemies.length + 1));
   } else if (room.bossAnchor) {

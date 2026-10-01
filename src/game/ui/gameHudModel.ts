@@ -7,7 +7,7 @@
  */
 import { compositeLeaves, isCleanPart } from '../../sim/fusion/inventory';
 import { runMaxHealth } from '../../sim/run/perks';
-import { bossConfigFor, bossPhaseForHealth, isBossKind } from '../../sim/combat/boss';
+import { bossConfigFor, bossPhaseForHealth, isBossKind, type BossKind } from '../../sim/combat/boss';
 import { PLAYER_MAX_HEALTH } from '../../sim/run/rooms';
 import type { MvpRunState } from '../../sim/run/types';
 import type { WingRoomId } from '../../sim/wing/types';
@@ -32,6 +32,8 @@ import { floorNumberOf, floorSpec, type FloorNumber } from '../../sim/wing/floor
 import { signatureName } from '../../sim/fusion/hybrid';
 import { PAIR_DEAL_SCALE, holdsPairPartner } from '../../sim/run/economy';
 import type { WingOffer } from '../../sim/wing/types';
+import { bossIntroCopy } from './bossIntroModel';
+import { districtSpec, type DistrictId } from '../../sim/wing/districts';
 
 export type HeartState = 'full' | 'half' | 'empty';
 
@@ -161,6 +163,30 @@ function firstWingHud(floor: FloorNumber): { readonly short: Readonly<Record<Win
   return { short, reach: 'REACH THE LOCKDOWN', boss: 'SURVIVE THE LOCKDOWN' };
 }
 
+/** Round 50: a district wing's map names and objectives: reach the mini-boss's room, then beat it. */
+const DISTRICT_HUD: Readonly<Record<DistrictId, { readonly short: Readonly<Record<WingRoomId, string>>; readonly reach: string; readonly boss: string }>> = {
+  holiday: {
+    short: { service_corridor: 'OPENING', storefront_a: 'CANDY', food_court: 'CAROUSEL', storefront_b: 'GIFTS', back_hall: 'STOCKROOM', security_office: 'WORKSHOP' },
+    reach: "REACH SANTA'S WORKSHOP",
+    boss: 'BEAT MALL SANTA',
+  },
+  glamour: {
+    short: { service_corridor: 'PERFUME', storefront_a: 'SALON', food_court: 'MAKEUP', storefront_b: 'MIRRORS', back_hall: 'FITTING', security_office: 'STUDIO' },
+    reach: 'REACH THE PORTRAIT STUDIO',
+    boss: 'BEAT THE GLAMOUR QUEEN',
+  },
+  pets: {
+    short: { service_corridor: 'AQUARIUM', storefront_a: 'PET SHOP', food_court: 'KOI POND', storefront_b: 'GARDEN', back_hall: 'KENNELS', security_office: 'AVIARY' },
+    reach: 'REACH THE AVIARY',
+    boss: 'BEAT MR. WHISKERS',
+  },
+  rink: {
+    short: { service_corridor: 'RENTAL', storefront_a: 'RINKSIDE', food_court: 'ICE RINK', storefront_b: 'BLEACHERS', back_hall: 'ZAMBONI', security_office: 'PENALTY' },
+    reach: 'REACH THE PENALTY BOX',
+    boss: 'BEAT THE ZAMBONI DRIVER',
+  },
+};
+
 /** Each floor's map names and its two objectives: reach the boss, then beat it. */
 const FLOOR_HUD: Readonly<Record<FloorNumber, { readonly short: Readonly<Record<WingRoomId, string>>; readonly reach: string; readonly boss: string }>> = {
   1: { short: GROUND_SHORT_NAMES, reach: 'REACH SECURITY', boss: 'STOP LOSS PREVENTION' },
@@ -185,7 +211,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const fightHere = (room?.enemySpawns.length ?? 0) > 0 || room?.bossAnchor != null;
 
   const floor = floorNumberOf(state.wing);
-  const floorHud = state.wing.part === 1 ? firstWingHud(floor) : FLOOR_HUD[floor];
+  const floorHud = state.wing.district ? DISTRICT_HUD[state.wing.district] : state.wing.part === 1 ? firstWingHud(floor) : FLOOR_HUD[floor];
   const objectives: HudObjective[] = [
     {
       text: `${floorHud.reach}  ${state.roomIndex + 1}/${state.wing.rooms.length}`,
@@ -282,7 +308,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
         health: boss.health,
         max: bossConfigFor(boss.kind).maxHealth,
         phase: boss.bossPhase ?? bossPhaseForHealth(boss.health, bossConfigFor(boss.kind).maxHealth),
-        name: boss.kind === 'developer' ? 'THE DEVELOPER' : boss.kind === 'owner' ? 'THE MALL OWNER' : boss.kind === 'manager' ? 'MALL MANAGER' : 'LOSS PREVENTION',
+        name: bossIntroCopy(boss.kind as BossKind).name.replace(/^THE MALL MANAGER$/, 'MALL MANAGER'),
       }
       : null,
     floor,
@@ -438,5 +464,7 @@ export function roomTitleSubtitle(state: MvpRunState): { readonly text: string; 
   const event = roomEventFor(state, state.roomIndex);
   if (event === 'blackout') return { text: 'BLACKOUT - STAY IN YOUR FLASHLIGHT', color: '#ff5a6a' };
   if (event === 'blue_light') return { text: 'BLUE LIGHT SPECIAL - ONE ITEM HALF PRICE', color: '#6a9aff' };
+  // A district (round 50) names itself on every card that has nothing more urgent to say.
+  if (state.wing.district) return { text: `${districtSpec(state.wing.district).name.toUpperCase()} - ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`, color: '#ffd84a' };
   return { text: `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`, color: '#3ff0ff' };
 }

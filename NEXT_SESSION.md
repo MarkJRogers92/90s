@@ -52,6 +52,18 @@ The queue as asked:
 4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
    next night, so every night counts toward something.
 
+## Round 50 playtest questions (the districts)
+
+- Do the districts feel like new places, not reskins? Which is best/worst?
+- Is half the nights the right rate for a district (`DISTRICT_CHANCE`)?
+- Mini-bosses: fair? Too easy next to the elite wave they replace?
+- Monsters: is the Elf's ring readable, the Spritzer's cloud annoying, the
+  Poodle's dash fair, the Goon's slapshot dodgeable?
+- Store twists: do you use the sample bowl, the buzzers, the punch card?
+- Art to redo: the Glamour Queen's north walk and the Poodle's south run
+  (PixelLab dropped them; each borrows a neighbour), and Mr. Whiskers reads
+  cute rather than feral.
+
 ## Round 49 playtest questions
 
 - Which Break Room things do you buy first? Is Second Wind worth 60 stubs?

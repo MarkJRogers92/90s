@@ -172,6 +172,62 @@ const DCsm = [61, 64, 68], DD = [62, 66, 69], DA = [57, 61, 64], DGs = [56, 60, 
 const DEVELOPER_CHANGES = [DCsm, DCsm, DD, DD, DCsm, DCsm, DA, DGs, DCsm, DCsm, DD, DD, DFsm, DFsm, DGs, DGs];
 const DEVELOPER_ROOTS = [37, 37, 38, 38, 37, 37, 33, 32, 37, 37, 38, 38, 30, 30, 32, 32];
 
+// Round 50: the districts.
+// "Silent Mall" (Holiday Village): D minor, sleigh bells over a four-on-the-floor.
+const HDm = [62, 65, 69], HBb = [58, 62, 65], HF = [57, 60, 65], HC = [55, 60, 64], HGm = [55, 58, 62], HA = [57, 61, 64];
+const HOLIDAY_CHANGES = [HDm, HDm, HBb, HBb, HF, HF, HC, HC, HDm, HDm, HBb, HBb, HGm, HGm, HA, HA];
+const HOLIDAY_ROOTS = [38, 38, 34, 34, 29, 29, 36, 36, 38, 38, 34, 34, 31, 31, 33, 33];
+const HOLIDAY_TUNE: ReadonlyArray<readonly [number, number, number, number]> = [
+  [0, 0, 74, 2], [0, 2, 74, 2], [0, 4, 74, 4], [0, 8, 77, 4], [0, 12, 74, 4],
+  [1, 0, 72, 4], [1, 4, 69, 4], [1, 8, 72, 8],
+  [2, 0, 70, 2], [2, 2, 70, 2], [2, 4, 70, 4], [2, 8, 74, 4], [2, 12, 70, 4],
+  [3, 0, 69, 8], [3, 8, 65, 8],
+  [4, 0, 72, 4], [4, 4, 69, 4], [4, 8, 72, 4], [4, 12, 77, 4],
+  [5, 0, 76, 8], [5, 8, 72, 8],
+  [6, 0, 72, 4], [6, 4, 76, 4], [6, 8, 79, 4], [6, 12, 76, 4],
+  [7, 0, 76, 16],
+];
+
+// "Strike a Pose" (Glamour Row): E minor house, offbeat Rhodes and a diva lead.
+const GEm = [64, 67, 71], GC = [60, 64, 67], GG = [62, 67, 71], GD = [62, 66, 69], GAm = [60, 64, 69], GB = [63, 66, 71];
+const GLAMOUR_CHANGES = [GEm, GEm, GC, GC, GG, GG, GD, GD, GEm, GEm, GC, GC, GAm, GAm, GB, GB];
+const GLAMOUR_ROOTS = [40, 40, 36, 36, 43, 43, 38, 38, 40, 40, 36, 36, 45, 45, 35, 35];
+
+// "Feeding Frenzy" (Pet Paradise): A minor, bouncing octave bass and a squeaky bell tune.
+const PAm = [57, 60, 64], PF = [57, 60, 65], PC = [55, 60, 64], PG = [55, 59, 62], PDm = [57, 62, 65], PE = [56, 59, 64];
+const PETS_CHANGES = [PAm, PF, PC, PG, PAm, PF, PC, PE, PAm, PF, PC, PG, PDm, PF, PE, PE];
+const PETS_ROOTS = [33, 29, 36, 31, 33, 29, 36, 28, 33, 29, 36, 31, 38, 29, 28, 28];
+const PETS_TUNE: ReadonlyArray<readonly [number, number, number, number]> = [
+  [0, 0, 76, 2], [0, 2, 79, 2], [0, 4, 81, 4], [0, 8, 79, 2], [0, 10, 76, 2], [0, 12, 72, 4],
+  [1, 0, 77, 4], [1, 4, 76, 4], [1, 8, 72, 4], [1, 12, 69, 4],
+  [2, 0, 72, 2], [2, 2, 76, 2], [2, 4, 79, 4], [2, 8, 76, 8],
+  [3, 0, 74, 4], [3, 4, 71, 4], [3, 8, 67, 8],
+  [4, 0, 76, 2], [4, 2, 79, 2], [4, 4, 81, 4], [4, 8, 79, 2], [4, 10, 76, 2], [4, 12, 72, 4],
+  [5, 0, 77, 4], [5, 4, 76, 4], [5, 8, 72, 4], [5, 12, 69, 4],
+  [6, 0, 72, 2], [6, 2, 76, 2], [6, 4, 79, 4], [6, 8, 76, 8],
+  [7, 0, 71, 4], [7, 4, 74, 4], [7, 8, 76, 8],
+];
+
+// "Organ on Ice" (Skate Arena): B minor, a stadium organ charge over drive bass.
+const KBm = [59, 62, 66], KG = [59, 62, 67], KD = [62, 66, 69], KA = [61, 64, 69], KEm = [59, 64, 67], KFs = [61, 66, 70];
+const RINK_CHANGES = [KBm, KBm, KG, KG, KD, KD, KA, KA, KBm, KBm, KG, KG, KEm, KEm, KFs, KFs];
+const RINK_ROOTS = [35, 35, 31, 31, 38, 38, 33, 33, 35, 35, 31, 31, 28, 28, 30, 30];
+const RINK_TUNE: ReadonlyArray<readonly [number, number, number, number]> = [
+  [0, 0, 71, 4], [0, 4, 74, 4], [0, 8, 78, 8],
+  [1, 0, 76, 4], [1, 4, 74, 4], [1, 8, 71, 8],
+  [2, 0, 71, 4], [2, 4, 74, 4], [2, 8, 79, 8],
+  [3, 0, 78, 4], [3, 4, 76, 4], [3, 8, 73, 8],
+  [4, 0, 74, 4], [4, 4, 78, 4], [4, 8, 81, 8],
+  [5, 0, 79, 4], [5, 4, 78, 4], [5, 8, 74, 8],
+  [6, 0, 76, 4], [6, 4, 73, 4], [6, 8, 69, 4], [6, 12, 73, 4],
+  [7, 0, 73, 16],
+];
+
+/** An eight-bar tune played twice, the second time ending on `ending` (bars 14-15). */
+function twice(tune: ReadonlyArray<readonly [number, number, number, number]>, ending: ReadonlyArray<readonly [number, number, number, number]>): Array<readonly [number, number, number, number]> {
+  return [...tune, ...tune.filter(([bar]) => bar < 6).map(([bar, step, midi, len]) => [bar + 8, step, midi, len] as const), ...ending];
+}
+
 const ALL16 = range(0, 16);
 
 export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
@@ -582,6 +638,89 @@ export const TRACKS: Readonly<Record<LayerId, MusicTrack>> = {
   },
 
   /* Tension layer: a mannequin you stopped watching is moving. ------------ */
+  /* "Silent Mall" (Holiday Village) ------------------------------------ */
+  holiday: {
+    bpm: 128,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x...x...x...x...', ALL16) },
+      { kind: 'bass', duck: true, notes: bassLine(HOLIDAY_ROOTS, [0, null, 12, null, 0, null, 12, null, 0, null, 12, null, 0, 7, 12, null], 1, 0.75) },
+      // Sleigh bells: sixteenths, the offbeats softer.
+      { kind: 'hat', minIntensity: 0.2, notes: drums('xoxoxoxoxoxoxoxo', ALL16, 0.55) },
+      { kind: 'clap', minIntensity: 0.3, reverb: 0.5, notes: drums('....x.......x...', ALL16, 0.8) },
+      { kind: 'bell', minIntensity: 0.35, reverb: 0.45, echo: 0.3, notes: melody(twice(HOLIDAY_TUNE, [[14, 0, 79, 4], [14, 4, 77, 4], [14, 8, 74, 4], [14, 12, 70, 4], [15, 0, 73, 8], [15, 8, 76, 8]]), 0.55) },
+      { kind: 'choir', minIntensity: 0.45, reverb: 0.6, duck: true, notes: chordsPerBar(HOLIDAY_CHANGES, 16, 0.35) },
+      { kind: 'supersaw', minIntensity: 0.7, echo: 0.3, notes: melody(HOLIDAY_TUNE.map(([bar, step, midi, len]) => [bar + 8, step, midi - 12, len] as const), 0.4) },
+    ],
+  },
+
+  /* "Strike a Pose" (Glamour Row) ---------------------------------------- */
+  glamour: {
+    bpm: 120,
+    bars: 16,
+    gain: 0.5,
+    swing: 0.1,
+    voices: [
+      { kind: 'kick', notes: drums('x...x...x...x...', ALL16) },
+      { kind: 'clap', minIntensity: 0.2, reverb: 0.5, notes: drums('....x.......x...', ALL16, 0.85) },
+      { kind: 'openhat', minIntensity: 0.25, notes: drums('..x...x...x...x.', ALL16, 0.5) },
+      { kind: 'bass', duck: true, notes: bassLine(GLAMOUR_ROOTS, [0, null, null, 12, null, null, 0, null, 0, null, null, 12, null, 7, 0, null], 1, 0.75) },
+      { kind: 'epiano', minIntensity: 0.3, reverb: 0.35, duck: true, notes: chordsPerBar(GLAMOUR_CHANGES, 16, 0.45, [2, 6, 10, 14]) },
+      { kind: 'pluck', minIntensity: 0.45, echo: 0.4, notes: arpeggio(GLAMOUR_CHANGES, 0.35) },
+      {
+        kind: 'supersaw',
+        minIntensity: 0.6,
+        echo: 0.35,
+        reverb: 0.3,
+        notes: melody([
+          [8, 0, 79, 4], [8, 4, 76, 4], [8, 8, 74, 2], [8, 10, 76, 6],
+          [9, 0, 72, 8], [9, 8, 71, 8],
+          [10, 0, 74, 4], [10, 4, 71, 4], [10, 8, 67, 8],
+          [11, 0, 69, 4], [11, 4, 71, 4], [11, 8, 74, 8],
+          [12, 0, 76, 4], [12, 4, 72, 4], [12, 8, 69, 8],
+          [13, 0, 72, 8], [13, 8, 76, 8],
+          [14, 0, 75, 6], [14, 6, 71, 2], [14, 8, 78, 8],
+          [15, 0, 75, 16],
+        ], 0.5),
+      },
+    ],
+  },
+
+  /* "Feeding Frenzy" (Pet Paradise) -------------------------------------- */
+  pets: {
+    bpm: 132,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x...x...x...x...', ALL16) },
+      { kind: 'bass', duck: true, notes: bassLine(PETS_ROOTS, [0, null, 12, null, 0, 12, null, 12, 0, null, 12, null, 0, 12, 7, 12], 1, 0.75) },
+      { kind: 'hat', minIntensity: 0.2, notes: drums('x.x.x.x.x.x.x.xx', ALL16, 0.4) },
+      { kind: 'snare', minIntensity: 0.3, reverb: 0.3, notes: drums('....x.......x...', ALL16, 0.7) },
+      { kind: 'tom', minIntensity: 0.3, notes: drums('........x.x.xxxx', [7, 15], 0.7) },
+      { kind: 'bell', minIntensity: 0.35, echo: 0.25, notes: melody(twice(PETS_TUNE, [[14, 0, 77, 4], [14, 4, 76, 4], [14, 8, 74, 4], [14, 12, 71, 4], [15, 0, 68, 8], [15, 8, 71, 8]]), 0.55) },
+      { kind: 'pad', minIntensity: 0.5, reverb: 0.5, duck: true, notes: chordsPerBar(PETS_CHANGES, 16, 0.35) },
+      { kind: 'pluck', minIntensity: 0.65, echo: 0.35, notes: arpeggio(PETS_CHANGES, 0.3) },
+    ],
+  },
+
+  /* "Organ on Ice" (Skate Arena) ----------------------------------------- */
+  rink: {
+    bpm: 140,
+    bars: 16,
+    gain: 0.5,
+    voices: [
+      { kind: 'kick', notes: drums('x...x...x...x...', ALL16) },
+      { kind: 'drivebass', duck: true, notes: bassLine(RINK_ROOTS, [0, 0, 12, 0, 0, 0, 12, 0, 0, 0, 12, 0, 0, 7, 12, 0], 1, 0.7) },
+      // The crowd: CLAP-CLAP, clap-clap-clap.
+      { kind: 'clap', minIntensity: 0.25, reverb: 0.6, notes: drums('x...x...x.x.x...', ALL16, 0.75) },
+      { kind: 'hat', minIntensity: 0.3, notes: drums('..x...x...x...x.', ALL16, 0.6) },
+      { kind: 'epiano', minIntensity: 0.35, reverb: 0.4, duck: true, notes: chordsPerBar(RINK_CHANGES, 16, 0.5, [0, 3, 6, 8, 11, 14]) },
+      { kind: 'lead', minIntensity: 0.45, reverb: 0.5, echo: 0.2, notes: melody(twice(RINK_TUNE, [[14, 0, 76, 4], [14, 4, 79, 4], [14, 8, 83, 8], [15, 0, 82, 16]]), 0.55) },
+      { kind: 'choir', minIntensity: 0.65, reverb: 0.6, notes: chordsPerBar(RINK_CHANGES, 16, 0.3) },
+    ],
+  },
+
   tension: {
     bpm: 120,
     bars: 1,

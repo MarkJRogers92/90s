@@ -9,7 +9,9 @@ import type {
 } from './items/types';
 
 export type RunStatus = 'playing' | 'won' | 'dead';
-export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer' | 'walker';
+export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'manager' | 'static' | 'shopper' | 'mascot' | 'owner' | 'roofer' | 'developer' | 'walker'
+  // Round 50: the district monsters and their mini-bosses.
+  | 'elf' | 'spritzer' | 'poodle' | 'goon' | 'santa' | 'glamour_queen' | 'whiskers' | 'zamboni';
 export type Vec2 = { x: number; y: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 
@@ -73,6 +75,9 @@ export type EnemyState = Vec2 & {
   patrolIndex?: number;
   calmHealth?: number;
   provoked?: boolean;
+  /** Hockey Goon: skating momentum (px per tick). */
+  vx?: number;
+  vy?: number;
   /** Bargain Hunter: ticks left in a charge, and a wall-stun. */
   chargeTicks?: number;
   stunnedTicks?: number;
@@ -344,6 +349,8 @@ export type RunState = {
   walls: Rect[];
   /** Floor 4: tar puddles from the Roofers' buckets. Absent means none. */
   tar?: TarPuddle[];
+  /** Glamour Row: perfume clouds from the Spritzers. Absent means none. */
+  perfume?: TarPuddle[];
   nextEntityId: number;
   roomWasPopulated: boolean;
   rewardGranted: boolean;

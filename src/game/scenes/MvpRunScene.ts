@@ -34,7 +34,7 @@ import { shouldClockIn, type ClockInReason } from '../ui/clockInModel';
 import { slowMoMs } from '../ui/killCamModel';
 import { PauseCard } from '../ui/PauseCard';
 import { ascend, canAscend, climbToBossWing, floorOf, nextIsBossWing } from '../../sim/run/floors';
-import { FINAL_FLOOR } from '../../sim/wing/floorSpecs';
+import { FINAL_FLOOR, type FloorNumber } from '../../sim/wing/floorSpecs';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
 import { heartbeatIntervalMs } from '../view/playerCues';
@@ -1295,6 +1295,25 @@ export class MvpRunScene extends Phaser.Scene {
         }
       }
       return upstairs;
+    }
+    if (fixture === 'mvp-district') {
+      // Round 50: the first night whose &floor=N first wing is its district, walked to
+      // &room=<room id> (default the fight room) with its monsters there; &store=1 or 2 steps into that shop.
+      const params = new URLSearchParams(window.location.search);
+      const floor = Math.min(FINAL_FLOOR, Math.max(1, Number(params.get('floor') ?? 1))) as FloorNumber;
+      const stop = params.get('room') ?? 'food_court';
+      for (let seed = 1; seed < 400; seed += 1) {
+        const run = createMvpRun(seed, { floor, part: 1 });
+        if (!run.wing.district) continue;
+        while (run.wing.rooms[run.roomIndex]?.id !== stop && run.roomIndex < run.wing.rooms.length - 1) {
+          run.room.combat.enemies = [];
+          tickMvpRun(run, { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false });
+          if (!enterDoorway(run, 'east').accepted) break;
+        }
+        const shop = Number(params.get('store') ?? 0);
+        if (shop > 0) enterStore(run, shop - 1);
+        return run;
+      }
     }
     if (fixture === 'mvp-walker') {
       // The first Floor 1 mall whose food court has a Mall Walker doing laps (round 48).

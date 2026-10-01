@@ -21,6 +21,10 @@ const SOURCE_NAMES: Record<DamageSource, string> = {
   roofer: 'Roofer tar bucket',
   barrage: 'Developer tar barrage',
   walker: 'Mall Walker',
+  elf: 'Animatronic Elf',
+  perfume: 'Perfume Spritzer',
+  poodle: 'Rabid Poodle',
+  goon: 'Hockey Goon',
   other: 'Other',
 };
 

@@ -2518,5 +2518,775 @@
       48
     ],
     "sha256": "3baa6c04b983b3422cbc7326ec77e1ece99d3a184a670e713670a1ed195573bf"
+  },
+  {
+    "path": "public/assets/neon/facades/candy-cauldron.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-candy-cauldron-1790828470-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "08646febcf95299cdd468f7924b9c5d191cc91ec4472e44d2e48f7a5fa6a9c52"
+  },
+  {
+    "path": "public/assets/neon/facades/novelty-nook.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-novelty-nook-1790828480-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "1f57da37ba860ce032db46ab11f45eb6d21eb734a666e39ea05d3beb8d53056a"
+  },
+  {
+    "path": "public/assets/neon/facades/glam-snaps.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-glam-snaps-1790828490-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "c6bdfeed76902bff93215ba8f144396a06d58dd4fe0aa0033309610e0301aff3"
+  },
+  {
+    "path": "public/assets/neon/facades/hair-affair.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-hair-affair-1790828500-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "019a5f66b91f74db34c3fe9e87e70a3c5fc9e99405b5a47b04e12c852189f1fb"
+  },
+  {
+    "path": "public/assets/neon/facades/pet-palace.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-pet-palace-1790828507-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "45906624f039ece19dae28b684feabc3812faa7b17e4ae8f32d9a6f56ad8ed9b"
+  },
+  {
+    "path": "public/assets/neon/facades/green-thumb.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-green-thumb-1790828517-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "a886480d903198e898a3e4c7eb668d5b07c0fd2b1024f62c68204e85853f92d2"
+  },
+  {
+    "path": "public/assets/neon/facades/skate-shack.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-skate-shack-1790828523-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "4aaa1dc988789822b2095b03c95fbfa260dce8a6f5afcc62f5ab7e41bd9862b2"
+  },
+  {
+    "path": "public/assets/neon/facades/cocoa-hut.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-cocoa-hut-1790828533-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "c6b75bd7a22190b5cae6be18699899d189c17aea3c8b5928126793980a768f4e"
+  },
+  {
+    "path": "public/assets/neon/facades/santa-set.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-santa-set-1790828559-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "df88542617d949e5cd92db3b59ed5d7d27dd8664197229565badd8e32e128c38"
+  },
+  {
+    "path": "public/assets/neon/facades/holiday-window.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-holiday-window-1790828568-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "9aaa3d465c29999ccc75ebecd248cc25a8f8f360de2c649032a76d1dc4acfc51"
+  },
+  {
+    "path": "public/assets/neon/facades/perfume-counter.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-perfume-counter-1790828578-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "d6627bc0a0e226753357ecd739fcecaaf5622830029bedc7d4180f25c6c9aebe"
+  },
+  {
+    "path": "public/assets/neon/facades/fitting-rooms.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-fitting-rooms-1790828588-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "71d3205064eea650e65c477afe7c311f2422dbf3ddb65d62dae56e3c5531cf1a"
+  },
+  {
+    "path": "public/assets/neon/facades/aquarium-wall.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-aquarium-wall-1790828598-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "6a8aaebfe967ffaf1143fd9daf557bfcd5fff8b24bb14b740161c83122c8dfec"
+  },
+  {
+    "path": "public/assets/neon/facades/kennel-wall.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-kennel-wall-1790828608-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "6173776d0fcd97a3670ac116077ae93be3e978d582c49a713572db322af3aa39"
+  },
+  {
+    "path": "public/assets/neon/facades/rink-boards.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-rink-boards-1790828615-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "48b0cec1dfe4581e2c735fb33d6571729934659d03bb9df9738c3fabf6a54b6e"
+  },
+  {
+    "path": "public/assets/neon/facades/zamboni-garage.png",
+    "source": "docs/art/neon-overhaul/retrodiffusion/district-zamboni-garage-1790828625-1.png",
+    "generator": "Retro Diffusion rd_plus__default (288x160, blank sign band; round 50 district art)",
+    "size": [
+      288,
+      160
+    ],
+    "sha256": "8f3cd35695192af7b18ea74a6591c0fd49e6a7483b28f985989e2df15385deed"
+  },
+  {
+    "path": "public/assets/neon/enemies/elf-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-elf-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      736,
+      92
+    ],
+    "sha256": "bbda78747e70a9c67efe34fdc8bd751ae7961438ad2bc804c782d6a98e013266"
+  },
+  {
+    "path": "public/assets/neon/enemies/elf-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-elf-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "ab969b60f3faa8131ae95a6a38e2ec453a62ce50ef965286105d411a746c8b1e"
+  },
+  {
+    "path": "public/assets/neon/enemies/elf-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-elf-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "b56a28e19de4447eb5c6d66048eeda7f3ee8838a0d56d7349752d04e831a173e"
+  },
+  {
+    "path": "public/assets/neon/enemies/santa-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-santa-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "f46091c5e565cc421f28a0e261cd5432919fb5ad05f7be22c3169c61e19b08a2"
+  },
+  {
+    "path": "public/assets/neon/enemies/santa-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-santa-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "bca6870df58414b9b545f5c1849aade7378ec0e5f256bd886b19ab83432e912c"
+  },
+  {
+    "path": "public/assets/neon/enemies/santa-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-santa-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "c23b4cf6e0e8c59f237b5fcf28f32cfef40c104556c8f2d08437968904f8f82b"
+  },
+  {
+    "path": "public/assets/neon/items/blow-dryer.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-blow-dryer.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "2cd9ad5321abe93fc7d7ea1b8ccf7f9c542fba3a5eaf89d6d87b77346bd4f37c"
+  },
+  {
+    "path": "public/assets/neon/items/candy-cane.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-candy-cane.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1f7132e4cb2056012763e5ce2dba90fca58c7a3d1884640d27d94baedea91a92"
+  },
+  {
+    "path": "public/assets/neon/items/catnip.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-catnip.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "87649e98b9b6884630e470af19aaeb89f6ec750f280f1ba53aec1d54ee0cbeca"
+  },
+  {
+    "path": "public/assets/neon/items/cocoa-thermos.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-cocoa-thermos.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "2c13f38e34dfe86fc3e46bc718974fb6343d679fa313be1b3a6a75f26ba34669"
+  },
+  {
+    "path": "public/assets/neon/items/curling-iron.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-curling-iron.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1690f9a1f61c9e8a25a59ce536c4ff5a1ae0be4029ce748274943630163aae74"
+  },
+  {
+    "path": "public/assets/neon/items/dog-leash.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-dog-leash.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "c58654250f2324a01880a4d3e0723cebc1b82a86d7155e90a55a9ce03e35a286"
+  },
+  {
+    "path": "public/assets/neon/items/fertilizer.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-fertilizer.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "7190f2d9c5be4357ad2b58a7d2160ca2113c06cf3c4983a9292a9e5e8c8b20bf"
+  },
+  {
+    "path": "public/assets/neon/items/figure-skate.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-figure-skate.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "599ca8f8126ab57b13ae8149aa2c2ee1bda0d473b601a51c5974c86819b4befb"
+  },
+  {
+    "path": "public/assets/neon/items/fish-net.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-fish-net.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "626428f652fcfc938ef37d516340a113e6075bf7716ed37b816efe7d8a3ddbde"
+  },
+  {
+    "path": "public/assets/neon/items/flash-camera.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-flash-camera.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "5289c42563e98cc2207c2b3ce26a276dce85f51c13afd55f76e143e3b2a3b065"
+  },
+  {
+    "path": "public/assets/neon/items/flea-spray.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-flea-spray.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "d48697c2e606bffbe80234d67da2f04323b337dbfdf3b94df5454e24cbdde71e"
+  },
+  {
+    "path": "public/assets/neon/items/garden-gnome.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-garden-gnome.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f48c74e7f01c60f71684e81918cb2ec83131a9e19c58ef29eaf3c8b9540f3720"
+  },
+  {
+    "path": "public/assets/neon/items/gumball-launcher.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-gumball-launcher.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "a1696bd41379bdc2b309b84be9bd6cbf9667d182f97f9be8a939de124bae38ad"
+  },
+  {
+    "path": "public/assets/neon/items/hairspray.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-hairspray.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "efe6fa2a8f08e7c41045ae758d7767faec83b591461569382acd1236104823ed"
+  },
+  {
+    "path": "public/assets/neon/items/hedge-trimmer.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-hedge-trimmer.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "0621e1f68687a50d57d2c16a79cca9e4964f6110fb0c16947f9d79d7b2fa8d62"
+  },
+  {
+    "path": "public/assets/neon/items/hockey-puck.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-hockey-puck.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "02a48608c06a1e35654dc3f36468c4aa6c4d27e3008363e08d0590da509a435a"
+  },
+  {
+    "path": "public/assets/neon/items/ice-pack.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-ice-pack.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "12c1aae8c74ebaaedd7820d6b62fd01b922d79ad2efa602f324a3c23fa033783"
+  },
+  {
+    "path": "public/assets/neon/items/jawbreaker.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-jawbreaker.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "5dc49523e495d5d4c1343eb04f43056d31bbf26e1679aad97f17d220e4c46e51"
+  },
+  {
+    "path": "public/assets/neon/items/joy-buzzer.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-joy-buzzer.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "cdd234f28d14459994e14a9273659e817a9576173fec81945b3b3bbc775ad294"
+  },
+  {
+    "path": "public/assets/neon/items/lava-lamp.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-lava-lamp.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "304fda0a536964bbf0160fac78c55509981763a78b32220ef5d7200919764d6a"
+  },
+  {
+    "path": "public/assets/neon/items/marshmallow-shooter.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-marshmallow-shooter.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "e1dabd4d8eb29106aef785e321de579aecb5f1cff137d683046006051eef0fe8"
+  },
+  {
+    "path": "public/assets/neon/items/photo-backdrop.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-photo-backdrop.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "1b964f1b37c1fdb85cc04b59e71a04fcd9ed2eef81f62abc7d402329d4dae558"
+  },
+  {
+    "path": "public/assets/neon/items/pop-rocks.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-pop-rocks.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "7f25697276d9e76414e5443cb7c2c96024525e9747a51534e659285f79db42c8"
+  },
+  {
+    "path": "public/assets/neon/items/pretzel-rod.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-pretzel-rod.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f15af1c683e4aa6059dd2699aec107905d56fb648df71f714d4507a7823c48d3"
+  },
+  {
+    "path": "public/assets/neon/items/rubber-chicken.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-rubber-chicken.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "07235ad642b922456bfdb626ccedd84b87c8a1b1a2690a164b869846302bd97d"
+  },
+  {
+    "path": "public/assets/neon/items/salon-scissors.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-salon-scissors.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "7ac2ad5c021f8d4e320f55e03f1fecb1cbc89da72c016b5145784b8336478826"
+  },
+  {
+    "path": "public/assets/neon/items/seed-spreader.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-seed-spreader.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "eb5da24197894d2d342ee01cd79289ab45b4ddefa0e558af048f1583708b0c49"
+  },
+  {
+    "path": "public/assets/neon/items/silly-string.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-silly-string.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "b94c009b76a6a99790c7e40bb1f994892b24dc199b691dbcc0ef04e7cfe790e7"
+  },
+  {
+    "path": "public/assets/neon/items/skate-lace.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-skate-lace.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "c57f8814fc5abf184847b9548c8eb92851623800e35124ad71a37ed38e43c1b1"
+  },
+  {
+    "path": "public/assets/neon/items/soft-focus-lens.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-soft-focus-lens.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "cbb9fa85cc4b4dfc75ccc7e1d16b3ba73e1a792202025a08366bbeb136220b7f"
+  },
+  {
+    "path": "public/assets/neon/items/squeaky-toy.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-squeaky-toy.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "97a2fe2caaab51630f4a9270423c2e1439c7279535ee501c22421fd093777dfa"
+  },
+  {
+    "path": "public/assets/neon/items/styling-gel.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-styling-gel.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "5a0c6da12256a00d2f1730e70d5b5c2c783a3e01e4e0457ad745d779ff3420d7"
+  },
+  {
+    "path": "public/assets/neon/items/taffy-puller.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-taffy-puller.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "f9d3e8fbfea32d99df927613b7c896d38f47ad78d351219b899e8cbe2f3bcca0"
+  },
+  {
+    "path": "public/assets/neon/items/tripod.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-tripod.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6833c1a53ae3aa20f3f7126bf2d128917ec68c55550a560f288eb25945a9076c"
+  },
+  {
+    "path": "public/assets/neon/items/watering-can.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-watering-can.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "7ab8eacd3965bf88f9f36b86dc2a0cf0b097353b1b82ef1bbc1b2b097b0e462c"
+  },
+  {
+    "path": "public/assets/neon/items/whipped-cream.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-whipped-cream.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "6b15f1e948609f5254cc409d37e58a131785e16f88da07da6bbb5f5816daa87e"
+  },
+  {
+    "path": "public/assets/neon/items/whoopee-cushion.png",
+    "source": "docs/art/neon-overhaul/pixellab/item-whoopee-cushion.png",
+    "generator": "PixelLab create_image_pixflux (32x32, high top-down), snapped to the earlier item icons' palette, binary alpha (round 50)",
+    "size": [
+      32,
+      32
+    ],
+    "sha256": "ff41f62c844df6a8395a0e380f8c68ce8cdfd13124eb22f6715f1513ba105dc5"
+  },
+  {
+    "path": "public/assets/neon/enemies/spritzer-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-spritzer-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      736,
+      92
+    ],
+    "sha256": "37be65757380a8a1a78a53886a09837fc2442e8d7c2063b11229ebf5066c4310"
+  },
+  {
+    "path": "public/assets/neon/enemies/spritzer-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-spritzer-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "08efed64ae5470384c6d062c79342909a1ccb82fc71db999aefdb29c6fd1e84e"
+  },
+  {
+    "path": "public/assets/neon/enemies/spritzer-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-spritzer-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "ed1af5a1fc4fdaef5de9af45d991aaf5628f1b2e3d3cc57ce850b3b7735de20a"
+  },
+  {
+    "path": "public/assets/neon/enemies/goon-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-goon-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      736,
+      92
+    ],
+    "sha256": "4110febb5357d2f87001e3ceeafdd5fe6ec712bb229540557a5e47e992d15088"
+  },
+  {
+    "path": "public/assets/neon/enemies/goon-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-goon-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "3418dd4953ecf977df589c314844990e8c4a536d11d7c1d64d78d9fcaf274d23"
+  },
+  {
+    "path": "public/assets/neon/enemies/goon-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-goon-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "2c8a59e822cd6f53846b7eac8727ce9b3b93d53a930d5075f67bae0b89cf865c"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "ce96edb14476a817772fd2d8b9fec29101d4b821d370800bf91a074c5ef977fd"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-walk.png",
+    "generator": "PixelLab animate_character walk-6-frames (cat template; south, west, north, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "513b9550eb7e2e2385f92724973ddb743836c3b0a4ae9174237cd745232edb92"
+  },
+  {
+    "path": "public/assets/neon/enemies/whiskers-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-whiskers-death.png",
+    "generator": "Procedural: quadruped_death.py from the packed PixelLab idle strip (PixelLab has no quadruped death template)",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "f1c8b7f5fccb891c0e8be99e957a38a9267af71c69bd1f6b11aecc5fb14977a3"
+  },
+  {
+    "path": "public/assets/neon/enemies/glamour-queen-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-queen-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "27bc4597e5ebabd6f621686f5dc4754b1510558f117b93ec78f64a75f951b4a2"
+  },
+  {
+    "path": "public/assets/neon/enemies/glamour-queen-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-queen-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "dad9e84e82210bb7276053febe0522a92926668c3f35a28bad4da94ce779fe11"
+  },
+  {
+    "path": "public/assets/neon/enemies/glamour-queen-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-queen-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "1a72930b2e84ff8adc910f474a65a92e3e9651b7050971283809efaa98312f7a"
+  },
+  {
+    "path": "public/assets/neon/enemies/poodle-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-poodle-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      736,
+      92
+    ],
+    "sha256": "ceb23f152ff722891fc020f7c02d8e5d58962175f6e451ed7acbd560017e105d"
+  },
+  {
+    "path": "public/assets/neon/enemies/poodle-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-poodle-walk.png",
+    "generator": "PixelLab animate_character running-6-frames (dog template; west and north, the rest borrowed), packed by pack_character.py",
+    "size": [
+      552,
+      736
+    ],
+    "sha256": "71f34159d8db0c3277d8bdb20fb5d805479a5f55ed0f4d4a5731a1f522ba9062"
+  },
+  {
+    "path": "public/assets/neon/enemies/poodle-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-poodle-death.png",
+    "generator": "Procedural: quadruped_death.py from the packed PixelLab idle strip (PixelLab has no quadruped death template)",
+    "size": [
+      644,
+      736
+    ],
+    "sha256": "50f42c5305cab22f7c89a710038144404289a307d68b4187f7cd79a62b7006f8"
+  },
+  {
+    "path": "public/assets/neon/enemies/zamboni-idle.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-zamboni-idle.png",
+    "generator": "PixelLab create_character (round 50 district cast), packed by pack_character.py --rotations",
+    "size": [
+      1280,
+      160
+    ],
+    "sha256": "9fdc6f2065757bab402ae0c728c1920ebcc5fc657b134a9b460e442520338f72"
+  },
+  {
+    "path": "public/assets/neon/enemies/zamboni-walk.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-zamboni-walk.png",
+    "generator": "PixelLab animate_character walk template (5 directions, mirrored), packed by pack_character.py",
+    "size": [
+      960,
+      1280
+    ],
+    "sha256": "3d3c7ad4d7b9f4d1df2fee3e73aa96154f55703e53faa26ff7825faa8daad283"
+  },
+  {
+    "path": "public/assets/neon/enemies/zamboni-death.png",
+    "source": "docs/art/neon-overhaul/pixellab/anim-zamboni-death.png",
+    "generator": "PixelLab animate_character falling-back-death (3 directions, mirrored), packed by pack_character.py",
+    "size": [
+      1120,
+      1280
+    ],
+    "sha256": "8de9817a6b9cee2de63fdee5892c643383bc65f8d0ff4b8ebe1a29cd31af66e7"
   }
 ]

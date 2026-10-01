@@ -28,6 +28,7 @@ import { MAX_SECURITY_HEAT } from '../shop/types';
 import type { FloorNumber } from '../wing/floorSpecs';
 import { OUTAGE_ALARM_BONUS, wingEventFor } from './wingEvents';
 import { perk, spendCharge } from './perks';
+import { PARROT_ALARM_CUT } from './storeTwists';
 
 /**
  * Ticks from the grab to the shutter, by floor. The 2026-10-01 playtest got
@@ -97,7 +98,9 @@ export function alarmTicksFor(state: MvpRunState): number {
   return ALARM_TICKS_BY_FLOOR[state.wing.floor ?? 1]
     + (runOwnsCapability(state, 'smuggle_pouch') ? SMUGGLE_POUCH_ALARM_BONUS : 0)
     + (wingEventFor(state.wing) === 'outage' ? OUTAGE_ALARM_BONUS : 0)
-    + perk(state, 'alarmBonus');
+    + perk(state, 'alarmBonus')
+    // Pet Palace (round 50): the parrot shouts THIEF.
+    - (activeStore(state)?.templateId === 'pet-palace' ? PARROT_ALARM_CUT : 0);
 }
 
 function currentStore(state: MvpRunState): WingStoreInstance | null {
