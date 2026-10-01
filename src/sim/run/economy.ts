@@ -24,6 +24,7 @@ import type { WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/t
 import { refreshRunLoadout } from './loadout';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { blueLightOfferId } from './roomEvents';
+import { CLEARANCE_PRICE_SCALE, wingEventFor } from './wingEvents';
 import { HEAT_PER_STAR, WANTED_SURCHARGE_PER_STAR, applyHeatFloor, getawayBonus, wantedStars } from './wanted';
 
 /**
@@ -146,7 +147,9 @@ export function holdsPairPartner(state: MvpRunState, offer: WingOffer): boolean 
 
 export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
   // A wanted janitor pays a surcharge: two dollars a star.
-  const price = offer.price + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state);
+  // A clearance sale (a floor event) marks the tag down before anything else.
+  const tag = wingEventFor(state.wing) === 'clearance' ? Math.ceil(offer.price * CLEARANCE_PRICE_SCALE) : offer.price;
+  const price = tag + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state);
   // BLUE LIGHT SPECIAL: this shift's one half-price item.
   const special = blueLightOfferId(state) === offer.id;
   const shelf = special ? Math.ceil(price / 2) : price;

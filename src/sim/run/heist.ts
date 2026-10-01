@@ -26,6 +26,7 @@ export { GETAWAY_CASH_PER_ITEM, GETAWAY_HAUL_BONUS, getawayBonus } from './wante
 import { activeStore } from './storeInterior';
 import { MAX_SECURITY_HEAT } from '../shop/types';
 import type { FloorNumber } from '../wing/floorSpecs';
+import { OUTAGE_ALARM_BONUS, wingEventFor } from './wingEvents';
 
 /**
  * Ticks from the grab to the shutter, by floor. The 2026-10-01 playtest got
@@ -92,7 +93,9 @@ export function alarmSpawnSpots(store: StoreShape, wanted: number, wave: 'alarm'
 
 /** How long this janitor has from the grab to the shutter. */
 export function alarmTicksFor(state: MvpRunState): number {
-  return ALARM_TICKS_BY_FLOOR[state.wing.floor ?? 1] + (runOwnsCapability(state, 'smuggle_pouch') ? SMUGGLE_POUCH_ALARM_BONUS : 0);
+  return ALARM_TICKS_BY_FLOOR[state.wing.floor ?? 1]
+    + (runOwnsCapability(state, 'smuggle_pouch') ? SMUGGLE_POUCH_ALARM_BONUS : 0)
+    + (wingEventFor(state.wing) === 'outage' ? OUTAGE_ALARM_BONUS : 0);
 }
 
 function currentStore(state: MvpRunState): WingStoreInstance | null {

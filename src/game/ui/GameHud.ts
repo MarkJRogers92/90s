@@ -19,7 +19,7 @@ import { PORTRAIT_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { HEART_TEXTURES, ensureHeartTextures, ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
-import { buildGameHudModel, collapsedObjective, hudExpanded, wrapLogText, type GameHudModel, type HudOfferDetail } from './gameHudModel';
+import { buildGameHudModel, collapsedObjective, hudExpanded, roomTitleSubtitle, wrapLogText, type GameHudModel, type HudOfferDetail } from './gameHudModel';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { itemBlurb } from './itemBlurbs';
 import { blink, flashAllowed, gameSettings } from '../settings/settings';
@@ -697,14 +697,9 @@ export class GameHud {
       const room = state.wing.rooms[state.roomIndex];
       // Inside a shop the card names the shop; out on the concourse, the wing.
       const name = (activeStore(state)?.name ?? room?.name ?? '').toUpperCase();
-      // Room events announce themselves in the title card's subtitle.
+      // Floor and room events announce themselves in the title card's subtitle.
       const event = roomEventFor(state, state.roomIndex);
-      const subtitle = event === 'blackout'
-        ? 'BLACKOUT - STAY IN YOUR FLASHLIGHT'
-        : event === 'blue_light'
-          ? 'BLUE LIGHT SPECIAL - ONE ITEM HALF PRICE'
-          : `SHIFT ROOM ${state.roomIndex + 1} OF ${state.wing.rooms.length}`;
-      const subtitleColor = event === 'blackout' ? '#ff5a6a' : event === 'blue_light' ? '#6a9aff' : '#3ff0ff';
+      const { text: subtitle, color: subtitleColor } = roomTitleSubtitle(state);
       // The boss room's card is BossIntro, which holds the fight while it plays.
       const bossRoom = (room?.bossAnchor ?? null) !== null;
       if (bossRoom) {

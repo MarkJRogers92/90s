@@ -1157,3 +1157,34 @@ Roof run visited no store at all.
 - **Known gap**: a first wing reuses its floor's dressing, so its back-wall
   signs are the boss wing's (Floor 2's Lockdown room still says MANAGEMENT).
 
+
+## Round 46: mannequins freeze after a bite (playtest 2026-10-01)
+
+A biting Mannequin freezes for `MANNEQUIN_BITE_FREEZE_TICKS` (90) in
+`src/sim/combat/mannequin.ts`, reusing `stunnedTicks`; it reads as a watched
+(frozen) mannequin everywhere, so the view and cues needed nothing.
+
+## Round 47: floor events, a leading barrage, riskier heists (playtest 2026-10-01)
+
+- **Floor events** (`src/sim/run/wingEvents.ts`): every wing but the night's
+  first rolls `WING_EVENT_CHANCE` (0.7) for one of `outage`, `sprinklers`,
+  `clearance`. Pure function of the wing (one `luck` draw), never stored.
+  - outage: `roomEventFor` returns `blackout` for every room without a store
+    or boss, so the flashlight view, music and title card come for free; the
+    alarm gets `OUTAGE_ALARM_BONUS`.
+  - sprinklers: every enemy is re-soaked (`SPRINKLER_WET_TICKS`) before each
+    combat tick, so conduction chains everywhere; `game/view/sprinklerRain.ts`
+    draws the spray.
+  - clearance: `CLEARANCE_PRICE_SCALE` on the tag (in `runOfferPrice`), and a
+    Bargain Hunter in every regular fight (`buildRoomCombatState`).
+  - The PA announces it as the wing starts (`wing_<event>` lines), the title
+    card names it (`roomTitleSubtitle`), and the log records `event`.
+  - To add one: extend `WING_EVENTS`, give it a rule, a PA line and a
+    subtitle. Dev fixture: `?fixture=mvp-event&event=<name>` then NIGHT SHIFT.
+- **Barrage lead**: `tarBarrage.leadTicks` (45) aims the Developer's ring at
+  `player + velocity * leadTicks`; `PlayerState.velocityX/Y` is set by
+  `movePlayer`.
+- **Heists**: `ALARM_TICKS_BY_FLOOR` (210/190/170/150) and
+  `ALARM_GUARD_BEAT_BY_FLOOR` (24/18/12/6) in `src/sim/run/heist.ts`.
+- **Fix**: leaf ids are fresh across the night (`freshLeafInstanceId`):
+  re-buying an item on a later floor used to break every later fusion.

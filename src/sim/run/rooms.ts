@@ -31,6 +31,7 @@ import { MASCOT_HEALTH, MASCOT_RADIUS } from '../combat/mascot';
 import { ROOFER_HEALTH, ROOFER_RADIUS } from '../combat/roofer';
 import { LOCKDOWN_SIZE } from '../wing/floorSpecs';
 import { createWingRng } from '../wing/rng';
+import { wingEventFor } from './wingEvents';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -259,6 +260,12 @@ export function buildRoomCombatState(
   }
   for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies)) {
     enemies.push(spawnMannequin(enemies.length + 1, spot.x, spot.y));
+  }
+  // A clearance sale (a floor event) sends a Bargain Hunter into every regular fight.
+  if (wingEventFor(wing) === 'clearance' && room.enemySpawns.length > 0 && room.bossAnchor === null) {
+    for (const spot of displayMannequinSpots(room, seed, roomIndex, enemies, 1, 'clearance-spot')) {
+      enemies.push(spawnSecurityGuard('shopper', enemies.length + 1, spot.x, spot.y, 70));
+    }
   }
   // A wanted janitor brings mall security into every fight; safe rooms stay safe.
   const security = room.enemySpawns.length > 0 || room.bossAnchor !== null

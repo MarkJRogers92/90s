@@ -120,7 +120,7 @@ describe('authored run constants', () => {
 
 describe('purchase rules', () => {
   it('applies the shop_discount capability with a one-dollar floor', () => {
-    const state = createMvpRun(9);
+    const state = createMvpRun(8); // A wing with no floor event (seed 9 is a clearance sale).
     enterStorefront(state);
     const cheapOffer = {
       id: 'test-cheap',
@@ -141,7 +141,7 @@ describe('purchase rules', () => {
   });
 
   it('charges the discounted price and records purchased provenance', () => {
-    const state = createMvpRun(9);
+    const state = createMvpRun(8); // A wing with no floor event (seed 9 is a clearance sale).
     enterStorefront(state);
     grantItem(state, 'receipt_wallet');
     const store = currentStore(state);
@@ -398,7 +398,7 @@ describe('run presentation fidelity', () => {
   });
 
   it('labels an offer with the same discounted price the run charges', () => {
-    const state = createMvpRun(9);
+    const state = createMvpRun(8); // A wing with no floor event (seed 9 is a clearance sale).
     enterStorefront(state);
     const offer = state.wing.rooms[1]!.offers.find((candidate) => candidate.price > 3)!;
 

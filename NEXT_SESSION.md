@@ -35,7 +35,7 @@ twists, sell and drop, reduced flashing). What is left:
 
 ## Owner's queue (asked for next, 2026-10-01)
 
-Do these after round 47 (tar lead, riskier heists, floor events):
+Round 47 (tar lead, riskier heists, floor events) is done. Next, in order:
 
 1. **First-wing back-wall signs.** First wings reuse the floor's signs
    (Floor 2's Lockdown still says MANAGEMENT). Give each `firstWingNames`
@@ -48,6 +48,13 @@ Do these after round 47 (tar lead, riskier heists, floor events):
    difficulty. Needs PixelLab art (8-dir walk + death).
 4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
    next night, so every night counts toward something.
+
+## Round 47 playtest questions
+
+- Floor events: do the three feel different? Is 70% of wings too often?
+  The log's records now carry `event`.
+- Does the barrage now make you move (look for `barrage` damage > 0)?
+- Heists: do you still steal, and do alarms now end in lockdowns sometimes?
 
 ## Round 46 playtest questions
 

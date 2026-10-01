@@ -194,7 +194,7 @@ describe('deterministic room rebuild', () => {
   });
 
   it('always returns a combat room with only its authored enemies (plus seeded display mannequins), no projectiles, and no surfaces', () => {
-    const state = createMvpRun(7);
+    const state = createMvpRun(8); // No floor event: a clearance sale (seed 7) adds a Bargain Hunter.
     state.room.combat.projectiles.push({
       id: 99,
       x: 10,
