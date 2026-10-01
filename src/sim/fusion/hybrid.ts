@@ -193,6 +193,24 @@ const AUTHORED_SIGNATURES: Readonly<Record<string, string>> = {
   'fog_machine+super_soaker_50': 'Smoke Show',
   'claw_hammer+nail_gun': 'Handyman Special',
   'soda_gun+slushie_cup': 'Free Refills',
+  // Round 48: at least three pairs every store can shelve, so its hint changes night to night.
+  'ketchup_bottle+water_balloons': 'Food Fight',
+  'claw_hammer+duct_tape': 'Weekend Project',
+  'party_popper+slushie_cup': 'Sugar Rush',
+  'bubble_bath+pump_soaker': 'Bubble Gun',
+  'foam_ball_blaster+paint_marker': 'Paintball',
+  'bottle_rocket_pack+extension_cord': 'Short Fuse',
+  'anti_static_strap+plasma_globe': 'Ground Control',
+  'fire_extinguisher+needle_nozzle': 'Ice Pick',
+  'football+lacrosse_stick': 'Trick Play',
+  'slinky+yo_yo': 'Spring Break',
+  'super_soaker_50+water_balloons': 'Water War',
+  'boombox+walkman': 'Dual Deck',
+  'nine_volt_pack+tesla_coil_kit': 'Lick Test',
+  'electric_guitar+mic_stand': 'Encore',
+  'cd_shuriken+fog_machine': 'Smoke and Mirrors',
+  'cardboard_standee+late_fee_stamp': 'Overdue Notice',
+  'laserdisc+rewind_button': "Director's Cut",
 };
 
 /** Keyed by `pairKey`, so a pair authored in either order still matches. */
