@@ -22,8 +22,6 @@ export type HeroPropLayers = {
   readonly shadow: (id: string, x: number, y: number, scale: number) => void;
 };
 
-/** The colours of the clothes on a rack, standing or spilled. */
-const CLOTHES = [0xff5aa8, 0x3ff0ff, 0xffd84a, 0x8a5aff, 0x6aff8a, 0xff8a3f];
 
 export class HeroPropView {
   private readonly images = new Map<string, Phaser.GameObjects.Image>();
@@ -67,12 +65,12 @@ export class HeroPropView {
     layers.light(prop.x, prop.y - 10, 80, 0xffe6c0, live ? 0.75 : 0.4);
 
     if (prop.kind === 'cart') {
-      const image = this.image(id, usableTextureKey(this.scene.textures, PROP_TEXTURES.cart.key));
+      const image = this.image(id, usableTextureKey(this.scene.textures, PROP_TEXTURES.mallCart.key));
       if (!image) return;
       used.add(id);
       const rolling = prop.state === 'rolling';
       const rattle = rolling ? Math.sin(tick * 1.7) * 1.2 : 0;
-      image.setOrigin(0.5, 1).setDisplaySize(44, 41).setPosition(Math.round(prop.x), Math.round(prop.y + 14 + rattle))
+      image.setOrigin(0.5, 1).setScale(1.1).setPosition(Math.round(prop.x), Math.round(prop.y + 14 + rattle))
         .setFlipX(prop.vx < 0).setDepth(presentationDepth('actor', prop.y));
       layers.shadow(id, prop.x, prop.y + 12, 1);
       if (rolling) {
@@ -86,12 +84,12 @@ export class HeroPropView {
     }
 
     if (prop.kind === 'soda') {
-      const image = this.image(id, usableTextureKey(this.scene.textures, PROP_TEXTURES.vending.key));
+      const broken = prop.state === 'broken';
+      const image = this.image(id, usableTextureKey(this.scene.textures, (broken ? PROP_TEXTURES.sodaMachineBroken : PROP_TEXTURES.sodaMachine).key));
       if (!image) return;
       used.add(id);
-      const broken = prop.state === 'broken';
-      image.setOrigin(0.5, 1).setDisplaySize(40, 68).setPosition(Math.round(prop.x), Math.round(prop.y + 14))
-        .setDepth(presentationDepth('actor', prop.y)).setTint(broken ? 0x5a5266 : 0xffffff).setAngle(broken ? -4 : 0);
+      image.setOrigin(0.5, 1).setScale(0.9).setPosition(Math.round(prop.x), Math.round(prop.y + 16))
+        .setDepth(presentationDepth('actor', prop.y));
       layers.shadow(id, prop.x, prop.y + 12, 1.2);
       if (!broken) {
         layers.light(prop.x, prop.y - 30, 70, 0x3ff0ff, 0.45);
@@ -103,34 +101,32 @@ export class HeroPropView {
         for (let i = 0; i < 3; i += 1) effects.lineBetween(prop.x - 6, prop.y - 34, prop.x - 6 + Math.cos(i * 2.1 + tick) * 12, prop.y - 34 + Math.sin(i * 2.1 + tick) * 10);
         layers.light(prop.x, prop.y - 34, 40, 0xffffff, 0.7);
       }
-      floor.fillStyle(0x7a3a1a, 0.55).fillEllipse(prop.x + 4, prop.y + 18, 30, 10);
       return;
     }
 
     // Clothing rack.
     if (prop.state === 'standing') {
-      const image = this.image(id, usableTextureKey(this.scene.textures, PROP_TEXTURES.clothingRack.key));
+      const image = this.image(id, usableTextureKey(this.scene.textures, PROP_TEXTURES.rackOfClothes.key));
       if (!image) return;
       used.add(id);
-      image.setOrigin(0.5, 1).setDisplaySize(58, 55).setPosition(Math.round(prop.x), Math.round(prop.y + 12)).setDepth(presentationDepth('actor', prop.y));
+      image.setOrigin(0.5, 1).setScale(0.9).setAngle(0).setPosition(Math.round(prop.x), Math.round(prop.y + 12)).setDepth(presentationDepth('actor', prop.y));
       layers.shadow(id, prop.x, prop.y + 10, 1.3);
       return;
     }
-    // Toppled: the chrome rail on the floor with the stock spilled along it.
+    // Toppled: the same rack on its side, its top the way it fell, flat on the floor.
     const wall = propWall(prop)!;
-    const horizontal = wall.width > wall.height;
-    const length = horizontal ? wall.width : wall.height;
-    floor.fillStyle(0x000000, 0.35).fillRect(wall.x + 2, wall.y + 4, wall.width, wall.height);
-    for (let i = 0; i < 9; i += 1) {
-      const along = 6 + (i * (length - 12)) / 8;
-      const color = CLOTHES[(i + prop.id) % CLOTHES.length]!;
-      const jitter = ((i * 7 + prop.id * 3) % 7) - 3;
-      if (horizontal) floor.fillStyle(color, 0.95).fillRect(wall.x + along - 6, wall.y + 1 + jitter, 12, wall.height - 2);
-      else floor.fillStyle(color, 0.95).fillRect(wall.x + 1 + jitter, wall.y + along - 6, wall.width - 2, 12);
-    }
-    floor.lineStyle(3, 0xcfd6e0, 1);
-    if (horizontal) floor.lineBetween(wall.x, wall.y + wall.height / 2, wall.x + wall.width, wall.y + wall.height / 2);
-    else floor.lineBetween(wall.x + wall.width / 2, wall.y, wall.x + wall.width / 2, wall.y + wall.height);
+    const image = this.image(id, usableTextureKey(this.scene.textures, PROP_TEXTURES.rackOfClothes.key));
+    if (!image) return;
+    used.add(id);
+    const cx = wall.x + wall.width / 2;
+    const cy = wall.y + wall.height / 2;
+    const fall = prop.fall!;
+    const angle = fall.axis === 'x' ? fall.sign * 90 : fall.sign > 0 ? 180 : 0;
+    // Falling away from the camera it is seen end-on, so it is squashed.
+    const squash = fall.axis === 'y' && fall.sign < 0 ? 0.55 : 1;
+    image.setOrigin(0.5, 0.5).setAngle(angle).setScale(1.25, 1.25 * squash).setPosition(Math.round(cx), Math.round(cy))
+      .setDepth(presentationDepth('lowProp', cy));
+    floor.fillStyle(0x000000, 0.3).fillEllipse(cx + 2, cy + 4, wall.width + 10, wall.height + 10);
   }
 
   private drawHero(_combat: RunState, hero: HeroState, tick: number, layers: HeroPropLayers, used: Set<string>): void {

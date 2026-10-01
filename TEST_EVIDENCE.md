@@ -15,6 +15,9 @@
   the cart, soda machine and rack lit, the rack toppled into spilled stock
   and the machine burst. First look found the props unlit (nearly black);
   each now carries its own light.
+- Then PixelLab prop art (soda machine, broken soda machine, clothes rack,
+  cart): on screen standing and `&props=used`; gate re-run: 1161 unit,
+  build clean, 79/79 browser.
 
 ## 2026-10-01 — round 52: review fixes (three bugs from an outside review)
 

@@ -1305,6 +1305,12 @@ music. Boss wings never change, and regular wings draw exactly as before.
   silhouette, burst, dazed stars, props with their own light). Sounds:
   `cart_roll`, `soda_burst`, `rack_fall`, `record_spin`, `record_fling`,
   `squawk`, `decoy_burst`, `projector`. Debug snapshot: `props`, `hero`.
+- **Art**: PixelLab pixflux sprites in `props/` (`soda-machine`,
+  `soda-machine-broken`, `rack-of-clothes`, `mall-cart`; raw in
+  `docs/art/neon-overhaul/pixellab/prop-*.png`, binary alpha, cropped). Two
+  tries at a toppled rack both came out standing, so a fallen rack is the
+  standing sprite rotated so its top points the way it fell (squashed when
+  it falls away from the camera).
 - **Fixture**: `?fixture=mvp-hero&hero=greatest_hits|comedy_hour|movie_night`
   (a food court with all three props and no room event; `&props=used`
   starts them knocked over).

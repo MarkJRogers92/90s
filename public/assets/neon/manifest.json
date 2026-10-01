@@ -3288,5 +3288,45 @@
       1280
     ],
     "sha256": "a9c7a4ed427cf36e1e1933d4a4917151f53596fb846756c62efc54c1073e31c9"
+  },
+  {
+    "path": "public/assets/neon/props/soda-machine.png",
+    "source": "docs/art/neon-overhaul/pixellab/prop-soda-machine.png",
+    "generator": "PixelLab create_image_pixflux (job 5de1cb65), binary alpha, cropped (round 53)",
+    "size": [
+      44,
+      78
+    ],
+    "sha256": "3742629e6d6ce7fd542b67a7ab7b816bac7c23676479d5764e948b42e30f44d0"
+  },
+  {
+    "path": "public/assets/neon/props/soda-machine-broken.png",
+    "source": "docs/art/neon-overhaul/pixellab/prop-soda-machine-broken.png",
+    "generator": "PixelLab create_image_pixflux (job 41560120), binary alpha, cropped (round 53)",
+    "size": [
+      57,
+      86
+    ],
+    "sha256": "7cfb2c6a06f15645f3f109bae9e72d3b35f0e08e604774eb2d4f512cdc126e8f"
+  },
+  {
+    "path": "public/assets/neon/props/rack-of-clothes.png",
+    "source": "docs/art/neon-overhaul/pixellab/prop-rack-of-clothes.png",
+    "generator": "PixelLab create_image_pixflux (job 7a9b57fd), binary alpha, cropped (round 53)",
+    "size": [
+      60,
+      75
+    ],
+    "sha256": "384e35493793b1c563fa5e9ae572916484821ea529403f94ced08f8f2dadfa0d"
+  },
+  {
+    "path": "public/assets/neon/props/mall-cart.png",
+    "source": "docs/art/neon-overhaul/pixellab/prop-mall-cart.png",
+    "generator": "PixelLab create_image_pixflux (job 6952e23f), binary alpha, cropped (round 53)",
+    "size": [
+      37,
+      44
+    ],
+    "sha256": "cfc4681b3b9c4c14123f5ee51ba7ee03d3f5e6a7c1e8504c51d5fc2d524456aa"
   }
 ]
