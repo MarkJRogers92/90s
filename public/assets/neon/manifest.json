@@ -2418,5 +2418,105 @@
       736
     ],
     "sha256": "89901ac8cac134dd2e512c5dbaf6d2f1def2c3883a70b86fe41da14f2d6dcd29"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-lookout.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-perk-lookout.png",
+    "generator": "PixelLab create_image_pixflux (48x48 binoculars icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "62004824c178babb686f86e9c125064b4e2dee4489ccd5a3ea7388229ceba2c5"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-pockets.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-perk-pockets.png",
+    "generator": "PixelLab create_image_pixflux (48x48 cargo pocket icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "963d237a617795435e5323bb4c338acd4b1bc8adc3b5da24481af4a811805d33"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-discount.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-perk-discount.png",
+    "generator": "PixelLab create_image_pixflux (48x48 discount card icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "0ab23eacbd74bf36b9e5bb70dab5310292946c7f006085a1fa7db9c3c3dd8a9a"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-benchtech.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-perk-benchtech.png",
+    "generator": "PixelLab create_image_pixflux (48x48 soldering iron and wrench icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "5b4b1fe52afbe60c4177579aac98d74aa469475fb82e44e1d9d9bcb5ad22766c"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-penny.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-perk-penny.png",
+    "generator": "PixelLab create_image_pixflux (48x48 lucky penny icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "54f6526014df9445430eb619e46d1bbe5492725b5bda2281c5f486f914bf0563"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/perk-secondwind.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-perk-secondwind.png",
+    "generator": "PixelLab create_image_pixflux (48x48 inhaler icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "bf8b1edf506dcb5e019555149e205bfa3a56c5a9381ba2b320cd4669a24c903c"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/vend-energy.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-vend-energy.png",
+    "generator": "PixelLab create_image_pixflux (48x48 energy drink icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "2ec9db2ed33361bd2507c75e3e572e3a57cf4ea175e03ce44787785d6bbf5458"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/vend-lunch.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-vend-lunch.png",
+    "generator": "PixelLab create_image_pixflux (48x48 lunch bag icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "a98bf5aee197f418cafa95fe6b5f9f9926c70ed69175e4b9409482f0ec442cfc"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/vend-coupon.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-vend-coupon.png",
+    "generator": "PixelLab create_image_pixflux (48x48 fusion coupon icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "f9e2ad86379865eb317eb0f712fa0e9184dd55d54eeeeba33672bc4e692cf1ef"
+  },
+  {
+    "path": "public/assets/neon/ui/breakroom/vend-mustache.png",
+    "source": "docs/art/neon-overhaul/pixellab/breakroom-vend-mustache.png",
+    "generator": "PixelLab create_image_pixflux (48x48 fake mustache icon)",
+    "size": [
+      48,
+      48
+    ],
+    "sha256": "3baa6c04b983b3422cbc7326ec77e1ece99d3a184a670e713670a1ed195573bf"
   }
 ]

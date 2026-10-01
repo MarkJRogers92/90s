@@ -35,8 +35,8 @@ twists, sell and drop, reduced flashing). What is left:
 
 ## Owner's queue (asked for next, 2026-10-01)
 
-Round 48 did 1-3 below. Item 4 already exists as the Break Room (5 perks, 4
-locker weapons, ~270 stubs in all); ask the owner what to add to it.
+Round 48 did 1-3 below; round 49 grew the Break Room (item 4) to 11 perks,
+10 locker weapons and a vending machine.
 
 The queue as asked:
 
@@ -51,6 +51,13 @@ The queue as asked:
    difficulty. Needs PixelLab art (8-dir walk + death).
 4. **Unlocks screen.** Spend pay stubs on a starting perk or loadout for the
    next night, so every night counts toward something.
+
+## Round 49 playtest questions
+
+- Which Break Room things do you buy first? Is Second Wind worth 60 stubs?
+- Do the vending snacks change how you play the next night?
+- Ideas not built yet: uniform colours (cosmetic), a "bring two locker
+  weapons" upgrade, perks for floor events (e.g. a flashlight for outages).
 
 ## Round 48 playtest questions
 

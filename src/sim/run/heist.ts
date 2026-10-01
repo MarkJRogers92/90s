@@ -27,6 +27,7 @@ import { activeStore } from './storeInterior';
 import { MAX_SECURITY_HEAT } from '../shop/types';
 import type { FloorNumber } from '../wing/floorSpecs';
 import { OUTAGE_ALARM_BONUS, wingEventFor } from './wingEvents';
+import { perk, spendCharge } from './perks';
 
 /**
  * Ticks from the grab to the shutter, by floor. The 2026-10-01 playtest got
@@ -95,7 +96,8 @@ export function alarmSpawnSpots(store: StoreShape, wanted: number, wave: 'alarm'
 export function alarmTicksFor(state: MvpRunState): number {
   return ALARM_TICKS_BY_FLOOR[state.wing.floor ?? 1]
     + (runOwnsCapability(state, 'smuggle_pouch') ? SMUGGLE_POUCH_ALARM_BONUS : 0)
-    + (wingEventFor(state.wing) === 'outage' ? OUTAGE_ALARM_BONUS : 0);
+    + (wingEventFor(state.wing) === 'outage' ? OUTAGE_ALARM_BONUS : 0)
+    + perk(state, 'alarmBonus');
 }
 
 function currentStore(state: MvpRunState): WingStoreInstance | null {
@@ -129,6 +131,12 @@ export function stealRunOffer(state: MvpRunState, offerId: string): MvpCommandRe
   if (!theft.accepted) return theft;
   const store = currentStore(state);
   if (store === null || state.alarm !== null) return theft;
+  // A Fake Mustache (Break Room vending): nobody looks twice. No alarm, no guards.
+  if (spendCharge(state, 'quietGrabs')) {
+    const quiet = `Nobody looked twice at the mustache. ${store.name}'s alarm stays quiet.`;
+    publishRunFeedback(state, quiet);
+    return { accepted: true, message: quiet };
+  }
   state.alarm = { storeId: store.templateId, roomIndex: state.roomIndex, ticksLeft: alarmTicksFor(state), shutter: 'open' };
   sendGuards(state, store, 'alarm');
   const message = `ALARM! Five-finger discount in ${store.name}: get out the door before the shutter drops.`;

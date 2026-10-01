@@ -10,7 +10,7 @@
  */
 import { wingEventFor } from '../../sim/run/wingEvents';
 import { buildRoomCombatState } from '../../sim/run/rooms';
-import { browserCareer, discoverFusion, perksFor, type FusionDiscovery } from '../career/career';
+import { browserCareer, discoverFusion, clockIn, type FusionDiscovery } from '../career/career';
 import { playFusionBanner } from '../ui/FusionReveal';
 import { sellWorkbenchItem } from '../../sim/run/resale';
 import { fusionRevealModel } from '../ui/fusionRevealModel';
@@ -756,7 +756,12 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** A Daily Shift is standard issue; any other shift takes the janitor's Break Room perks. */
   private shiftPerks(): ShiftPerks {
-    return this.dailyDate ? NO_PERKS : perksFor(browserCareer().load());
+    if (this.dailyDate) return NO_PERKS;
+    // Clocking in eats one of each vending snack in the bag (round 49).
+    const store = browserCareer();
+    const shift = clockIn(store.load());
+    store.save(shift.career);
+    return shift.perks;
   }
 
   /** From the end card, a won shift clocks into a new mall; otherwise the same one. */

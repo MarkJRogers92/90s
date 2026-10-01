@@ -10,9 +10,11 @@ import { ITEM_ICON_FILES } from '../presentation/assets';
 import {
   LOCKER_ITEMS,
   PERKS,
+  VENDING_ITEMS,
   WALL_SIZE,
   buyLocker,
   buyPerk,
+  buyVending,
   equipLocker,
   fusionLog,
   nextPerkCost,
@@ -20,6 +22,7 @@ import {
   type CareerStore,
   type PerkId,
   type Polaroid,
+  type VendingId,
 } from '../career/career';
 
 const ART = '/assets/neon/ui/breakroom';
@@ -29,7 +32,14 @@ const PERK_ICONS: Record<PerkId, string> = {
   coffee: `${ART}/perk-coffee.png`,
   sneakers: `${ART}/perk-sneakers.png`,
   shopvac: `${ART}/perk-shopvac.png`,
+  lookout: `${ART}/perk-lookout.png`,
+  pockets: `${ART}/perk-pockets.png`,
+  discount: `${ART}/perk-discount.png`,
+  benchtech: `${ART}/perk-benchtech.png`,
+  penny: `${ART}/perk-penny.png`,
+  secondwind: `${ART}/perk-secondwind.png`,
 };
+const VENDING_ICON = (id: VendingId): string => `${ART}/vend-${id}.png`;
 const ITEM_ICON = (itemId: string): string => `/assets/neon/items/${ITEM_ICON_FILES[itemId] ?? itemId.replace(/_/g, '-')}.png`;
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
@@ -131,6 +141,17 @@ export class BreakRoomPanel {
     for (const item of LOCKER_ITEMS) grid.append(this.lockerCard(career, item.itemId));
     locker.append(grid);
 
+    // Round 49: one-night snacks, eaten one of each on the next shift.
+    const vending = el('section', 'br-section br-vending');
+    const packed = VENDING_ITEMS.filter((item) => career.bag[item.id] > 0).map((item) => item.name);
+    vending.append(
+      el('h3', 'br-heading', 'Vending machine'),
+      el('p', 'br-note', packed.length > 0 ? `Packed for your next shift: ${packed.join(', ')}.` : 'Snacks for one night. Buy them now; you eat one of each on your next shift.'),
+    );
+    const snacks = el('div', 'br-locker-grid');
+    for (const item of VENDING_ITEMS) snacks.append(this.vendingCard(career, item.id));
+    vending.append(snacks);
+
     const wall = el('section', 'br-section br-wall');
     wall.append(this.plaque(career.wall[0] ?? null));
     const photos = el('div', 'br-photos');
@@ -167,7 +188,7 @@ export class BreakRoomPanel {
     fusions.append(list);
 
     const left = el('div', 'br-column');
-    left.append(perks, locker, fusions);
+    left.append(perks, locker, vending, fusions);
     this.body.replaceChildren(left, wall, stats);
   }
 
@@ -231,6 +252,27 @@ export class BreakRoomPanel {
       });
     }
     card.append(img(ITEM_ICON(itemId), 'br-item-icon'), text, button);
+    return card;
+  }
+
+  private vendingCard(career: Career, id: VendingId): HTMLElement {
+    const item = VENDING_ITEMS.find((candidate) => candidate.id === id)!;
+    const inBag = career.bag[id];
+    const card = el('article', `br-item${inBag > 0 ? ' is-equipped' : ''}`);
+    card.dataset.vending = id;
+    const text = el('div', 'br-card-text');
+    text.append(el('h4', 'br-card-title', inBag > 0 ? `${item.name} x${inBag}` : item.name), el('p', 'br-card-blurb', item.blurb));
+    const button = el('button', 'br-buy');
+    button.type = 'button';
+    button.append('Buy · ', stubs(item.cost));
+    button.disabled = career.stubs < item.cost;
+    button.setAttribute('aria-label', `Buy a ${item.name} for ${item.cost} pay stubs`);
+    button.addEventListener('click', () => {
+      const result = buyVending(this.store.load(), id);
+      if (result.ok) this.commit(result.career, `${item.name} is in your bag for the next shift.`);
+      else this.status.textContent = result.reason;
+    });
+    card.append(img(VENDING_ICON(id), 'br-item-icon'), text, button);
     return card;
   }
 

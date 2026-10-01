@@ -73,6 +73,11 @@ import type {
   MvpInteraction,
   MvpRunState,
 } from './types';
+import { spendCharge } from './perks';
+
+/** Second Wind: one heart, and two seconds to get clear. */
+export const SECOND_WIND_HEALTH = 2;
+const SECOND_WIND_INVULNERABILITY = 120;
 
 const NOTHING_NEARBY_LABEL = 'Nothing to interact with here.';
 
@@ -468,6 +473,12 @@ function bossDefeated(state: MvpRunState): boolean {
 }
 
 function evaluateTerminal(state: MvpRunState): void {
+  // Second Wind (a Break Room perk): the first fatal hit of the night leaves one heart.
+  if (state.room.combat.player.health <= 0 && state.status === 'playing' && spendCharge(state, 'secondWinds')) {
+    state.room.combat.player.health = SECOND_WIND_HEALTH;
+    state.room.combat.player.invulnerableTicks = SECOND_WIND_INVULNERABILITY;
+    publishRunFeedback(state, 'SECOND WIND! Back on your feet with one heart.');
+  }
   if (state.room.combat.player.health <= 0) {
     if (state.status === 'playing') {
       publishSummary(state, 'dead');

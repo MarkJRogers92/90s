@@ -7,6 +7,13 @@ opening-only slice plus gray vector rooms. Baseline for comparison:
 `codex/presentation-3quarter` (unchanged). Full write-up and the extension
 playbook: [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md).
 
+Round 49 (2026-10-01): a much bigger Break Room. Six new perks (Lookout,
+Deep Pockets, Employee Discount, Bench Technician, Lucky Penny, Second
+Wind), six more locker weapons (10), and a vending machine of one-night
+snacks (Energy Drink, Lunch Money, Fusion Coupon, Fake Mustache) eaten on
+the next shift. 1115 unit tests; browser 75/76 with 1 load timeout that
+passes serially; see TEST_EVIDENCE.md round 49.
+
 Round 48 (2026-10-01): the owner's queue. First wings hang their own
 back-wall signs; 17 more signature pairs give every store three or more, so
 recipe hints change night to night; and the Mall Walker (new PixelLab
