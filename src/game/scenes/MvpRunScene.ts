@@ -1026,21 +1026,33 @@ export class MvpRunScene extends Phaser.Scene {
     }
     if (fixture === 'mvp-store') {
       // Inside the named store (&store=arcade-annex etc.), when this mall has it.
-      const wanted = new URLSearchParams(window.location.search).get('store');
+      // &floor=N climbs first; &at=<item id> stands at that shelf item (round 44).
+      const params = new URLSearchParams(window.location.search);
+      const wanted = params.get('store');
+      let run = state;
+      for (let floor = 1; floor < Number(params.get('floor') ?? 1) && floor < FINAL_FLOOR; floor += 1) {
+        run.status = 'won';
+        run = ascend(run);
+      }
       let guard = 0;
       while (guard < 10) {
         guard += 1;
-        const shops = roomStores(state.wing.rooms[state.roomIndex]!);
+        const shops = roomStores(run.wing.rooms[run.roomIndex]!);
         const index = shops.findIndex((shop) => shop.templateId === wanted);
         if (index >= 0) {
-          enterStore(state, index);
+          enterStore(run, index);
           break;
         }
-        state.room.combat.enemies = [];
-        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
-        if (!enterDoorway(state, 'east').accepted) break;
+        run.room.combat.enemies = [];
+        tickMvpRun(run, { moveX: 0, moveY: 0, aimX: run.room.combat.player.x, aimY: run.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(run, 'east').accepted) break;
       }
-      return state;
+      const at = run.wing.rooms[run.roomIndex]!.offers.find((offer) => offer.storeId === wanted && offer.itemDefinitionId === params.get('at'));
+      if (at) {
+        run.room.combat.player.x = at.position.x;
+        run.room.combat.player.y = at.position.y + 20;
+      }
+      return run;
     }
     if (fixture === 'mvp-store-front') {
       // On the first storefront's concourse, between its two shop doors.

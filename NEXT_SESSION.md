@@ -33,6 +33,12 @@ twists, sell and drop, reduced flashing). What is left:
 2. Playtest rounds 32-37 (questions below) and tune.
 2b. ~~Browser gate flake~~ (fixed, round 41).
 
+## Round 44 playtest questions
+
+- Does the pink pair line and the 25% off get you to buy both halves?
+- Do you save up for (or steal) the floor 3-4 rare? Is $45 right?
+- Is a stub per $20 at clock-out a reason not to spend, or a nice bonus?
+
 ## Round 43 playtest questions
 
 - Do you chase signature pairs now? The log's recipe hints show `tookBoth`

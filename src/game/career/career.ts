@@ -112,12 +112,17 @@ export type ShiftResult = {
   readonly mall: number;
   /** Wanted stars the shift ended with; each pays a stub. Absent means none. */
   readonly wanted?: number;
+  /** Cash the shift ended with; a clock-out turns it into stubs. Absent means none. */
+  readonly cash?: number;
   /** Hybrids the shift ended holding, by definition id. */
   readonly fusions?: readonly string[];
 };
 
 export type PayLine = { readonly label: string; readonly amount: number };
 export type Pay = { readonly total: number; readonly lines: readonly PayLine[] };
+
+/** Round 44: clocking out pays a stub for every this-many dollars left in hand. */
+export const LEFTOVER_CASH_PER_STUB = 20;
 
 export function stubsForShift(result: ShiftResult): Pay {
   const lines: PayLine[] = [{ label: 'SHIFT PAY', amount: 2 }];
@@ -127,6 +132,8 @@ export function stubsForShift(result: ShiftResult): Pay {
   if (result.floorTwoCleared === true || result.won) lines.push({ label: 'FLOOR 2 CLEARED', amount: 9 });
   if (result.floorThreeCleared === true || result.won) lines.push({ label: 'FLOOR 3 CLEARED', amount: 12 });
   if (result.won) lines.push({ label: 'CLOCKED OUT', amount: 14 });
+  const leftover = result.won ? Math.floor(Math.max(0, result.cash ?? 0) / LEFTOVER_CASH_PER_STUB) : 0;
+  if (leftover > 0) lines.push({ label: 'LEFTOVER CASH', amount: leftover });
   const wanted = Math.max(0, Math.min(5, Math.trunc(result.wanted ?? 0)));
   if (wanted > 0) lines.push({ label: 'FIVE-FINGER BONUS', amount: wanted });
   return { total: lines.reduce((sum, line) => sum + line.amount, 0), lines };

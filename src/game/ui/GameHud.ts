@@ -557,7 +557,8 @@ export class GameHud {
    */
   private drawOfferCard(prompt: NonNullable<GameHudModel['prompt']>, detail: HudOfferDetail, playerLow: boolean): void {
     const width = 560;
-    const height = 104;
+    // A recipe-hint half gets one more line: what the pair makes.
+    const height = detail.pair ? 122 : 104;
     const x = Math.round((SCREEN_W - width) / 2);
     // Never cover the shelf the janitor is standing at: flip to the top when
     // they are in the lower half of the room.
@@ -583,6 +584,8 @@ export class GameHud {
       cx += entry.action.length * 12 + 18;
     });
     this.text('prompt-note', detail.note, tx, y + 80, detail.canBuy ? '#ffb040' : '#ff5a6a', 1);
+    if (detail.pair) this.text('prompt-pair', detail.pair, tx, y + 98, '#ff3fc8', 1);
+    else this.labels.get('prompt-pair')?.setVisible(false);
   }
 
   private mannequinHintShown = false;

@@ -131,12 +131,26 @@ export function runCarryLimit(state: MvpRunState): number {
 }
 
 /** The discounted price of one authored offer, never below the floor. */
+/**
+ * The pair deal (round 44): the second half of a recipe-hint pair is a quarter
+ * off once the janitor holds the first, unfused, so committing to a signature
+ * is cheaper than impulse-buying.
+ */
+export const PAIR_DEAL_SCALE = 0.75;
+
+/** Whether the janitor holds this offer's signature partner as a plain item. */
+export function holdsPairPartner(state: MvpRunState, offer: WingOffer): boolean {
+  return offer.pairedWith !== undefined
+    && state.inventory.inventory.some((node) => node.kind === 'leaf' && node.itemDefinitionId === offer.pairedWith);
+}
+
 export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
   // A wanted janitor pays a surcharge: two dollars a star.
   const price = offer.price + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state);
   // BLUE LIGHT SPECIAL: this shift's one half-price item.
   const special = blueLightOfferId(state) === offer.id;
-  return Math.max(RUN_PRICE_FLOOR, special ? Math.ceil(price / 2) : price);
+  const shelf = special ? Math.ceil(price / 2) : price;
+  return Math.max(RUN_PRICE_FLOOR, holdsPairPartner(state, offer) ? Math.ceil(shelf * PAIR_DEAL_SCALE) : shelf);
 }
 
 /**

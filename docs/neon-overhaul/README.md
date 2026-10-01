@@ -1105,7 +1105,30 @@ recipe hints were followed. Now (`sim/fusion/hybrid.ts`):
   sits in the top-left spot; names go to MK V.
 - The bench card leads with SIGNATURE: +50% DAMAGE, 20% FASTER, ROOM FOR A 5TH
   PART; a fusion holding a signature glows hot pink (`fusedIcon.ts`).
-- Still to do (pieces 2 and 3 of the plan): the shelf card naming the pair's
-  payoff and a discount on the second half; Lost & Found rares and cash to
-  stubs.
+- Pieces 2 and 3 of the plan landed in round 44.
+
+## Round 44: shelf deals and late-game money (playtest 2026-09-30)
+
+0 of 8 recipe hints were followed, 13 items were bought by floor 3, and one
+Roof run visited no store at all.
+
+- **The pair deal** (`economy.ts`): `runOfferPrice` takes `PAIR_DEAL_SCALE`
+  (x0.75, rounded up, after the Blue Light half) off a recipe-hint half when
+  the janitor `holdsPairPartner` as a plain, unfused item.
+- **The store card** (`gameHudModel.ts` `pairLine`, drawn by `GameHud`): a
+  recipe-hint half gets a pink line, PAIRS WITH <PARTNER> -> <SIGNATURE>:
+  +50% DMG, and - 25% OFF once the deal applies (`signatureName` in
+  `hybrid.ts`).
+- **Rares on the shelves** (`storeInterior.ts` `shelveRare`): on floors whose
+  `FloorSpec.rareOnShelf` (3 and 4), one seeded store swaps its last
+  non-hint offer for a seeded rare at `RARE_SHELF_PRICE` ($45). It buys,
+  steals and checkpoints like any shelf item, so it is also a heist target.
+  (Planned as a Bench Warrant "Lost & Found"; a shelf item reused every
+  existing system.)
+- **Leftover cash** (`career.ts`): a clock-out pays LEFTOVER CASH, a stub for
+  every `LEFTOVER_CASH_PER_STUB` ($20) in hand.
+- **Fixture**: `?fixture=mvp-store&store=<id>` takes `&floor=N` (climb
+  first) and `&at=<item id>` (stand at that shelf item), e.g.
+  `store=spiral-records&at=record_toss&seed=1` for a pair card,
+  `store=mall-mart&at=trapper_keeper&floor=3&seed=7` for a rare.
 

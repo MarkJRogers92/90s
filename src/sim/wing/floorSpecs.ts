@@ -32,6 +32,8 @@ export type FloorSpec = {
    * damage a fight.
    */
   readonly enemyHealthScale: number;
+  /** One store on this floor shelves a rare (round 44: late cash needs a target). */
+  readonly rareOnShelf: boolean;
   /** Every fight at its variant's maximum count instead of a drawn one. */
   readonly fullStrength: boolean;
   /**
@@ -49,6 +51,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: ROOM_NAMES,
     bossKind: 'lp_manager',
     enemyHealthScale: 1,
+    rareOnShelf: false,
     fullStrength: false,
     enemyKind: (kind) => kind,
     seedFrom: (seed) => seed,
@@ -58,6 +61,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: FLOOR_TWO_ROOM_NAMES,
     bossKind: 'manager',
     enemyHealthScale: 1.15,
+    rareOnShelf: false,
     fullStrength: true,
     enemyKind: (kind, rng) => {
       const roll = nextInt(rng, 0, 99);
@@ -72,6 +76,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: FLOOR_THREE_ROOM_NAMES,
     bossKind: 'owner',
     enemyHealthScale: 1.3,
+    rareOnShelf: true,
     fullStrength: true,
     enemyKind: (kind, rng) => {
       const roll = nextInt(rng, 0, 99);
@@ -86,6 +91,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: ROOF_ROOM_NAMES,
     bossKind: 'developer',
     enemyHealthScale: 1.5,
+    rareOnShelf: true,
     fullStrength: true,
     enemyKind: (kind, rng) => {
       const roll = nextInt(rng, 0, 99);

@@ -30,6 +30,8 @@ import { DOORWAY_WIDTH, STORE_TEMPLATES, WALL_THICKNESS, type AuthoredStoreTempl
 import { publishRunFeedback } from './economy';
 import { pairUpStock } from './recipeHints';
 import type { MvpCommandResult, MvpRunState } from './types';
+import { RARE_ROSTER } from '../items/storeRoster';
+import { floorSpec } from '../wing/floorSpecs';
 
 /**
  * The store floor inside: wall to wall, and down to a front wall that clears
@@ -164,6 +166,32 @@ function instantiate(template: AuthoredStoreTemplate, seed: number): { store: Wi
  * shop from the templates the wing left unused, and every shop scaled to a
  * full-room interior.
  */
+/** What a rare costs on the shelf: late-floor cash finally has a target. */
+export const RARE_SHELF_PRICE = 45;
+
+/**
+ * Floors with `rareOnShelf`: one store, picked by the seed, swaps its last
+ * offer that is not a recipe-hint half for a seeded rare at RARE_SHELF_PRICE.
+ * It buys, steals and checkpoints like any other shelf item.
+ */
+function shelveRare(rooms: WingRoomDefinition[], seed: number): WingRoomDefinition[] {
+  const stores = rooms.flatMap((room, roomIndex) => (room.stores ?? []).map((store) => ({ roomIndex, storeId: store.templateId })));
+  if (stores.length === 0) return rooms;
+  const pick = stores[hash(seed, 'rare-store') % stores.length]!;
+  const rare = RARE_ROSTER[hash(seed, 'rare-item') % RARE_ROSTER.length]!.definition;
+  return rooms.map((room, roomIndex) => {
+    if (roomIndex !== pick.roomIndex) return room;
+    const index = room.offers.map((offer, at) => ({ offer, at })).filter(({ offer }) => offer.storeId === pick.storeId && !offer.pairedWith).at(-1)?.at;
+    if (index === undefined) return room;
+    const replaced = room.offers[index]!;
+    const offers = [...room.offers];
+    offers[index] = { id: `${replaced.storeId}-${rare.id}`, storeId: replaced.storeId, itemDefinitionId: rare.id, position: { ...replaced.position }, price: RARE_SHELF_PRICE };
+    const stores = room.stores?.map((store) => (store.templateId === pick.storeId ? { ...store, offerIds: store.offerIds.map((id) => (id === replaced.id ? offers[index]!.id : id)) } : store));
+    const store = room.store && room.store.templateId === pick.storeId ? stores?.find((candidate) => candidate.templateId === pick.storeId) ?? room.store : room.store;
+    return { ...room, offers, ...(stores ? { stores } : {}), store };
+  });
+}
+
 export function generateRunWing(seed: number, floor: FloorNumber = 1): GeneratedWing {
   const wing = generateWing(seed, floor);
   const used = new Set(wing.rooms.flatMap((room) => (room.store ? [room.store.templateId] : [])));
@@ -189,7 +217,7 @@ export function generateRunWing(seed: number, floor: FloorNumber = 1): Generated
       offers: [...first.offers, ...second.offers],
     };
   });
-  return { ...wing, rooms };
+  return { ...wing, rooms: floorSpec(floor).rareOnShelf ? shelveRare(rooms, seed) : rooms };
 }
 
 /** The walls of a store's inside: everything but its floor, with a gap for the door. */
