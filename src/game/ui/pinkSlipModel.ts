@@ -55,6 +55,8 @@ const REASONS: Record<DamageSource, string> = {
   slam: 'DISRESPECTING LOSS PREVENTION',
   bossShot: 'DISRESPECTING LOSS PREVENTION',
   stalker: 'WRITTEN UP ONE TIME TOO MANY',
+  roofer: 'TARRED ON THE ROOF',
+  barrage: 'BURIED IN HOT TAR',
   other: 'GENERAL POOR ATTITUDE',
 };
 

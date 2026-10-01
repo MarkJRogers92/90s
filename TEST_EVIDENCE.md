@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-10-01 — round 42: a harder finale, tar in the log
+
+- `roof-tuning` (4 tests, run red first): a Roofer bucket and the Developer
+  barrage are logged as their own sources (the finishing blow alone stays
+  `other`); floor health scales are non-decreasing with the Roof highest, and
+  a Roof monster has `round(ground x 1.5)` health; the Developer has at least
+  the Owner's health + 100; he throws a barrage in phase one.
+- Changed on purpose: `developer.test.ts` (barrage counts per phase, phase one
+  now throws), the browser spec's Developer bar reads HP 340/340.
+- `npx tsc --noEmit` clean; `npx vitest run` 1059 passed; build clean; full
+  browser suite on 4 workers 76 passed.
+- Not measured: the new fight length. At the playtest's damage rate, 340 hp
+  scales the ~20 s fight to ~28 s before the extra phase-one barrages.
+
 ## 2026-09-30 — round 41: flaky tests and save validation
 
 - Flake: `night-shift` "sorts the player and carrier by their own feet"

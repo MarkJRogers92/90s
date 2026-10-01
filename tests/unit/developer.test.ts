@@ -34,7 +34,7 @@ describe('the Developer (Floor 4 boss)', () => {
     state.enemies = [winding(phaseTwoHealth, 1)];
     tickRun(state, frame());
     const strikes = state.enemies[0]!.tarStrikes!;
-    expect(strikes).toHaveLength(barrage.countPhase2);
+    expect(strikes).toHaveLength(barrage.counts[1]);
     expect(strikes[0]).toMatchObject({ x: state.player.x, y: state.player.y });
     for (const strike of strikes.slice(1)) {
       expect(Math.hypot(strike.x - state.player.x, strike.y - state.player.y)).toBeCloseTo(barrage.spread, 0);
@@ -42,7 +42,7 @@ describe('the Developer (Floor 4 boss)', () => {
     // The buckets land together: one splash on the janitor, a puddle per ring.
     advance(state, frame(), barrage.lobTicks + 1);
     expect(state.enemies[0]!.tarStrikes ?? []).toHaveLength(0);
-    expect(state.tar).toHaveLength(barrage.countPhase2);
+    expect(state.tar).toHaveLength(barrage.counts[1]);
     expect(state.player.health).toBe(5);
   });
 
@@ -50,14 +50,14 @@ describe('the Developer (Floor 4 boss)', () => {
     const state = emptyFixture();
     state.enemies = [winding(phaseThreeHealth, 1)];
     tickRun(state, frame());
-    expect(state.enemies[0]!.tarStrikes).toHaveLength(barrage.countPhase3);
+    expect(state.enemies[0]!.tarStrikes).toHaveLength(barrage.counts[2]);
   });
 
-  it('phase one only slams, and the barrage alternates with the slam', () => {
+  it('the barrage alternates with the slam (from phase one since the 2026-09-30 playtest)', () => {
     const early = emptyFixture();
     early.enemies = [winding(config.maxHealth, 1)];
     tickRun(early, frame());
-    expect(early.enemies[0]!.tarStrikes ?? []).toHaveLength(0);
+    expect(early.enemies[0]!.tarStrikes ?? []).toHaveLength(barrage.counts[0]);
 
     const even = emptyFixture();
     even.enemies = [winding(phaseTwoHealth, 2)];

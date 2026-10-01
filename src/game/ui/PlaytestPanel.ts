@@ -18,6 +18,8 @@ const SOURCE_NAMES: Record<DamageSource, string> = {
   slam: 'Boss slam',
   bossShot: 'Boss volley',
   stalker: 'Loss Prevention write-up',
+  roofer: 'Roofer tar bucket',
+  barrage: 'Developer tar barrage',
   other: 'Other',
 };
 
