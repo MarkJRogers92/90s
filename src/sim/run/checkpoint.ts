@@ -50,6 +50,8 @@ export type MvpCheckpoint = {
   readonly seed: number;
   /** Present only on the upper level; older saves are floor 1. */
   readonly floor?: Exclude<FloorNumber, 1>;
+  /** 1: on the floor's first wing (round 45). Absent: the boss wing. */
+  readonly part?: 1;
   readonly roomIndex: number;
   readonly tick: number;
   readonly cash: number;
@@ -115,6 +117,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
     version: MVP_CHECKPOINT_VERSION,
     seed: state.seed,
     ...(state.wing.floor !== undefined ? { floor: state.wing.floor } : {}),
+    ...(state.wing.part === 1 ? { part: 1 as const } : {}),
     roomIndex: state.roomIndex,
     tick: state.tick,
     cash: state.cash,
@@ -233,9 +236,13 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     return fail(`Checkpoint floor must be 2 to ${FINAL_FLOOR} when present.`);
   }
   const floor: FloorNumber = isFloorNumber(value.floor) ? value.floor : 1;
+  if (value.part !== undefined && value.part !== 1) {
+    return fail('Checkpoint part must be 1 when present.');
+  }
+  const part = value.part === 1 ? (1 as const) : undefined;
   let wing: GeneratedWing;
   try {
-    wing = generateRunWing(seed, floor);
+    wing = generateRunWing(seed, floor, part);
   } catch {
     return fail(`Seed ${String(seed)} does not generate a valid wing.`);
   }
@@ -389,6 +396,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
       version: MVP_CHECKPOINT_VERSION,
       seed,
       ...(floor === 1 ? {} : { floor }),
+      ...(part === 1 ? { part } : {}),
       roomIndex,
       tick,
       cash,
@@ -411,7 +419,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
  * never restored; only run-level state comes out of the checkpoint.
  */
 export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
-  const wing = generateRunWing(checkpoint.seed, checkpoint.floor ?? 1);
+  const wing = generateRunWing(checkpoint.seed, checkpoint.floor ?? 1, checkpoint.part);
   const room = wing.rooms[checkpoint.roomIndex];
   if (!room) {
     throw new Error(`Checkpoint room index ${String(checkpoint.roomIndex)} is out of range.`);

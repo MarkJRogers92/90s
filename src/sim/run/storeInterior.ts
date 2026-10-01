@@ -192,8 +192,8 @@ function shelveRare(rooms: WingRoomDefinition[], seed: number): WingRoomDefiniti
   });
 }
 
-export function generateRunWing(seed: number, floor: FloorNumber = 1): GeneratedWing {
-  const wing = generateWing(seed, floor);
+export function generateRunWing(seed: number, floor: FloorNumber = 1, part?: 1): GeneratedWing {
+  const wing = generateWing(seed, floor, part);
   const used = new Set(wing.rooms.flatMap((room) => (room.store ? [room.store.templateId] : [])));
   const spare = STORE_TEMPLATES
     .filter((template) => !used.has(template.id))
@@ -217,7 +217,8 @@ export function generateRunWing(seed: number, floor: FloorNumber = 1): Generated
       offers: [...first.offers, ...second.offers],
     };
   });
-  return { ...wing, rooms: floorSpec(floor).rareOnShelf ? shelveRare(rooms, seed) : rooms };
+  // One rare a floor, in the boss wing's stores.
+  return { ...wing, rooms: floorSpec(floor).rareOnShelf && part !== 1 ? shelveRare(rooms, seed) : rooms };
 }
 
 /** The walls of a store's inside: everything but its floor, with a gap for the door. */

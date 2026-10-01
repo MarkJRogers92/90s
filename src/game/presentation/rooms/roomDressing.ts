@@ -1063,11 +1063,13 @@ const FLOOR_DRESSING: Readonly<Record<FloorNumber, (plan: DressingPlan, room: Wi
   4: (plan, room) => roofFloor(plan, room),
 };
 
-export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null): DressingPlan {
+export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1): DressingPlan {
   // A shop looks like itself on any floor.
   const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
   if (shop) return storeInterior(room, shop);
-  return FLOOR_DRESSING[floor](planFloorOneRoom(room), room);
+  const plan = FLOOR_DRESSING[floor](planFloorOneRoom(room), room);
+  // A first wing (round 45) dresses like its floor but titles each room by the wing's own names.
+  return part === 1 ? { ...plan, areaName: room.name.toUpperCase() } : plan;
 }
 
 function planFloorOneRoom(room: WingRoomDefinition): DressingPlan {

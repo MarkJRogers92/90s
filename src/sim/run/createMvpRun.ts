@@ -31,13 +31,14 @@ export type FloorCarry = {
   readonly heat?: number;
 };
 
-export function createMvpRun(seed: number, options: { readonly floor?: FloorNumber; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
+/** `part: 1` starts a floor's first wing (round 45); without it, the floor's boss wing. */
+export function createMvpRun(seed: number, options: { readonly floor?: FloorNumber; readonly part?: 1; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
   // The wing RNG requires an integer, so a non-integer finite seed is
   // truncated and anything else becomes 0, exactly as the title screen already
   // sanitizes the URL seed.
   const runSeed = Number.isFinite(seed) ? Math.trunc(seed) : 0;
   const floor = options.floor ?? 1;
-  const wing = generateRunWing(runSeed, floor);
+  const wing = generateRunWing(runSeed, floor, options.part);
   const perks = sanitizePerks(options.perks);
 
   const mop: InventoryLeaf = {

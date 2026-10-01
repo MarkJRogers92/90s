@@ -190,6 +190,7 @@ function chooseCombatSpawns(
   rng: ReturnType<typeof createWingRng>,
   variant: AuthoredRoomVariant,
   floor: FloorNumber = 1,
+  fullStrength = floorSpec(floor).fullStrength,
 ): WingEnemySpawn[] {
   const drawn = nextInt(
     rng,
@@ -197,7 +198,7 @@ function chooseCombatSpawns(
     variant.enemyCount.max,
   );
   // Upstairs every fight is at full strength.
-  const count = floorSpec(floor).fullStrength ? variant.enemyCount.max : drawn;
+  const count = fullStrength ? variant.enemyCount.max : drawn;
   if (count === 0) {
     return [];
   }
@@ -289,9 +290,11 @@ function storefrontRoom(
   };
 }
 
-export function generateWing(seed: number, floor: FloorNumber = 1): GeneratedWing {
+/** `part` 1 is the floor's first wing (round 45): its own names, drawn fight sizes, a Lockdown at the end. */
+export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): GeneratedWing {
   const rng = createWingRng(seed);
-  roomNames = floorSpec(floor).roomNames;
+  roomNames = part === 1 ? floorSpec(floor).firstWingNames : floorSpec(floor).roomNames;
+  const fullStrength = part !== 1 && floorSpec(floor).fullStrength;
 
   const combatVariants = new Map<CombatRoomRole, AuthoredRoomVariant>();
   for (const role of COMBAT_ROOM_ROLES) {
@@ -324,7 +327,7 @@ export function generateWing(seed: number, floor: FloorNumber = 1): GeneratedWin
   for (const role of REGULAR_COMBAT_ROOM_ROLES) {
     combatSpawns.set(
       role,
-      chooseCombatSpawns(rng, combatVariants.get(role)!, floor),
+      chooseCombatSpawns(rng, combatVariants.get(role)!, floor, fullStrength),
     );
   }
 
@@ -398,6 +401,7 @@ export function generateWing(seed: number, floor: FloorNumber = 1): GeneratedWin
   const wing: GeneratedWing = freezeDeep({
     seed,
     ...(floor === 1 ? {} : { floor }),
+    ...(part === 1 ? { part } : {}),
     rooms,
     startingCash: STARTING_CASH,
   });

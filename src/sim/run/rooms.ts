@@ -29,6 +29,8 @@ import { STATIC_DRIFT_TICKS, STATIC_HEALTH, STATIC_RADIUS } from '../combat/stat
 import { SHOPPER_HEALTH, SHOPPER_RADIUS } from '../combat/shopper';
 import { MASCOT_HEALTH, MASCOT_RADIUS } from '../combat/mascot';
 import { ROOFER_HEALTH, ROOFER_RADIUS } from '../combat/roofer';
+import { LOCKDOWN_SIZE } from '../wing/floorSpecs';
+import { createWingRng } from '../wing/rng';
 
 /** The M1 player and enemy stats, reused unchanged by every M5 room. */
 export const PLAYER_MAX_HEALTH = 6;
@@ -99,6 +101,29 @@ function spawnMannequin(id: number, x: number, y: number): EnemyState {
     telegraphAimY: 0,
     statuses: createEnemyStatusState(),
   };
+}
+
+/**
+ * The Lockdown (round 45): LOCKDOWN_SIZE elites of the floor's own mix in a
+ * ring around the room's anchor, pulled in from any wall. Seeded by the wing.
+ */
+function lockdownWave(wing: GeneratedWing, room: WingRoomDefinition, firstId: number): EnemyState[] {
+  const anchor = room.bossAnchor!;
+  const floor = floorSpec(floorNumberOf(wing));
+  const rng = createWingRng(wing.seed ^ 0x10cd0);
+  return Array.from({ length: LOCKDOWN_SIZE }, (_, index) => {
+    const kind = floor.enemyKind(index % 2 === 0 ? 'hanger' : 'spitter', rng);
+    const angle = (index / LOCKDOWN_SIZE) * Math.PI * 2;
+    let reach = 150;
+    let x = anchor.x;
+    let y = anchor.y;
+    for (; reach > 0; reach -= 25) {
+      x = Math.max(40, Math.min(PLAYFIELD_WIDTH - 40, anchor.x + Math.cos(angle) * reach));
+      y = Math.max(40, Math.min(PLAYFIELD_HEIGHT - 40, anchor.y + Math.sin(angle) * reach * 0.7));
+      if (!room.walls.some((wall) => circleIntersectsRect(x, y, 24, wall))) break;
+    }
+    return spawnEnemy({ slotId: `lockdown-${index}`, kind, x, y }, firstId + index, true, floor.enemyHealthScale);
+  });
 }
 
 /** What mall security sends: display Mannequins and rabid Bargain Hunters. */
@@ -225,7 +250,10 @@ export function buildRoomCombatState(
   const enemies = room.enemySpawns.map((spawn, index) =>
     spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE, floor.enemyHealthScale),
   );
-  if (room.bossAnchor) {
+  if (room.bossAnchor && wing.part === 1) {
+    // A first wing ends in the Lockdown: a ring of elites instead of the boss.
+    enemies.push(...lockdownWave(wing, room, enemies.length + 1));
+  } else if (room.bossAnchor) {
     // Each floor's own boss (the floor table), at its own config's health.
     enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, floor.bossKind));
   }

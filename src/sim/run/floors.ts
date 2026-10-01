@@ -11,7 +11,7 @@ import { cloneFusionInventory } from './checkpoint';
 import { refreshRunLoadout } from './loadout';
 import { syncRunCarrier } from './carrier';
 import type { MvpRunState } from './types';
-import { FINAL_FLOOR, floorNumberOf, floorSpec, type FloorNumber } from '../wing/floorSpecs';
+import { FINAL_FLOOR, bossWingSeed, floorNumberOf, floorSpec, type FloorNumber } from '../wing/floorSpecs';
 
 /** The upper level's wing seed for a night that started on `seed`. */
 export function floorTwoSeed(seed: number): number {
@@ -28,16 +28,28 @@ export function floorOf(state: Pick<MvpRunState, 'wing'>): FloorNumber {
   return floorNumberOf(state.wing);
 }
 
+/** Whether a won wing leads on: a first wing to its boss wing, a boss wing up a floor. */
 export function canAscend(state: MvpRunState): boolean {
-  return state.status === 'won' && floorOf(state) < FINAL_FLOOR;
+  return state.status === 'won' && (state.wing.part === 1 || floorOf(state) < FINAL_FLOOR);
 }
 
-/** Up one floor: the next wing, carrying gear, cash, stats and perks. */
+/** True when the next wing is the same floor's boss wing (the stairs, not the escalator). */
+export function nextIsBossWing(state: MvpRunState): boolean {
+  return state.wing.part === 1;
+}
+
+/**
+ * On to the next wing, carrying gear, cash, stats and perks: a first wing's
+ * stairs lead to the same floor's boss wing, a boss wing's escalator to the
+ * next floor's first wing (round 45).
+ */
 export function ascend(state: MvpRunState): MvpRunState {
   if (!canAscend(state)) throw new Error('The escalator only opens after a floor boss falls.');
-  const floor = (floorOf(state) + 1) as FloorNumber;
-  const next = createMvpRun(floorSpec(floor).seedFrom(state.seed), {
+  const sameFloor = nextIsBossWing(state);
+  const floor = (sameFloor ? floorOf(state) : floorOf(state) + 1) as FloorNumber;
+  const next = createMvpRun(sameFloor ? bossWingSeed(state.seed) : floorSpec(floor).seedFrom(state.seed), {
     floor,
+    ...(sameFloor ? {} : { part: 1 as const }),
     carry: { inventory: cloneFusionInventory(state.inventory), cash: state.cash, stats: { ...state.stats }, heat: state.heat },
     perks: state.perks,
   });
@@ -46,7 +58,21 @@ export function ascend(state: MvpRunState): MvpRunState {
   return next;
 }
 
+/**
+ * Up to the next floor's boss wing, straight through its first wing: for
+ * fixtures and tests that mean "the floor-N boss" (round 45).
+ */
+export function climbToBossWing(state: MvpRunState): MvpRunState {
+  let next = ascend(state);
+  if (next.wing.part === 1) {
+    next.status = 'won';
+    next = ascend(next);
+  }
+  return next;
+}
+
+/** From a won Floor 1 to Floor 2's boss wing (tests and fixtures). */
 export function ascendToFloorTwo(state: MvpRunState): MvpRunState {
   if (floorOf(state) !== 1) throw new Error('Floor 2 is reached from Floor 1.');
-  return ascend(state);
+  return climbToBossWing(state);
 }

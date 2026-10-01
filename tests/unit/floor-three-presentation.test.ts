@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
-import { ascend, ascendToFloorTwo } from '../../src/sim/run/floors';
+import { ascend, ascendToFloorTwo, climbToBossWing } from '../../src/sim/run/floors';
 import type { EnemyState } from '../../src/sim/model';
 import type { MvpRunState } from '../../src/sim/run/types';
 import { buildShiftCardModel } from '../../src/game/ui/shiftCardModel';
@@ -20,7 +20,7 @@ function topFloor(): MvpRunState {
   one.status = 'won';
   const two = ascendToFloorTwo(one);
   two.status = 'won';
-  return ascend(two);
+  return climbToBossWing(two);
 }
 
 function ended(state: MvpRunState, status: 'won' | 'dead', roomIndex = 5): MvpRunState {
@@ -57,7 +57,8 @@ describe('the shift card on Floor 3', () => {
   it('scores rooms across all three floors', () => {
     const state = ended(topFloor(), 'dead', 2);
     const card = buildShiftCardModel(state)!;
-    const expected = scoreFor({ won: false, roomsReached: 3 + 12, kills: state.stats.kills, bestCombo: state.stats.bestCombo, cash: 40, heat: 0, seconds: 100 });
+    // Since round 45: five six-room wings lie below Floor 3's boss wing.
+    const expected = scoreFor({ won: false, roomsReached: 3 + 30, kills: state.stats.kills, bestCombo: state.stats.bestCombo, cash: 40, heat: 0, seconds: 100 });
     expect(card.score).toBe(expected);
   });
 });

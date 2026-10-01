@@ -33,6 +33,13 @@ twists, sell and drop, reduced flashing). What is left:
 2. Playtest rounds 32-37 (questions below) and tune.
 2b. ~~Browser gate flake~~ (fixed, round 41).
 
+## Round 45 playtest questions
+
+- Does a floor now feel ~1.5x longer, and is that the right length?
+- Is the Lockdown a fair climax (5 elites, the janitor was hit within 1.5 s
+  of entering in a capture)? Too much on the Roof, with x1.5 health?
+- Follow-up: give first wings their own back-wall signs.
+
 ## Round 44 playtest questions
 
 - Does the pink pair line and the 25% off get you to buy both halves?

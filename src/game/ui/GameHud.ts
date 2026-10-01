@@ -663,8 +663,8 @@ export class GameHud {
   /** A short controls card for the first seconds of a shift. */
   private drawControlsCard(state: MvpRunState): void {
     const age = state.tick - (this.shiftStartTick ?? state.tick);
-    // Once per shift: not again at the top of the escalator.
-    if (state.roomIndex !== 0 || state.wing.floor !== undefined || age > 60 * 9) return;
+    // Once per shift: Floor 1's first wing only, not again up the stairs or the escalator.
+    if (state.roomIndex !== 0 || state.wing.floor !== undefined || state.wing.part !== 1 || age > 60 * 9) return;
     const alpha = age > 60 * 8 ? Math.max(0, 1 - (age - 480) / 60) : 1;
     const rows: Array<[string, string]> = [
       ['WASD', 'MOVE'],

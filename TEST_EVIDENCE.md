@@ -1,5 +1,27 @@
 # Test evidence
 
+## 2026-10-01 — round 45: two wings a floor
+
+- `two-wings` (9 tests; the sim and card ones run red first): first wings
+  have their own names and drawn fight sizes; the Lockdown is 5 elites and
+  no boss; it is won only once clear; first wing -> boss wing -> next floor;
+  `part` checkpoints round-trip; the Lockdown card is LOCKDOWN LIFTED with
+  the stairs (the first version showed CLOCKED OUT on the Roof: caught by
+  this test); the HUD and the log are wing-aware (the HUD test was checked
+  by removing the rule and watching it fail).
+- Changed on purpose: escalator tests climb with `climbToBossWing`;
+  `ascendToFloorTwo` now lands on Floor 2's boss wing; the floor-3 score
+  test counts 30 rooms below; Floor 1's boss wing starts in the East
+  Concourse (`wing-generation`).
+- `npx tsc --noEmit` clean; `npx vitest run` 1080 passed; build clean.
+- Browser, under a load average of 20-32: 4 workers 72/76 and 2 workers
+  74/76; every failure (seedless shift, offers, daily death, break-room
+  death, ten restarts) passed when rerun serially (4/4, then 2/2).
+- On screen (`artifacts/neon-overhaul/round45/`): `opening.png` (REACH THE
+  LOCKDOWN 1/6 in the Opening Concourse), `lockdown.png` (Floor 2's Mezzanine
+  Office: the PA's LOCKDOWN line, SURVIVE THE LOCKDOWN, five CLEARANCE
+  elites).
+
 ## 2026-10-01 — round 44: shelf deals and late-game money
 
 - `shelf-deals` (6 tests; the four new rules run red first): the second half

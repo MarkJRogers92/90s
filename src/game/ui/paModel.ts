@@ -83,6 +83,8 @@ export const PA_LINES = {
   boss_floor_three: ['THE OWNER WOULD LIKE A WORD. PLEASE DO NOT REPLY.'],
   boss_floor_four: ['THE DEVELOPER HAS LANDED. THE MALL IS SOLD.'],
   topfloor: ['THE FOOD COURT IS CLOSED. THE MASCOTS ARE NOT.'],
+  lockdown: ['LOCKDOWN IN EFFECT. ALL STAFF REMAIN IN PLACE.'],
+  stairs: ['THIS WAY TO THE REST OF THE FLOOR. NO REFUNDS.'],
   roof: ['WELCOME TO THE ROOF. MIND THE EDGE. AND THE TAR.'],
   upstairs: ['WELCOME TO THE UPPER LEVEL. PLEASE HOLD THE HANDRAIL.'],
   idle: [
@@ -108,6 +110,8 @@ type Snapshot = {
   readonly tick: number;
   readonly seed: number;
   readonly floor: FloorNumber;
+  /** On a floor's first wing (round 45). */
+  readonly firstWing: boolean;
   readonly roomIndex: number;
   readonly health: number;
   readonly stars: number;
@@ -134,6 +138,7 @@ function snapshot(state: MvpRunState): Snapshot {
     tick: state.tick,
     seed: state.seed,
     floor: floorNumberOf(state.wing),
+    firstWing: state.wing.part === 1,
     roomIndex: state.roomIndex,
     health: state.room.combat.player.health,
     stars: wantedStars(state.heat),
@@ -169,14 +174,16 @@ export class PaDirector {
       this.quietStart(current.tick);
       this.lowHealthRoom = -1;
       const welcome = FLOOR_PA[current.floor].arrive;
-      return welcome && current.floor !== previous.floor ? this.say(welcome, current, true) : null;
+      if (welcome && current.floor !== previous.floor) return this.say(welcome, current, true);
+      // Up the stairs from a first wing to the same floor's boss wing.
+      return previous.firstWing && !current.firstWing && current.floor === previous.floor ? this.say('stairs', current, true) : null;
     }
     if (current.alarm && !previous.alarm) return this.say('alarm', current, true);
     if (current.shutter === 'closed' && previous.shutter !== 'closed') return this.say('shutter', current, true);
     if (current.interior && !previous.interior && current.pair) return this.say('recipe', current, true);
     if (current.roomIndex !== previous.roomIndex) {
       const room = state.wing.rooms[current.roomIndex];
-      if (room?.bossAnchor != null) return this.say(FLOOR_PA[current.floor].boss, current, true);
+      if (room?.bossAnchor != null) return this.say(current.firstWing ? 'lockdown' : FLOOR_PA[current.floor].boss, current, true);
       const event = roomEventFor(state, current.roomIndex);
       if (event === 'blackout') return this.say('blackout', current, true);
       if (event === 'blue_light') return this.say('blue_light', current, true);
