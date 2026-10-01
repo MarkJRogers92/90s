@@ -1063,13 +1063,62 @@ const FLOOR_DRESSING: Readonly<Record<FloorNumber, (plan: DressingPlan, room: Wi
   4: (plan, room) => roofFloor(plan, room),
 };
 
+/** A sign's new words: [text, subtitle?]; null leaves that shopfront's sign as it is. */
+type SignWords = readonly [string, string?] | null;
+
+/**
+ * The first wing's back-wall signs, by floor and room, left to right. Only the
+ * words change: the tube colours, shopfronts and light stay the floor's own.
+ */
+const FIRST_WING_SIGNS: Readonly<Record<FloorNumber, Partial<Record<WingRoomDefinition['id'], readonly SignWords[]>>>> = {
+  1: {
+    food_court: [['KIOSK ALLEY', 'CASES - CHARMS - KEYS'], ['PRETZEL CART'], ['EARS PIERCED', 'WHILE U WAIT']],
+    back_hall: [['FREIGHT', 'DOCK 2'], ['RECEIVING'], ['EXIT']],
+    security_office: [['CUSTOMER SERVICE', 'TAKE A NUMBER'], ['LOST & FOUND'], ['NO RETURNS']],
+  },
+  2: {
+    service_corridor: [['MEZZANINE', 'LEVEL 2'], ['SKYBRIDGE', 'WEST'], ['GALLERY', 'THIS WAY']],
+    food_court: [['ART GALLERY', 'FINE PRINTS'], ['FRAMES 4 LESS'], ['POSTER PALACE']],
+    back_hall: [['ELEVATORS', 'OUT OF ORDER'], ['STAIRS'], ['EXIT']],
+    security_office: [['MEZZ OFFICE', 'STAFF ONLY'], ['LOCKDOWN', 'IN EFFECT'], ['NO ENTRY']],
+  },
+  3: {
+    service_corridor: [['SNACK BAR', 'HOT DOGS 99C'], ['NACHOS'], ['SLUSHIES']],
+    food_court: [['BALL PIT', 'SOCKS REQUIRED'], ['PARTY ROOM'], ['PRIZES']],
+    back_hall: [['FREEZER', 'KEEP CLOSED'], ['ICE'], ['EXIT']],
+    security_office: [['WALK-IN', 'KEEP AT 34F'], ['KITCHEN', 'STAFF ONLY'], ['LOCKDOWN']],
+  },
+  4: {
+    service_corridor: [['ROOF ACCESS', 'LADDER'], ['DANGER', 'HIGH VOLTAGE'], ['HARD HATS']],
+    food_court: [['HVAC', 'UNIT 4'], ['DUCT 7'], ['CAUTION', 'HOT AIR']],
+    back_hall: [['GRAVEL', 'MIND THE EDGE'], ['DRAIN'], ['EXIT']],
+    security_office: [['ELEVATOR', 'MACHINE ROOM'], ['AUTHORIZED', 'PERSONNEL'], ['LOCKDOWN']],
+  },
+};
+
+/** The same shopfronts with new words on their signs, in order of the signs present. */
+function relabel(facades: readonly DressingFacade[], words: readonly SignWords[] | undefined): readonly DressingFacade[] {
+  if (!words) return facades;
+  let next = 0;
+  return facades.map((facade) => {
+    if (!facade.sign) return facade;
+    const replacement = words[next];
+    next += 1;
+    if (!replacement) return facade;
+    const [text, subtitle] = replacement;
+    const { subtitle: _old, subtitleColor, ...rest } = facade.sign;
+    return { ...facade, sign: { ...rest, text, ...(subtitle ? { subtitle, ...(subtitleColor ? { subtitleColor } : {}) } : {}) } };
+  });
+}
+
 export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1): DressingPlan {
   // A shop looks like itself on any floor.
   const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
   if (shop) return storeInterior(room, shop);
   const plan = FLOOR_DRESSING[floor](planFloorOneRoom(room), room);
-  // A first wing (round 45) dresses like its floor but titles each room by the wing's own names.
-  return part === 1 ? { ...plan, areaName: room.name.toUpperCase() } : plan;
+  // A first wing (round 45) dresses like its floor but titles each room by the wing's
+  // own names, and (round 48) hangs its own signs on the same shopfronts.
+  return part === 1 ? { ...plan, areaName: room.name.toUpperCase(), facades: relabel(plan.facades, FIRST_WING_SIGNS[floor][room.id]) } : plan;
 }
 
 function planFloorOneRoom(room: WingRoomDefinition): DressingPlan {
