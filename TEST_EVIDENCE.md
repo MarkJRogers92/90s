@@ -1,5 +1,21 @@
 # Test evidence
 
+## 2026-10-01 — round 49: the bigger Break Room
+
+- `break-room-plus` (12; all red first: no new perk fields, then no career
+  exports): each perk's effect in the run, the three charges spent once,
+  checkpoint and clamping, every perk level reaching `perksFor`, the bag
+  eaten one shift at a time, the save repairing nonsense, the clock-in line.
+  The coupon test caught a bug in its own helper (re-buying a sold offer).
+- Changed on purpose: `career` test builds perks from `newCareer().perks`.
+- `npx tsc --noEmit` clean; `npx vitest run` 1115 passed; build clean.
+- Browser (2 workers): 75/76; "offers are identical for one seed" passed
+  serially (it timed out under load in round 47 too).
+- On screen: the Break Room's eleven perk cards, ten locker weapons and the
+  vending machine (a coupon bought shows x1 and the packed line). A 500 in
+  the console came from a mid-edit parse error in `tickMvpRun.ts` at 22:46
+  (the dev server log), fixed before the gate.
+
 ## 2026-10-01 — round 48: first-wing signs, more pairs, the Mall Walker
 
 - Each ran red first: `first-wing-signs` (2: Floor 2's Lockdown said

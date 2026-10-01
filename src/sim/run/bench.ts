@@ -19,6 +19,7 @@ import { refreshRunLoadout } from './loadout';
 import { hasLivingEnemies } from './rooms';
 import type { MvpCommandResult, MvpRunState, MvpWorkbench } from './types';
 import { commitFusion, resolveFusion } from '../fusion/fuse';
+import { perk, spendCharge } from './perks';
 
 function rejected(reason: string): MvpCommandResult {
   return { accepted: false, reason };
@@ -71,6 +72,18 @@ export function previewRunEmitterMount(
 }
 
 /**
+ * Takes a committed fusion's inventory, handing back what the Break Room
+ * covers: a Fusion Coupon pays the whole fee once, else the Bench Technician
+ * refunds up to `fusionRebate`. Returns the dollars refunded.
+ */
+function takeFusion(state: MvpRunState, inventory: MvpRunState['inventory'], fee: number): number {
+  const refund = fee > 0 && spendCharge(state, 'freeFusions') ? fee : Math.min(fee, perk(state, 'fusionRebate'));
+  state.inventory = refund > 0 ? { ...inventory, cash: inventory.cash + refund } : inventory;
+  state.cash = state.inventory.cash;
+  return refund;
+}
+
+/**
  * Fuses two owned run leaves into one Emitter Mount composite.
  *
  * The shared transaction computes and validates the next inventory; the run
@@ -110,8 +123,7 @@ export function commitRunEmitterMount(
     return rejected(committed.message);
   }
 
-  state.inventory = committed.state;
-  state.cash = committed.state.cash;
+  takeFusion(state, committed.state, committed.record.fee);
   // Promote the car here too, so a direct commit agrees with the preview path
   // and an immediate attack fires from the car rather than from the player.
   syncRunCarrier(state);
@@ -244,8 +256,8 @@ export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
     publishRunFeedback(state, committed.message);
     return rejected(committed.message);
   }
-  state.inventory = committed.state;
-  state.cash = committed.state.cash;
+  const fee = committed.record.fee;
+  const refund = takeFusion(state, committed.state, fee);
   state.preview = null;
   state.workbench = null;
   state.paused = false;
@@ -258,7 +270,8 @@ export function confirmRunFusionPreview(state: MvpRunState): MvpCommandResult {
     : `Fused ${preview.primaryName} + ${preview.carrierName} into the ${preview.resultName} for $${committed.record.fee}.`;
   // Hot goods fused into something new can no longer be traced: laundered.
   const laundered = hotBefore - hotItemCount(state);
-  const fullMessage = laundered > 0 ? `${message} Laundered ${laundered === 1 ? 'a hot item' : `${laundered} hot items`}.` : message;
+  const refunded = refund === fee && refund > 0 ? `${message} The coupon covered it.` : refund > 0 ? `${message} $${refund} back from the Bench Technician.` : message;
+  const fullMessage = laundered > 0 ? `${refunded} Laundered ${laundered === 1 ? 'a hot item' : `${laundered} hot items`}.` : refunded;
   publishRunFeedback(state, fullMessage);
   return { accepted: true, message: fullMessage };
 }

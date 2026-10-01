@@ -63,6 +63,9 @@ export function shouldClockIn(start: { readonly reason: ClockInReason; readonly 
   return start.reason !== 'retry' && start.fixture === null && !start.restored;
 }
 
+/** How many benefits the clock-in line names before it counts the rest. */
+export const BENEFITS_SHOWN = 5;
+
 /** The Break Room benefits this shift clocked in with, for the line under the sign. */
 export function benefitsLine(perks: ShiftPerks): string | null {
   const parts: string[] = [];
@@ -73,5 +76,17 @@ export function benefitsLine(perks: ShiftPerks): string | null {
   if (perks.dashCooldownCut > 0) parts.push('NEW SNEAKERS');
   if (perks.tokenMagnet > 0) parts.push('SHOP-VAC');
   if (perks.lockerItemId) parts.push(itemDefinitionName(perks.lockerItemId).toUpperCase());
-  return parts.length === 0 ? null : `BENEFITS: ${parts.join(' - ')}`;
+  // Round 49.
+  if ((perks.secondWinds ?? 0) > 0) parts.push('SECOND WIND');
+  if ((perks.freeFusions ?? 0) > 0) parts.push('FUSION COUPON');
+  if ((perks.quietGrabs ?? 0) > 0) parts.push('FAKE MUSTACHE');
+  if ((perks.alarmBonus ?? 0) > 0) parts.push('LOOKOUT');
+  if ((perks.carryBonus ?? 0) > 0) parts.push('DEEP POCKETS');
+  if ((perks.shelfDiscount ?? 0) > 0) parts.push('DISCOUNT');
+  if ((perks.fusionRebate ?? 0) > 0) parts.push('BENCH TECH');
+  if ((perks.snackBonus ?? 0) > 0) parts.push('LUCKY PENNY');
+  if (parts.length === 0) return null;
+  // The sign has room for about five; the rest are counted.
+  const shown = parts.length > BENEFITS_SHOWN ? [...parts.slice(0, BENEFITS_SHOWN - 1), `+${parts.length - BENEFITS_SHOWN + 1} MORE`] : parts;
+  return `BENEFITS: ${shown.join(' - ')}`;
 }

@@ -16,6 +16,7 @@ import { ELITE_SNACK_CHANCE, ELITE_TOKEN_MULTIPLIER, SNACK_CHANCE, luck } from '
 import { runMaxHealth, tokenMagnetReach } from './perks';
 import type { MvpRunState } from './types';
 import type { FusionInventoryNode } from '../fusion/types';
+import { snackChance } from './perks';
 
 export type MallTokenPickup = {
   readonly id: string;
@@ -76,7 +77,7 @@ export function dropTokensForDeaths(state: MvpRunState, before: readonly EnemyMa
     if (living.has(marker.id)) continue;
     const value = MALL_TOKEN_VALUE[marker.kind] * (marker.elite ? ELITE_TOKEN_MULTIPLIER : 1);
     if (value <= 0) continue;
-    if (luck(state.seed, 'snack', state.tick, marker.id) < (marker.elite ? ELITE_SNACK_CHANCE : SNACK_CHANCE)) {
+    if (luck(state.seed, 'snack', state.tick, marker.id) < snackChance(state, marker.elite === true)) {
       state.room.tokens.push({ id: `snack-${state.tick}-${marker.id}`, kind: 'snack', x: marker.x + 16, y: marker.y + 6, value: 0, droppedTick: state.tick });
     }
     state.room.tokens.push({

@@ -1205,3 +1205,23 @@ A biting Mannequin freezes for `MANNEQUIN_BITE_FREEZE_TICKS` (90) in
   Floor 1-2 regular fights (`rooms.ts`). Log source `walker`; pink slip
   LAPPED BY A MALL WALKER. Sprites: PixelLab character
   `287ef491-a0c0-4326-a4f6-2b5fd114f5db` (64 px standard, 92 px canvas).
+
+## Round 49: a much bigger Break Room
+
+- **Benefits** (`career.ts` `PERKS`, 11): six new ones reach the run as
+  round-49 `ShiftPerks` fields (`perks.ts` `EXTRA_PERK_LIMITS`, read with
+  `perk(state, name)`): LOOKOUT `alarmBonus` (+20 ticks/level), DEEP POCKETS
+  `carryBonus`, EMPLOYEE DISCOUNT `shelfDiscount`, BENCH TECHNICIAN
+  `fusionRebate` (+$2/level, refunded by `takeFusion` in `bench.ts`), LUCKY
+  PENNY `snackBonus` (`snackChance`), SECOND WIND `secondWinds`.
+- **Charges**: `secondWinds`, `freeFusions` and `quietGrabs` are spent with
+  `spendCharge` (death check in `evaluateTerminal`, fusion fees, the first
+  grab in `stealRunOffer`). They live in `state.perks`, so they ride the
+  escalator and the checkpoint as they stand.
+- **Locker**: 10 weapons (`LOCKER_ITEMS`, allow-list `LOCKER_ITEM_IDS`).
+- **Vending machine**: `VENDING_ITEMS` (Energy Drink, Lunch Money, Fusion
+  Coupon, Fake Mustache) go in `career.bag` (max `BAG_LIMIT` each);
+  `clockIn` eats one of each when a shift starts (`MvpRunScene.shiftPerks`).
+  Daily Shifts take nothing.
+- The clock-in card names benefits, five at most (`BENEFITS_SHOWN`).
+- Icons: 10 PixelLab `create_image_pixflux` 48x48 (`perk-*`, `vend-*`).

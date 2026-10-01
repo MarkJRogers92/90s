@@ -157,5 +157,6 @@ export type MvpRunState = {
   /** Loss Prevention on a 4-star janitor's trail (room-local, never checkpointed). */
   stalker: StalkerState | null;
   /** What the janitor's career brought to this shift (checkpointed; rides the escalator). */
-  readonly perks: ShiftPerks;
+  /** Break Room perks; the one-shot charges in it are spent during the night. */
+  perks: ShiftPerks;
 };

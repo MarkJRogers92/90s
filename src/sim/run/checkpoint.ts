@@ -38,7 +38,7 @@ import {
 import type { MvpRoomEntryFrom, MvpRunState } from './types';
 import { createRunStats } from './combo';
 import { wantedStars } from './wanted';
-import { NO_PERKS, hasPerks, sanitizePerks, type ShiftPerks } from './perks';
+import { EXTRA_PERKS, NO_PERKS, hasPerks, sanitizePerks, type ShiftPerks } from './perks';
 
 export const MVP_CHECKPOINT_VERSION = 1;
 
@@ -284,7 +284,8 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     perks = sanitizePerks(raw as Partial<ShiftPerks>);
     // A save that needed clamping was not written by this game. Saves from
     // before New Sneakers and the Shop-Vac simply lack those two fields.
-    if (perks.bonusCash !== raw.bonusCash || perks.bonusHealth !== raw.bonusHealth || perks.clearHealBonus !== raw.clearHealBonus || perks.dashCooldownCut !== (raw.dashCooldownCut ?? 0) || perks.tokenMagnet !== (raw.tokenMagnet ?? 0) || perks.lockerItemId !== raw.lockerItemId) {
+    if (perks.bonusCash !== raw.bonusCash || perks.bonusHealth !== raw.bonusHealth || perks.clearHealBonus !== raw.clearHealBonus || perks.dashCooldownCut !== (raw.dashCooldownCut ?? 0) || perks.tokenMagnet !== (raw.tokenMagnet ?? 0) || perks.lockerItemId !== raw.lockerItemId
+      || EXTRA_PERKS.some((name) => (perks[name] ?? 0) !== (raw[name] ?? 0))) {
       return fail('Checkpoint perks are out of range.');
     }
   }

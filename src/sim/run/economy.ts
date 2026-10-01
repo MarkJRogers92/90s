@@ -26,6 +26,7 @@ import type { MvpCommandResult, MvpRunState } from './types';
 import { blueLightOfferId } from './roomEvents';
 import { CLEARANCE_PRICE_SCALE, wingEventFor } from './wingEvents';
 import { HEAT_PER_STAR, WANTED_SURCHARGE_PER_STAR, applyHeatFloor, getawayBonus, wantedStars } from './wanted';
+import { perk } from './perks';
 
 /**
  * One secured theft is one wanted star. The run's theft no longer mirrors the
@@ -126,7 +127,7 @@ export function runPurchaseDiscount(state: MvpRunState): number {
 /** One unsecured theft, plus one while the smuggle_pouch capability is owned. */
 export function runCarryLimit(state: MvpRunState): number {
   return (
-    RUN_BASE_CARRY_LIMIT +
+    RUN_BASE_CARRY_LIMIT + perk(state, 'carryBonus') +
     (runOwnsCapability(state, 'smuggle_pouch') ? RUN_SMUGGLE_POUCH_CARRY_BONUS + (hybridOwns(state, 'fanny_pack') ? 1 : 0) : 0)
   );
 }
@@ -149,7 +150,8 @@ export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
   // A wanted janitor pays a surcharge: two dollars a star.
   // A clearance sale (a floor event) marks the tag down before anything else.
   const tag = wingEventFor(state.wing) === 'clearance' ? Math.ceil(offer.price * CLEARANCE_PRICE_SCALE) : offer.price;
-  const price = tag + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state);
+  // Employee Discount (a Break Room perk) comes off like the wallet's.
+  const price = tag + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state) - perk(state, 'shelfDiscount');
   // BLUE LIGHT SPECIAL: this shift's one half-price item.
   const special = blueLightOfferId(state) === offer.id;
   const shelf = special ? Math.ceil(price / 2) : price;

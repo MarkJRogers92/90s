@@ -8,10 +8,10 @@
  * never sees any of it except the clamped `ShiftPerks` a shift starts with.
  */
 import { itemDefinitionName } from '../../sim/run/economy';
-import { LOCKER_ITEM_IDS, NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
+import { LOCKER_ITEM_IDS, NO_PERKS, sanitizePerks, type ShiftPerks } from '../../sim/run/perks';
 import { hybridParts, isHybridPair, signatureFusions } from '../../sim/fusion/hybrid';
 
-export type PerkId = 'seniority' | 'dental' | 'coffee' | 'sneakers' | 'shopvac';
+export type PerkId = 'seniority' | 'dental' | 'coffee' | 'sneakers' | 'shopvac' | 'lookout' | 'pockets' | 'discount' | 'benchtech' | 'penny' | 'secondwind';
 
 export type PerkDefinition = {
   readonly id: PerkId;
@@ -28,7 +28,26 @@ export const PERKS: readonly PerkDefinition[] = [
   { id: 'coffee', name: 'COFFEE BREAK', perLevel: 'Every cleared room patches you up an extra half heart.', costs: [22] },
   { id: 'sneakers', name: 'NEW SNEAKERS', perLevel: 'Your dash comes back a sixth of a second sooner.', costs: [12, 28] },
   { id: 'shopvac', name: 'SHOP-VAC ATTACHMENT', perLevel: 'Loose change slides to you from further away.', costs: [10, 24] },
+  // Round 49: more of the night to invest in.
+  { id: 'lookout', name: 'LOOKOUT', perLevel: 'Store alarms give you a third of a second longer.', costs: [12, 26] },
+  { id: 'pockets', name: 'DEEP POCKETS', perLevel: 'Carry one more stolen item at a time.', costs: [30] },
+  { id: 'discount', name: 'EMPLOYEE DISCOUNT', perLevel: '$1 off everything on the shelves.', costs: [16, 34] },
+  { id: 'benchtech', name: 'BENCH TECHNICIAN', perLevel: '$2 back on every fusion.', costs: [14, 30] },
+  { id: 'penny', name: 'LUCKY PENNY', perLevel: 'Monsters drop a pretzel 10% more often.', costs: [10, 22] },
+  { id: 'secondwind', name: 'SECOND WIND', perLevel: 'Once a night, a fatal hit leaves you on one heart instead.', costs: [60] },
 ];
+
+/** One-night snacks from the vending machine: bought now, eaten on your next shift. */
+export type VendingId = 'energy' | 'lunch' | 'coupon' | 'mustache';
+export type VendingDefinition = { readonly id: VendingId; readonly name: string; readonly cost: number; readonly blurb: string };
+export const VENDING_ITEMS: readonly VendingDefinition[] = [
+  { id: 'energy', name: 'ENERGY DRINK', cost: 5, blurb: 'One extra heart for the whole night.' },
+  { id: 'lunch', name: 'LUNCH MONEY', cost: 4, blurb: 'Start the night with $15 more.' },
+  { id: 'coupon', name: 'FUSION COUPON', cost: 6, blurb: 'Your first fusion of the night is free.' },
+  { id: 'mustache', name: 'FAKE MUSTACHE', cost: 8, blurb: 'Lift your first item of the night without an alarm.' },
+];
+/** How many of one snack the bag holds; each shift eats one of each. */
+export const BAG_LIMIT = 9;
 
 export type LockerDefinition = { readonly itemId: string; readonly name: string; readonly cost: number; readonly blurb: string };
 
@@ -37,6 +56,13 @@ export const LOCKER_ITEMS: readonly LockerDefinition[] = [
   { itemId: 'foam_ball_blaster', cost: 14, blurb: 'Bouncy foam volleys that knock things back.' },
   { itemId: 'party_popper', cost: 20, blurb: 'A confetti spread that shreds up close.' },
   { itemId: 'paint_marker', cost: 26, blurb: 'Fast darts that mark whatever they tag.' },
+  // Round 49: six more from the shelves.
+  { itemId: 'slingshot', cost: 16, blurb: 'Quick, cheap shots from the wrist.' },
+  { itemId: 'yo_yo', cost: 18, blurb: 'Out and back: it hits on the way home too.' },
+  { itemId: 'dodgeball', cost: 22, blurb: 'A big red ball that knocks them flat.' },
+  { itemId: 'garden_hose', cost: 24, blurb: 'A steady stream that soaks everything it touches.' },
+  { itemId: 'nail_gun', cost: 30, blurb: 'Rapid nails that punch straight through.' },
+  { itemId: 'laser_pointer', cost: 34, blurb: 'A beam across the whole room.' },
 ]
   .map((item) => ({ ...item, name: itemDefinitionName(item.itemId).toUpperCase() }))
   .filter((item) => LOCKER_ITEM_IDS.includes(item.itemId));
@@ -68,6 +94,8 @@ export type Career = {
   readonly perks: Readonly<Record<PerkId, number>>;
   readonly lockerOwned: readonly string[];
   readonly lockerEquipped: string | null;
+  /** Vending snacks waiting for the next shift (round 49). */
+  readonly bag: Readonly<Record<VendingId, number>>;
   /** Best photos first. */
   readonly wall: readonly Polaroid[];
   /** Every hybrid ever fused, by definition id, sorted. */
@@ -87,9 +115,10 @@ export function newCareer(): Career {
     clockOuts: 0,
     kills: 0,
     bestCombo: 0,
-    perks: { seniority: 0, dental: 0, coffee: 0, sneakers: 0, shopvac: 0 },
+    perks: { seniority: 0, dental: 0, coffee: 0, sneakers: 0, shopvac: 0, lookout: 0, pockets: 0, discount: 0, benchtech: 0, penny: 0, secondwind: 0 },
     lockerOwned: [],
     lockerEquipped: null,
+    bag: { energy: 0, lunch: 0, coupon: 0, mustache: 0 },
     wall: [],
     fusionsFound: [],
   };
@@ -302,16 +331,42 @@ export function equipLocker(career: Career, itemId: string | null): Career {
   return { ...career, lockerEquipped: itemId };
 }
 
+/** The shift the Break Room sends you on: perks, locker and whatever is in the bag. */
 export function perksFor(career: Career): ShiftPerks {
-  if (Object.values(career.perks).every((level) => level === 0) && career.lockerEquipped === null) return NO_PERKS;
-  return {
-    bonusCash: career.perks.seniority * 5,
-    bonusHealth: career.perks.dental * 2,
-    clearHealBonus: career.perks.coffee,
-    dashCooldownCut: career.perks.sneakers * 10,
-    tokenMagnet: career.perks.shopvac * 40,
+  const { perks, bag } = career;
+  if (Object.values(perks).every((level) => level === 0) && career.lockerEquipped === null && Object.values(bag).every((count) => count === 0)) return NO_PERKS;
+  const one = (id: VendingId) => (bag[id] > 0 ? 1 : 0);
+  return sanitizePerks({
+    bonusCash: perks.seniority * 5 + one('lunch') * 15,
+    bonusHealth: perks.dental * 2 + one('energy') * 2,
+    clearHealBonus: perks.coffee,
+    dashCooldownCut: perks.sneakers * 10,
+    tokenMagnet: perks.shopvac * 40,
     lockerItemId: career.lockerEquipped,
-  };
+    alarmBonus: perks.lookout * 20,
+    carryBonus: perks.pockets,
+    shelfDiscount: perks.discount,
+    fusionRebate: perks.benchtech * 2,
+    snackBonus: perks.penny * 10,
+    secondWinds: perks.secondwind,
+    freeFusions: one('coupon'),
+    quietGrabs: one('mustache'),
+  });
+}
+
+/** Buys one vending snack for the bag. */
+export function buyVending(career: Career, id: VendingId): Purchase {
+  const item = VENDING_ITEMS.find((candidate) => candidate.id === id);
+  if (!item) return { ok: false, reason: 'The machine does not sell that.' };
+  if (career.bag[id] >= BAG_LIMIT) return { ok: false, reason: `Your bag holds ${BAG_LIMIT} at most.` };
+  if (career.stubs < item.cost) return { ok: false, reason: `Need ${item.cost - career.stubs} more Pay Stubs.` };
+  return { ok: true, career: { ...career, stubs: career.stubs - item.cost, bag: { ...career.bag, [id]: career.bag[id] + 1 } } };
+}
+
+/** Starting a shift: its perks, and the career with one of each snack eaten. */
+export function clockIn(career: Career): { readonly career: Career; readonly perks: ShiftPerks } {
+  const bag = Object.fromEntries(Object.entries(career.bag).map(([id, count]) => [id, Math.max(0, count - 1)])) as Record<VendingId, number>;
+  return { career: { ...career, bag }, perks: perksFor(career) };
 }
 
 function count(value: unknown, max = Number.MAX_SAFE_INTEGER): number {
@@ -346,6 +401,7 @@ export function parseCareer(raw: string | null): Career {
     return newCareer();
   }
   const perks = (typeof value.perks === 'object' && value.perks !== null ? value.perks : {}) as Record<string, unknown>;
+  const bag = (typeof value.bag === 'object' && value.bag !== null ? value.bag : {}) as Record<string, unknown>;
   const lockerOwned = Array.isArray(value.lockerOwned)
     ? [...new Set(value.lockerOwned.filter((id): id is string => typeof id === 'string' && LOCKER_ITEMS.some((item) => item.itemId === id)))]
     : [];
@@ -368,6 +424,18 @@ export function parseCareer(raw: string | null): Career {
       coffee: count(perks.coffee, perkDefinition('coffee').costs.length),
       sneakers: count(perks.sneakers, perkDefinition('sneakers').costs.length),
       shopvac: count(perks.shopvac, perkDefinition('shopvac').costs.length),
+      lookout: count(perks.lookout, perkDefinition('lookout').costs.length),
+      pockets: count(perks.pockets, perkDefinition('pockets').costs.length),
+      discount: count(perks.discount, perkDefinition('discount').costs.length),
+      benchtech: count(perks.benchtech, perkDefinition('benchtech').costs.length),
+      penny: count(perks.penny, perkDefinition('penny').costs.length),
+      secondwind: count(perks.secondwind, perkDefinition('secondwind').costs.length),
+    },
+    bag: {
+      energy: count(bag.energy, BAG_LIMIT),
+      lunch: count(bag.lunch, BAG_LIMIT),
+      coupon: count(bag.coupon, BAG_LIMIT),
+      mustache: count(bag.mustache, BAG_LIMIT),
     },
     lockerOwned,
     lockerEquipped: equipped,
