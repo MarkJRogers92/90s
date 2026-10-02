@@ -75,6 +75,7 @@ import type {
   MvpRunState,
 } from './types';
 import { spendCharge } from './perks';
+import { clearMvpHeldActions, moveToRoom } from './roomTransition';
 
 /** Second Wind: one heart, and two seconds to get clear. */
 export const SECOND_WIND_HEALTH = 2;
@@ -82,10 +83,7 @@ const SECOND_WIND_INVULNERABILITY = 120;
 
 const NOTHING_NEARBY_LABEL = 'Nothing to interact with here.';
 
-/** Clears persistent interaction levels after blur, pause, or a transition. */
-export function clearMvpHeldActions(state: MvpRunState): void {
-  state.heldActions = { interact: false, steal: false, recall: false };
-}
+export { clearMvpHeldActions };
 
 function currentRoom(state: MvpRunState): WingRoomDefinition {
   return state.wing.rooms[state.roomIndex]!;
@@ -295,44 +293,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
   }
 
   const enteringFrom = side === 'east' ? ('west' as const) : ('east' as const);
-  const health = state.room.combat.player.health;
-  const combat = buildRoomCombatState(
-    state.wing,
-    destinationIndex,
-    enteringFrom,
-    state.inventory,
-    state.seed,
-    wantedStars(state.heat),
-  );
-  // The wrapped room tracks the run's tick so a room boundary is exactly
-  // reproducible and a restored checkpoint resumes on the same tick.
-  combat.tick = state.tick;
-  combat.player.health = health;
-  combat.behaviorTrace = state.behaviorTrace;
-  if (state.clearedRooms.includes(destination.id)) {
-    clearRoomEnemies(combat);
-  }
-
-  state.roomIndex = destinationIndex;
-  state.room = {
-    roomId: destination.id,
-    variantId: destination.variantId,
-    combat,
-    cleared: !hasLivingEnemies(combat),
-    enteredFrom: enteringFrom,
-    tokens: [],
-    interior: false,
-    storeIndex: 0,
-    twist: null,
-  };
-  state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
-  state.alarm = null;
-  // Loss Prevention does not walk through the door with you; he follows.
-  state.stalker = null;
-  clearMvpHeldActions(state);
-  // The car follows the shift through the doorway by being re-parked at the
-  // destination's deterministic spot, never by carrying a position across.
-  parkRunCarrier(state);
+  moveToRoom(state, destinationIndex, enteringFrom);
 
   // A room already called "The ..." (a district's, round 50) keeps its own article.
   const message = `Entered ${/^the /i.test(destination.name) ? destination.name : `the ${destination.name}`}.`;
