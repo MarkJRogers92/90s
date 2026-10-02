@@ -1485,7 +1485,7 @@ the human log's "0-2 damage"). Its first reading was that Floor 3's Owner's
 Suite (14-17 of ~45 deaths) and Floor 2's Portrait Studio were the deadliest
 wings and that the finale was easier than the Owner. **Those were the bot, not
 the game** (the follow-up below, which corrected itself twice): a bot that
-scores every hazard at once wins 97% of nights and loses under a heart in any
+scores every hazard at once wins 95% of nights and loses under a heart in any
 wing. Treat any single-bot hot spot as a lead to check with a better bot, not a
 verdict.
 
@@ -1520,13 +1520,40 @@ nights; it overturned something written the step before, twice):
   swinging at something else stands on the ring (only 12% of 323 traced hits were
   while slowed in tar or perfume). With lobs, buckets and slow zones modelled the
   same fight is dodged 96 of 96 times.
-- So a bot that sees everything wins 97% of nights and loses at most 0.8 health
-  in any wing (boss wings 0.4-0.6); `pro` wins 67%. That gap is attention. Every
+- So a bot that sees everything wins 95% of nights and loses at most 1.1 health
+  in any wing (boss wings 0.2-0.8); `pro` wins 67%. That gap is attention. Every
   hazard is dodgeable if you are looking at it; what matters for a human is how
   much time each gives. The doc tabulates it from the constants (the Spritzer's
   0.5 s wind-up leaves 17 ticks, 0.28 s, after walking clear; the Roofer's gives
-  43). The next step is a reaction delay on the expert, to measure which
-  wind-ups a human can fairly answer.
+  43), though that table assumes a standing player.
+
+### Reaction delay (`npm run balance:reaction`)
+
+`BotOptions.reaction` (ticks, 60 a second) makes the expert learn of a hazard
+only after it has been in view that long (each danger has a `key`: what resolves
+and the absolute tick it does, stable while a wind-up counts down), and
+`dashes: false` takes the dash away. `tests/balance/reaction.ts` sweeps the
+delay 0-54 ticks against each hazard and reports the hit rate, with a "never
+reacts" bot as the reference for "dodged" (20% of it); it is the measurement
+behind [`balance/round57-reaction.md`](balance/round57-reaction.md). Findings: the
+tightest hazards are the Perfume Spritzer's spritz and the Volatile fuse (a walker
+needs to react inside 0.2 s; with a dash, 0.4 and 0.5), the Bargain Hunter is
+0.4 s either way, the Mascot Brute and the Roofer are comfortable, and the Mall
+Owner is the one fight where a pure reaction is not enough (it loses to him at
+0.3-0.4 s because it never learns his rhythm). Lengthening the Spritzer's wind-up
+from 30 to 42 ticks would double the walker's allowance (0.2 s to 0.4 s); a
+48-tick fuse would stop being a hazard at all in those scenes. Neither is
+changed: they are the owner's call after a human playtest.
+
+Getting there changed the evaluator in ways worth knowing. Paths are priced in
+expected **health** (each hit once, with the 60 ticks of grace after it), not a
+weight per tick of contact: the per-tick sum made five trays outweigh one charge
+lane and the bot took the charge. The look-ahead is 72 ticks. A boss's volley
+**wind-up** (up to 45 ticks) is a fan of trays that has not been fired yet and is
+modelled, because without it a point-blank volley arrives faster than any
+reaction delay and every slow-reaction Owner fight is lost for a reason that is
+not the game's. The tests pin the key stability, the delay filter, the dash
+switch, the expected-damage pricing and the Owner survival at 0.3 s but not 0.5 s.
 
 ### Wanted clarity
 

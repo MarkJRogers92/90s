@@ -39,15 +39,19 @@ Round 57's bot leads, after a better bot checked them twice (see the playbook's
 "expert bot" and `docs/neon-overhaul/balance/round57-expert.md`): the Owner's
 Suite, the "hard" Helipad, Glamour Row's perfume and the Roofers' tar all looked
 like hot spots to the first bots and were each the bot failing to see something.
-A bot that sees every hazard wins 97% of nights and loses under a heart in any
+A bot that sees every hazard wins 95% of nights and loses under a heart in any
 wing. So no wing needs tuning on the bot's say-so; what matters is how much time
-each hazard gives a person. The doc tabulates it from the constants: the
-Perfume Spritzer's spritz is the tightest (a 0.5 s wind-up leaves 0.28 s after
-walking clear, shorter than a typical reaction), then the Volatile fuse, the
-Owner's charge and the Bargain Hunter. Next: give the expert a reaction delay and
-measure the hit rate per hazard, to find which wind-ups are unfair to a human
-before one has to tell us. For a human, meanwhile: does the Owner feel like a
-push-over, and does the Spritzer feel unfair?
+each hazard gives a person, and a reaction-delay sweep now measures it
+(`docs/neon-overhaul/balance/round57-reaction.md`, `npm run balance:reaction`): the
+Perfume Spritzer's spritz and the Volatile fuse are the tightest (a player who
+walks must react inside 0.2 s; with a dash, 0.4 s and 0.5 s), the Bargain Hunter is
+0.4 s either way, and the Mascot Brute and the Roofer are comfortable (0.5-0.8 s).
+The Owner is the one fight a pure reaction does not beat (the bot dies to him at
+0.3-0.4 s; it never learns his rhythm, a player does). Candidate change, measured
+but NOT made: lengthen the Spritzer's wind-up from 30 to 42 ticks and a walker's
+allowance doubles to 0.4 s. A longer fuse is not worth it (48 ticks and a bot that
+never reacts is never hit). For a human: does the Spritzer feel unfair, and does
+the Owner feel like a push-over once you know his rhythm?
 The Volatile burst (round 57) cost the bots 0.7-0.8 health a Floor 1 wing until
 the expert learned to read the ring: a fair 0.6 s fuse for someone watching it,
 a real tax for someone who is not. Playtest question: do you see it in time?

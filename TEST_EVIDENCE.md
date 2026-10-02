@@ -57,6 +57,38 @@
   not a measurement.
 - `npx tsc --noEmit` clean; `npx vitest run` 138 files, 1274 passed. The browser
   suite was not rerun: nothing under `src/` changed in this follow-up.
+- **Reaction delay** (`balance-reaction.test.ts` 9, `balance-danger.test.ts` 9 to
+  19, red first; `npm run balance:reaction`, 30 s). The expert learns of a hazard
+  only after it has been in view `reaction` ticks (every danger got a `key`: what
+  resolves and the absolute tick). The first tests encoded what the hand
+  arithmetic predicted (Spritzer fine at 8 ticks and caught at 24, a dash saves
+  at least half of those, Roofer fine at 24, Mascot lane fine at 20 and caught at
+  46) and passed; mutation-checked (filter disabled fails 3). The sweep and the
+  tests it forced, each from a failure or a trace rather than a guess:
+  the first Owner row was lethal at 0.3 s for the wrong reason (the bot only knew
+  a tray once it existed, and a point-blank tray arrives in 11 ticks, so no delay
+  beyond that is answerable): the volley wind-up is now modelled; modelling it
+  at first made the instant-reaction expert worse, because paths were priced as a
+  fixed weight per tick of contact (five trays outweighed one charge lane): paths
+  are now priced in expected health, each hit once, with the 60 ticks of grace
+  (and the look-ahead is 72 ticks, not 48); the "never reacts" reference was the
+  longest delay tried, which a dash can still save (the Mascot's threshold fell
+  from 36 to 24 when the dash was allowed): it is now a bot that truly never
+  reacts, and thresholds are 20% of that; the grid stopped short of the Roofer's
+  wind-up (now 0-54); and the Owner row was one fight six times (seeds do not
+  change it; now six start positions). A trace of a Volatile duel that was hit at
+  18 ticks showed no bug: the janitor kills the elite and walks on through the
+  middle of the blast, so the hand "slack" table (which assumes standing still) is
+  optimistic for a hazard the player is walking into (fuse: slack 23, measured 12).
+  Results: `docs/neon-overhaul/balance/round57-reaction.md`.
+- The changed evaluator was re-measured over whole nights rather than assumed: the
+  expert won 95% of 100 nights (97% with the previous version, inside the noise),
+  no wing above 1.1 health (was 0.8), boss wings 0.2-0.8. The published figures
+  were updated everywhere they were quoted.
+- The Spritzer and fuse experiment (wind-up 42, fuse 48) was run by editing the
+  constants temporarily and reverting: `git diff` of `src/` is empty.
+- `npx tsc --noEmit` clean; `npx vitest run` 139 files, 1287 passed. The browser
+  suite was not rerun: nothing under `src/` changed.
 - `npx tsc --noEmit` clean; `npx vitest run` 138 files, 1268 passed. The browser
   suite was not rerun: the only `src/` change is exporting one constant
   (`SHOPPER_CHARGE_SPEED_PER_TICK`), and `volatile-burst.spec.ts` passed twice.
