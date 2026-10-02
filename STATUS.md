@@ -32,10 +32,15 @@ screenshot, and a smarter `expert` bot (`tests/balance/danger.ts`) checked the
 first bot's leads and refuted them, twice. The Mall Owner's Suite, the Helipad,
 Glamour Row's perfume and the Roofers' tar all looked like hot spots and were
 each the bot failing to see something: a bot that scores every hazard at once
-(charge lanes, slams, shots, burst fuses, lobs, tar) wins 97% of nights and
-loses under a heart in any wing. The open question is human, not mechanical: how
-much time each hazard gives (the Perfume Spritzer's spritz is tightest, 0.28 s
-after walking clear). See `docs/neon-overhaul/balance/round57-expert.md`.
+(charge lanes, slams, shots, burst fuses, lobs, tar) wins 95% of nights and
+loses under a heart in any wing. The open question was human, not mechanical:
+how much time each hazard gives. A reaction-delay sweep (`npm run
+balance:reaction`) measured it: the Perfume Spritzer's spritz and the Volatile
+fuse are tightest (a walker must react inside 0.2 s; with a dash 0.4 and 0.5), the
+Mascot Brute and Roofer are comfortable, and the Owner is the one fight a pure
+reaction does not beat. A longer Spritzer wind-up (30 to 42 ticks) would double the
+allowance; it is measured, not changed. See
+`docs/neon-overhaul/balance/round57-reaction.md` and `round57-expert.md`.
 
 ## 2026-10-01 — Round 54: palms, the toppled rack, a flaky test (branch `claude/polish-palms-rack-tests`)
 

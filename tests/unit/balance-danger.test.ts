@@ -8,6 +8,7 @@ import { VOLATILE_BURST_RADIUS, VOLATILE_FUSE_TICKS } from '../../src/sim/combat
 import type { BotOptions } from '../balance/bot';
 import { dangersOf, escapeFrom, pathCost, type Danger } from '../balance/danger';
 import { crowdSweep, volatileDuel } from '../balance/duel';
+import { bossFight } from '../balance/scenarios';
 import { PERFUME_CLOUD_RADIUS, PERFUME_SLOW } from '../../src/sim/combat/perfume';
 import { TAR_SLOW, TAR_SPLASH_RADIUS } from '../../src/sim/combat/roofer';
 
@@ -118,7 +119,7 @@ describe('balance bot danger model (round 57 follow-up)', () => {
       { x: 440, y: 0, width: 10, height: 480 },
       { x: 510, y: 0, width: 10, height: 480 },
     ];
-    const dangers: Danger[] = [{ kind: 'blast', x: 480, y: 240, reach: 80, at: 5 }];
+    const dangers: Danger[] = [{ key: 'test-b', damage: 2, kind: 'blast', x: 480, y: 240, reach: 80, at: 5 }];
     expect(pathCost(combat, dangers, null).cost).toBeGreaterThan(0);
     expect(pathCost(combat, dangers, { x: 0, y: -1 }, true).cost).toBe(0);
     combat.player.dashCooldownTicks = 0;
@@ -200,7 +201,7 @@ describe('balance bot danger model (round 57 follow-up)', () => {
   it('slows a walk through tar or perfume, so a puddle can make an escape too slow (a dash is not slowed)', () => {
     const combat = arena();
     // A blast on the janitor in 25 ticks, 60 px wide: clear in 18 ticks on open floor, 33 in tar.
-    const dangers: Danger[] = [{ kind: 'blast', x: 480, y: 240, reach: 60, at: 25 }];
+    const dangers: Danger[] = [{ key: 'test-a', damage: 2, kind: 'blast', x: 480, y: 240, reach: 60, at: 25 }];
     expect(pathCost(combat, dangers, { x: 1, y: 0 }).cost).toBe(0);
     combat.tar = [{ x: 480, y: 240, radius: 200, ticks: 300 }];
     expect(TAR_SLOW).toBeLessThan(0.6);
@@ -223,5 +224,57 @@ describe('balance bot danger model (round 57 follow-up)', () => {
       expect(before.lobHits / before.throws, `pro vs ${kind}`).toBeGreaterThan(0.5);
       expect(after.lobHits / after.throws, `expert vs ${kind}`).toBeLessThanOrEqual(0.1);
     }
+  });
+
+  it('reads a boss\'s volley wind-up as a fan of trays that will leave him when it ends, so a point-blank volley is not a surprise', () => {
+    const combat = arena();
+    const owner = spawnWaveMonster({ slotId: 'o', kind: 'mascot', x: 480, y: 160 }, 5, 1);
+    // Winding up a volley aimed straight down at the janitor, 30 ticks from firing.
+    Object.assign(owner, { kind: 'owner', radius: 28, health: 210, phase: 'recover', bossVolleyTelegraphTicks: 30, telegraphAimX: 0, telegraphAimY: 1 });
+    combat.enemies.push(owner);
+    const dangers = dangersOf(combat);
+    const trays = dangers.filter((danger) => danger.kind === 'shot');
+    expect(trays).toHaveLength(bossConfigFor('owner').volleyAngles.length);
+    for (const tray of trays) expect((tray as Extract<Danger, { kind: 'shot' }>).from).toBe(30);
+    // Straight under the boss is in the fan's middle tray; a few steps to the side is not.
+    expect(pathCost(combat, dangers, null).cost).toBeGreaterThan(0);
+    const away = escapeFrom(combat, dangers, null);
+    expect(away).not.toBeNull();
+    expect(pathCost(combat, dangers, away!.heading, away!.dash).cost).toBe(0);
+    // Nothing is in the air yet: before the wind-up there is nothing to read.
+    owner.bossVolleyTelegraphTicks = 0;
+    expect(dangersOf(combat).filter((danger) => danger.kind === 'shot')).toEqual([]);
+  });
+
+  it('survives the Owner when it notices his volley and charge inside 0.3 s and does not when it takes 0.5 s: the wind-ups were invisible to it before', () => {
+    const fight = (seed: number, reaction: number) => bossFight(seed, { skill: 'expert', shop: 'none', reaction });
+    for (const seed of [1, 2, 3]) {
+      expect(fight(seed, 0).hpLost, `seed ${seed} at once`).toBeLessThanOrEqual(2);
+      expect(fight(seed, 18).outcome, `seed ${seed} at 0.3 s`).toBe('won');
+      expect(fight(seed, 30).outcome, `seed ${seed} at 0.5 s`).toBe('dead');
+    }
+  });
+
+  it('prices a path in health, not in ticks: one charge costs two however long the janitor stays in it, and the grace after a hit covers what follows', () => {
+    const combat = arena();
+    winding(combat, 'mascot', 480, 60, 0, 1, 20);
+    const dangers = dangersOf(combat);
+    // Standing in the lane takes the charge once: 2 health, not a sum over every tick in contact.
+    expect(pathCost(combat, dangers, null).cost).toBe(2);
+    // Five trays through the same spot in the same moments: only the first lands inside the 60 ticks of grace.
+    const trays: Danger[] = Array.from({ length: 5 }, (_, index) => ({ key: `tray-${index}`, kind: 'shot' as const, x: 480, y: 160, vx: 0, vy: 2.7, reach: 18, until: 200, damage: 1 }));
+    expect(pathCost(combat, trays, null).cost).toBe(1);
+    // Grace the janitor already has from a hit a moment ago covers a hit that lands inside it.
+    combat.player.invulnerableTicks = 60;
+    expect(pathCost(combat, trays, null).cost).toBe(0);
+  });
+
+  it('looks far enough ahead to see a point-blank volley land: a tray leaves after its wind-up and still has to fly', () => {
+    const combat = arena();
+    const owner = spawnWaveMonster({ slotId: 'o', kind: 'mascot', x: 480, y: 160 }, 5, 1);
+    Object.assign(owner, { kind: 'owner', radius: 28, health: 210, phase: 'recover', bossVolleyTelegraphTicks: 45, telegraphAimX: 0, telegraphAimY: 1 });
+    combat.enemies.push(owner);
+    // 45 ticks of wind-up plus 30 of flight to the janitor 80 px below: 75 ticks.
+    expect(pathCost(combat, dangersOf(combat), null).cost).toBeGreaterThan(0);
   });
 });

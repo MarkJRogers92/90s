@@ -29,10 +29,14 @@ What it showed, in the order it was learned:
    from fresh landings agreed: only 12% happened while slowed in tar or perfume;
    most came in the "approach" branch with two to four monsters alive, over half
    with no step in the previous 8 ticks. Once the lob is in the model the same
-   fight is dodged 96 of 96 times, and the finale costs 0.4.
+   fight is dodged 96 of 96 times, and the finale costs 0.2-0.4.
 4. **A bot that sees everything finds this game easy.** The final expert wins
-   97% of nights (the `pro` 67%) and no wing costs it more than 0.8 health: the
-   boss wings cost 0.4 to 0.6 each. Its three deaths were all hanger crowds. The
+   95% of nights (the `pro` 67%) and no wing costs it more than 1.1 health: the
+   boss wings cost 0.2 to 0.8 each. Its five deaths were hanger crowds, a Goon and
+   one slam. (The table below is the final evaluator, which prices a path in
+   health and reads volley wind-ups; the version before it won 97% with no wing
+   over 0.8. That difference is inside the noise of 100 nights, but the worst
+   wing did rise, from 0.8 to 1.1.) The
    30-point gap between `pro` and `expert` is attention: every hazard in this
    game is dodgeable if you are looking at it. Where a human sits between those
    two is the open question, and it is about reaction time, not about whether a
@@ -59,9 +63,10 @@ clear from the worst place to be standing.
 A player has to notice the ring, decide, and start moving before the slack runs
 out. The Spritzer's 0.28 s is shorter than a typical reaction to something
 appearing on screen (0.25-0.4 s); a dash covers it, but only with the cooldown
-ready. The next step is to give the expert a reaction delay and measure the hit
-rate against it for each hazard: that is how to tell which wind-ups are fair to a
-human without waiting for one.
+ready. This table assumes the player stands still until they react; the
+reaction-delay sweep measured it properly
+([`round57-reaction.md`](round57-reaction.md)): never better than the arithmetic,
+and for hazards the player is walking into (the Volatile fuse) a good deal worse.
 
 Duels (`tests/balance/duel.ts`, an empty room, spawns pulled inside the
 playfield): hits per duel against a lone monster, 24 each (8 bearings by 3
@@ -90,19 +95,19 @@ Killed by: ownerCharge (10), hanger (5), mascot (4), bossShot (3), perfume (3), 
 
 ### expert bot, shopping: buy, route: long (100 nights)
 
-Nights won 97% (97), died 3% (3), stalled 0% (0).
+Nights won 95% (95), died 5% (5), stalled 0% (0).
 
 | wing | entered | cleared | died | stalled | min | hp lost | top damage | cash left |
 |---|---|---|---|---|---|---|---|---|
-| F1a | 100 | 100% | 0 | 0 | 1.0 | 0.8 | elf 0.5, hanger 0.2, barrage 0.0 | $31 |
-| F1b | 100 | 100% | 0 | 0 | 0.9 | 0.6 | hanger 0.5, mannequin 0.1, other 0.0 | $21 |
-| F2a | 100 | 98% | 2 | 0 | 0.8 | 0.8 | hanger 0.3, static 0.3, bossShot 0.1 | $28 |
-| F2b | 98 | 100% | 0 | 0 | 0.8 | 0.5 | static 0.2, hanger 0.2, mannequin 0.1 | $23 |
-| F3a | 98 | 100% | 0 | 0 | 0.8 | 0.8 | static 0.2, hanger 0.2, slam 0.1 | $36 |
-| F3b | 98 | 100% | 0 | 0 | 0.9 | 0.4 | static 0.2, hanger 0.1, mascot 0.1 | $46 |
-| F4a | 98 | 99% | 1 | 0 | 0.9 | 0.7 | static 0.2, goon 0.2, hanger 0.2 | $53 |
-| F4b | 97 | 100% | 0 | 0 | 0.9 | 0.4 | static 0.2, bossShot 0.1, hanger 0.1 | $39 |
+| F1a | 100 | 100% | 0 | 0 | 1.0 | 0.9 | elf 0.5, hanger 0.3, walker 0.1 | $31 |
+| F1b | 100 | 100% | 0 | 0 | 0.9 | 0.5 | hanger 0.4, mannequin 0.0, glob 0.0 | $21 |
+| F2a | 100 | 99% | 1 | 0 | 0.8 | 1.1 | hanger 0.5, static 0.4, mannequin 0.1 | $35 |
+| F2b | 99 | 99% | 1 | 0 | 0.8 | 0.8 | hanger 0.4, static 0.3, mannequin 0.1 | $27 |
+| F3a | 98 | 99% | 1 | 0 | 0.8 | 1.0 | hanger 0.4, static 0.3, slam 0.1 | $31 |
+| F3b | 97 | 100% | 0 | 0 | 0.9 | 0.5 | static 0.2, hanger 0.2, mannequin 0.1 | $43 |
+| F4a | 97 | 98% | 2 | 0 | 0.9 | 0.8 | goon 0.3, static 0.2, hanger 0.2 | $42 |
+| F4b | 95 | 100% | 0 | 0 | 0.9 | 0.2 | static 0.1, hanger 0.0, mannequin 0.0 | $54 |
 
-Deaths: F2a ELEVATOR BANK (1); F2a FITTING ROOMS (1); F4a GRAVEL YARD (1).
-Killed by: hanger (3).
+Deaths: F4a PENALTY BOX (2); F2a FITTING ROOMS (1); F2b CINEMA LOBBY (1); F3a KENNEL ROW (1).
+Killed by: hanger (3), goon (1), slam (1).
 

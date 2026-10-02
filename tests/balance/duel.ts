@@ -29,6 +29,8 @@ export const CROWD_TICKS = 60 * 15;
 export type DuelResult = {
   /** Charges that landed. */
   readonly hits: number;
+  /** Charges the monster started (a lone Mascot Brute or Bargain Hunter), so hits can be a rate. */
+  readonly attacks: number;
   readonly ticks: number;
   /** The monster fell before the cap. */
   readonly killed: boolean;
@@ -51,14 +53,19 @@ export function duel(kind: DuelKind, options: BotOptions, bearing: number, dista
   const memory = newBotMemory();
   const start = state.tick;
   let killed = false;
+  let attacks = 0;
+  let charging = false;
   while (state.tick - start < DUEL_TICK_CAP) {
     tickMvpRun(state, botInput(state, memory, options));
+    const running = combat.enemies.some((enemy) => (enemy.chargeTicks ?? 0) > 0);
+    if (running && !charging) attacks += 1;
+    charging = running;
     if (!combat.enemies.some((enemy) => enemy.health > 0)) {
       killed = true;
       break;
     }
   }
-  return { hits: (SPARE_HEALTH - combat.player.health) / DAMAGE_PER_HIT[kind], ticks: state.tick - start, killed };
+  return { hits: (SPARE_HEALTH - combat.player.health) / DAMAGE_PER_HIT[kind], attacks, ticks: state.tick - start, killed };
 }
 
 /**
