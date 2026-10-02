@@ -90,6 +90,7 @@ export type MvpInteraction =
   | { readonly kind: 'store'; readonly storeIndex: number; readonly label: string }
   | { readonly kind: 'cabinet'; readonly label: string }
   | { readonly kind: 'secret'; readonly label: string }
+  | { readonly kind: 'shortcut'; readonly label: string }
   | { readonly kind: 'none'; readonly label: string };
 
 /** Every run command reports its own outcome; the HUD never infers success. */

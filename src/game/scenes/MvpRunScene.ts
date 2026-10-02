@@ -12,6 +12,7 @@ import { wingEventFor } from '../../sim/run/wingEvents';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { HERO_FUSIONS } from '../../sim/fusion/heroes';
 import { SECRET_MACHINE, enterSecretRoom, secretFor } from '../../sim/run/secretRoom';
+import { SHORTCUT_HATCH, shortcutFor } from '../../sim/run/shortcut';
 import { propWalls } from '../../sim/combat/props';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { isHybridPair } from '../../sim/fusion/hybrid';
@@ -1117,6 +1118,20 @@ export class MvpRunScene extends Phaser.Scene {
         state.room.combat.player.x = 480;
         state.room.combat.player.y = 130;
       }
+      return state;
+    }
+    if (fixture === 'mvp-hatch') {
+      // Beside the staff passage's hatch (round 57); needs a seed that has one, such as &seed=7.
+      const spot = shortcutFor(state.wing);
+      let guard = 0;
+      while (spot && state.roomIndex < spot.from && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      state.room.combat.player.x = SHORTCUT_HATCH.x + 20;
+      state.room.combat.player.y = SHORTCUT_HATCH.y + 30;
       return state;
     }
     if (fixture === 'mvp-arsenal') {

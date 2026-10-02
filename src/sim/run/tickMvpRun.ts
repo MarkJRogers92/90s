@@ -63,6 +63,7 @@ import {
 } from './economy';
 import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
 import { enterSecretRoom, nearSecretMachine, updateSecretRoom } from './secretRoom';
+import { nearShortcut, takeShortcut } from './shortcut';
 import { layLow, wantedStars } from './wanted';
 import { updateStalker } from './stalker';
 import { nearArcadeCabinet, playArcadeCabinet, updateStoreTwist } from './storeTwists';
@@ -208,6 +209,10 @@ export function nearestMvpInteraction(state: MvpRunState): MvpInteraction {
     candidates.push({ distance: 0, key: 'secret', interaction: { kind: 'secret', label: 'A suspicious vending machine' } });
   }
 
+  if (nearShortcut(state)) {
+    candidates.push({ distance: 0, key: 'shortcut', interaction: { kind: 'shortcut', label: 'Staff passage: skip the next fight (+1 star)' } });
+  }
+
   if (nearArcadeCabinet(state)) {
     candidates.push({ distance: 0, key: 'cabinet', interaction: { kind: 'cabinet', label: 'Arcade cabinet' } });
   }
@@ -257,6 +262,8 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
       return playArcadeCabinet(state);
     case 'secret':
       return enterSecretRoom(state);
+    case 'shortcut':
+      return takeShortcut(state);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }

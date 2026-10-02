@@ -55,6 +55,7 @@ import { policeWash, stalkerCue } from './stalkerCues';
 import { PROP_TEXTURES } from '../presentation/rooms/roomDressing';
 import { HeroPropView } from './HeroPropView';
 import { SECRET_MACHINE, secretMachineHere } from '../../sim/run/secretRoom';
+import { SHORTCUT_HATCH, shortcutHere } from '../../sim/run/shortcut';
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -777,6 +778,7 @@ export class MvpRunView {
     this.drawThemedTwist(state, twist);
     this.drawDistrictTwist(state, twist);
     this.drawSecret(state);
+    this.drawShortcut(state);
     if (twist?.storeId === 'cinema-snacks') {
       // Butter: greasy yellow sheen streaks across the floor, drawn above the
       // lightmap so the room's darkness does not swallow it.
@@ -829,6 +831,35 @@ export class MvpRunView {
       }
     }
     for (const id of ['secret-hint', 'secret-timer']) if (!shown.has(id)) this.clearLabel(id);
+  }
+
+  /**
+   * Round 57: the staff passage, a hazard-striped hatch in the back wall of a
+   * safe concourse with a STAFF ONLY sign and a pulsing amber light. It is
+   * drawn while it is unused and gone once the janitor has crawled through.
+   */
+  private drawShortcut(state: MvpRunState): void {
+    if (!shortcutHere(state)) {
+      this.clearLabel('shortcut-sign');
+      return;
+    }
+    const h = SHORTCUT_HATCH;
+    const g = this.effectGraphics;
+    const left = h.x - 24;
+    const top = h.y - 46;
+    g.fillStyle(0x14161a, 0.96).fillRect(left, top, 48, 50);
+    // Hazard stripes down both jambs and across the lintel.
+    for (let i = 0; i < 7; i += 1) {
+      const stripe = i % 2 === 0 ? 0xffd84a : 0x1a1a1a;
+      g.fillStyle(stripe, 1).fillRect(left, top + i * 7, 5, 7).fillRect(left + 43, top + i * 7, 5, 7);
+    }
+    for (let i = 0; i < 7; i += 1) g.fillStyle(i % 2 === 0 ? 0xffd84a : 0x1a1a1a, 1).fillRect(left + i * 7, top - 4, 7, 5);
+    // The grille and its latch.
+    for (let y = top + 8; y < top + 46; y += 6) g.fillStyle(0x56606a, 0.9).fillRect(left + 8, y, 32, 2);
+    g.fillStyle(0xff9a3a, 1).fillRect(left + 38, top + 24, 4, 6);
+    const pulse = 0.5 + 0.35 * Math.sin(state.tick / 14);
+    this.openingConcourse?.addLight({ x: h.x, y: h.y - 20, radius: 80, color: 0xffb040, intensity: 0.35 + 0.35 * pulse });
+    this.setLabel('shortcut-sign', 'STAFF ONLY', h.x - 28, top - 16);
   }
 
   private twistProp(id: string, texture: { readonly key: string }, x: number, y: number, scale: number, flipX = false): Phaser.GameObjects.Image | null {
@@ -2238,7 +2269,7 @@ export class MvpRunView {
   private pruneLabels(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
     // The back room's labels (round 53) come and go in drawSecret.
-    const keep = new Set<string>(['bench', 'secret-hint', 'secret-timer']);
+    const keep = new Set<string>(['bench', 'secret-hint', 'secret-timer', 'shortcut-sign']);
     if (state.carrier !== null) {
       keep.add('carrier');
     }
