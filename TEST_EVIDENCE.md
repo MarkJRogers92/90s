@@ -1,5 +1,141 @@
 # Test evidence
 
+## 2026-10-02 — Sparse normal-room three-prop rollout
+
+Scope: the same three approved native prop/effect pairs, using existing store
+entry/exit and room-construction hooks. No new art, background, loot, puddle,
+price, reward or enemy-stat system. The isolated fixture remains intact.
+
+- TDD: 18 of 19 new normal-room assertions failed on absent placements first;
+  the unaffected-store assertion passed. After implementation, the food-display
+  tutorial test failed because it consumed the old cart/soda/rack hint, then
+  passed after limiting that hint to its original prop types.
+- The aggregate suite caught a real Pretzel Pit conflict: the first bakery
+  position intersected its mustard path. An explicit player-radius scan of both
+  mustard ellipses failed at the initial position and at the first correction;
+  the intermediate base (340,155) cleared it; the final perimeter base
+  (280,335) also preserves every straight shopping route. The pre-existing mustard
+  slow/guard behavior test remains unchanged and passes.
+- A real renderer regression with a test graphics backend failed for all three
+  new kinds when reusing a horizontally flipped cart image, then passed after
+  explicitly resetting flipX. Native origin/scale/position and damaged pose are
+  asserted; this is renderer-state evidence, not a browser pixel comparison.
+- Keyboard helper: 2/4 offline regressions failed for the old separate
+  down/wait/up calls, with real-simulation positions oscillating under modeled
+  300ms and 1,000ms input latency. All four pass with one timed keyboard.press
+  call. The fixture's 90-second timeout, tolerance, attempt budget and body
+  assertions were retained. The ordinary-route preload expectation now correctly
+  expects the approved assets, since they serve normal rooms.
+- Route follow-up: all seven new geometric assertions failed against the first
+  placements (all six food shops plus the Security Office north dodge lane).
+  Perimeter placements pass, with monitor y60 also clearing wanted-5 spawns.
+  No RNG, loot or combat rules were tuned. See the rollout balance-followup.md.
+- Final aggregate: npm test -- --maxWorkers=1 passed **143 files / 1,326 tests**
+  in 84.44 seconds. An earlier four-worker run while the bot report ran failed
+  the real mustard conflict and the pre-existing 5-second Owner reaction test
+  in balance-danger.test.ts. The final isolated single-worker run passes that
+  unchanged Owner test without a timeout increase. A later concurrent perimeter
+  run timed out that same Owner test and hybrid-fusion.test.ts (every hybrid
+  compiles) at their existing 5-second limits, with all 1,324 other tests passing.
+  The final isolated gate below is authoritative; neither timeout was raised.
+- npm run typecheck and npm run build passed. Output JS is 2,066.33 kB; the
+  existing >1,500 kB minified-bundle warning remains. No debug bridge or debug
+  enable symbol occurs in the JS. Four dormant mvp-prop-test comparisons from
+  the supplied fixture remain; devFixture returns null in production, so this
+  is not a claim that every fixture string was tree-shaken out.
+- Independent focused review: 8 files / 91 tests pass, plus 1,600 generated
+  wings covering all floors/wing parts and 1,524 new prop instances without
+  overlap against the actual store-interior/static dressing (correct store index
+  and an asserted store_interior theme). Final static framing also keeps the
+  shop props/one-shots above the front glass and the monitor footprint in front
+  of the back-wall facade. Security monitor collision checks
+  include wanted-5 guard builds and east entry. All nine runtime PNGs match both
+  the original ZIP bytes and public/assets/prop-test/manifest.json SHA256 values.
+- Browser discovery passes for all five fixture/normal-route tests. Execution
+  and fresh screenshots are **blocked**, not passed: pinned Chromium revision
+  1243 is absent; official Chrome 153.0.8010.12 downloads are invalid ZIPs;
+  installed Chromium reports socket() failed: Operation not permitted (1),
+  including after an approved escalated retry; the cloud browser rejects the
+  local URL with net::ERR_BLOCKED_BY_CLIENT. No restriction was bypassed.
+  The normal-route tests resume real serialized checkpoints and use actual
+  doorway/mop inputs; they still need execution in a permitted browser.
+
+Final before/after balance: six policies × the same 40 seeded nights,
+240 nights per revision / 480 total. Both runs passed; no run stalled.
+
+| Bot policy | Before wins / 40 | Final wins / 40 | Stalls before / final |
+| --- | ---: | ---: | ---: |
+| naive bot, shopping: none, route: long | 0 | 0 | 0 / 0 |
+| dodger bot, shopping: none, route: long | 1 | 1 | 0 / 0 |
+| pro bot, shopping: none, route: long | 23 | 23 | 0 / 0 |
+| pro bot, shopping: buy, route: long | 28 | 29 | 0 / 0 |
+| pro bot, shopping: buy, route: shortcut | 28 | 29 | 0 / 0 |
+| expert bot, shopping: buy, route: long | 39 | 39 | 0 / 0 |
+
+The rejected aisle candidate had only 21/40 and 22/40 pro-shopping wins.
+After the perimeter repair, both are 29/40 versus 28/40 baseline. The other
+four bot outcome counts are identical to baseline. This resolves the measured
+regression in this seeded sample; it does not establish that every human
+combat or route is unaffected. No compensating balance tuning was made.
+Full wing/damage/cash tables are in artifacts/normal-props/balance-before.md
+and artifacts/normal-props/balance-after.md.
+
+Residual limits: normal-room visuals and feel are unreviewed in a live browser;
+the original keyboard-test timeout remains browser-unverified; original fixture
+screenshots are historical only. Solid bases remain after damage and props
+reset on reentry. No original-worktree write, commit, push, merge, deploy or
+release was performed in this continuation.
+
+## 2026-10-02 — Three-prop playable test room
+
+Scope: bakery case, security monitor bank and twin-bowl slush machine only,
+on an isolated worktree based on `c9b84f6`. Existing normal room generation
+continues to choose only the old cart/soda/rack kinds.
+
+- Red: four new unit assertions failed on missing collision footprints and
+  authored room props. The new browser spec failed with an empty prop list.
+  A dressing assertion then failed on the ordinary opening-room decor.
+- Green: targeted prop/dressing tests passed (26 assertions across three files).
+  `npm test -- --maxWorkers=4` passed **140 files / 1,292 tests**. The earlier
+  unrestricted run alongside browser QA timed out in the existing
+  `balance-danger.test.ts` Owner reaction fight; the complete four-worker run
+  passed that test without changing its timeout or behavior.
+- `npm run typecheck` and `npm run build` passed. Build reports the >1500 kB
+  minified-bundle warning (2,066.01 kB JS); no code-splitting work is in scope.
+- Browser: the new fixture and normal-route exclusion specs passed **2/2**
+  in 58.9 seconds, using a temporary Vite configuration with `watch: null`.
+  The watched run repeatedly reloaded to the title; the stable review launcher
+  uses the same no-watch setting. The new flow uses keyboard/mouse input and
+  the read-only debug bridge, never teleporting or mutating live game state.
+  It covers south and north approaches, standing/damaged collisions, exact
+  intact/damaged render anchors and scale 1, depth, behind-prop fade, each
+  matching one-shot, repeated hits, effect disposal, east-door exit/reentry,
+  R reset, page reload and preserving an existing checkpoint value.
+- Final standard-config rerun: the normal-route exclusion passed, but the long
+  keyboard playthrough hit its 90-second deadline while walking away from the
+  bakery after the occlusion check. The trace remained in live gameplay with
+  no page reload and no reported page error. This is an unresolved automation
+  timing/reproducibility limit; the same complete flow passed 2/2 in the stable
+  no-watch QA session above. No gameplay change was made to hide the timeout.
+- Adjacent existing browser specs: `hero-props.spec.ts` and `restart.spec.ts`
+  passed **5/5** in 24.4 seconds with the normal config, one worker, port 4195.
+- Asset integrity: all nine promoted PNGs are byte-identical to the local
+  approved archive. JSON confirms glass/soda 10x64px frames, chips 8x48px,
+  50 ms per frame and the center pivots. Native prop PNG pairs keep their
+  full canvases and bottom-center registration. Runtime metadata and hashes
+  are recorded in `public/assets/prop-test/manifest.json`.
+- Actual captures: `artifacts/prop-test-room/intact.png`, `damaged.png`, and
+  `bakery-break.png`, `monitors-break.png`, `slush-break.png`. The launcher's
+  live route was also opened in the Codex browser and visually checked with
+  the three intact props on clear floor.
+
+Library proof: [DEAD_MALL_Three_Prop_Test_Room.png](https://chatgpt.com/api/library/files/libfile_3c2060a422c881918b07f9c43b909e7c/download) was saved, downloaded through Library, opened as a 1280x720 PNG and verified byte-identical (SHA256 `5ef4dd05d3a8cd2489929ebb5e47aa5deae851efbdc2795126f0e780a46f4c8e`).
+
+Residual limits: the fixture keeps the standard Night Shift HUD, breaks on one
+mop hit, and intentionally adds no loot, enemy splash damage or slush puddle.
+Damaged props remain solid. Human judgment of size, base footprint and feel is
+still needed before expanding beyond the approved three-prop probe.
+
 ## 2026-10-01 — Round 57 follow-up: the Volatile burst, seen
 
 - The one round 57 claim that was unit-tested only. New dev fixture
@@ -1812,3 +1948,46 @@ Archive checks verified 19 native PNGs with binary transparency and at most 32 o
 - Two older tests updated on purpose: elites drop double (was triple); Floor 2 now shelves a rare.
 - `npx vitest run`: 127 files, 1189 tests pass. `npm run build`: passes.
 - Browser gate (cloud Chromium, one run, nothing alongside): 82/82 passed in 10.5 min.
+## 2026-10-02 — Approved isolated Mac verification of normal-room props
+
+- Verified the isolated branch and base `c9b84f6d915bfe8eef4a42f60ff66446c20a30da`.
+  All 785 exported baseline files matched, no added source files were present,
+  both supplied Library artifacts matched their SHA-256 values, and
+  `git apply --check` passed. After application, all 794 cloud source files
+  matched the delivered ZIP byte-for-byte.
+- `npm run typecheck` — passed before browser checks and after the test repair.
+- `npm run build` — passed; JS 2,066.33 kB, existing >1,500 kB bundle warning.
+- `npm test -- --maxWorkers=4` — cloud source: 143 files / 1,326 tests passed
+  in 16.58 s; after the test repair: 144 files / 1,329 tests passed in 22.51 s.
+- Initial standard-config gate on port 4193, one worker: 8 passed / 2 failed
+  in 4.0 min. Hero-props 3/3, restart 2/2, normal slush and both fixture tests
+  passed. Bakery and Security failed because Continue was correctly disabled:
+  their generated saves got past food_court without recording it cleared.
+- Meaningful regression red: the real checkpoint validator rejected the
+  bakery and Security boundaries with that same reason. Three cases now pass
+  after the test-only helper records prior authored fights in clearedRoomIds.
+  The helper preserves the source run, inventory and player health.
+- `PW_PORT=4193 npx playwright test tests/browser/normal-room-props.spec.ts
+  tests/browser/prop-test-room.spec.ts --workers=1` — 5/5 passed in 2.3 min
+  using the repository's unchanged standard configuration, no timeout increase.
+  This verifies ordinary Continue, actual store door entry, native intact/damaged
+  poses, bakery/slush breaks, exit cleanup and fresh reentry. The fixture verifies
+  movement and retained solid footprints, all three one-shot effect textures,
+  repeated hits without retrigger, alpha/depth occlusion, effect cleanup,
+  east/west transitions, R reset, reload and checkpoint isolation.
+- `PW_PORT=4193 npx playwright test tests/browser/normal-room-props.spec.ts
+  --grep 'normal Security Office' --workers=1` — 1/1 passed in 4.4 s, recapturing
+  the native monitor bank before the pause card covered it. Visual inspection
+  confirms the bank is visible and unclipped at (550,60).
+- Inspected fresh normal bakery/slush/monitor screenshots and the live three-prop
+  fixture. The review server was restarted with the integrated code on port 4194;
+  a fresh IAB tab is open and marked as a deliverable.
+- Local code changes after the cloud patch are confined to browser test setup,
+  its regression test and these status/evidence notes. Production code is the
+  exact approved cloud implementation. Unrelated hero screenshots generated by
+  adjacent tests were restored to their original tracked bytes.
+- Main was not edited, merged, pushed or deployed. No local balance/position
+  change was made; cloud paired balance results remain the existing evidence.
+  This is Chromium/local visual verification, not a full human night playthrough
+  or verification on other browsers/devices. Fresh captures and a cloud-sync
+  patch accompany the handoff.

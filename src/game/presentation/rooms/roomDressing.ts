@@ -1277,6 +1277,9 @@ function districtRoom(base: DressingPlan, room: WingRoomDefinition, district: Di
 }
 
 export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1, district?: DistrictId): DressingPlan {
+  if (room.variantId === 'prop-test' || room.variantId === 'prop-test-return') {
+    return { ...openingConcourse(room), areaName: room.name.toUpperCase(), props: [], neonRings: [], civilians: false };
+  }
   // Round 53: through the suspicious vending machine.
   if (insideStore === SECRET_STORE_INDEX) return backRoom();
   // A shop looks like itself on any floor.

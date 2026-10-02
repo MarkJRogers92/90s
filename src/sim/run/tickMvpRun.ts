@@ -556,7 +556,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   updateRunCarrier(state, input);
 
   // 5b. Round 53: the first fight with props says what they are for.
-  if (!state.propsHinted && (state.room.combat.props?.length ?? 0) > 0) {
+  if (!state.propsHinted && state.room.combat.props?.some((prop) => prop.kind === 'cart' || prop.kind === 'soda' || prop.kind === 'rack')) {
     state.propsHinted = true;
     publishRunFeedback(state, PROPS_HINT);
   }

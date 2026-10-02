@@ -93,7 +93,7 @@ describe('mall props (round 53)', () => {
     expect(soda.state).toBe('broken');
   });
 
-  it('regular fights get props in clear floor; the boss arena, safe rooms and store interiors do not', () => {
+  it('regular fights keep seeded props; safe concourses stay clear and Security gets only its monitor', () => {
     let fights = 0;
     let withProps = 0;
     for (let seed = 1; seed <= 30; seed += 1) {
@@ -101,6 +101,10 @@ describe('mall props (round 53)', () => {
       run.wing.rooms.forEach((wingRoom, index) => {
         const combat = buildRoomCombatState(run.wing, index, 'west', run.inventory, run.seed);
         const props = combat.props ?? [];
+        if (wingRoom.id === 'security_office') {
+          expect(props.map((prop) => prop.kind)).toEqual(['monitors']);
+          return;
+        }
         if (wingRoom.enemySpawns.length === 0 || wingRoom.bossAnchor !== null) {
           expect(props, `${seed} ${wingRoom.id}`).toHaveLength(0);
           return;

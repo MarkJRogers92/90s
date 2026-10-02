@@ -1,0 +1,128 @@
+[
+  {
+    "path": "public/assets/prop-test/prop-test-bakery.png",
+    "source": "docs/art/prop-packs/2026-10-02/damaged-props/originals/07-glass-bakery-display-case.png",
+    "sha256": "79e82c42edb59552ed62ceeb9f0d291b0c014f87d9ebe152de9b6c2d77efb183",
+    "size": [
+      64,
+      48
+    ],
+    "origin": [
+      0.5,
+      1
+    ]
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-bakery-damaged.png",
+    "source": "docs/art/prop-packs/2026-10-02/damaged-props/damaged/07-glass-bakery-display-case-damaged.png",
+    "sha256": "26dd16aa52ef5782c69f995b6ec53d84b6b575d673ec93a645a712833552abf8",
+    "size": [
+      64,
+      48
+    ],
+    "origin": [
+      0.5,
+      1
+    ]
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-monitors.png",
+    "source": "docs/art/prop-packs/2026-10-02/damaged-props/originals/11-security-monitor-bank.png",
+    "sha256": "6e5d7ee85208610b5281f15abb30fa36ce8a4e6f2fd51f36d5cca1c31eacc683",
+    "size": [
+      56,
+      56
+    ],
+    "origin": [
+      0.5,
+      1
+    ]
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-monitors-damaged.png",
+    "source": "docs/art/prop-packs/2026-10-02/damaged-props/damaged/11-security-monitor-bank-damaged.png",
+    "sha256": "4f4fd19eed4f6c6b45b9fa5145f606f8399249921dfd6e8bf41fa5fea276a9fc",
+    "size": [
+      56,
+      56
+    ],
+    "origin": [
+      0.5,
+      1
+    ]
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-slush.png",
+    "source": "docs/art/prop-packs/2026-10-02/damaged-props/originals/06-twin-bowl-slush-machine.png",
+    "sha256": "1a933d83ae1af00f85dba30b8171024f451cf0b1918713e2f1282cffb41be78e",
+    "size": [
+      40,
+      56
+    ],
+    "origin": [
+      0.5,
+      1
+    ]
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-slush-damaged.png",
+    "source": "docs/art/prop-packs/2026-10-02/damaged-props/damaged/06-twin-bowl-slush-machine-damaged.png",
+    "sha256": "4bec77764b8977306372f2712009e06f29d7e6c275e926e1ad428b76414e828b",
+    "size": [
+      40,
+      56
+    ],
+    "origin": [
+      0.5,
+      1
+    ]
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-glass-break.png",
+    "source": "docs/art/prop-packs/2026-10-02/effects/glass-break/glass_break_strip.png",
+    "sha256": "5503c81e81312b86cf378474ee95ecdaee12c3fddc9a471eb45b902b81e5ee57",
+    "size": [
+      640,
+      64
+    ],
+    "origin": [
+      0.5,
+      0.5
+    ],
+    "frameMs": 50,
+    "repeat": 0,
+    "blend": "NORMAL"
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-machine-chip.png",
+    "source": "docs/art/prop-packs/2026-10-02/effects/machine-chip/machine_chip_strip.png",
+    "sha256": "83930e1ee6c7e4a816caf04c3a1e0e94dbe928f88cce558d2565fd028d37ef66",
+    "size": [
+      384,
+      48
+    ],
+    "origin": [
+      0.5,
+      0.5
+    ],
+    "frameMs": 50,
+    "repeat": 0,
+    "blend": "NORMAL"
+  },
+  {
+    "path": "public/assets/prop-test/prop-test-soda-rupture.png",
+    "source": "docs/art/prop-packs/2026-10-02/effects/soda-rupture/soda_rupture_strip.png",
+    "sha256": "97e86c268b374d06c168659015387b2c4a5b535ba1e5abddbe50157e8d536c63",
+    "size": [
+      640,
+      64
+    ],
+    "origin": [
+      0.5,
+      0.5
+    ],
+    "frameMs": 50,
+    "repeat": 0,
+    "blend": "NORMAL"
+  }
+]

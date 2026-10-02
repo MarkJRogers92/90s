@@ -49,6 +49,9 @@ export function createProp(id: number, kind: MallPropKind, x: number, y: number)
 
 /** The walls a prop puts in the room: a soda machine, a standing rack, a fallen rack. */
 export function propWall(prop: MallProp): Rect | null {
+  // Native-size test props: a shallow footprint at their bottom-center anchor.
+  const testHalf = prop.kind === 'bakery' ? 30 : prop.kind === 'monitors' ? 24 : prop.kind === 'slush' ? 17 : null;
+  if (testHalf !== null) return { x: prop.x - testHalf, y: prop.y - 12, width: testHalf * 2, height: 12 };
   if (prop.kind === 'soda') return { x: prop.x - SODA_HALF.x, y: prop.y - SODA_HALF.y, width: SODA_HALF.x * 2, height: SODA_HALF.y * 2 };
   if (prop.kind !== 'rack') return null;
   if (prop.state !== 'fallen' || !prop.fall) return { x: prop.x - RACK_HALF.x, y: prop.y - RACK_HALF.y, width: RACK_HALF.x * 2, height: RACK_HALF.y * 2 };
@@ -94,6 +97,11 @@ function strike(state: RunState, prop: MallProp, dir: Vec2): void {
     return;
   }
   if (prop.state !== 'standing') return;
+  if (prop.kind === 'bakery' || prop.kind === 'monitors' || prop.kind === 'slush') {
+    prop.state = 'broken';
+    prop.brokenTick = state.tick;
+    return;
+  }
   if (prop.kind === 'soda') {
     prop.state = 'broken';
     createSurfacePatch(state, { x: prop.x, y: prop.y, radius: SODA_PUDDLE_RADIUS, ticks: SODA_PUDDLE_TICKS, rootActionId: 0, sourceItemIds: [] });
