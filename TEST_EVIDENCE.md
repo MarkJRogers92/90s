@@ -1634,3 +1634,11 @@ Archive checks verified 19 native PNGs with binary transparency and at most 32 o
   own parallel run clobbering `test-results/`; rerun alone they pass, as does the 550 shutter test.
   `offers are identical for one seed` (five launches) took 27-30 s on both `main` and this branch
   against the 30 s default; it now sets a 60 s timeout like the other multi-launch tests.
+
+## Round 56 - leaner economy (2026-10-02, cloud session)
+
+- New `tests/unit/lean-economy.test.ts` failed first (Floor 1 fights paid $72, 5.5 items; no rare in
+  floor stores), then passed after the token cut and the floor-store rare.
+- Two older tests updated on purpose: elites drop double (was triple); Floor 2 now shelves a rare.
+- `npx vitest run`: 127 files, 1189 tests pass. `npm run build`: passes.
+- Browser gate (cloud Chromium, one run, nothing alongside): 82/82 passed in 10.5 min.

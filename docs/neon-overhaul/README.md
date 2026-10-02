@@ -1415,3 +1415,27 @@ own rng (`FLOOR_STORE_SALT`), so no other draw moves.
   - Pawn Palace: stand at the counter 1 s to sell half a heart for
     `HOCK_PRICE` ($6), once a visit, never below one heart.
   Not yet seen in play.
+
+## Round 56 - a leaner economy
+
+Playtest 2026-10-01 (a won night, 16.8 min): five things bought on Floor 1,
+one more all night, and the new floor stores walked past. Owner: money is too
+common, so the janitor is overpowered by Floor 2 and has nothing left to buy.
+
+Measured with `tests/unit/lean-economy.test.ts` (every monster a wing spawns,
+Lockdown elites and walkers included, killed and swept up):
+
+| Floor | Fights paid before | Now | Items at the median shelf price |
+|---|---|---|---|
+| 1 | $72 | $40 | 5.5 -> 3.1 |
+| 2 | $82 | $45 | 6.8 -> 3.8 |
+| 3 | $98 | $46 | 8.2 -> 3.8 |
+| 4 | $81 | $42 | 5.4 -> 2.8 |
+
+- `MALL_TOKEN_VALUE` (`run/tokens.ts`) roughly halved; the Mall Walker still
+  pays the most of any regular (4).
+- `ELITE_TOKEN_MULTIPLIER` (`run/luck.ts`) 3 -> 2.
+- The $30 starting float is unchanged.
+- Every upstairs wing with a floor-exclusive store shelves a rare in it at
+  `RARE_SHELF_PRICE` ($45), so Floors 2-4 each have something worth saving a
+  floor of change for. Wings without one (districts) keep the old rule.

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { createMvpRun } from '../../src/sim/run/createMvpRun';
 import { enterDoorway } from '../../src/sim/run/tickMvpRun';
 import { collectTokens, dropTokensForDeaths, MALL_TOKEN_VALUE } from '../../src/sim/run/tokens';
-import { ELITE_HEALTH_MULTIPLIER, luck } from '../../src/sim/run/luck';
+import { ELITE_HEALTH_MULTIPLIER, ELITE_TOKEN_MULTIPLIER, luck } from '../../src/sim/run/luck';
 import { PLAYER_MAX_HEALTH } from '../../src/sim/run/rooms';
 
 function allCombatEnemies(seeds: number) {
@@ -37,11 +37,12 @@ describe('Clearance elites', () => {
     for (const elite of elites) expect(elite.health).toBe(12 * ELITE_HEALTH_MULTIPLIER);
   });
 
-  it('drop three times the change', () => {
+  it('drop double the change (round 56: was triple)', () => {
     const state = createMvpRun(7);
     state.room.tokens = [];
     dropTokensForDeaths(state, [{ id: 1, kind: 'spitter', x: 100, y: 100, health: 5, elite: true }]);
-    expect(state.room.tokens.filter((t) => t.kind !== 'snack').reduce((sum, t) => sum + t.value, 0)).toBe(MALL_TOKEN_VALUE.spitter * 3);
+    expect(state.room.tokens.filter((t) => t.kind !== 'snack').reduce((sum, t) => sum + t.value, 0)).toBe(MALL_TOKEN_VALUE.spitter * ELITE_TOKEN_MULTIPLIER);
+    expect(ELITE_TOKEN_MULTIPLIER).toBe(2);
   });
 });
 

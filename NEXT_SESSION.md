@@ -28,6 +28,10 @@ Last gate (round 39, the Roof): see TEST_EVIDENCE.md round 39.
 
 ## Next up
 
+Round 56 halved the change monsters drop and put a $45 rare in every upstairs
+floor store. Playtest: do you still buy upstairs? Are you short of a weapon on
+Floor 1 now (the $30 float is unchanged)? Do you save for the rare?
+
 Round 55 added floor-exclusive stores (floors 2-4) with Retro Diffusion shopfronts
 and a twist each (see the playbook's Round 55). Playtest: do floors
 2-4 now feel different to shop in? Is hocking half a heart for $6 ever worth it?
