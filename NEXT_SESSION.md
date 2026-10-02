@@ -1,5 +1,23 @@
 # Next session
 
+## Main contains the verified three-prop integration (2026-10-02)
+
+The owner approved merge and push. Main now contains feature `3e2833a`
+via merge `9a647f9`, with the test checkpoint corrections and fresh captures.
+Merged-tree types, 1,329 tests and build pass; the identical feature tree
+passed 11 browser checks including the clear monitor recapture.
+
+Continue from main. The bounded rollout covers the six named food shops and
+ground-floor Security Office only. The test fixture is still available:
+`?fixture=mvp-prop-test&seed=1`, Night Shift, WASD, mouse/click, R.
+The preserved isolated server is http://127.0.0.1:4194/; alternatively run
+`node scripts/serve-prop-test.mjs` from a checkout without that port occupied.
+
+No further implementation is queued by this task. Human feel and other
+browsers/devices remain review items. The completion handoff records the
+published remote SHA and CI status. Untracked 2026-10-02 art is preserved and
+was excluded from the commits. No deployment was requested or performed.
+
 ## Local verification completed; sync test repairs back to cloud (2026-10-02)
 
 The approved cloud integration is applied only in the isolated worktree on

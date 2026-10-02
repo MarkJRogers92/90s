@@ -1,5 +1,28 @@
 # Status
 
+## 2026-10-02 — Three-prop integration merged into main
+
+The owner approved merge and push. Feature commit `3e2833a15c389b3bc0bae5d981a53451d30a6bfa`
+was merged without conflicts as `9a647f975de3cdc68c5e95e31687baa74f14acbd`.
+The merge tree is byte-identical to the verified feature tree.
+
+Normal Night Shift now has bakery cases in Slice Station, Pretzel Pit and
+Cocoa Hut, slush machines in Cinema Snacks, Candy Cauldron and Frosty Freeze,
+and one monitor bank in the ground-floor boss Security Office. Native intact/
+damaged sprites, retained solid bases and matching one-shot effects use the
+existing simulation and renderer. The three-prop dev fixture remains available.
+
+Fresh checks on the actual merged main tree: types pass, 1,329 tests pass,
+and the production build passes with the existing large-bundle warning.
+The identical feature tree passed the standard normal/fixture browser gate
+5/5, adjacent hero/restart checks 5/5 and the live monitor recapture 1/1.
+Only verified task files were committed. All 3,894 untracked art archive files
+retain their original names, sizes and timestamps.
+
+Publication is authorized to the existing `origin/main`; the completion
+handoff records the remote commit verification and CI status. No deployment
+is part of this change. The isolated review server remains on port 4194.
+
 ## 2026-10-02 — Normal-room props verified locally in the isolated worktree
 
 Applied the approved cloud patch only to `codex/three-prop-test-room`, after

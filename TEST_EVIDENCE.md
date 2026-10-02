@@ -1,5 +1,31 @@
 # Test evidence
 
+## 2026-10-02 — Final main integration verification
+
+- Fetched the existing origin before integration; main and origin/main both
+  remained at `c9b84f6d915bfe8eef4a42f60ff66446c20a30da`.
+  The only unrelated local files were the existing untracked art archive.
+- Explicitly staged 55 task files, excluding docs/art. Feature commit:
+  `3e2833a15c389b3bc0bae5d981a53451d30a6bfa`.
+  Fresh pre-commit full suite: 144 files / 1,329 tests passed in 18.93 s.
+- Conflict-free main merge: `9a647f975de3cdc68c5e95e31687baa74f14acbd`.
+  Main and feature tree hashes both equal
+  `834b3f6824eac1d7d352a8b1f5a3bd534e82d2fc`.
+- On the actual merged main checkout, `npm run typecheck` passed,
+  `npm test -- --maxWorkers=4` passed 144 files / 1,329 tests in 18.59 s,
+  and `npm run build` passed. Build output: JS 2,066.33 kB / gzip 571.19 kB;
+  the pre-existing >1,500 kB bundle warning remains.
+- The identical verified feature tree passed the standard normal+fixture
+  browser gate 5/5, adjacent hero/restart checks 5/5 and monitor recapture
+  1/1. See the local verification section for exact commands and the original
+  invalid-checkpoint setup failures and their regression repair.
+- Confirmed all 3,894 unrelated untracked art files still have their original
+  names, sizes and modification timestamps, and none entered the commit.
+- These final checkpoint notes change documentation only. The source tree
+  tested on main is preserved. The owner explicitly authorized publication
+  to origin/main; remote equality and terminal/reported CI status are recorded
+  in the completion handoff after push. No deployment is part of this task.
+
 ## 2026-10-02 — Sparse normal-room three-prop rollout
 
 Scope: the same three approved native prop/effect pairs, using existing store
