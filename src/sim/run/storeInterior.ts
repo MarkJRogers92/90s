@@ -26,7 +26,7 @@ import type { Rect, Vec2 } from '../model';
 import { generateWing } from '../wing/generateWing';
 import type { GeneratedWing, WingOffer, WingRoomDefinition, WingStoreInstance } from '../wing/types';
 import type { FloorNumber } from '../wing/floorSpecs';
-import { DOORWAY_WIDTH, STORE_TEMPLATES, WALL_THICKNESS, type AuthoredStoreTemplate } from '../wing/templates';
+import { DOORWAY_WIDTH, FLOOR_STORE_IDS, STORE_TEMPLATES, WALL_THICKNESS, type AuthoredStoreTemplate } from '../wing/templates';
 import { publishRunFeedback } from './economy';
 import { pairUpStock } from './recipeHints';
 import type { MvpCommandResult, MvpRunState } from './types';
@@ -174,10 +174,10 @@ export const RARE_SHELF_PRICE = 45;
  * offer that is not a recipe-hint half for a seeded rare at RARE_SHELF_PRICE.
  * It buys, steals and checkpoints like any other shelf item.
  */
-function shelveRare(rooms: WingRoomDefinition[], seed: number): WingRoomDefinition[] {
+function shelveRare(rooms: WingRoomDefinition[], seed: number, preferredStoreIds: readonly string[] = []): WingRoomDefinition[] {
   const stores = rooms.flatMap((room, roomIndex) => (room.stores ?? []).map((store) => ({ roomIndex, storeId: store.templateId })));
   if (stores.length === 0) return rooms;
-  const pick = stores[hash(seed, 'rare-store') % stores.length]!;
+  const pick = stores.find((store) => preferredStoreIds.includes(store.storeId)) ?? stores[hash(seed, 'rare-store') % stores.length]!;
   const rare = RARE_ROSTER[hash(seed, 'rare-item') % RARE_ROSTER.length]!.definition;
   return rooms.map((room, roomIndex) => {
     if (roomIndex !== pick.roomIndex) return room;
@@ -217,7 +217,11 @@ export function generateRunWing(seed: number, floor: FloorNumber = 1, part?: 1):
       offers: [...first.offers, ...second.offers],
     };
   });
-  // One rare a floor, in the boss wing's stores.
+  // Round 56: every upstairs wing with a floor-exclusive store shelves a rare in it,
+  // so upstairs cash has a target; otherwise one rare a floor, in the boss wing's stores.
+  const floorStores: readonly string[] = FLOOR_STORE_IDS[floor] ?? [];
+  const hasFloorStore = rooms.some((room) => (room.stores ?? []).some((store) => floorStores.includes(store.templateId)));
+  if (hasFloorStore) return { ...wing, rooms: shelveRare(rooms, seed, floorStores) };
   return { ...wing, rooms: floorSpec(floor).rareOnShelf && part !== 1 ? shelveRare(rooms, seed) : rooms };
 }
 

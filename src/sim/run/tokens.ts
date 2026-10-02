@@ -36,26 +36,31 @@ export type MallTokenPickup = {
   readonly droppedTick: number;
 };
 
-/** What each kind of mall monster is carrying. The boss ends the run instead. */
+/**
+ * What each kind of mall monster is carrying. The boss ends the run instead.
+ * Round 56: about half what it was. The 2026-10-01 night bought a whole kit on
+ * Floor 1 and walked past every store upstairs; a floor of fights now pays for
+ * about three shelf items (tests/unit/lean-economy.test.ts).
+ */
 export const MALL_TOKEN_VALUE: Readonly<Record<EnemyKind, number>> = {
   hanger: 1,
-  spitter: 2,
+  spitter: 1,
   lp_manager: 0,
-  mannequin: 3,
+  mannequin: 2,
   manager: 0,
-  static: 2,
-  shopper: 3,
-  mascot: 5,
+  static: 1,
+  shopper: 2,
+  mascot: 2,
   owner: 0,
-  roofer: 3,
+  roofer: 2,
   developer: 0,
   // Pocket change for the arcade: the best payout of any regular.
-  walker: 8,
+  walker: 4,
   // Round 50: the district monsters pay like their kin; mini-bosses drop a rare instead.
-  elf: 2,
-  spritzer: 3,
-  poodle: 2,
-  goon: 4,
+  elf: 1,
+  spritzer: 2,
+  poodle: 1,
+  goon: 2,
   santa: 0,
   glamour_queen: 0,
   whiskers: 0,

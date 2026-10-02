@@ -68,11 +68,10 @@ describe('the pair deal', () => {
 describe('rares on the shelves upstairs', () => {
   const rareOffers = (floor: 1 | 2 | 3 | 4, seed: number) => generateRunWing(seed, floor).rooms.flatMap((room) => room.offers).filter((offer) => RARES.has(offer.itemDefinitionId));
 
-  it('floors 3 and 4 shelve exactly one rare, at the rare price; floors 1 and 2 none', () => {
+  it('floors 2-4 shelve exactly one rare a wing, at the rare price; floor 1 none (round 56: floor 2 too)', () => {
     for (const seed of [1, 7, 42, 99]) {
       expect(rareOffers(1, seed)).toHaveLength(0);
-      expect(rareOffers(2, seed)).toHaveLength(0);
-      for (const floor of [3, 4] as const) {
+      for (const floor of [2, 3, 4] as const) {
         const rares = rareOffers(floor, seed);
         expect(rares).toHaveLength(1);
         expect(rares[0]!.price).toBe(RARE_SHELF_PRICE);

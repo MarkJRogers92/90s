@@ -437,3 +437,8 @@ Round 55 (2026-10-01): floor-exclusive stores on floors 2-4 (two per floor,
 `FLOOR_STORE_IDS`), so upstairs no longer reshuffles floor 1's shops. Retro Diffusion
 shopfront art, and a twist each (glare, chime, mustard, cold snap, rod, pawn). 1178 unit tests and `npm run build` pass; the
 browser gate was not run.
+
+Round 56 (2026-10-02): leaner economy from the 2026-10-01 night. Token values
+about halved and elites pay double (was triple): a floor of fights now buys ~3
+shelf items (was 5-8). Each upstairs floor store shelves a $45 rare. 1189 unit
+tests and the build pass.
