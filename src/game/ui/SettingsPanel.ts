@@ -46,6 +46,11 @@ export class SettingsPanel {
         });
       }
     }
+    for (const input of this.panel.querySelectorAll<HTMLInputElement>('input[name="setting-coach"]')) {
+      input.addEventListener('change', () => {
+        if (input.checked) gameSettings().update({ coach: input.value === 'on' });
+      });
+    }
     this.music.addEventListener('input', () => {
       gameSettings().update({ musicVolume: Number(this.music.value) / 100 });
       this.render(gameSettings().get());
@@ -88,6 +93,9 @@ export class SettingsPanel {
       for (const input of this.panel.querySelectorAll<HTMLInputElement>(`input[name="setting-${name}"]`)) {
         input.checked = input.value === settings[name];
       }
+    }
+    for (const input of this.panel.querySelectorAll<HTMLInputElement>('input[name="setting-coach"]')) {
+      input.checked = input.value === (settings.coach ? 'on' : 'off');
     }
     this.music.value = String(Math.round(settings.musicVolume * 100));
     this.sfx.value = String(Math.round(settings.sfxVolume * 100));

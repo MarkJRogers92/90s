@@ -18,6 +18,8 @@ export type GameSettings = {
   readonly flashes: 'full' | 'reduced';
   readonly musicVolume: number;
   readonly sfxVolume: number;
+  /** Round 57: short how-to tips for a new janitor's first shifts. */
+  readonly coach: boolean;
 };
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -26,6 +28,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   flashes: 'full',
   musicVolume: 0.8,
   sfxVolume: 1,
+  coach: true,
 };
 
 const STORAGE_KEY = 'dead-mall:settings:v1';
@@ -62,6 +65,7 @@ export function sanitizeSettings(raw: unknown): GameSettings {
     flashes: source.flashes === 'reduced' ? 'reduced' : 'full',
     musicVolume: volume(source.musicVolume, DEFAULT_SETTINGS.musicVolume),
     sfxVolume: volume(source.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
+    coach: typeof source.coach === 'boolean' ? source.coach : DEFAULT_SETTINGS.coach,
   };
 }
 

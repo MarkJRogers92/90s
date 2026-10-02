@@ -513,6 +513,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#07050c');
     this.removeBloom = installAdaptiveBloom(this);
     this.gameHud = new GameHud(this);
+    this.gameHud.setCoachAllowed(this.devFixture() === null);
     const hud = this.gameHud;
     this.inputAdapter.hudSlotAt = (x, y) => hud.weaponSlotAt(x, y);
     this.inputAdapter.onToggleMusic = () => {
