@@ -2,15 +2,21 @@
 
 ## Start here (updated 2026-10-01)
 
-`origin/main` is at round 53b plus the Continue HUD fix (`4d9f981`). Round 54
-(palms fade, the toppled rack art, a flaky test) is on branch
-`claude/polish-palms-rack-tests`, not yet merged. On the owner's Mac the repo
-is `~/code/90s`; make sure the checkout is on `main` (or a branch off it)
-before playing, since an old Codex branch shows the pre-neon game. Other
-sessions merge to `main` too, so `git fetch` and compare before merging.
+`origin/main` is at round 56 (`2b6250d`: floor-exclusive stores and the leaner
+economy; rounds 54 and 55 are in it too). Round 57 (a bot playtester, the staff
+passage, the coach, the daily rule, elite traits, the seed card, wanted
+clarity) is on branch `claude/balance-bot-and-routes`, built on it, committed to
+nothing yet and not pushed. On the owner's Mac the repo is `~/code/90s`; make
+sure the checkout is on `main` (or a branch off it) before playing, since an
+old Codex branch shows the pre-neon game. Other sessions merge to `main` too
+(a cloud session landed rounds 54-56 while this worktree still held round 54 as
+uncommitted changes), so `git fetch` and compare before merging.
 
-**The biggest open item is a human playtest of rounds 50-54** (the questions
-below). Switch on recording in the title screen's Playtest stats panel, play a
+**The biggest open item is still a human playtest** (now rounds 50-57; the
+questions below). Before you tune anything, run `npm run balance` (about two
+minutes; see the playbook's Round 57) so a change can be judged against the
+bot's baseline in [`docs/neon-overhaul/balance/`](docs/neon-overhaul/balance/round57-baseline.md).
+Then switch on recording in the title screen's Playtest stats panel, play a
 night or two, press Copy, and tune from the log, as round 45 did.
 
 Read [`docs/neon-overhaul/README.md`](docs/neon-overhaul/README.md) first. It
@@ -27,6 +33,13 @@ port 5173 is taken by another worktree, run the browser gate with
 Last gate (round 39, the Roof): see TEST_EVIDENCE.md round 39.
 
 ## Next up
+
+Round 57's leads, from the bot (not verdicts; its charge-dodging is crude):
+Floor 3's Owner's Suite is its deadliest wing (14-17 of ~45 nights; Mascot
+Brute charges), Floor 2's Portrait Studio next (Glamour Row's mini-boss and
+perfume), and the Helipad finale is easier for it than the Owner. Does a human
+find the Owner harder than the Developer? If so, round 42's goal (the finale is
+the hardest fight) is not met, and the Developer is the one to tune up.
 
 Round 56 halved the change monsters drop and put a $45 rare in every upstairs
 floor store. Playtest: do you still buy upstairs? Are you short of a weapon on
@@ -73,6 +86,23 @@ The queue as asked:
 - Palms hiding the janitor and the `districts.test.ts` timeout: fixed in
   round 54.
 
+## Round 57 playtest questions
+
+- The staff passage (STAFF ONLY hatch on a safe concourse, about half of wings):
+  did you find it, and did you take it? Did the star it costs (`SHORTCUT_HEAT`)
+  feel fair? The bot says it is a wash; a human may use it better (skip a
+  light fight at full health) or worse.
+- The coach: did the tips come when they were useful, or get in the way? Is two
+  shifts the right length (`COACH_SHIFTS`)? Settings has an off switch.
+- The wanted strip above the portrait: does it tell you what the stars cost
+  and when the next one comes? Is it too much text?
+- Elite traits: can you tell Swift from Volatile at a glance? Is the Volatile
+  fuse (0.6 s, 76 px) fair, and does it make you fight differently?
+- The Daily Shift's rule: is one a day a good challenge? Which rule is the
+  most fun, which the most annoying (Glass Janitor, No Breaks, Inflation,
+  Short Fuse)?
+- COPY CARD on the end card: would you paste it to someone?
+
 ## Round 54 playtest questions (props, the rack)
 
 - Palms, pillars, the fountain: do they now fade enough to see the janitor,
@@ -97,13 +127,19 @@ The queue as asked:
 
 ## Outside review backlog (GPT, 2026-10-01; proposals, not approved)
 
-Round 52 fixed its three bugs. Its design ideas, in its order:
-1. An optional guided first shift (fight, buy vs steal, one fusion).
-2. Three to five signature fusions with their own mechanic.
-3. One route choice per floor: a risky shortcut vs the longer shopping route.
-4. Late-game tuning against strong builds (wait for playtest logs).
-5. Clearer wanted consequences (next star, hot-goods Heat floor).
-6. Unlocks as play-style choices and optional challenges.
+Round 52 fixed its three bugs. Its design ideas, in its order, and where they stand:
+1. ~~An optional guided first shift~~ (round 57: the coach).
+2. ~~Three to five signature fusions with their own mechanic~~ (round 53).
+3. ~~One route choice per floor~~ (round 57: the staff passage; a risky way
+   past one fight, about one a floor. A heavier version that replaces a room
+   with a harder one for a better prize would need a new room role: dressing,
+   HUD names and music are all keyed by role.)
+4. Late-game tuning against strong builds (the bot can now play builds; wait
+   for playtest logs before trusting it with the Owner and the Developer).
+5. ~~Clearer wanted consequences~~ (round 57: the wanted strip).
+6. Unlocks as play-style choices and optional challenges (round 57 started the
+   second half with the Daily Shift's rule; a pick-your-own list of rules on
+   any night, paying extra stubs, is not built).
 
 ## Round 50 playtest questions (the districts)
 
@@ -306,6 +342,21 @@ visits and boss-card skips, which is what the questions below need.
 ## Ideas backlog
 
 Candidates, not commitments. Pick with the owner.
+
+**Needs art and a decision first (asked for in round 57, not built)**
+- A second playable employee. The janitor's in-world art (8-direction idle,
+  walk and swing) is Alex only; `portraits/employee.png` and `teenager.png`
+  exist as portraits. The kit should change a decision, not a number. Three
+  candidates: a Stock Clerk (starts with the Box Cutter, two hearts, $1 off
+  every shelf), a Teenager (a faster dash, one free alarm-less grab a night,
+  one heart less), a Night Guard (four hearts, a slower dash, security guards
+  fight on their side for the first star). Needs: a PixelLab character per
+  employee, a title or Break Room picker, and the career to remember the pick.
+- A secret floor (a Parking Garage or Basement Service Tunnels). A floor is a
+  `floorSpecs.ts` entry plus whatever `tsc` lists, but `FloorNumber` is 1-4 and
+  runs upward, so a basement below Floor 1 means renumbering or a flag; it also
+  needs dressing, a music track and a way in (a hatch that opens after a won
+  night? a key from the Owner?).
 
 **Heist follow-ups**
 - Blackouts silence the alarm (option E).
