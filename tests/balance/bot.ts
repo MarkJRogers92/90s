@@ -26,7 +26,7 @@ import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
 import { SHORTCUT_HATCH, SHORTCUT_REACH, shortcutHere } from '../../src/sim/run/shortcut';
 import { runWeaponSlots } from '../../src/sim/run/weapons';
 import type { WingOffer } from '../../src/sim/wing/types';
-import { dangersOf, escapeFrom, MODELLED_KINDS, type Escape } from './danger';
+import { dangersOf, escapeFrom, MODELLED_KINDS, type Danger, type Escape } from './danger';
 import { Navigator } from './path';
 
 export type BotSkill = 'naive' | 'dodger' | 'pro' | 'expert';
@@ -34,7 +34,20 @@ export type BotSkill = 'naive' | 'dodger' | 'pro' | 'expert';
 export type BotShop = 'none' | 'buy';
 /** `long` always takes the doors; `shortcut` crawls through the staff passage whenever the wing has one. */
 export type BotRoute = 'long' | 'shortcut';
-export type BotOptions = { readonly skill: BotSkill; readonly shop: BotShop; readonly route?: BotRoute };
+export type BotOptions = {
+  readonly skill: BotSkill;
+  readonly shop: BotShop;
+  readonly route?: BotRoute;
+  /**
+   * The expert's reaction delay, in ticks (60 a second): a hazard is unknown to
+   * it until it has been in view this long, as it is to a person who has to
+   * notice a wind-up and decide which way to go. 0 (the default) sees
+   * everything at once.
+   */
+  readonly reaction?: number;
+  /** Whether the expert uses the dash to get out of trouble (default yes). */
+  readonly dashes?: boolean;
+};
 
 export type BotMemory = {
   /** Where the janitor was a short while ago, to notice being wedged on a prop. */
@@ -51,11 +64,13 @@ export type BotMemory = {
   enemyHealthTick: number;
   /** The expert's way out chosen last tick, kept while it is still as good as any (see danger.ts). */
   escape: Escape | null;
+  /** The tick each danger was first in view, by `Danger.key`, for the reaction delay. */
+  seen: Map<string, number>;
   /** Which rule chose the last fight move (for analysis: shot, wind-up, retreat, unjam or approach). */
   branch: string;
 };
 
-export const newBotMemory = (): BotMemory => ({ anchor: null, anchorTick: 0, wiggleTicks: 0, wiggleSign: 1, visited: new Set(), nav: new Navigator(), enemyHealth: -1, enemyHealthTick: 0, escape: null, branch: '' });
+export const newBotMemory = (): BotMemory => ({ anchor: null, anchorTick: 0, wiggleTicks: 0, wiggleSign: 1, visited: new Set(), nav: new Navigator(), enemyHealth: -1, enemyHealthTick: 0, escape: null, seen: new Map(), branch: '' });
 
 const IDLE: MvpInputFrame = { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false };
 
@@ -281,11 +296,23 @@ export function botInput(state: MvpRunState, memory: BotMemory, options: BotOpti
   const length = Math.hypot(wanted.moveX, wanted.moveY);
   const intended = length > 1e-6 ? { x: wanted.moveX / length, y: wanted.moveY / length } : null;
   const combat = state.room.combat;
-  const escape = escapeFrom(combat, dangersOf(combat), intended, memory.escape);
+  const escape = escapeFrom(combat, knownDangers(memory, dangersOf(combat), combat.tick, options.reaction ?? 0), intended, memory.escape, options.dashes !== false);
   memory.escape = escape;
   if (escape === null) return wanted;
   memory.branch = 'safety';
   return { ...wanted, moveX: escape.heading?.x ?? 0, moveY: escape.heading?.y ?? 0, dash: escape.dash };
+}
+
+/**
+ * The dangers the expert has had in view for at least `reaction` ticks. A new
+ * key starts its clock; one that is gone (it landed, or the monster fell)
+ * stops being remembered.
+ */
+function knownDangers(memory: BotMemory, dangers: readonly Danger[], tick: number, reaction: number): Danger[] {
+  const present = new Set(dangers.map((danger) => danger.key));
+  for (const key of memory.seen.keys()) if (!present.has(key)) memory.seen.delete(key);
+  for (const danger of dangers) if (!memory.seen.has(danger.key)) memory.seen.set(danger.key, tick);
+  return dangers.filter((danger) => tick - memory.seen.get(danger.key)! >= reaction);
 }
 
 function decide(state: MvpRunState, memory: BotMemory, options: BotOptions): MvpInputFrame {
