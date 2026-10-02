@@ -12,6 +12,33 @@
   with the yellow fuse ring filling inside it around the fallen elite.
 - It passed first time, so it was mutation-checked: with
   `VOLATILE_BURST_DAMAGE` set to 0 the spec fails; restored, it passes (twice).
+- **The expert bot** (`balance-expert.test.ts` 4, `balance-danger.test.ts` 9,
+  red first). The hypothesis was that the `pro` bot dodged charges badly. A duel
+  harness (one monster, an empty room) said the opposite: `pro` was hit 0.13 times
+  per Mascot duel but almost never killed it (2 of 24 in 40 s, it dodges forever).
+  A replay of the Owner's Suite then showed `pro` losing exactly 4 health in all
+  60 seeds, by its retreat running along the Owner's charge lane and its shot
+  dodge ignoring two Mascot lanes. The `expert` was built to be red against that
+  (the first run: dead to the Owner, 10 of 24 kills). Bugs found on the way, each
+  from a trace: it shuffled left and right every tick inside a lane (two equal
+  ways out trading places; fixed with hysteresis, and the test fails without it:
+  mutation-checked); the duel harness spawned monsters outside the playfield for
+  some bearings, which contaminated the first duel numbers for every bot (fixed,
+  all re-measured); and the safety filter sat inside the fight code, so it did
+  nothing once a room was cleared and a Volatile fuse was still burning (moved to
+  wrap every decision). Three of my own test expectations were wrong and were
+  fixed after reading the failure (an unexported boss helper, a charge too short
+  to reach the janitor, a safe wish that rightly needs no escape).
+  Results, 100 nights, `docs/neon-overhaul/balance/round57-expert.md`: expert
+  92% won against `pro`'s 67%; Owner's Suite 100% cleared for 0.6 health (`pro`
+  82%, 4.5); Helipad 2.0 health, the hardest boss; burst damage zero. Duels
+  (24 each): the expert is hit 0 times by a Mascot Brute or Bargain Hunter and
+  kills them in 5.7 s and 2.9 s.
+- This round's whole claim from the first bot, that the Owner's Suite is the
+  deadliest wing, was wrong and is corrected in the playbook and NEXT_SESSION.
+- `npx tsc --noEmit` clean; `npx vitest run` 138 files, 1268 passed. The browser
+  suite was not rerun: the only `src/` change is exporting one constant
+  (`SHOPPER_CHARGE_SPEED_PER_TICK`), and `volatile-burst.spec.ts` passed twice.
 
 ## 2026-10-01 — Round 57: a bot playtester, a route choice, a coach, a daily rule
 

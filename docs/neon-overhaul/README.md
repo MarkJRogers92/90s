@@ -1455,7 +1455,9 @@ feeds.
 - `bot.ts`: one `botInput(state, memory, options)` per tick. Skills bracket the
   difficulty: `naive` walks up and swings; `dodger` also sidesteps and dashes
   from wind-ups; `pro` also steps out of enemy shots and backs off while its
-  swing recovers. `shop: 'buy'` visits every store and buys the dearest thing
+  swing recovers; `expert` (added after the first baseline) plays like `pro`
+  but scores sixteen headings against every charge lane, slam and shot at once
+  (`danger.ts`) and takes the safest. `shop: 'buy'` visits every store and buys the dearest thing
   it can pay for (and equips the best damage-per-second weapon);
   `route: 'shortcut'` crawls through the staff passage when the wing has one.
   Left out on purpose: stealing, the Bench Warrant, the arcade, the secret room.
@@ -1479,12 +1481,41 @@ that does no damage for 10 s makes the bot circle its target.
 
 What it says (round 56 build, 100 nights): the `pro` bot wins 54% of nights
 without shopping and 63% with; Floor 1 costs it under a heart a wing (matching
-the human log's "0-2 damage"). Its deaths concentrate in two places: Floor 3's
-Owner's Suite (14-17 of ~45; Mascot Brute charge 2.6-3.0 hp a wing) and Floor 2's
-Portrait Studio in Glamour Row (8-9; perfume 1.2-1.6 hp). The finale (Helipad)
-is easier for it than the Owner (93-97% against 74-83% cleared), which is not
-round 42's "the finale is the hardest fight". The bot's charge-dodging is
-crude, so treat these as leads for a human playtest, not verdicts.
+the human log's "0-2 damage"). Its first reading was that Floor 3's Owner's
+Suite (14-17 of ~45 deaths) and Floor 2's Portrait Studio were the deadliest
+wings and that the finale was easier than the Owner. **The first of those was
+the bot, not the game** (the follow-up below): a bot that scores every lane,
+slam and shot at once clears the Owner's Suite 100% of the time for 0.6 health,
+and then the Helipad is the hardest boss. Treat any single-bot hot spot as a
+lead to check with a better bot, not a verdict.
+
+### The expert bot (a follow-up that corrected the first reading)
+
+`tests/balance/danger.ts` and `skill: 'expert'`. It decides what it wants as the
+`pro` does, then runs every decision (fight, shop, walk to the door) through a
+lookahead: sixteen headings, 48 ticks, against every Mascot, Bargain Hunter and
+Owner charge lane (locked at the start of the wind-up, so the danger is known),
+every boss slam, every enemy shot and every Volatile fuse. It takes the safest
+heading, keeps last tick's choice while it is still as good (without that two
+equal ways out trade places every tick and the bot shuffles in the lane: found
+from a trace, pinned by a test), and dashes only when walking cannot get clear.
+`tests/balance/duel.ts` (one monster, an empty room) and `scenarios.ts` (a
+boss room with the starting mop) put a bot in a fixed fight, so a change to the
+bot or a monster is a number. The unit tests pin the evaluator
+(`balance-danger.test.ts`) and the results (`balance-expert.test.ts`).
+
+What it showed ([`balance/round57-expert.md`](balance/round57-expert.md), 100
+nights): the `expert` wins 92% of nights against `pro`'s 67%. The Owner's Suite
+fell from 82% cleared and 4.5 health to 100% and 0.6 (the `pro` replay lost
+exactly 4 every time: it retreated along the Owner's charge lane and ignored two
+Mascot lanes while dodging a tray). The Helipad then costs 2.0 health a wing, the
+most of any boss: round 42's goal is met. The Volatile burst cost `pro` and the
+expert-before-fuses 0.7-0.8 health a Floor 1 wing, and costs the burst-aware
+expert nothing: it is fair if you can see the ring. What is left for the expert
+is unmodelled area hazards: Glamour Row's perfume clouds (1.5 a wing, 3 deaths)
+and the Roofers' tar (1.0 in the finale, Floor 4's first wing kills 4 in 100).
+Model those next (clouds and landing rings are blasts at a known place and
+time) before trusting them as game problems.
 
 ### Wanted clarity
 

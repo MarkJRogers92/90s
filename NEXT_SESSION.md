@@ -35,12 +35,19 @@ Last gate (round 39, the Roof): see TEST_EVIDENCE.md round 39.
 
 ## Next up
 
-Round 57's leads, from the bot (not verdicts; its charge-dodging is crude):
-Floor 3's Owner's Suite is its deadliest wing (14-17 of ~45 nights; Mascot
-Brute charges), Floor 2's Portrait Studio next (Glamour Row's mini-boss and
-perfume), and the Helipad finale is easier for it than the Owner. Does a human
-find the Owner harder than the Developer? If so, round 42's goal (the finale is
-the hardest fight) is not met, and the Developer is the one to tune up.
+Round 57's bot leads, after a better bot checked them (see the playbook's
+"expert bot" and `docs/neon-overhaul/balance/round57-expert.md`): the Owner's
+Suite looked deadliest to the first bot but was the bot's own mistakes (a good
+dodger clears it 100% for 0.6 health), and the Helipad is then the hardest boss
+(2.0 health a wing), as round 42 wanted. What is left: Glamour Row's perfume
+clouds (Floor 2's first wing, 3 deaths in 100) and the Roofers' tar (the finale
+and Floor 4's first wing, 4 deaths in 100). Both are area hazards the bot cannot
+see yet; model them in `tests/balance/danger.ts` first, then decide if they are
+the game's problem. For a human: does the Owner feel like a push-over? A good
+dodger takes about half a heart from him.
+The Volatile burst (round 57) cost the bots 0.7-0.8 health a Floor 1 wing until
+the expert learned to read the ring: a fair 0.6 s fuse for someone watching it,
+a real tax for someone who is not. Playtest question: do you see it in time?
 
 Round 56 halved the change monsters drop and put a $45 rare in every upstairs
 floor store. Playtest: do you still buy upstairs? Are you short of a weapon on
