@@ -3,16 +3,18 @@
  * `tickMvpRun` input the keyboard feeds, so a seeded night can be replayed
  * thousands of times without a browser or a human.
  *
- * It is a measuring stick, not a good player. Two skill levels bracket the
+ * It is a measuring stick, not a good player. The skill levels bracket the
  * difficulty: `naive` walks up to the nearest monster and swings; `dodger`
- * also sidesteps (and dashes from) any monster that is winding up. If even the
- * naive bot wins every night, the game is too easy; if the dodger loses every
- * night, it is too hard. The honest answer lives between them, and a human is
- * somewhere in that band.
+ * also sidesteps (and dashes from) any monster that is winding up; `pro` also
+ * steps out of the way of incoming shots and backs off while its swing
+ * recovers; `expert` plays like `pro` but checks every heading against every
+ * charge lane, slam and shot together before it moves (see danger.ts). If even
+ * the naive bot wins every night, the game is too easy; if the expert loses
+ * every night, it is too hard. The honest answer lives between them, and a
+ * human is somewhere in that band.
  *
- * Left out on purpose (version 1): stealing, the Bench Warrant, the arcade
- * cabinet and the secret room. Each is a policy to add
- * once the baseline is trusted.
+ * Left out on purpose: stealing, the Bench Warrant, the arcade cabinet and the
+ * secret room. Each is a policy to add once the baseline is trusted.
  */
 import { calmWalker } from '../../src/sim/combat/walker';
 import type { EnemyState, Vec2 } from '../../src/sim/model';
@@ -24,9 +26,10 @@ import type { MvpInputFrame, MvpRunState } from '../../src/sim/run/types';
 import { SHORTCUT_HATCH, SHORTCUT_REACH, shortcutHere } from '../../src/sim/run/shortcut';
 import { runWeaponSlots } from '../../src/sim/run/weapons';
 import type { WingOffer } from '../../src/sim/wing/types';
+import { dangersOf, escapeFrom, MODELLED_KINDS, type Escape } from './danger';
 import { Navigator } from './path';
 
-export type BotSkill = 'naive' | 'dodger' | 'pro';
+export type BotSkill = 'naive' | 'dodger' | 'pro' | 'expert';
 /** `none` never enters a store; `buy` visits every store and buys the dearest thing it can pay for. */
 export type BotShop = 'none' | 'buy';
 /** `long` always takes the doors; `shortcut` crawls through the staff passage whenever the wing has one. */
@@ -46,9 +49,13 @@ export type BotMemory = {
   /** Total health left across the room's enemies, and the tick it last changed: a fight that goes nowhere. */
   enemyHealth: number;
   enemyHealthTick: number;
+  /** The expert's way out chosen last tick, kept while it is still as good as any (see danger.ts). */
+  escape: Escape | null;
+  /** Which rule chose the last fight move (for analysis: shot, wind-up, retreat, unjam or approach). */
+  branch: string;
 };
 
-export const newBotMemory = (): BotMemory => ({ anchor: null, anchorTick: 0, wiggleTicks: 0, wiggleSign: 1, visited: new Set(), nav: new Navigator(), enemyHealth: -1, enemyHealthTick: 0 });
+export const newBotMemory = (): BotMemory => ({ anchor: null, anchorTick: 0, wiggleTicks: 0, wiggleSign: 1, visited: new Set(), nav: new Navigator(), enemyHealth: -1, enemyHealthTick: 0, escape: null, branch: '' });
 
 const IDLE: MvpInputFrame = { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false };
 
@@ -132,14 +139,17 @@ function fight(state: MvpRunState, memory: BotMemory, options: BotOptions): MvpI
   if (options.skill === 'pro') {
     const shot = incomingShot(state);
     if (shot !== null) {
+      memory.branch = 'shot';
       const dash = shot.imminent && (player.dashCooldownTicks ?? 0) === 0;
       return { ...IDLE, ...aim, moveX: shot.dodge.x, moveY: shot.dodge.y, dash, ...(bestSlotFrame(state)) };
     }
   }
 
   if (options.skill !== 'naive') {
-    const winding = targets.filter((enemy) => enemy.phase === 'telegraph' && distance(enemy, player) < DODGE_RANGE);
+    // The expert answers the monsters danger.ts models by lookahead, so the fixed rule leaves them alone.
+    const winding = targets.filter((enemy) => enemy.phase === 'telegraph' && distance(enemy, player) < DODGE_RANGE && !(options.skill === 'expert' && MODELLED_KINDS.has(enemy.kind)));
     if (winding.length > 0) {
+      memory.branch = 'windup';
       const threat = winding.reduce((best, enemy) => (distance(enemy, player) < distance(best, player) ? enemy : best));
       // Step across the line of the blow, not away along it.
       const away = toward(threat, player);
@@ -158,16 +168,19 @@ function fight(state: MvpRunState, memory: BotMemory, options: BotOptions): MvpI
     memory.enemyHealthTick = state.tick;
   }
   if (state.tick - memory.enemyHealthTick > JAMMED_TICKS) {
+    memory.branch = 'unjam';
     const angle = state.tick / 45;
     const around = { x: nearest.x + Math.cos(angle) * 90, y: nearest.y + Math.sin(angle) * 90 };
     const move = steer(state, memory, around, true);
     return { ...IDLE, ...aim, moveX: move.x, moveY: move.y, ...(bestSlotFrame(state)) };
   }
   // Hit and run: while the swing recovers, give the monster room instead of trading blows.
-  if (options.skill === 'pro' && !ranged && gap < RETREAT_RANGE && player.attackCooldownTicks > 5) {
+  if ((options.skill === 'pro' || options.skill === 'expert') && !ranged && gap < RETREAT_RANGE && player.attackCooldownTicks > 5) {
+    memory.branch = 'retreat';
     const away = toward(nearest, player);
     return { ...IDLE, ...aim, moveX: away.x, moveY: away.y, ...(bestSlotFrame(state)) };
   }
+  memory.branch = 'approach';
   const move = steer(state, memory, nearest, gap > reach || !sees);
   return { ...IDLE, ...aim, moveX: move.x, moveY: move.y, ...(bestSlotFrame(state)) };
 }
@@ -254,8 +267,28 @@ function leaveRoom(state: MvpRunState, memory: BotMemory): MvpInputFrame {
   return { ...IDLE, moveX: Math.max(move.x, 0.05), moveY: move.y, ...(bestSlotFrame(state)) };
 }
 
-/** One tick of the bot's decision, from authoritative state alone. */
+/**
+ * One tick of the bot's decision, from authoritative state alone. The `expert`
+ * decides what it wants exactly as the `pro` does (approach, retreat, shop,
+ * walk to the door), then checks that heading against every lane, slam, fuse
+ * and shot at once (see danger.ts) and swaps in the safest way if the wanted one
+ * would be hit. The check covers every decision, not just fights: a Volatile
+ * elite's fuse is still burning after the room has been cleared.
+ */
 export function botInput(state: MvpRunState, memory: BotMemory, options: BotOptions): MvpInputFrame {
+  const wanted = decide(state, memory, options);
+  if (options.skill !== 'expert') return wanted;
+  const length = Math.hypot(wanted.moveX, wanted.moveY);
+  const intended = length > 1e-6 ? { x: wanted.moveX / length, y: wanted.moveY / length } : null;
+  const combat = state.room.combat;
+  const escape = escapeFrom(combat, dangersOf(combat), intended, memory.escape);
+  memory.escape = escape;
+  if (escape === null) return wanted;
+  memory.branch = 'safety';
+  return { ...wanted, moveX: escape.heading?.x ?? 0, moveY: escape.heading?.y ?? 0, dash: escape.dash };
+}
+
+function decide(state: MvpRunState, memory: BotMemory, options: BotOptions): MvpInputFrame {
   if (state.room.interior) return shopInside(state, memory);
   if (hasLivingEnemies(state.room.combat)) return fight(state, memory, options);
   if (options.shop === 'buy') {
