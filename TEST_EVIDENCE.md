@@ -1641,3 +1641,4 @@ Archive checks verified 19 native PNGs with binary transparency and at most 32 o
   floor stores), then passed after the token cut and the floor-store rare.
 - Two older tests updated on purpose: elites drop double (was triple); Floor 2 now shelves a rare.
 - `npx vitest run`: 127 files, 1189 tests pass. `npm run build`: passes.
+- Browser gate (cloud Chromium, one run, nothing alongside): 82/82 passed in 10.5 min.
