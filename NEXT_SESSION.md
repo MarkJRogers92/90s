@@ -81,8 +81,9 @@ The queue as asked:
 - The fallen rack: does it read as a rack lying down, and does it block you
   where it looks like it does? Falls toward or away from the camera still use
   the old turned-over sprite and have not been looked at on screen.
-- Art still waiting (Forge, `~/Desktop/art/finals/`): the arcade cabinets
-  (pick `-A-v9`, `-B-v3` or the combined one first).
+- Arcade cabinets: decided 2026-10-02, the owner keeps the current glowing
+  cabinets (`props/arcade-cabinet-anim.png`). The Forge candidates in
+  `~/Desktop/art/finals/` are not used.
 
 ## Round 53 playtest questions (hero fusions, props)
 
