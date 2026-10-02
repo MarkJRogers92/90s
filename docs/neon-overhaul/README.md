@@ -1564,5 +1564,8 @@ card has a COPY CARD button (key C) beside RETRY and TITLE.
   `floorSpecs.ts` plus whatever `tsc` lists, but it needs dressing, music and a
   way in that the owner picks.
 
-Dev fixtures added: `?fixture=mvp-hatch&seed=7` (beside a staff passage) and
-`&enter=1` on `mvp-lockdown` (steps into the Lockdown, to see elite traits).
+Dev fixtures added: `?fixture=mvp-hatch&seed=7` (beside a staff passage),
+`&enter=1` on `mvp-lockdown` (steps into the Lockdown, to see elite traits) and
+`?fixture=mvp-volatile&seed=7` (one posed single-hit Volatile elite beside the
+janitor; `tests/browser/volatile-burst.spec.ts` kills it with the real mouse,
+catches the fuse ring and checks the blast takes a health).

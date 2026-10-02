@@ -1,5 +1,18 @@
 # Test evidence
 
+## 2026-10-01 — Round 57 follow-up: the Volatile burst, seen
+
+- The one round 57 claim that was unit-tested only. New dev fixture
+  `?fixture=mvp-volatile&seed=7` (a posed single-hit Volatile elite 40 px from
+  the janitor), `bursts` on the debug snapshot, and
+  `tests/browser/volatile-burst.spec.ts`: the real mouse kills it, the spec
+  waits (per animation frame) for a lit fuse, saves
+  `artifacts/neon-overhaul/volatile-burst.png`, then expects exactly one health
+  gone when the fuse runs out and no fuse left. On screen: the orange blast ring
+  with the yellow fuse ring filling inside it around the fallen elite.
+- It passed first time, so it was mutation-checked: with
+  `VOLATILE_BURST_DAMAGE` set to 0 the spec fails; restored, it passes (twice).
+
 ## 2026-10-01 — Round 57: a bot playtester, a route choice, a coach, a daily rule
 
 Built on `origin/main` `2b6250d` (round 56). Every new rule was written
@@ -46,9 +59,8 @@ test-first and watched fail on the missing module or behavior before the code.
   "living" at the start of the tick); rewritten so the janitor's swing kills it.
   Swift travels 1.25-1.45 times as far in 40 ticks. On screen in the Lockdown
   (`?fixture=mvp-lockdown&enter=1&seed=5`): cyan SWIFT and orange VOLATILE tags
-  and auras. **The burst ring was not seen on screen** (no way to kill a
-  volatile elite through the browser tool); it uses the same primitives as the
-  other rings and is covered by unit tests only. `tsc` also listed the four
+  and auras. The burst ring was not seen on screen in this round; the follow-up
+  below did that. `tsc` also listed the four
   places a new `DamageSource` needs (log, panel, pink slip, a test fixture).
 - **Seed card** (`share-card.test.ts`, 5, red first). On screen (end card of
   `?fixture=mvp-floor-four-boss-win&seed=4242`): RETRY, COPY CARD, TITLE; C
