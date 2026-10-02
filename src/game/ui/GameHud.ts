@@ -411,6 +411,11 @@ export class GameHud {
     });
     this.text('cash', `$${model.cash}`, px + 96, py + 54, '#6aff8a', 2, true);
     this.drawStars(g, model.wanted, px + 210, py + 61, state.tick);
+    // What the stars cost, and when the next one comes (round 57).
+    if (model.wantedLine) {
+      this.panel(g, px, py - 24, Math.max(220, model.wantedLine.length * 6 + 20), 20, 0xff5d7a, 0.88);
+      this.text('wanted-line', model.wantedLine, px + 10, py - 18, '#ff8da1', 1, true);
+    }
   }
 
   private drawHotbar(model: GameHudModel): void {

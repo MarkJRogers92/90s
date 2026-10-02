@@ -22,7 +22,7 @@ import { COMBO_MILESTONE, COMBO_WINDOW_TICKS, comboBonusFor } from '../../sim/ru
 import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
 import { CLEARANCE_PRICE_SCALE, wingEventFor } from '../../sim/run/wingEvents';
 import { alarmTicksFor } from '../../sim/run/heist';
-import { hotHeatFloor, hotItemCount, isHotNode, wantedStars } from '../../sim/run/wanted';
+import { hotHeatFloor, hotItemCount, isHotNode, wantedBrief, wantedStars } from '../../sim/run/wanted';
 import { STALKER_MIN_STARS } from '../../sim/run/stalker';
 import { activeStore, roomStores } from '../../sim/run/storeInterior';
 import { nearestMvpInteraction } from '../../sim/run/tickMvpRun';
@@ -99,6 +99,8 @@ export type GameHudModel = {
   readonly heat: number;
   /** Wanted stars, 0 to 5. */
   readonly wanted: number;
+  /** One line on what the stars cost and when the next comes (round 57); null while clean. */
+  readonly wantedLine: string | null;
   /** The live store alarm, for the big banner. */
   readonly alarm: HudAlarm | null;
   readonly objectives: readonly HudObjective[];
@@ -204,6 +206,25 @@ export function heartsFor(health: number, maxHealth = PLAYER_MAX_HEALTH): HeartS
   return hearts;
 }
 
+/**
+ * What the wanted stars mean, in one short line: the shelf surcharge, the extra
+ * guards, who follows from four stars, and either how much Heat to the next
+ * star or that hot goods are what keeps the stars on.
+ */
+export function wantedLineFor(state: MvpRunState): string | null {
+  const brief = wantedBrief(state);
+  if (brief.stars === 0 && brief.hotItems === 0) return null;
+  const parts: string[] = [];
+  if (brief.stars > 0) {
+    parts.push(`SHELVES +$${brief.surcharge}`);
+    parts.push(`${brief.guards} EXTRA GUARD${brief.guards === 1 ? '' : 'S'}`);
+  }
+  if (brief.stars >= STALKER_MIN_STARS) parts.push('LOSS PREVENTION FOLLOWS');
+  if (brief.heldByHotGoods) parts.push(`${brief.hotItems} HOT ITEM${brief.hotItems === 1 ? '' : 'S'} HOLD${brief.hotItems === 1 ? 'S' : ''} YOUR STAR${brief.stars === 1 ? '' : 'S'}`);
+  else if (brief.toNextStar !== null && brief.stars > 0) parts.push(`NEXT * IN ${brief.toNextStar}`);
+  return parts.length === 0 ? null : parts.join('  ');
+}
+
 export function buildGameHudModel(state: MvpRunState): GameHudModel {
   const room = state.wing.rooms[state.roomIndex];
   const living = state.room.combat.enemies.filter((enemy) => enemy.health > 0);
@@ -304,6 +325,7 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     cash: state.cash,
     heat: state.heat,
     wanted: stars,
+    wantedLine: wantedLineFor(state),
     alarm: alarmFor(state),
     objectives,
     rooms,
