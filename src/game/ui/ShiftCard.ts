@@ -39,7 +39,7 @@ function rowHeight(rows: number): number {
 }
 const MAX_VALUE_CHARS = 30;
 
-export type ShiftCardAction = 'retry' | 'title' | 'ascend';
+export type ShiftCardAction = 'retry' | 'title' | 'ascend' | 'copy';
 
 type Rect = { x: number; y: number; w: number; h: number; action: ShiftCardAction };
 
@@ -57,6 +57,8 @@ export class ShiftCard {
   private model: ShiftCardModel | null = null;
   private buttons: Rect[] = [];
   private hovered: ShiftCardAction | null = null;
+  /** When the share card was last copied (scene time, ms): the button says COPIED! for a moment. */
+  private copiedAt = -Infinity;
   private newBest = false;
   private submitted = false;
   private readonly bests = browserBestRuns();
@@ -267,17 +269,20 @@ export class ShiftCard {
     this.buttons = [];
     if (buttonsAge >= 0) {
       const y = CARD_Y + oy + CARD_H - 64;
+      const copied = this.scene.time.now - this.copiedAt < 2000;
+      // Three buttons in a row (round 57 added COPY CARD, the shareable seed card).
       const specs: Array<{ action: ShiftCardAction; key: string; text: string; x: number }> = [
         model.ascend
-          ? { action: 'ascend', key: 'R', text: model.stairs ? 'STAIRS' : 'ESCALATOR', x: W / 2 - 200 }
-          : { action: 'retry', key: 'R', text: model.won ? 'NEW SHIFT' : 'RETRY', x: W / 2 - 200 },
-        { action: 'title', key: 'T', text: model.ascend ? 'CLOCK OUT' : 'TITLE', x: W / 2 + 20 },
+          ? { action: 'ascend', key: 'R', text: model.stairs ? 'STAIRS' : 'ESCALATOR', x: W / 2 - 252 }
+          : { action: 'retry', key: 'R', text: model.won ? 'NEW SHIFT' : 'RETRY', x: W / 2 - 252 },
+        { action: 'copy', key: 'C', text: copied ? 'COPIED!' : 'COPY CARD', x: W / 2 - 80 },
+        { action: 'title', key: 'T', text: model.ascend ? 'CLOCK OUT' : 'TITLE', x: W / 2 + 92 },
       ];
       for (const spec of specs) {
-        const w = 180;
+        const w = 160;
         const h = 42;
         const hot = this.hovered === spec.action;
-        const color = spec.action === 'title' ? 0x9a8fb4 : edge;
+        const color = spec.action === 'title' ? 0x9a8fb4 : spec.action === 'copy' ? 0x3ff0ff : edge;
         g.fillStyle(hot ? color : 0x140d22, hot ? 0.35 : 1).fillRect(spec.x, y, w, h);
         g.lineStyle(2, color, 1).strokeRect(spec.x + 1, y + 1, w - 2, h - 2);
         // Key cap.
@@ -290,6 +295,11 @@ export class ShiftCard {
         this.buttons.push({ x: spec.x, y, w, h, action: spec.action });
       }
     }
+  }
+
+  /** The share card went to the clipboard: say so for a moment. */
+  public markCopied(): void {
+    this.copiedAt = this.scene.time.now;
   }
 
   public destroy(): void {

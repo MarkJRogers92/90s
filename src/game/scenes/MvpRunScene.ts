@@ -29,6 +29,7 @@ import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
+import { buildShiftCardModel, shareCardText } from '../ui/shiftCardModel';
 import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide, type RideFloor } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
@@ -258,6 +259,7 @@ class MvpRunInputAdapter {
     if (this.endCard?.isOpen()) {
       if (event.code === 'KeyR' || event.code === 'Enter') this.endCard.act(this.endCard.ascends() ? 'ascend' : 'retry');
       else if (event.code === 'KeyT') this.endCard.act('title');
+      else if (event.code === 'KeyC') this.endCard.act('copy');
       if (event.code !== 'KeyM') return;
     }
     if (event.code === 'KeyE') {
@@ -539,7 +541,7 @@ export class MvpRunScene extends Phaser.Scene {
       isOpen: () => card.open,
       ascends: () => card.offersAscend,
       buttonAt: (x, y) => card.buttonAt(x, y),
-      act: (action) => (action === 'ascend' ? this.ascend() : action === 'retry' ? this.restartRun(true) : this.returnToTitle()),
+      act: (action) => (action === 'ascend' ? this.ascend() : action === 'retry' ? this.restartRun(true) : action === 'copy' ? this.copyShareCard() : this.returnToTitle()),
     };
     this.hud = new MvpRunHud(
       () => this.restartRun(),
@@ -768,6 +770,14 @@ export class MvpRunScene extends Phaser.Scene {
     this.accumulator = 0;
     this.inputAdapter?.clearHeld();
     clearMvpHeldActions(this.run);
+  }
+
+  /** Puts the shareable seed card on the clipboard (the player's own paste; nothing is sent anywhere). */
+  private copyShareCard(): void {
+    const model = buildShiftCardModel(this.run, this.seed, this.dailyDate, this.lastRecord);
+    const text = shareCardText(model, this.seed, this.dailyDate, this.run.rule ?? null);
+    if (!text) return;
+    void navigator.clipboard?.writeText(text).then(() => this.shiftCard?.markCopied(), () => undefined);
   }
 
   /** The Daily Shift's rule of the day (round 57); an ordinary night has none. */

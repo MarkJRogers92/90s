@@ -15,6 +15,7 @@ import { scoreFor } from '../score/score';
 import type { RunRecord } from '../playtest/recorder';
 import { killCamStamp } from './killCamModel';
 import { districtSpec } from '../../sim/wing/districts';
+import { NIGHT_RULES, type NightRuleId } from '../../sim/run/nightRules';
 
 export type ShiftCardRow = { readonly label: string; readonly value: string };
 
@@ -134,6 +135,27 @@ export function buildShiftCardModel(state: MvpRunState, mallSeed: number = state
       ...(dailyDate ? [{ label: 'DAILY', value: formatDailyDate(dailyDate) }] : []),
     ],
   };
+}
+
+/**
+ * The shareable card (round 57): the shift in a few short lines of plain text,
+ * for pasting into a message. It names the mall's number so a friend can play
+ * the same one (`?seed=`), and on a Daily Shift the day and its rule, so two
+ * scores are only compared on the same footing. No link, no markup, nothing
+ * that leaves the machine: the player copies it themselves.
+ */
+export function shareCardText(model: ShiftCardModel | null, mallSeed: number, dailyDate: string | null, rule: NightRuleId | null): string | null {
+  if (!model) return null;
+  const row = (label: string): string => model.rows.find((candidate) => candidate.label === label)?.value ?? '-';
+  const lines = [`DEAD MALL - MALL #${mallSeed}`];
+  if (dailyDate) lines.push(`DAILY SHIFT ${formatDailyDate(dailyDate)}${rule ? ` - ${NIGHT_RULES[rule].name}` : ''}`);
+  lines.push(
+    `${model.headline} - ${model.subline}`,
+    `SCORE ${model.score.toLocaleString('en-US')} - TIME ${row('TIME')} - KILLS ${row('KILLS')}`,
+    `REACHED ${row('REACHED')} - BEST COMBO ${row('BEST COMBO')}`,
+    `REPLAY IT: ADD ?seed=${mallSeed} TO THE ADDRESS`,
+  );
+  return lines.join('\n');
 }
 
 /**
