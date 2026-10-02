@@ -26,6 +26,8 @@ import { circleIntersectsRect } from '../core/geometry';
 import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
 import { collectItemDrops, dropItemsForDeaths } from './drops';
+import { updateBursts } from '../combat/eliteTraits';
+import { burstsForDeaths } from './eliteDeaths';
 import { SPRINKLER_WET_TICKS, wingEventFor } from './wingEvents';
 import { applyWet } from '../effects/statuses';
 import { stepCombo } from './combo';
@@ -589,6 +591,9 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   dropTokensForDeaths(state, livingBeforeCombat);
   // Round 32: now and then an item, and from every boss a rare.
   dropItemsForDeaths(state, livingBeforeCombat);
+  // Round 57: a Volatile elite lights a fuse where it fell, and fuses burn down.
+  burstsForDeaths(state, livingBeforeCombat);
+  updateBursts(state.room.combat);
   // 6c. Cleanup Combo: blows landed, kills, and whether the janitor was hurt.
   {
     const after = new Map(state.room.combat.enemies.map((enemy) => [enemy.id, enemy.health]));

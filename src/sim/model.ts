@@ -13,6 +13,12 @@ export type EnemyKind = 'hanger' | 'spitter' | 'lp_manager' | 'mannequin' | 'man
   // Round 50: the district monsters and their mini-bosses.
   | 'elf' | 'spritzer' | 'poodle' | 'goon' | 'santa' | 'glamour_queen' | 'whiskers' | 'zamboni';
 export type Vec2 = { x: number; y: number };
+
+/** Round 57: what a Clearance elite is on top of tough (see combat/eliteTraits.ts). */
+export type EliteTrait = 'swift' | 'volatile';
+
+/** Round 57: a Volatile elite's lit fuse, where it fell. */
+export type BurstState = { x: number; y: number; fuseTicks: number };
 export type Rect = { x: number; y: number; width: number; height: number };
 
 export type InputFrame = {
@@ -61,6 +67,8 @@ export type EnemyState = Vec2 & {
   dormant?: boolean;
   /** A CLEARANCE elite: double health, triple change. Optional for fixtures. */
   elite?: boolean;
+  /** Round 57: the elite's trait. Only elites have one. */
+  trait?: EliteTrait;
   /** Static: the spot it will blink onto at the end of its wind-up. */
   blinkX?: number;
   blinkY?: number;
@@ -378,6 +386,8 @@ export type RunState = {
   chainArcs?: ChainArc[];
   /** Round 53: carts, soda machines and racks to knock over (regular fights only). */
   props?: MallProp[];
+  /** Round 57: lit fuses of Volatile elites that have fallen. Absent means none. */
+  bursts?: BurstState[];
   /** Round 53: a hero fusion's records, decoy and beams. Created on its first attack. */
   hero?: HeroState;
 };

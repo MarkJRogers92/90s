@@ -1073,6 +1073,8 @@ export class MvpRunScene extends Phaser.Scene {
         run.room.combat.player.x = door.rect.x - 40;
         run.room.combat.player.y = door.rect.y + door.rect.height / 2;
       }
+      // &enter=1 steps through into the Lockdown itself (the elites and their traits).
+      if (new URLSearchParams(window.location.search).get('enter') === '1') enterDoorway(run, 'east');
       return run;
     }
     if (fixture === 'mvp-storefront') {

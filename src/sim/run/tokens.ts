@@ -10,7 +10,7 @@
  * at a room boundary, where every room starts clean, so an uncollected token
  * is simply left behind like it would be on a real concourse floor.
  */
-import type { EnemyKind } from '../model';
+import type { EliteTrait, EnemyKind } from '../model';
 import { publishRunFeedback } from './economy';
 import { ELITE_SNACK_CHANCE, ELITE_TOKEN_MULTIPLIER, SNACK_CHANCE, luck } from './luck';
 import { runMaxHealth, tokenMagnetReach } from './perks';
@@ -73,7 +73,7 @@ export const TOKEN_PICKUP_RADIUS = 22;
 /** How far the Shop-Vac Attachment draws a pickup in each tick. */
 export const TOKEN_MAGNET_SPEED = 5;
 
-export type EnemyMarker = { readonly id: number; readonly kind: EnemyKind; readonly x: number; readonly y: number; readonly health: number; readonly elite?: boolean };
+export type EnemyMarker = { readonly id: number; readonly kind: EnemyKind; readonly x: number; readonly y: number; readonly health: number; readonly elite?: boolean; readonly trait?: EliteTrait };
 
 /**
  * Records every enemy still standing in the room before the combat step. The
@@ -81,7 +81,7 @@ export type EnemyMarker = { readonly id: number; readonly kind: EnemyKind; reado
  * this tick, whatever brought their health to zero.
  */
 export function markLivingEnemies(state: MvpRunState): EnemyMarker[] {
-  return state.room.combat.enemies.map((enemy) => ({ id: enemy.id, kind: enemy.kind, x: enemy.x, y: enemy.y, health: enemy.health, elite: enemy.elite === true }));
+  return state.room.combat.enemies.map((enemy) => ({ id: enemy.id, kind: enemy.kind, x: enemy.x, y: enemy.y, health: enemy.health, elite: enemy.elite === true, ...(enemy.trait ? { trait: enemy.trait } : {}) }));
 }
 
 /** Drops a token where every enemy that was alive before this tick fell. */

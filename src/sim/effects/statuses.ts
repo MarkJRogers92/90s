@@ -1,3 +1,4 @@
+import { SWIFT_SPEED_MULTIPLIER } from '../combat/eliteTraits';
 import type { EnemyState, EnemyStatusState, RunState } from '../model';
 import { GENERAL_SLOW_FLOOR } from './constants';
 
@@ -65,11 +66,13 @@ export function applySticky(
 
 /** Current movement multiplier from Sticky, or 1 while the enemy is not Sticky. */
 export function effectiveSpeedMultiplier(enemy: EnemyState): number {
+  // A Swift elite (round 57) is quicker, and stickiness still slows it.
+  const swift = enemy.trait === 'swift' ? SWIFT_SPEED_MULTIPLIER : 1;
   const statuses = enemy.statuses;
   if (!statuses || statuses.stickyTicks <= 0) {
-    return 1;
+    return swift;
   }
-  return Math.max(GENERAL_SLOW_FLOOR, Math.min(1, statuses.stickyMultiplier));
+  return Math.max(GENERAL_SLOW_FLOOR, Math.min(1, statuses.stickyMultiplier)) * swift;
 }
 
 /**
