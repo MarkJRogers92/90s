@@ -20,7 +20,7 @@ export const SHOPPER_STUN_TICKS = 70;
 export const SHOPPER_RECOVER_TICKS = 24;
 const SHOPPER_RANGE = 320;
 export const SHOPPER_WALK_SPEED_PER_TICK = 70 / 60;
-const SHOPPER_CHARGE_SPEED_PER_TICK = 9;
+export const SHOPPER_CHARGE_SPEED_PER_TICK = 9;
 const PLAYER_INVULNERABILITY_TICKS = 60;
 
 export function updateShopper(state: RunState, enemy: EnemyState): void {

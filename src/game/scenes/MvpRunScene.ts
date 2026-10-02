@@ -1140,6 +1140,27 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-volatile') {
+      // The first fight room with one posed Volatile elite at a single hit, 40 px east of the
+      // janitor (round 57): one swing kills it, so its fuse and burst can be seen and measured.
+      let guard = 0;
+      while (state.wing.rooms[state.roomIndex]?.id !== 'food_court' && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      const combat = state.room.combat;
+      combat.player.x = 480;
+      combat.player.y = 300;
+      combat.player.facing = { x: 1, y: 0 };
+      const posed = combat.enemies[0];
+      if (posed) {
+        Object.assign(posed, { elite: true, trait: 'volatile', health: 1, x: 520, y: 300, dormant: true });
+        combat.enemies = [posed];
+      }
+      return state;
+    }
     if (fixture === 'mvp-hatch') {
       // Beside the staff passage's hatch (round 57); needs a seed that has one, such as &seed=7.
       const spot = shortcutFor(state.wing);

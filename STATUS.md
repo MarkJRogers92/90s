@@ -27,6 +27,15 @@ Gameplay otherwise unchanged. Not done, because they need art and a decision:
 a second playable employee and a secret floor (briefs in NEXT_SESSION.md). See
 the playbook's Round 57 section and TEST_EVIDENCE.md.
 
+Follow-up the same day: the Volatile burst now has a browser spec and a
+screenshot, and a smarter `expert` bot (`tests/balance/danger.ts`) checked the
+first bot's biggest lead and refuted it. The Mall Owner's Suite looked deadliest
+only because the bot retreated along his charge lane; a bot that scores every
+danger at once clears it 100% for 0.6 health, and the Helipad is then the
+hardest boss, as round 42 wanted. Still open: Glamour Row's perfume clouds and
+the Roofers' tar, which the bot cannot see yet
+(`docs/neon-overhaul/balance/round57-expert.md`).
+
 ## 2026-10-01 — Round 54: palms, the toppled rack, a flaky test (branch `claude/polish-palms-rack-tests`)
 
 Three small fixes on top of `origin/main` (`4d9f981`). Tall props now fade to

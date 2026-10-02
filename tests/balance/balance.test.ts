@@ -17,7 +17,7 @@ import { formatSummary, runBalance } from './report';
 // The repo carries no Node typings, so read the environment the way playwright.config.ts does.
 const env = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env ?? {};
 const NIGHTS = Number(env.BALANCE_NIGHTS ?? 40);
-const DEFAULT_BOTS = 'naive:none,dodger:none,pro:none,pro:buy,pro:buy:shortcut';
+const DEFAULT_BOTS = 'naive:none,dodger:none,pro:none,pro:buy,pro:buy:shortcut,expert:buy';
 const bots = (env.BALANCE_BOTS ?? DEFAULT_BOTS).split(',').map((spec) => {
   const [skill, shop, route] = spec.split(':');
   return { skill: skill as BotSkill, shop: (shop ?? 'none') as BotShop, route: (route ?? 'long') as BotRoute };
