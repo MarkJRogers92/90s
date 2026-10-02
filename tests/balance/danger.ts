@@ -14,13 +14,17 @@
  *  - a charge (Mascot Brute, Bargain Hunter, the Owner's turn charge): the
  *    monster stands through its wind-up, then runs a straight line along the
  *    lane it locked, and hurts what it touches on the way;
- *  - a blast (a boss slam, a fallen Volatile elite's fuse): an instant at the
- *    end of a wind-up or fuse, hurting whatever is inside its reach;
+ *  - a blast (a boss slam, a fallen Volatile elite's fuse, a Roofer's bucket,
+ *    a Spritzer's spritz, the Developer's tar in the air): an instant at the
+ *    end of a wind-up, fuse or flight, hurting whatever is inside its reach;
  *  - a shot: an enemy projectile flying straight.
  */
 import { bossConfigFor } from '../../src/sim/combat/boss';
 import { DASH_DISTANCE, DASH_TICKS } from '../../src/sim/combat/dash';
 import { VOLATILE_BURST_RADIUS } from '../../src/sim/combat/eliteTraits';
+import { PERFUME_CLOUD_RADIUS, PERFUME_SLOW } from '../../src/sim/combat/perfume';
+import { TAR_SPLASH_RADIUS } from '../../src/sim/combat/roofer';
+import { TAR_SLOW } from '../../src/sim/combat/tar';
 import { MASCOT_CHARGE_SPEED_PER_TICK, MASCOT_CHARGE_TICKS } from '../../src/sim/combat/mascot';
 import { SHOPPER_CHARGE_SPEED_PER_TICK, SHOPPER_CHARGE_TICKS } from '../../src/sim/combat/shopper';
 import type { EnemyKind, EnemyState, RunState, Vec2 } from '../../src/sim/model';
@@ -32,7 +36,7 @@ export type Danger =
   | { readonly kind: 'shot'; readonly x: number; readonly y: number; readonly vx: number; readonly vy: number; readonly reach: number; readonly until: number };
 
 /** The monsters whose wind-up this module models; the bot's older rules keep the rest. */
-export const MODELLED_KINDS: ReadonlySet<EnemyKind> = new Set<EnemyKind>(['mascot', 'shopper', 'owner']);
+export const MODELLED_KINDS: ReadonlySet<EnemyKind> = new Set<EnemyKind>(['mascot', 'shopper', 'owner', 'lp_manager', 'manager', 'developer', 'roofer', 'spritzer']);
 
 /** How far ahead the janitor looks, in ticks (the longest wind-up is 46). */
 export const HORIZON = 48;
@@ -62,14 +66,29 @@ export function dangersOf(state: RunState): Danger[] {
       else if (winding) out.push({ kind: 'charge', ox: enemy.x, oy: enemy.y, dx: dir.x, dy: dir.y, speed, from: Math.max(0, enemy.phaseTicks), ticks, reach });
       continue;
     }
-    // The Owner: a charge on every second attack from phase two, a slam on the others.
+    if (enemy.kind === 'roofer' || enemy.kind === 'spritzer') {
+      // The landing spot is locked at the throw, and nothing hurts until it lands.
+      if (winding) {
+        const splash = enemy.kind === 'roofer' ? TAR_SPLASH_RADIUS : PERFUME_CLOUD_RADIUS;
+        out.push({ kind: 'blast', x: enemy.lobX ?? player.x, y: enemy.lobY ?? player.y, reach: splash + BLAST_MARGIN, at: Math.max(0, enemy.phaseTicks) });
+      }
+      continue;
+    }
+    // A boss: a charge on every second attack from phase two where it has one (the Owner), the
+    // Developer's tar on every second attack where he has it, and a slam on the rest.
     const config = bossConfigFor(enemy.kind);
+    for (const strike of enemy.tarStrikes ?? []) {
+      out.push({ kind: 'blast', x: strike.x, y: strike.y, reach: TAR_SPLASH_RADIUS + BLAST_MARGIN, at: Math.max(0, strike.ticks) });
+    }
     if (charging && config.charge) {
       out.push({ kind: 'charge', ox: enemy.x, oy: enemy.y, dx: dir.x, dy: dir.y, speed: config.charge.speedPerTick, from: 0, ticks: enemy.chargeTicks ?? 0, reach });
     } else if (winding) {
-      const chargeNext = config.charge !== undefined && (enemy.bossPhase ?? 1) >= 2 && (enemy.bossAttacks ?? 0) % 2 === 1;
+      const phase = enemy.bossPhase ?? 1;
+      const oddTurn = (enemy.bossAttacks ?? 0) % 2 === 1;
+      const chargeNext = config.charge !== undefined && phase >= 2 && oddTurn;
+      const barrageNext = !chargeNext && config.tarBarrage !== undefined && (config.tarBarrage.counts[phase - 1] ?? 0) > 0 && oddTurn;
       if (chargeNext && config.charge) out.push({ kind: 'charge', ox: enemy.x, oy: enemy.y, dx: dir.x, dy: dir.y, speed: config.charge.speedPerTick, from: Math.max(0, enemy.phaseTicks), ticks: config.charge.ticks, reach });
-      else out.push({ kind: 'blast', x: enemy.x, y: enemy.y, reach: config.slamReach + BLAST_MARGIN, at: Math.max(0, enemy.phaseTicks) });
+      else if (!barrageNext) out.push({ kind: 'blast', x: enemy.x, y: enemy.y, reach: config.slamReach + BLAST_MARGIN, at: Math.max(0, enemy.phaseTicks) });
     }
   }
   // A Volatile elite's fuse: the janitor is hit if still inside when it runs out.
@@ -81,6 +100,14 @@ export function dangersOf(state: RunState): Danger[] {
     out.push({ kind: 'shot', x: shot.x, y: shot.y, vx: shot.velocityX, vy: shot.velocityY, reach: shot.radius + player.radius + SHOT_MARGIN, until: shot.remainingTicks });
   }
   return out;
+}
+
+/** How much slower the janitor walks at `at`, `tick` ticks from now, for the tar and perfume still lying there. */
+function slowAt(state: RunState, at: Vec2, tick: number): number {
+  let slow = 1;
+  for (const puddle of state.tar ?? []) if (puddle.ticks > tick && Math.hypot(at.x - puddle.x, at.y - puddle.y) <= puddle.radius) slow *= TAR_SLOW;
+  for (const cloud of state.perfume ?? []) if (cloud.ticks > tick && Math.hypot(at.x - cloud.x, at.y - cloud.y) <= cloud.radius) slow *= PERFUME_SLOW;
+  return slow;
 }
 
 /** Whether a body at `at`, `tick` ticks from now, is hit by `danger`. */
@@ -102,8 +129,9 @@ export type PathCost = { readonly cost: number; /** Ticks until the first hit, o
 /**
  * What walking (or dashing) along `heading` for the horizon would cost: the
  * weight of every danger it meets, tick by tick. A step into a wall stays put,
- * as the sim's movement does. A dash is the janitor's own: invulnerable for its
- * 12 ticks, so only what is met after it counts.
+ * as the sim's movement does, and walking through tar or perfume is slower. A
+ * dash is the janitor's own: invulnerable for its 12 ticks and not slowed, so
+ * only what is met after it counts.
  */
 export function pathCost(state: RunState, dangers: readonly Danger[], heading: Vec2 | null, dash = false): PathCost {
   const player = state.player;
@@ -113,7 +141,8 @@ export function pathCost(state: RunState, dangers: readonly Danger[], heading: V
   const dashPerTick = DASH_DISTANCE / DASH_TICKS;
   for (let tick = 1; tick <= HORIZON; tick += 1) {
     if (heading !== null) {
-      const stride = dash && tick <= DASH_TICKS ? dashPerTick : PLAYER_SPEED_PER_TICK;
+      // A dash is not slowed by tar or perfume; walking is.
+      const stride = dash && tick <= DASH_TICKS ? dashPerTick : PLAYER_SPEED_PER_TICK * slowAt(state, at, tick);
       const next = { x: at.x + heading.x * stride, y: at.y + heading.y * stride };
       if (Navigator.clear(state.walls, player.radius, next)) at = next;
     }

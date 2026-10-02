@@ -35,16 +35,19 @@ Last gate (round 39, the Roof): see TEST_EVIDENCE.md round 39.
 
 ## Next up
 
-Round 57's bot leads, after a better bot checked them (see the playbook's
+Round 57's bot leads, after a better bot checked them twice (see the playbook's
 "expert bot" and `docs/neon-overhaul/balance/round57-expert.md`): the Owner's
-Suite looked deadliest to the first bot but was the bot's own mistakes (a good
-dodger clears it 100% for 0.6 health), and the Helipad is then the hardest boss
-(2.0 health a wing), as round 42 wanted. What is left: Glamour Row's perfume
-clouds (Floor 2's first wing, 3 deaths in 100) and the Roofers' tar (the finale
-and Floor 4's first wing, 4 deaths in 100). Both are area hazards the bot cannot
-see yet; model them in `tests/balance/danger.ts` first, then decide if they are
-the game's problem. For a human: does the Owner feel like a push-over? A good
-dodger takes about half a heart from him.
+Suite, the "hard" Helipad, Glamour Row's perfume and the Roofers' tar all looked
+like hot spots to the first bots and were each the bot failing to see something.
+A bot that sees every hazard wins 97% of nights and loses under a heart in any
+wing. So no wing needs tuning on the bot's say-so; what matters is how much time
+each hazard gives a person. The doc tabulates it from the constants: the
+Perfume Spritzer's spritz is the tightest (a 0.5 s wind-up leaves 0.28 s after
+walking clear, shorter than a typical reaction), then the Volatile fuse, the
+Owner's charge and the Bargain Hunter. Next: give the expert a reaction delay and
+measure the hit rate per hazard, to find which wind-ups are unfair to a human
+before one has to tell us. For a human, meanwhile: does the Owner feel like a
+push-over, and does the Spritzer feel unfair?
 The Volatile burst (round 57) cost the bots 0.7-0.8 health a Floor 1 wing until
 the expert learned to read the ring: a fair 0.6 s fuse for someone watching it,
 a real tax for someone who is not. Playtest question: do you see it in time?

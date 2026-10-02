@@ -29,13 +29,34 @@
   wrap every decision). Three of my own test expectations were wrong and were
   fixed after reading the failure (an unexported boss helper, a charge too short
   to reach the janitor, a safe wish that rightly needs no escape).
-  Results, 100 nights, `docs/neon-overhaul/balance/round57-expert.md`: expert
-  92% won against `pro`'s 67%; Owner's Suite 100% cleared for 0.6 health (`pro`
-  82%, 4.5); Helipad 2.0 health, the hardest boss; burst damage zero. Duels
+  Results of that version, 100 nights: expert 92% won against `pro`'s 67%; Owner's
+  Suite 100% cleared for 0.6 health (`pro` 82%, 4.5); burst damage zero. Duels
   (24 each): the expert is hit 0 times by a Mascot Brute or Bargain Hunter and
-  kills them in 5.7 s and 2.9 s.
-- This round's whole claim from the first bot, that the Owner's Suite is the
+  kills them in 5.7 s and 2.9 s. I read its 2.0 health in the Helipad as "the
+  finale is the hardest boss". That was wrong (next bullet).
+- This round's first claim from the first bot, that the Owner's Suite is the
   deadliest wing, was wrong and is corrected in the playbook and NEXT_SESSION.
+- **Perfume and tar modelled** (`balance-danger.test.ts` 9 to 15, red first; 6
+  new). The hypothesis was that the bot could not see the lobs, and a lone
+  Roofer or Spritzer duel said otherwise: no dodging bot was ever hit (it walks
+  at the monster, off the locked spot by accident). A trace of 323 real hits
+  from fresh landings over 100 nights said why: 88% when not slowed, more than half
+  with no step in the previous 8 ticks, mostly with two to four monsters alive.
+  So the situation was rebuilt as a crowd duel (a lobber and two bruisers): `pro`
+  and the expert were hit by 96 of 96 throws, the naive bot by none. Modelling the
+  lob (a Roofer's bucket, a Spritzer's spritz, the Developer's tar in the air),
+  the Developer's slam and barrage turns, and tar and perfume as slower walking
+  took the expert to 0 of 96. Mutation-checked: ignoring lobs fails 3 tests.
+  Whole nights, 100 seeds: expert 97% won (92% before), Floor 2's first wing 0.8
+  health (was 2.2), the finale 0.4 (was 2.0), no wing over 0.8, three deaths, all
+  hanger crowds. **So the 2.0 I called "the hardest boss" was the Roofers' tar and
+  the Developer's barrage, which the bot could not see; that claim is withdrawn**
+  in STATUS, NEXT_SESSION, the playbook and the evidence doc. The evidence doc now
+  also tabulates how many ticks each hazard leaves after walking clear (the
+  Spritzer's is the shortest, 17 ticks, 0.28 s): arithmetic from the constants,
+  not a measurement.
+- `npx tsc --noEmit` clean; `npx vitest run` 138 files, 1274 passed. The browser
+  suite was not rerun: nothing under `src/` changed in this follow-up.
 - `npx tsc --noEmit` clean; `npx vitest run` 138 files, 1268 passed. The browser
   suite was not rerun: the only `src/` change is exporting one constant
   (`SHOPPER_CHARGE_SPEED_PER_TICK`), and `volatile-burst.spec.ts` passed twice.

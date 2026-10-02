@@ -7,7 +7,9 @@ import { spawnWaveMonster } from '../../src/sim/run/rooms';
 import { VOLATILE_BURST_RADIUS, VOLATILE_FUSE_TICKS } from '../../src/sim/combat/eliteTraits';
 import type { BotOptions } from '../balance/bot';
 import { dangersOf, escapeFrom, pathCost, type Danger } from '../balance/danger';
-import { volatileDuel } from '../balance/duel';
+import { crowdSweep, volatileDuel } from '../balance/duel';
+import { PERFUME_CLOUD_RADIUS, PERFUME_SLOW } from '../../src/sim/combat/perfume';
+import { TAR_SLOW, TAR_SPLASH_RADIUS } from '../../src/sim/combat/roofer';
 
 /** An empty room with the janitor at (480, 240) and nothing else in it. */
 function arena(): RunState {
@@ -145,5 +147,81 @@ describe('balance bot danger model (round 57 follow-up)', () => {
     const lost = (options: BotOptions) => bearings.reduce((sum, bearing) => sum + volatileDuel(options, bearing, 120), 0);
     expect(lost(expert)).toBe(0);
     expect(lost(pro)).toBeGreaterThan(0);
+  });
+
+  /** A lobber mid-throw: it has locked the spot (lobX, lobY) and the lob lands in `left` ticks. */
+  function lobbing(combat: RunState, kind: 'roofer' | 'spritzer', lobX: number, lobY: number, left: number): EnemyState {
+    const monster = spawnWaveMonster({ slotId: 'l', kind, x: 700, y: 100 }, 9, 1);
+    Object.assign(monster, { phase: 'telegraph', phaseTicks: left, lobX, lobY });
+    combat.enemies.push(monster);
+    return monster;
+  }
+
+  it('reads a Roofer\'s locked landing spot as a blast that goes off when the bucket lands', () => {
+    const combat = arena();
+    lobbing(combat, 'roofer', 470, 250, 40);
+    const dangers = dangersOf(combat);
+    expect(dangers).toEqual([expect.objectContaining({ kind: 'blast', x: 470, y: 250, at: 40 })]);
+    expect((dangers[0] as Extract<Danger, { kind: 'blast' }>).reach).toBeGreaterThan(TAR_SPLASH_RADIUS);
+    expect(pathCost(combat, dangers, null).cost).toBeGreaterThan(0);
+  });
+
+  it('reads a Spritzer\'s spritz the same way, with the cloud\'s own reach', () => {
+    const combat = arena();
+    lobbing(combat, 'spritzer', 480, 240, 25);
+    const dangers = dangersOf(combat);
+    expect(dangers).toEqual([expect.objectContaining({ kind: 'blast', x: 480, y: 240, at: 25 })]);
+    expect((dangers[0] as Extract<Danger, { kind: 'blast' }>).reach).toBeGreaterThan(PERFUME_CLOUD_RADIUS);
+  });
+
+  it('says nothing about a lobber that is not mid-throw', () => {
+    const combat = arena();
+    const resting = lobbing(combat, 'roofer', 470, 250, 40);
+    resting.phase = 'recover';
+    expect(dangersOf(combat)).toEqual([]);
+  });
+
+  it('reads the Developer\'s buckets in the air, each at its own spot and time, and his slam on the turns he does not throw tar', () => {
+    const combat = arena();
+    const developer = spawnWaveMonster({ slotId: 'd', kind: 'mascot', x: 480, y: 60 }, 7, 1);
+    Object.assign(developer, { kind: 'developer', radius: 26, health: 340, phase: 'recover', tarStrikes: [{ x: 300, y: 200, ticks: 20 }, { x: 600, y: 300, ticks: 35 }] });
+    combat.enemies.push(developer);
+    expect(dangersOf(combat)).toEqual([
+      expect.objectContaining({ kind: 'blast', x: 300, y: 200, at: 20 }),
+      expect.objectContaining({ kind: 'blast', x: 600, y: 300, at: 35 }),
+    ]);
+    // Winding up on an even attack with tar to throw it is a slam (the odd one is the barrage).
+    Object.assign(developer, { phase: 'telegraph', phaseTicks: 30, tarStrikes: [], bossPhase: 2, bossAttacks: 0 });
+    expect(dangersOf(combat)).toEqual([expect.objectContaining({ kind: 'blast', x: 480, y: 60, at: 30 })]);
+    developer.bossAttacks = 1;
+    expect(dangersOf(combat)).toEqual([]);
+  });
+
+  it('slows a walk through tar or perfume, so a puddle can make an escape too slow (a dash is not slowed)', () => {
+    const combat = arena();
+    // A blast on the janitor in 25 ticks, 60 px wide: clear in 18 ticks on open floor, 33 in tar.
+    const dangers: Danger[] = [{ kind: 'blast', x: 480, y: 240, reach: 60, at: 25 }];
+    expect(pathCost(combat, dangers, { x: 1, y: 0 }).cost).toBe(0);
+    combat.tar = [{ x: 480, y: 240, radius: 200, ticks: 300 }];
+    expect(TAR_SLOW).toBeLessThan(0.6);
+    expect(pathCost(combat, dangers, { x: 1, y: 0 }).cost).toBeGreaterThan(0);
+    combat.tar = [];
+    combat.perfume = [{ x: 480, y: 240, radius: 200, ticks: 200 }];
+    expect(PERFUME_SLOW).toBeLessThan(0.7);
+    expect(pathCost(combat, dangers, { x: 1, y: 0 }).cost).toBeGreaterThan(0);
+    // A dash through it still clears.
+    expect(pathCost(combat, dangers, { x: 1, y: 0 }, true).cost).toBe(0);
+  });
+
+  it('busy with bruisers, the pro bot is hit by almost every lob; the expert steps out of the ring while it fights on', () => {
+    const pro: BotOptions = { skill: 'pro', shop: 'none' };
+    const expert: BotOptions = { skill: 'expert', shop: 'none' };
+    for (const kind of ['roofer', 'spritzer'] as const) {
+      const before = crowdSweep(kind, pro);
+      const after = crowdSweep(kind, expert);
+      expect(before.throws, kind).toBeGreaterThan(40);
+      expect(before.lobHits / before.throws, `pro vs ${kind}`).toBeGreaterThan(0.5);
+      expect(after.lobHits / after.throws, `expert vs ${kind}`).toBeLessThanOrEqual(0.1);
+    }
   });
 });
