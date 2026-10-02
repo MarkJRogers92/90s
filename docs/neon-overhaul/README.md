@@ -1483,11 +1483,11 @@ What it says (round 56 build, 100 nights): the `pro` bot wins 54% of nights
 without shopping and 63% with; Floor 1 costs it under a heart a wing (matching
 the human log's "0-2 damage"). Its first reading was that Floor 3's Owner's
 Suite (14-17 of ~45 deaths) and Floor 2's Portrait Studio were the deadliest
-wings and that the finale was easier than the Owner. **The first of those was
-the bot, not the game** (the follow-up below): a bot that scores every lane,
-slam and shot at once clears the Owner's Suite 100% of the time for 0.6 health,
-and then the Helipad is the hardest boss. Treat any single-bot hot spot as a
-lead to check with a better bot, not a verdict.
+wings and that the finale was easier than the Owner. **Those were the bot, not
+the game** (the follow-up below, which corrected itself twice): a bot that
+scores every hazard at once wins 97% of nights and loses under a heart in any
+wing. Treat any single-bot hot spot as a lead to check with a better bot, not a
+verdict.
 
 ### The expert bot (a follow-up that corrected the first reading)
 
@@ -1505,17 +1505,28 @@ bot or a monster is a number. The unit tests pin the evaluator
 (`balance-danger.test.ts`) and the results (`balance-expert.test.ts`).
 
 What it showed ([`balance/round57-expert.md`](balance/round57-expert.md), 100
-nights): the `expert` wins 92% of nights against `pro`'s 67%. The Owner's Suite
-fell from 82% cleared and 4.5 health to 100% and 0.6 (the `pro` replay lost
-exactly 4 every time: it retreated along the Owner's charge lane and ignored two
-Mascot lanes while dodging a tray). The Helipad then costs 2.0 health a wing, the
-most of any boss: round 42's goal is met. The Volatile burst cost `pro` and the
-expert-before-fuses 0.7-0.8 health a Floor 1 wing, and costs the burst-aware
-expert nothing: it is fair if you can see the ring. What is left for the expert
-is unmodelled area hazards: Glamour Row's perfume clouds (1.5 a wing, 3 deaths)
-and the Roofers' tar (1.0 in the finale, Floor 4's first wing kills 4 in 100).
-Model those next (clouds and landing rings are blasts at a known place and
-time) before trusting them as game problems.
+nights; it overturned something written the step before, twice):
+
+- The Owner's Suite was the bot: 82% cleared and 4.5 health for `pro`, 100% and
+  0.6 for an expert that scores every lane, slam and shot at once (the `pro`
+  replay lost exactly 4 every time: it retreated along the Owner's charge lane and
+  ignored two Mascot lanes while dodging a tray).
+- The Volatile burst cost `pro` and a fuse-blind expert 0.7-0.8 health a Floor 1
+  wing and costs a fuse-aware expert nothing: fair if you can see the ring.
+- "The Helipad is the hardest boss" was also the bot. The expert's 2.0 health
+  there and 1.5 a wing from Glamour Row's perfume were lobs it could not see.
+  Alone, a Roofer or Spritzer never hit any dodging bot; with two bruisers on the
+  janitor `pro` and the blind expert were hit by 96 of 96 lobs, because a bot
+  swinging at something else stands on the ring (only 12% of 323 traced hits were
+  while slowed in tar or perfume). With lobs, buckets and slow zones modelled the
+  same fight is dodged 96 of 96 times.
+- So a bot that sees everything wins 97% of nights and loses at most 0.8 health
+  in any wing (boss wings 0.4-0.6); `pro` wins 67%. That gap is attention. Every
+  hazard is dodgeable if you are looking at it; what matters for a human is how
+  much time each gives. The doc tabulates it from the constants (the Spritzer's
+  0.5 s wind-up leaves 17 ticks, 0.28 s, after walking clear; the Roofer's gives
+  43). The next step is a reaction delay on the expert, to measure which
+  wind-ups a human can fairly answer.
 
 ### Wanted clarity
 

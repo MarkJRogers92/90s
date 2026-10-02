@@ -29,12 +29,13 @@ the playbook's Round 57 section and TEST_EVIDENCE.md.
 
 Follow-up the same day: the Volatile burst now has a browser spec and a
 screenshot, and a smarter `expert` bot (`tests/balance/danger.ts`) checked the
-first bot's biggest lead and refuted it. The Mall Owner's Suite looked deadliest
-only because the bot retreated along his charge lane; a bot that scores every
-danger at once clears it 100% for 0.6 health, and the Helipad is then the
-hardest boss, as round 42 wanted. Still open: Glamour Row's perfume clouds and
-the Roofers' tar, which the bot cannot see yet
-(`docs/neon-overhaul/balance/round57-expert.md`).
+first bot's leads and refuted them, twice. The Mall Owner's Suite, the Helipad,
+Glamour Row's perfume and the Roofers' tar all looked like hot spots and were
+each the bot failing to see something: a bot that scores every hazard at once
+(charge lanes, slams, shots, burst fuses, lobs, tar) wins 97% of nights and
+loses under a heart in any wing. The open question is human, not mechanical: how
+much time each hazard gives (the Perfume Spritzer's spritz is tightest, 0.28 s
+after walking clear). See `docs/neon-overhaul/balance/round57-expert.md`.
 
 ## 2026-10-01 — Round 54: palms, the toppled rack, a flaky test (branch `claude/polish-palms-rack-tests`)
 
