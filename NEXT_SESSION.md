@@ -5,8 +5,8 @@
 `origin/main` is at round 56 (`2b6250d`: floor-exclusive stores and the leaner
 economy; rounds 54 and 55 are in it too). Round 57 (a bot playtester, the staff
 passage, the coach, the daily rule, elite traits, the seed card, wanted
-clarity) is on branch `claude/balance-bot-and-routes`, built on it, committed to
-nothing yet and not pushed. On the owner's Mac the repo is `~/code/90s`; make
+clarity) is on branch `claude/balance-bot-and-routes`, built on it as nine local
+commits (a refactor, one per feature, then docs), not pushed. On the owner's Mac the repo is `~/code/90s`; make
 sure the checkout is on `main` (or a branch off it) before playing, since an
 old Codex branch shows the pre-neon game. Other sessions merge to `main` too
 (a cloud session landed rounds 54-56 while this worktree still held round 54 as

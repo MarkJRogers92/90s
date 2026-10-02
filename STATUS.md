@@ -2,7 +2,8 @@
 
 ## 2026-10-01 — Round 57: a bot playtester, a route choice, a coach, a daily rule (branch `claude/balance-bot-and-routes`)
 
-Built on `origin/main` (`2b6250d`, round 56), not committed or pushed. A
+Built on `origin/main` (`2b6250d`, round 56) as nine local commits (a refactor, then one
+per feature, then docs), not pushed. A
 headless bot now plays Night Shift through the real input (`npm run balance`,
 `tests/balance/`), so balance can be measured instead of guessed; its first
 100-night baseline is in `docs/neon-overhaul/balance/`. On top of it:
