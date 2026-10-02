@@ -1439,3 +1439,130 @@ Lockdown elites and walkers included, killed and swept up):
 - Every upstairs wing with a floor-exclusive store shelves a rare in it at
   `RARE_SHELF_PRICE` ($45), so Floors 2-4 each have something worth saving a
   floor of change for. Wings without one (districts) keep the old rule.
+
+## Round 57 - a bot playtester, a route choice, a coach, a daily rule
+
+Seven things from the "what next" brainstorm (2026-10-01), built in the order
+that makes the first one useful to the rest.
+
+### The bot playtester (`tests/balance/`, `npm run balance`)
+
+Rounds 42-56 were tuned from one human log and tool-driven input that was too
+slow to judge. The sim is deterministic by seed, so a scripted janitor can play
+thousands of nights headlessly through the same `tickMvpRun` input the keyboard
+feeds.
+
+- `bot.ts`: one `botInput(state, memory, options)` per tick. Skills bracket the
+  difficulty: `naive` walks up and swings; `dodger` also sidesteps and dashes
+  from wind-ups; `pro` also steps out of enemy shots and backs off while its
+  swing recovers. `shop: 'buy'` visits every store and buys the dearest thing
+  it can pay for (and equips the best damage-per-second weapon);
+  `route: 'shortcut'` crawls through the staff passage when the wing has one.
+  Left out on purpose: stealing, the Bench Warrant, the arcade, the secret room.
+- `path.ts`: a grid navigator (BFS distance field from the goal over
+  `combat.walls`, straight line when clear). Without it the bot jams on the
+  opening concourse's pillars.
+- `harness.ts`: `playWing`, `playNight`, driving the real `PlaytestRecorder`,
+  so the numbers match what a human's Playtest log would say.
+- `report.ts` + `balance.test.ts`: `npm run balance` (40 nights a bot),
+  `BALANCE_NIGHTS=200`, `BALANCE_BOTS=pro:buy:shortcut,...`, `BALANCE_OUT=`.
+  Not part of `npm test`; it writes `test-results/balance.md` (vitest hides a
+  passing test's log). Every Playwright run empties `test-results/`, so use
+  `BALANCE_OUT=docs/neon-overhaul/balance/<name>.md` for a report worth keeping.
+- Baseline: [`balance/round57-baseline.md`](balance/round57-baseline.md), 100
+  nights, four bots. Re-run after any balance change and say what moved.
+
+Bugs the bot found in itself, worth knowing when extending it: a shot or a
+swing is stopped by a pillar corner (the widest projectile is radius 10, so
+line of sight uses 11), and monsters jam against pillar corners, so a fight
+that does no damage for 10 s makes the bot circle its target.
+
+What it says (round 56 build, 100 nights): the `pro` bot wins 54% of nights
+without shopping and 63% with; Floor 1 costs it under a heart a wing (matching
+the human log's "0-2 damage"). Its deaths concentrate in two places: Floor 3's
+Owner's Suite (14-17 of ~45; Mascot Brute charge 2.6-3.0 hp a wing) and Floor 2's
+Portrait Studio in Glamour Row (8-9; perfume 1.2-1.6 hp). The finale (Helipad)
+is easier for it than the Owner (93-97% against 74-83% cleared), which is not
+round 42's "the finale is the hardest fight". The bot's charge-dodging is
+crude, so treat these as leads for a human playtest, not verdicts.
+
+### Wanted clarity
+
+`wantedBrief` (`sim/run/wanted.ts`) says what the stars mean right now:
+guards (one a star), the shelf surcharge, Heat to the next star, and whether
+hot goods are what hold the stars on. `wantedLineFor` (`ui/gameHudModel.ts`)
+turns it into one line, drawn above the vitals panel: `SHELVES +$4  2 EXTRA
+GUARDS  NEXT * IN 15`, `LOSS PREVENTION FOLLOWS` from four stars, `1 HOT ITEM
+HOLDS YOUR STAR` while stolen goods hold the Heat at its floor.
+
+### The staff passage (the route choice)
+
+`sim/run/shortcut.ts`. About half of wings (`SHORTCUT_CHANCE`) have a STAFF ONLY
+hatch on a safe storefront concourse. E at it skips the next fight room: the
+janitor comes out two rooms on, the skipped room is marked cleared, and
+security notices (`SHORTCUT_HEAT` 20 Heat, one star). It forfeits what a fight
+pays: tokens, drops, the +2 clear heal, the Heat a clear sheds. Seed-derived, one
+use a wing; the spent hatch is recorded in `secretsDone` as `100 + room index`
+(the checkpoint validator wants digits), the skipped room in `clearedRooms`
+(which is what keeps the checkpoint legal). `moveToRoom`
+(`sim/run/roomTransition.ts`) now does every room change, doorways included.
+Two spots: the first concourse skips the first fight (room 1 to 3), the second
+skips the Back Hall (3 to 5, straight to the boss or the Lockdown).
+
+Balance, 200 nights of the `pro` shopper ([`balance/round57-shortcut.md`](balance/round57-shortcut.md)):
+60% won taking every door, 59% taking every hatch, within noise (about 3.5 points). It is neither a trap nor a
+dominant road; skipping into the Lockdown without the heal costs the most
+(Floor 3 first-wing deaths 13 against 9). To change the price, move
+`SHORTCUT_HEAT`; to change how often, `SHORTCUT_CHANCE`.
+
+### The coach (an optional guided first shift)
+
+`ui/coachModel.ts`: `nextCoachTip(state, shown)` returns the first applicable
+tip not yet said, from the run's own state (so it cannot disagree with the
+game): a nudge to the east door (10-30 s in the first room, after the controls
+card), the shop door, E and F in a store, wind-ups and the dash, weapon
+switching, the bench, wanted stars. `GameHud.trackCoach` shows each once as a
+7 s toast. On for a janitor's first `COACH_SHIFTS` (2) shifts, off in dev
+fixtures, and a Settings toggle ("Coach tips", `GameSettings.coach`) turns it
+off at once.
+
+### The daily rule
+
+`sim/run/nightRules.ts`: four rules, each one clamped number on a rule the run
+already had: Glass Janitor (`runMaxHealth` -2), No Breaks (`roomClearHeal` 0),
+Inflation (`runOfferPrice` +$3), Short Fuse (`alarmTicksFor` -60 ticks).
+`dailyRule(date)` (`game/run/dailyShift.ts`) rotates by day number, so any four
+days use all four. The title shows today's rule; the clock-in card names it;
+`MvpRunState.rule` rides the escalator and the checkpoint (an unknown rule in a
+save is refused). Only the Daily Shift sets it today; `createMvpRun(seed, {rule})`
+takes it for anything else.
+
+### Elite traits
+
+`sim/combat/eliteTraits.ts`. Every Clearance elite now has a trait rolled from
+the seed (`rollEliteTrait`): SWIFT (`SWIFT_SPEED_MULTIPLIER` 1.35, in
+`effectiveSpeedMultiplier`, so Sticky still slows it) or VOLATILE (a lit fuse
+where it fell, `VOLATILE_FUSE_TICKS` 36, then 1 damage inside
+`VOLATILE_BURST_RADIUS` 76 unless the janitor is dashing or in grace). The view
+draws a cyan or orange aura, the trait as the tag, and the fuse ring
+(`ELITE_LOOK`, `drawBursts` in `view/MvpRunView.ts`). The playtest log has a
+`burst` damage source. The Lockdown's five elites carry traits too.
+
+### The seed card
+
+`shareCardText` (`ui/shiftCardModel.ts`): five short lines of plain text
+(mall number, result, score and time, how far, and `?seed=N` to replay it; on a
+Daily Shift the day and its rule). No link, nothing leaves the machine. The end
+card has a COPY CARD button (key C) beside RETRY and TITLE.
+
+### Not done (needs art and a decision)
+
+- A **second playable employee**: the portraits `employee.png` and
+  `teenager.png` exist, but the in-world sprite (8-direction idle, walk, swing)
+  is Alex only. Needs a PixelLab character and a kit (see NEXT_SESSION.md).
+- A **secret floor** (Parking Garage or Basement): a data entry in
+  `floorSpecs.ts` plus whatever `tsc` lists, but it needs dressing, music and a
+  way in that the owner picks.
+
+Dev fixtures added: `?fixture=mvp-hatch&seed=7` (beside a staff passage) and
+`&enter=1` on `mvp-lockdown` (steps into the Lockdown, to see elite traits).

@@ -56,6 +56,33 @@ export function hotHeatFloor(state: Pick<HeatHolder, 'inventory'>): number {
   return Math.min(MAX_SECURITY_HEAT, hotItemCount(state) * HEAT_PER_STAR);
 }
 
+/** What the janitor's wanted level means right now (round 57), for the HUD to say plainly. */
+export type WantedBrief = {
+  readonly stars: number;
+  /** Heat still to go before the next star; null at the top. */
+  readonly toNextStar: number | null;
+  /** Dollars added to every shelf price. */
+  readonly surcharge: number;
+  /** Extra security guards in a fight: one a star. */
+  readonly guards: number;
+  readonly hotItems: number;
+  /** Hot goods are what keeps the Heat where it is: laying low cannot cool it, only the bench can. */
+  readonly heldByHotGoods: boolean;
+};
+
+export function wantedBrief(state: HeatHolder): WantedBrief {
+  const stars = wantedStars(state.heat);
+  const hotItems = hotItemCount(state);
+  return {
+    stars,
+    toNextStar: stars >= MAX_STARS ? null : (stars + 1) * HEAT_PER_STAR - state.heat,
+    surcharge: stars * WANTED_SURCHARGE_PER_STAR,
+    guards: stars,
+    hotItems,
+    heldByHotGoods: hotItems > 0 && state.heat <= hotHeatFloor(state),
+  };
+}
+
 /** Raises Heat to the hot-goods floor, capped like all Heat. */
 export function applyHeatFloor(state: HeatHolder): void {
   state.heat = Math.min(MAX_SECURITY_HEAT, Math.max(state.heat, hotHeatFloor(state)));

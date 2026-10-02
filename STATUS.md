@@ -1,5 +1,32 @@
 # Status
 
+## 2026-10-01 — Round 57: a bot playtester, a route choice, a coach, a daily rule (branch `claude/balance-bot-and-routes`)
+
+Built on `origin/main` (`2b6250d`, round 56) as nine local commits (a refactor, then one
+per feature, then docs), not pushed. A
+headless bot now plays Night Shift through the real input (`npm run balance`,
+`tests/balance/`), so balance can be measured instead of guessed; its first
+100-night baseline is in `docs/neon-overhaul/balance/`. On top of it:
+
+- **Wanted clarity.** A strip above the portrait says what the stars cost
+  (shelf surcharge, extra guards, Loss Prevention from four stars) and when the
+  next star comes, or that hot goods are holding yours.
+- **The staff passage** (the route choice). About half of wings have a STAFF
+  ONLY hatch on a safe concourse: crawl through to skip the next fight for a
+  star of Heat. The bot says it is balanced (60% against 59% won).
+- **The coach.** Optional how-to tips for a new janitor's first two shifts,
+  with a Settings switch.
+- **The Daily Shift's rule.** One of Glass Janitor, No Breaks, Inflation or
+  Short Fuse a day, shown on the title and the clock-in card.
+- **Elite traits.** Clearance elites are now Swift (faster) or Volatile (a
+  short fuse, then a burst where they fell), with their own colours and tags.
+- **The seed card.** COPY CARD on the end card puts a plain-text summary on the
+  clipboard.
+
+Gameplay otherwise unchanged. Not done, because they need art and a decision:
+a second playable employee and a secret floor (briefs in NEXT_SESSION.md). See
+the playbook's Round 57 section and TEST_EVIDENCE.md.
+
 ## 2026-10-01 — Round 54: palms, the toppled rack, a flaky test (branch `claude/polish-palms-rack-tests`)
 
 Three small fixes on top of `origin/main` (`4d9f981`). Tall props now fade to

@@ -1,5 +1,83 @@
 # Test evidence
 
+## 2026-10-01 — Round 57: a bot playtester, a route choice, a coach, a daily rule
+
+Built on `origin/main` `2b6250d` (round 56). Every new rule was written
+test-first and watched fail on the missing module or behavior before the code.
+
+- **Bot playtester** (`tests/balance/`, `tests/unit/balance-*.test.ts`, 13
+  tests, red first on the missing harness). The first runs found the bot's own
+  bugs, each fixed from a trace rather than guessed: it stalled on the opening
+  concourse's pillars (a grid navigator, `balance-path.test.ts`, with a control
+  proving straight-line steering really is stuck), stood off a Spitter behind a
+  low wall firing into it (line of sight for ranged weapons), swung through a
+  pillar corner (a bullet is up to radius 10, so line of sight uses 11), and
+  jammed with monsters wedged on pillar corners (circle the target after 10 s
+  without damage). Stalled nights: 8 in 40, then 5, 4, 1, 0 in 60. Baseline
+  and the staff-passage comparison are in `docs/neon-overhaul/balance/`.
+  `BALANCE_NIGHTS=100`, four bots: about 5 minutes; one night about 0.5 s.
+- **Wanted clarity** (`wanted-brief.test.ts`, 8, red first): the rule
+  (`wantedBrief`) and the HUD line. On screen (`?fixture=mvp-wanted&seed=7`):
+  `SHELVES +$10  5 EXTRA GUARDS  LOSS PREVENTION FOLLOWS` above the portrait;
+  at one star `SHELVES +$2  1 EXTRA GUARD  NEXT * IN 20`.
+- **Staff passage** (`shortcut.test.ts`, 11, red first on the missing module;
+  the prompt test red then green): the spot rule, reach, once a wing, the
+  skip, +20 Heat capped at 100, a legal checkpoint after it and a spent hatch
+  that stays spent after a reload, both spots (1 to 3, 3 to 5), the real
+  interaction through `tickMvpRun`. `moveToRoom` was extracted from
+  `enterDoorway` with the whole suite green. On screen (`?fixture=mvp-hatch&seed=7`):
+  the STAFF ONLY hatch, the prompt `STAFF PASSAGE: SKIP THE NEXT FIGHT, +1 STAR`,
+  E arrives in the East Storefront with one star. Its pickup-log line was cut
+  off at two lines on screen, so the message was shortened.
+  Balance, 200 nights of the `pro` shopper: 60% against 59% (noise is 3.5).
+- **Coach** (`coach.test.ts`, 10, red first). On screen on a clean night
+  (`?seed=7`, 11 s after punching in): `COACH TIP: THE WAY ON IS THE EAST DOOR.
+  WASD TO MOVE, CLICK TO SWING.` The first cut split mid-sentence and sized the
+  box from the wrong glyph width; fixed. The Settings toggle was clicked in the
+  browser and persisted `coach: false`. A review catch: the HUD never re-read
+  the career's shift count on a retry, so tips would have outlived two shifts;
+  fixed with no test (`GameHud` is Phaser-bound and has no unit coverage).
+- **Daily rule** (`night-rules.test.ts`, 9, red first): each rule's effect, the
+  rotation (any 4 days cover all 4), the escalator, the checkpoint (an unknown
+  rule is refused). On screen: the title shows `TODAY'S RULE: SHORT FUSE -
+  STORE ALARMS GIVE YOU A SECOND LESS.`
+- **Elite traits** (`elite-traits.test.ts`, 10). First draft of the volatile
+  tests killed an enemy that never counted as dying (a 0-health enemy is not
+  "living" at the start of the tick); rewritten so the janitor's swing kills it.
+  Swift travels 1.25-1.45 times as far in 40 ticks. On screen in the Lockdown
+  (`?fixture=mvp-lockdown&enter=1&seed=5`): cyan SWIFT and orange VOLATILE tags
+  and auras. **The burst ring was not seen on screen** (no way to kill a
+  volatile elite through the browser tool); it uses the same primitives as the
+  other rings and is covered by unit tests only. `tsc` also listed the four
+  places a new `DamageSource` needs (log, panel, pink slip, a test fixture).
+- **Seed card** (`share-card.test.ts`, 5, red first). On screen (end card of
+  `?fixture=mvp-floor-four-boss-win&seed=4242`): RETRY, COPY CARD, TITLE; C
+  put `DEAD MALL - MALL #4242 / SHIFT OVER - FELL IN HELIPAD - FLOOR 4 / SCORE
+  4,860 - TIME 0:08 - KILLS 0 / REACHED FLOOR 4 - 6/6 - BEST COMBO X0 / REPLAY
+  IT: ADD ?seed=4242 TO THE ADDRESS` on the clipboard (captured by wrapping
+  `writeText`) and the button read COPIED!.
+- `npx tsc --noEmit` clean; `npm run build` clean (the chunk-size warning was
+  already there); no fixture, debug-bridge or `mvp-hatch` strings in the shipped
+  JS (only in the source map).
+- `npx vitest run`: 136 files, 1255 passed.
+- Browser, `PW_PORT=4191 npx playwright test --workers=3`. Run 1 (82 specs,
+  while I edited `GameHud.ts`, so the dev server hot-reloaded): 80 passed, 2
+  failed with "debug bridge undefined" during startup polls
+  (`night-shift.spec.ts:231`, `presentation-evidence.spec.ts:201`); both pass
+  alone. Run 2, clean, no edits in flight, 83 specs including the new
+  `staff-passage.spec.ts`: 82 passed, 1 failed
+  (`void-the-warranty.spec.ts:141`, the M4 fused-car projectile wait, which
+  passed in run 1 and 3 of 3 alone; load average was 10-13). The new
+  `staff-passage.spec.ts` (E beside the hatch on seed 7: room 1 to 3, Heat 0 to
+  20, no console errors) passes in run 2 (it did not exist when run 1 started) and alone. Neither flake touches
+  anything changed this round (an M4 mode with no elites, no hatch), and both
+  match the load-related flakes already noted in rounds 45-49. Nothing here
+  proves the first run's failures were the hot reload; they passed serially.
+- Screenshots: the gate rewrites tracked images, so the 13 that changed only
+  by re-render were restored with `git checkout`. Kept: `daily-title.png` (the
+  title now has TODAY'S RULE) and `daily-card.png` (the end card has COPY
+  CARD), which show intentional changes, and the new `staff-passage.png`.
+
 ## 2026-10-01 — Round 54: palms, the toppled rack, a flaky test
 
 - **Occlusion.** `presentation-occlusion.test.ts` gained 3 tests. Run first

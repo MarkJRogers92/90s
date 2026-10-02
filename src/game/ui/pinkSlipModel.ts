@@ -62,6 +62,7 @@ const REASONS: Record<DamageSource, string> = {
   perfume: 'EXCESSIVE FRAGRANCE EXPOSURE',
   poodle: 'MAULED BY THE PET OF THE WEEK',
   goon: 'ROUGHING. TWO MINUTES. FOREVER.',
+  burst: 'STOOD TOO CLOSE TO A CLEARANCE ITEM',
   other: 'GENERAL POOR ATTITUDE',
 };
 

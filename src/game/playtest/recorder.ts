@@ -31,7 +31,7 @@ import type { DistrictId } from '../../sim/wing/districts';
 import { PERFUME_CLOUD_TICKS } from '../../sim/combat/perfume';
 import type { EnemyKind } from '../../sim/model';
 
-export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'roofer' | 'barrage' | 'walker' | 'elf' | 'perfume' | 'poodle' | 'goon' | 'other';
+export type DamageSource = 'hanger' | 'mannequin' | 'static' | 'shopper' | 'mascot' | 'ownerCharge' | 'glob' | 'slam' | 'bossShot' | 'stalker' | 'roofer' | 'barrage' | 'walker' | 'elf' | 'perfume' | 'poodle' | 'goon' | 'burst' | 'other';
 
 export type RoomLog = {
   readonly roomId: string;
@@ -127,6 +127,8 @@ type Snapshot = {
   readonly enemyShots: number;
   /** The Developer's tar buckets in the air: a drop means a barrage just landed. */
   readonly bossStrikes: number;
+  /** Round 57: lit Volatile fuses; a drop means one just went off. */
+  readonly bursts: number;
   readonly dashTicks: number;
   readonly stalkerPhase: string | null;
   readonly writeUps: number;
@@ -139,7 +141,7 @@ type Snapshot = {
   readonly inside: string | null;
 };
 
-const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, barrage: 0, walker: 0, elf: 0, perfume: 0, poodle: 0, goon: 0, other: 0 });
+const emptyDamage = (): Record<DamageSource, number> => ({ hanger: 0, mannequin: 0, static: 0, shopper: 0, mascot: 0, ownerCharge: 0, glob: 0, slam: 0, bossShot: 0, stalker: 0, roofer: 0, barrage: 0, walker: 0, elf: 0, perfume: 0, poodle: 0, goon: 0, burst: 0, other: 0 });
 
 function snapshot(state: MvpRunState): Snapshot {
   const combat = state.room.combat;
@@ -150,6 +152,7 @@ function snapshot(state: MvpRunState): Snapshot {
     living: new Set(combat.enemies.filter((enemy) => enemy.health > 0).map((enemy) => enemy.id)),
     enemyShots: combat.projectiles.filter((shot) => shot.faction === 'enemy').length,
     bossStrikes: combat.enemies.reduce((sum, enemy) => sum + (enemy.health > 0 ? enemy.tarStrikes?.length ?? 0 : 0), 0),
+    bursts: combat.bursts?.length ?? 0,
     dashTicks: combat.player.dashTicks ?? 0,
     stalkerPhase: state.stalker?.phase ?? null,
     writeUps: state.stalker?.writeUps ?? 0,
@@ -188,6 +191,8 @@ function classify(state: MvpRunState, previous: Snapshot, amount: number): Damag
   // A write-up is counted by the stalker himself, so it is never mistaken for
   // whatever else happens to be standing next to the janitor.
   if ((state.stalker?.writeUps ?? 0) > previous.writeUps) return 'stalker';
+  // A Volatile elite's fuse just ran out (round 57).
+  if ((combat.bursts?.length ?? 0) < previous.bursts) return 'burst';
   // Tar lands as a fresh puddle under the janitor: the Developer's barrage if
   // his buckets in the air just went down, a Roofer's bucket otherwise.
   const freshTar = (combat.tar ?? []).some((puddle) => puddle.ticks >= TAR_PUDDLE_TICKS - FRESH_TAR_TICKS && Math.hypot(puddle.x - p.x, puddle.y - p.y) <= TAR_SPLASH_RADIUS + p.radius);

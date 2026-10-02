@@ -55,6 +55,9 @@ import { policeWash, stalkerCue } from './stalkerCues';
 import { PROP_TEXTURES } from '../presentation/rooms/roomDressing';
 import { HeroPropView } from './HeroPropView';
 import { SECRET_MACHINE, secretMachineHere } from '../../sim/run/secretRoom';
+import { SHORTCUT_HATCH, shortcutHere } from '../../sim/run/shortcut';
+import { VOLATILE_BURST_RADIUS, VOLATILE_FUSE_TICKS } from '../../sim/combat/eliteTraits';
+
 import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
@@ -92,6 +95,13 @@ import { shouldDrawDirectAttackArc } from './visualState';
 import { TAR_PUDDLE_TICKS } from '../../sim/combat/tar';
 import type { TarPuddle } from '../../sim/model';
 import { ELF_HOP_TICKS } from '../../sim/combat/districtEnemies';
+
+/** How each kind of Clearance elite looks (round 57): aura colour, tag text and colour, and body tint. */
+const ELITE_LOOK = {
+  plain: { color: 0xffd84a, css: '#ffd84a', label: 'CLEARANCE', tint: 0x302000 },
+  swift: { color: 0x3ff0ff, css: '#3ff0ff', label: 'SWIFT', tint: 0x003040 },
+  volatile: { color: 0xff7a2a, css: '#ff9a3a', label: 'VOLATILE', tint: 0x401800 },
+} as const;
 
 type ActorFrameEvidence = {
   readonly spriteActive: boolean;
@@ -337,16 +347,18 @@ export class MvpRunView {
         effects.fillStyle(0xff2a3a, 1).fillRect(Math.round(enemy.x) - 4, Math.round(enemy.y) - 54, 2, 2).fillRect(Math.round(enemy.x) + 2, Math.round(enemy.y) - 54, 2, 2);
       }
       if (enemy.elite) {
-        // CLEARANCE: a pulsing gold aura and a price-tag label.
-        const glow = 0.6 + 0.3 * Math.sin(state.tick / 7 + enemy.id);
-        effects.lineStyle(3, 0xffd84a, glow).strokeEllipse(enemy.x, enemy.y + 2, 58, 22);
-        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 70, color: 0xffd84a, intensity: 0.5 * glow });
-        this.eliteTag(`enemy:${enemy.id}`, enemy.x, enemy.y - 70);
+        // CLEARANCE: a pulsing aura and a price-tag label. Gold for the plain elite;
+        // a Swift one is cyan and a Volatile one orange (round 57), so the trait reads at a glance.
+        const look = ELITE_LOOK[enemy.trait ?? 'plain'];
+        const glow = 0.6 + 0.3 * Math.sin(state.tick / (enemy.trait === 'swift' ? 4 : 7) + enemy.id);
+        effects.lineStyle(3, look.color, glow).strokeEllipse(enemy.x, enemy.y + 2, 58, 22);
+        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 70, color: look.color, intensity: 0.5 * glow });
+        this.eliteTag(`enemy:${enemy.id}`, enemy.x, enemy.y - 70, look.label, look.css);
       }
       const sheet = enemySpriteSheet(enemySnapshot.kind, false);
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
       const attackColumn = attackFrameFor(enemy, windups, attackFrames, state.tick);
-      let shown = enemy.elite ? combinePoses(pose, { offsetX: 0, offsetY: 0, scaleX: 1.18, scaleY: 1.18, flash: false, tint: 0x302000 }) : pose;
+      let shown = enemy.elite ? combinePoses(pose, { offsetX: 0, offsetY: 0, scaleX: 1.18, scaleY: 1.18, flash: false, tint: ELITE_LOOK[enemy.trait ?? 'plain'].tint }) : pose;
       // Soaked enemies glow blue and gummed-up ones amber, so a status reads at a glance.
       const wet = (enemy.statuses?.wetTicks ?? 0) > 0;
       const sticky = (enemy.statuses?.stickyTicks ?? 0) > 0;
@@ -777,6 +789,8 @@ export class MvpRunView {
     this.drawThemedTwist(state, twist);
     this.drawDistrictTwist(state, twist);
     this.drawSecret(state);
+    this.drawShortcut(state);
+    this.drawBursts(state);
     if (twist?.storeId === 'cinema-snacks') {
       // Butter: greasy yellow sheen streaks across the floor, drawn above the
       // lightmap so the room's darkness does not swallow it.
@@ -829,6 +843,54 @@ export class MvpRunView {
       }
     }
     for (const id of ['secret-hint', 'secret-timer']) if (!shown.has(id)) this.clearLabel(id);
+  }
+
+  /**
+   * Round 57: a fallen Volatile elite's lit fuse. A ring marks the blast's
+   * reach, flickers, and fills in as the fuse burns, so there is time to see it
+   * and step out before it goes off.
+   */
+  private drawBursts(state: MvpRunState): void {
+    const bursts = state.room.combat.bursts;
+    if (!bursts || bursts.length === 0) return;
+    const g = this.effectGraphics;
+    const reach = VOLATILE_BURST_RADIUS;
+    for (const burst of bursts) {
+      const progress = 1 - burst.fuseTicks / VOLATILE_FUSE_TICKS;
+      g.fillStyle(0xff5a1a, 0.1 + 0.22 * progress).fillEllipse(burst.x, burst.y + 2, reach * 2, reach);
+      g.lineStyle(3, 0xff7a2a, state.tick % 6 < 3 ? 1 : 0.6).strokeEllipse(burst.x, burst.y + 2, reach * 2, reach);
+      g.lineStyle(2, 0xffd84a, 0.9).strokeEllipse(burst.x, burst.y + 2, reach * 2 * progress, reach * progress);
+      this.openingConcourse?.addLight({ x: burst.x, y: burst.y - 10, radius: 110, color: 0xff7a2a, intensity: 0.4 + 0.6 * progress });
+    }
+  }
+
+  /**
+   * Round 57: the staff passage, a hazard-striped hatch in the back wall of a
+   * safe concourse with a STAFF ONLY sign and a pulsing amber light. It is
+   * drawn while it is unused and gone once the janitor has crawled through.
+   */
+  private drawShortcut(state: MvpRunState): void {
+    if (!shortcutHere(state)) {
+      this.clearLabel('shortcut-sign');
+      return;
+    }
+    const h = SHORTCUT_HATCH;
+    const g = this.effectGraphics;
+    const left = h.x - 24;
+    const top = h.y - 46;
+    g.fillStyle(0x14161a, 0.96).fillRect(left, top, 48, 50);
+    // Hazard stripes down both jambs and across the lintel.
+    for (let i = 0; i < 7; i += 1) {
+      const stripe = i % 2 === 0 ? 0xffd84a : 0x1a1a1a;
+      g.fillStyle(stripe, 1).fillRect(left, top + i * 7, 5, 7).fillRect(left + 43, top + i * 7, 5, 7);
+    }
+    for (let i = 0; i < 7; i += 1) g.fillStyle(i % 2 === 0 ? 0xffd84a : 0x1a1a1a, 1).fillRect(left + i * 7, top - 4, 7, 5);
+    // The grille and its latch.
+    for (let y = top + 8; y < top + 46; y += 6) g.fillStyle(0x56606a, 0.9).fillRect(left + 8, y, 32, 2);
+    g.fillStyle(0xff9a3a, 1).fillRect(left + 38, top + 24, 4, 6);
+    const pulse = 0.5 + 0.35 * Math.sin(state.tick / 14);
+    this.openingConcourse?.addLight({ x: h.x, y: h.y - 20, radius: 80, color: 0xffb040, intensity: 0.35 + 0.35 * pulse });
+    this.setLabel('shortcut-sign', 'STAFF ONLY', h.x - 28, top - 16);
   }
 
   private twistProp(id: string, texture: { readonly key: string }, x: number, y: number, scale: number, flipX = false): Phaser.GameObjects.Image | null {
@@ -1901,8 +1963,8 @@ export class MvpRunView {
   private readonly eliteTags = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedEliteTags = new Set<string>();
 
-  private eliteTag(id: string, x: number, y: number): void {
-    const label = ensurePixelLabel(this.scene, 'CLEARANCE', '#ffd84a', 1, '#2a1400');
+  private eliteTag(id: string, x: number, y: number, text = 'CLEARANCE', css = '#ffd84a'): void {
+    const label = ensurePixelLabel(this.scene, text, css, 1, '#2a1400');
     let tag = this.eliteTags.get(id);
     if (!tag) {
       tag = this.scene.add.image(0, 0, label.key).setDepth(presentationDepth('prompt', 2));
@@ -2238,7 +2300,7 @@ export class MvpRunView {
   private pruneLabels(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
     // The back room's labels (round 53) come and go in drawSecret.
-    const keep = new Set<string>(['bench', 'secret-hint', 'secret-timer']);
+    const keep = new Set<string>(['bench', 'secret-hint', 'secret-timer', 'shortcut-sign']);
     if (state.carrier !== null) {
       keep.add('carrier');
     }

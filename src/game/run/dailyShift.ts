@@ -6,6 +6,8 @@
  * Pure launcher-side logic: the date picks the seed, the simulation generates
  * everything from it as usual. The record lives in this browser only.
  */
+import { NIGHT_RULES, NIGHT_RULE_IDS, type NightRuleId } from '../../sim/run/nightRules';
+
 export const DAILY_KEY = 'dead-mall:daily:v1';
 const KEEP_DAYS = 7;
 const MAX_SEED = 999_999;
@@ -18,6 +20,24 @@ export function dailySeed(date: string): number {
     hash = Math.imul(hash, 0x01000193) >>> 0;
   }
   return 1 + (hash % MAX_SEED);
+}
+
+/**
+ * Today's rule (round 57): the day's challenge, one of the sim's night rules.
+ * Rotates by day number, so any four days in a row use all four and everyone
+ * gets the same one on the same date. An unreadable date gets the first rule.
+ */
+export function dailyRule(date: string): NightRuleId {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(date);
+  if (!match) return NIGHT_RULE_IDS[0];
+  const day = Math.floor(Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3])) / 86_400_000);
+  return NIGHT_RULE_IDS[((day % NIGHT_RULE_IDS.length) + NIGHT_RULE_IDS.length) % NIGHT_RULE_IDS.length]!;
+}
+
+/** The title's line for today's rule. */
+export function dailyRuleLine(date: string): string {
+  const rule = NIGHT_RULES[dailyRule(date)];
+  return `TODAY'S RULE: ${rule.name} - ${rule.blurb.toUpperCase()}`;
 }
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];

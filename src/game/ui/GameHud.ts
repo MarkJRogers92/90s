@@ -23,6 +23,8 @@ import { buildGameHudModel, collapsedObjective, hudExpanded, roomTitleSubtitle, 
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { itemBlurb } from './itemBlurbs';
 import { blink, flashAllowed, gameSettings } from '../settings/settings';
+import { browserCareer } from '../career/career';
+import { coachActive, nextCoachTip, type CoachTipId } from './coachModel';
 
 const HUD_DEPTH = 20_000;
 const SCREEN_W = 960;
@@ -38,7 +40,7 @@ const MUTED = '#9a8fb4';
 
 type Label = Phaser.GameObjects.Image;
 type Rect = { x: number; y: number; w: number; h: number };
-type Toast = { title: string; titleColor: string; body: string; hint: string; startedTick: number };
+type Toast = { title: string; titleColor: string; body: string; hint: string; startedTick: number; /** Ticks on screen; the usual toast is 4.5 s, a coach tip longer. */ life?: number };
 
 export class GameHud {
   private readonly scene: Phaser.Scene;
@@ -123,6 +125,7 @@ export class GameHud {
     if (this.shiftStartTick === null || state.tick < this.shiftStartTick) this.shiftStartTick = state.tick;
     this.trackNewItems(state, model);
     this.trackMannequins(state);
+    this.trackCoach(state);
     this.joltHearts(state);
     this.trackDisclosure(state, model);
     if (model.wanted !== this.wantedShown) {
@@ -411,6 +414,11 @@ export class GameHud {
     });
     this.text('cash', `$${model.cash}`, px + 96, py + 54, '#6aff8a', 2, true);
     this.drawStars(g, model.wanted, px + 210, py + 61, state.tick);
+    // What the stars cost, and when the next one comes (round 57).
+    if (model.wantedLine) {
+      this.panel(g, px, py - 24, Math.max(220, model.wantedLine.length * 6 + 20), 20, 0xff5d7a, 0.88);
+      this.text('wanted-line', model.wantedLine, px + 10, py - 18, '#ff8da1', 1, true);
+    }
   }
 
   private drawHotbar(model: GameHudModel): void {
@@ -589,6 +597,42 @@ export class GameHud {
   }
 
   private mannequinHintShown = false;
+  /** Round 57: the coach's tips already said this shift, and whether the scene lets it speak (dev fixtures stay quiet). */
+  private coachShown = new Set<CoachTipId>();
+  private coachAllowed = true;
+  private careerShifts: number | null = null;
+
+  /** Dev fixtures drop the player mid-night; the coach would only be noise there. */
+  public setCoachAllowed(allowed: boolean): void {
+    this.coachAllowed = allowed;
+  }
+
+  /** One short how-to at a time, for a new janitor's first shifts (round 57). */
+  private trackCoach(state: MvpRunState): void {
+    if (state.tick === 0) {
+      // A new shift: the tips start over, and the career may have counted one more.
+      this.coachShown = new Set();
+      this.careerShifts = null;
+    }
+    if (!this.coachAllowed || this.toast) return;
+    this.careerShifts ??= browserCareer().load().shifts;
+    if (!coachActive(gameSettings().get(), { shifts: this.careerShifts })) return;
+    const tip = nextCoachTip(state, this.coachShown);
+    if (!tip) return;
+    this.coachShown.add(tip.id);
+    // Two lines: the big one up to 44 characters, the rest small underneath.
+    const sentence = tip.text.lastIndexOf('. ', 44);
+    const cut = tip.text.length <= 44 ? tip.text.length : sentence >= 12 ? sentence + 1 : tip.text.lastIndexOf(' ', 44);
+    this.toast = {
+      title: 'COACH TIP',
+      titleColor: '#6aff8a',
+      body: tip.text.slice(0, cut),
+      hint: tip.text.slice(cut).trim() || 'YOU CAN TURN TIPS OFF IN SETTINGS',
+      startedTick: state.tick,
+      life: 60 * 7,
+    };
+  }
+
 
   /** The first mannequin of a shift gets a one-time explanation. */
   private trackMannequins(state: MvpRunState): void {
@@ -645,12 +689,14 @@ export class GameHud {
       return;
     }
     const age = state.tick - this.toast.startedTick;
-    if (age > 60 * 4.5 || age < 0) {
+    const life = this.toast.life ?? 60 * 4.5;
+    if (age > life || age < 0) {
       this.toast = null;
       return;
     }
-    const alpha = age < 10 ? age / 10 : age > 240 ? Math.max(0, 1 - (age - 240) / 30) : 1;
-    const width = Math.max(this.toast.title.length, this.toast.body.length, this.toast.hint.length) * 12 + 40;
+    const alpha = age < 10 ? age / 10 : age > life - 30 ? Math.max(0, 1 - (age - (life - 30)) / 30) : 1;
+    // The title and body are drawn at 12 px a character, the hint at 6.
+    const width = Math.max(this.toast.title.length * 12, this.toast.body.length * 12, this.toast.hint.length * 6) + 40;
     const x = Math.round((SCREEN_W - width) / 2);
     const y = 150;
     this.frame.fillStyle(PANEL, 0.92 * alpha).fillRect(x, y, width, 74);

@@ -18,13 +18,14 @@ import {
 import { PLAYFIELD_HEIGHT, PLAYFIELD_WIDTH, circleIntersectsRect } from '../core/geometry';
 import { createEnemyStatusState } from '../effects/statuses';
 import type { FusionInventoryState } from '../fusion/types';
-import type { EnemyState, MallProp, RunState } from '../model';
+import type { EliteTrait, EnemyState, MallProp, RunState } from '../model';
 import { createProp, propWalls } from '../combat/props';
 import type { GeneratedWing, WingEnemySpawn, WingRoomDefinition } from '../wing/types';
 import { floorNumberOf, floorSpec } from '../wing/floorSpecs';
 import { compileRunLoadout } from './loadout';
 import type { MvpRoomEntryFrom } from './types';
 import { ELITE_CHANCE, ELITE_HEALTH_MULTIPLIER, luck } from './luck';
+import { rollEliteTrait } from '../combat/eliteTraits';
 import { MANNEQUIN_HEALTH, MANNEQUIN_RADIUS } from '../combat/mannequin';
 import { STATIC_DRIFT_TICKS, STATIC_HEALTH, STATIC_RADIUS } from '../combat/staticEnemy';
 import { SHOPPER_HEALTH, SHOPPER_RADIUS } from '../combat/shopper';
@@ -84,11 +85,12 @@ export function spawnWaveMonster(spawn: WingEnemySpawn, id: number, healthScale 
   return spawnEnemy(spawn, id, false, healthScale);
 }
 
-function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean, healthScale = 1): EnemyState {
+function spawnEnemy(spawn: WingEnemySpawn, id: number, elite: boolean, healthScale = 1, trait?: EliteTrait): EnemyState {
   const stats = SPAWN_STATS[spawn.kind];
   const health = Math.round(stats.health * healthScale) * (elite ? ELITE_HEALTH_MULTIPLIER : 1);
   return {
     ...(elite ? { elite: true } : {}),
+    ...(elite && trait ? { trait } : {}),
     id,
     kind: spawn.kind,
     x: spawn.x,
@@ -141,7 +143,7 @@ function lockdownWave(wing: GeneratedWing, room: WingRoomDefinition, firstId: nu
       y = Math.max(40, Math.min(PLAYFIELD_HEIGHT - 40, anchor.y + Math.sin(angle) * reach * 0.7));
       if (!room.walls.some((wall) => circleIntersectsRect(x, y, 24, wall))) break;
     }
-    return spawnEnemy({ slotId: `lockdown-${index}`, kind, x, y }, firstId + index, true, floor.enemyHealthScale);
+    return spawnEnemy({ slotId: `lockdown-${index}`, kind, x, y }, firstId + index, true, floor.enemyHealthScale, rollEliteTrait(wing.seed, wing.rooms.indexOf(room), index));
   });
 }
 
@@ -302,9 +304,10 @@ export function buildRoomCombatState(
   const compiledLoadout = projected.compiledLoadout;
 
   const floor = floorSpec(floorNumberOf(wing));
-  const enemies = room.enemySpawns.map((spawn, index) =>
-    spawnEnemy(spawn, index + 1, luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE, floor.enemyHealthScale),
-  );
+  const enemies = room.enemySpawns.map((spawn, index) => {
+    const elite = luck(seed, 'elite', roomIndex, index) < ELITE_CHANCE;
+    return spawnEnemy(spawn, index + 1, elite, floor.enemyHealthScale, elite ? rollEliteTrait(seed, roomIndex, index) : undefined);
+  });
   if (room.bossAnchor && wing.part === 1 && wing.district) {
     // A district's Lockdown room (round 50) holds its mini-boss instead.
     enemies.push(spawnBoss(enemies.length + 1, room.bossAnchor.x, room.bossAnchor.y, districtSpec(wing.district).miniBoss));

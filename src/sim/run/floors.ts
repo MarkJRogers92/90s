@@ -52,6 +52,7 @@ export function ascend(state: MvpRunState): MvpRunState {
     ...(sameFloor ? {} : { part: 1 as const }),
     carry: { inventory: cloneFusionInventory(state.inventory), cash: state.cash, stats: { ...state.stats }, heat: state.heat },
     perks: state.perks,
+    ...(state.rule !== undefined ? { rule: state.rule } : {}),
   });
   refreshRunLoadout(next);
   syncRunCarrier(next);

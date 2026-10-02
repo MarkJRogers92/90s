@@ -12,6 +12,9 @@ import { wingEventFor } from '../../sim/run/wingEvents';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { HERO_FUSIONS } from '../../sim/fusion/heroes';
 import { SECRET_MACHINE, enterSecretRoom, secretFor } from '../../sim/run/secretRoom';
+import { SHORTCUT_HATCH, shortcutFor } from '../../sim/run/shortcut';
+import { dailyRule } from '../run/dailyShift';
+import type { NightRuleId } from '../../sim/run/nightRules';
 import { propWalls } from '../../sim/combat/props';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { isHybridPair } from '../../sim/fusion/hybrid';
@@ -26,6 +29,7 @@ import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
 import { gameSettings, hitStopScale } from '../settings/settings';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
+import { buildShiftCardModel, shareCardText } from '../ui/shiftCardModel';
 import { nextShiftSeed } from '../run/shiftSeed';
 import { EscalatorRide, type RideFloor } from '../ui/EscalatorRide';
 import { KillCam } from '../ui/KillCam';
@@ -255,6 +259,7 @@ class MvpRunInputAdapter {
     if (this.endCard?.isOpen()) {
       if (event.code === 'KeyR' || event.code === 'Enter') this.endCard.act(this.endCard.ascends() ? 'ascend' : 'retry');
       else if (event.code === 'KeyT') this.endCard.act('title');
+      else if (event.code === 'KeyC') this.endCard.act('copy');
       if (event.code !== 'KeyM') return;
     }
     if (event.code === 'KeyE') {
@@ -482,7 +487,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.run =
       launch?.checkpoint !== null && launch?.checkpoint !== undefined
         ? restoreMvpRun(launch.checkpoint)
-        : createMvpRun(this.seed, { part: 1, perks: this.shiftPerks() });
+        : createMvpRun(this.seed, { part: 1, perks: this.shiftPerks(), ...this.ruleOption() });
     this.run = this.applyDevFixture(this.run);
     this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
@@ -512,6 +517,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.cameras.main.setBackgroundColor('#07050c');
     this.removeBloom = installAdaptiveBloom(this);
     this.gameHud = new GameHud(this);
+    this.gameHud.setCoachAllowed(this.devFixture() === null);
     const hud = this.gameHud;
     this.inputAdapter.hudSlotAt = (x, y) => hud.weaponSlotAt(x, y);
     this.inputAdapter.onToggleMusic = () => {
@@ -535,7 +541,7 @@ export class MvpRunScene extends Phaser.Scene {
       isOpen: () => card.open,
       ascends: () => card.offersAscend,
       buttonAt: (x, y) => card.buttonAt(x, y),
-      act: (action) => (action === 'ascend' ? this.ascend() : action === 'retry' ? this.restartRun(true) : this.returnToTitle()),
+      act: (action) => (action === 'ascend' ? this.ascend() : action === 'retry' ? this.restartRun(true) : action === 'copy' ? this.copyShareCard() : this.returnToTitle()),
     };
     this.hud = new MvpRunHud(
       () => this.restartRun(),
@@ -766,6 +772,19 @@ export class MvpRunScene extends Phaser.Scene {
     clearMvpHeldActions(this.run);
   }
 
+  /** Puts the shareable seed card on the clipboard (the player's own paste; nothing is sent anywhere). */
+  private copyShareCard(): void {
+    const model = buildShiftCardModel(this.run, this.seed, this.dailyDate, this.lastRecord);
+    const text = shareCardText(model, this.seed, this.dailyDate, this.run.rule ?? null);
+    if (!text) return;
+    void navigator.clipboard?.writeText(text).then(() => this.shiftCard?.markCopied(), () => undefined);
+  }
+
+  /** The Daily Shift's rule of the day (round 57); an ordinary night has none. */
+  private ruleOption(): { readonly rule?: NightRuleId } {
+    return this.dailyDate ? { rule: dailyRule(this.dailyDate) } : {};
+  }
+
   /** A Daily Shift is standard issue; any other shift takes the janitor's Break Room perks. */
   private shiftPerks(): ShiftPerks {
     if (this.dailyDate) return NO_PERKS;
@@ -793,7 +812,7 @@ export class MvpRunScene extends Phaser.Scene {
     const cleared = this.store.clear();
     // Re-read the career: the Break Room is only open between shifts, but a
     // retry should still start with everything the janitor owns.
-    this.run = createMvpRun(this.seed, { part: 1, perks: this.shiftPerks() });
+    this.run = createMvpRun(this.seed, { part: 1, perks: this.shiftPerks(), ...this.ruleOption() });
     this.startClockIn(won ? 'new-shift' : 'retry', false);
     // A fresh run has no previous tick to compare against, so the next sync
     // would read every field as a change and fire a burst of cues.
@@ -1064,6 +1083,8 @@ export class MvpRunScene extends Phaser.Scene {
         run.room.combat.player.x = door.rect.x - 40;
         run.room.combat.player.y = door.rect.y + door.rect.height / 2;
       }
+      // &enter=1 steps through into the Lockdown itself (the elites and their traits).
+      if (new URLSearchParams(window.location.search).get('enter') === '1') enterDoorway(run, 'east');
       return run;
     }
     if (fixture === 'mvp-storefront') {
@@ -1117,6 +1138,20 @@ export class MvpRunScene extends Phaser.Scene {
         state.room.combat.player.x = 480;
         state.room.combat.player.y = 130;
       }
+      return state;
+    }
+    if (fixture === 'mvp-hatch') {
+      // Beside the staff passage's hatch (round 57); needs a seed that has one, such as &seed=7.
+      const spot = shortcutFor(state.wing);
+      let guard = 0;
+      while (spot && state.roomIndex < spot.from && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      state.room.combat.player.x = SHORTCUT_HATCH.x + 20;
+      state.room.combat.player.y = SHORTCUT_HATCH.y + 30;
       return state;
     }
     if (fixture === 'mvp-arsenal') {

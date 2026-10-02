@@ -10,7 +10,8 @@
     "test:watch": "vitest",
     "test:browser": "playwright test",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort"
+    "preview": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
+    "balance": "vitest run --config vitest.balance.config.ts"
   },
   "dependencies": {
     "phaser": "4.2.1"

@@ -38,6 +38,7 @@ import {
 import type { MvpRoomEntryFrom, MvpRunState } from './types';
 import { createRunStats } from './combo';
 import { wantedStars } from './wanted';
+import { isNightRule, type NightRuleId } from './nightRules';
 import { EXTRA_PERKS, NO_PERKS, hasPerks, sanitizePerks, type ShiftPerks } from './perks';
 
 export const MVP_CHECKPOINT_VERSION = 1;
@@ -70,6 +71,8 @@ export type MvpCheckpoint = {
   readonly samplesTaken?: readonly string[];
   /** Round 53: the secret machines opened this wing; absent means none. */
   readonly secretsDone?: readonly string[];
+  /** Round 57: the night rule this shift runs under; absent means none (and on every older save). */
+  readonly rule?: NightRuleId;
 };
 
 export type CheckpointParseResult =
@@ -136,6 +139,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
     ...(hasPerks(state.perks) ? { perks: { ...state.perks } } : {}),
     ...(state.samplesTaken.length > 0 ? { samplesTaken: [...state.samplesTaken] } : {}),
     ...(state.secretsDone.length > 0 ? { secretsDone: [...state.secretsDone] } : {}),
+    ...(state.rule !== undefined ? { rule: state.rule } : {}),
   };
 }
 
@@ -299,6 +303,10 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
     secretsDone = [...new Set(value.secretsDone as string[])];
   }
 
+  if (value.rule !== undefined && !isNightRule(value.rule)) {
+    return fail('Checkpoint rule is not a known night rule.');
+  }
+
   let perks: ShiftPerks = NO_PERKS;
   if (value.perks !== undefined) {
     if (!isRecord(value.perks)) return fail('Checkpoint perks must be an object.');
@@ -434,6 +442,7 @@ export function parseCheckpoint(value: unknown): CheckpointParseResult {
       ...(hasPerks(perks) ? { perks } : {}),
       ...(samplesTaken.length > 0 ? { samplesTaken } : {}),
       ...(secretsDone.length > 0 ? { secretsDone } : {}),
+      ...(value.rule !== undefined ? { rule: value.rule as NightRuleId } : {}),
     },
   };
 }
@@ -505,6 +514,7 @@ export function restoreMvpRun(checkpoint: MvpCheckpoint): MvpRunState {
     perks: sanitizePerks(checkpoint.perks),
     samplesTaken: [...(checkpoint.samplesTaken ?? [])],
     secretsDone: [...(checkpoint.secretsDone ?? [])],
+    ...(checkpoint.rule !== undefined ? { rule: checkpoint.rule } : {}),
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   refreshRunLoadout(state);

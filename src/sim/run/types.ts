@@ -19,6 +19,7 @@ import type { ShiftPerks } from './perks';
 import type { StoreAlarm } from './heist';
 import type { StalkerState } from './stalker';
 import type { StoreTwistState } from './storeTwists';
+import type { NightRuleId } from './nightRules';
 
 export type MvpWorkbench = {
   readonly firstId: string | null;
@@ -90,6 +91,7 @@ export type MvpInteraction =
   | { readonly kind: 'store'; readonly storeIndex: number; readonly label: string }
   | { readonly kind: 'cabinet'; readonly label: string }
   | { readonly kind: 'secret'; readonly label: string }
+  | { readonly kind: 'shortcut'; readonly label: string }
   | { readonly kind: 'none'; readonly label: string };
 
 /** Every run command reports its own outcome; the HUD never infers success. */
@@ -169,4 +171,6 @@ export type MvpRunState = {
   secretsDone: string[];
   /** Round 52: the free samples had this wing, as "room:store" (checkpointed). */
   samplesTaken: string[];
+  /** Round 57: the challenge this shift runs under (the Daily Shift's rule of the day), if any. Checkpointed. */
+  readonly rule?: NightRuleId;
 };

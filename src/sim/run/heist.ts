@@ -15,6 +15,7 @@
  * The alarm is room-local, like every enemy: it is not checkpointed, and it
  * ends when the room is left.
  */
+import { SHORT_FUSE_CUT } from './nightRules';
 import { circleIntersectsRect } from '../core/geometry';
 import type { Rect, Vec2 } from '../model';
 import type { WingStoreInstance } from '../wing/types';
@@ -102,7 +103,9 @@ export function alarmTicksFor(state: MvpRunState): number {
     // Pet Palace (round 50): the parrot shouts THIEF.
     - (activeStore(state)?.templateId === 'pet-palace' ? PARROT_ALARM_CUT : 0)
     // Page Turner Books (round 55): a polite chime.
-    + (activeStore(state)?.templateId === 'page-turner' ? LIBRARY_ALARM_BONUS : 0);
+    + (activeStore(state)?.templateId === 'page-turner' ? LIBRARY_ALARM_BONUS : 0)
+    // Short Fuse (a night rule): a second less.
+    - (state.rule === 'short_fuse' ? SHORT_FUSE_CUT : 0);
 }
 
 function currentStore(state: MvpRunState): WingStoreInstance | null {

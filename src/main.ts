@@ -17,7 +17,7 @@ import { OPEN_SETTINGS_EVENT, SettingsPanel } from './game/ui/SettingsPanel';
 import { browserBestRuns } from './game/score/score';
 import { BreakRoomPanel } from './game/ui/BreakRoomPanel';
 import { browserCareer, localDay } from './game/career/career';
-import { browserDaily, dailySeed, formatDailyDate, summarizeDaily } from './game/run/dailyShift';
+import { browserDaily, dailyRuleLine, dailySeed, formatDailyDate, summarizeDaily } from './game/run/dailyShift';
 
 export const RETURN_TO_TITLE_EVENT = 'dead-mall:return-to-title';
 
@@ -51,6 +51,7 @@ const benchButton = requireElement<HTMLButtonElement>('#void-warranty-launch');
 const nightShiftButton = requireElement<HTMLButtonElement>('#night-shift-launch');
 const dailyShiftButton = requireElement<HTMLButtonElement>('#daily-shift-launch');
 const dailyRunLine = requireElement<HTMLElement>('#daily-run');
+const dailyRuleElement = requireElement<HTMLElement>('#daily-rule');
 const settingsPanel = new SettingsPanel((selector) => requireElement(selector));
 window.addEventListener(OPEN_SETTINGS_EVENT, () => settingsPanel.open());
 new PlaytestPanel(
@@ -74,6 +75,7 @@ function showBestRun(): void {
   const today = localDay();
   dailyShiftButton.textContent = `Daily Shift · ${formatDailyDate(today)}`;
   dailyRunLine.textContent = summarizeDaily(today, browserDaily().today(today));
+  dailyRuleElement.textContent = dailyRuleLine(today);
   const best = browserBestRuns().best();
   bestRunLine.hidden = best === null;
   if (best) {

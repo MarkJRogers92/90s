@@ -15,6 +15,7 @@ import { buildRoomCombatState, hasLivingEnemies } from './rooms';
 import type { MvpRunState } from './types';
 import { createRunStats, type RunStats } from './combo';
 import { wantedStars } from './wanted';
+import type { NightRuleId } from './nightRules';
 import { LOCKER_INSTANCE_ID, LOCKER_SOURCE_LOCATION, runMaxHealth, sanitizePerks, type ShiftPerks } from './perks';
 import { refreshRunLoadout } from './loadout';
 
@@ -32,7 +33,7 @@ export type FloorCarry = {
 };
 
 /** `part: 1` starts a floor's first wing (round 45); without it, the floor's boss wing. */
-export function createMvpRun(seed: number, options: { readonly floor?: FloorNumber; readonly part?: 1; readonly carry?: FloorCarry; readonly perks?: ShiftPerks } = {}): MvpRunState {
+export function createMvpRun(seed: number, options: { readonly floor?: FloorNumber; readonly part?: 1; readonly carry?: FloorCarry; readonly perks?: ShiftPerks; readonly rule?: NightRuleId } = {}): MvpRunState {
   // The wing RNG requires an integer, so a non-integer finite seed is
   // truncated and anything else becomes 0, exactly as the title screen already
   // sanitizes the URL seed.
@@ -126,6 +127,7 @@ export function createMvpRun(seed: number, options: { readonly floor?: FloorNumb
     perks,
     samplesTaken: [],
     secretsDone: [],
+    ...(options.rule !== undefined ? { rule: options.rule } : {}),
   };
   state.room.combat.behaviorTrace = state.behaviorTrace;
   // A fresh floor always opens at full health, under this run's own cap.

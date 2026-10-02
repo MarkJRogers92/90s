@@ -26,6 +26,8 @@ import { circleIntersectsRect } from '../core/geometry';
 import { cycleRunWeapon, selectRunWeaponSlot } from './weapons';
 import { collectTokens, dropTokensForDeaths, markLivingEnemies } from './tokens';
 import { collectItemDrops, dropItemsForDeaths } from './drops';
+import { updateBursts } from '../combat/eliteTraits';
+import { burstsForDeaths } from './eliteDeaths';
 import { SPRINKLER_WET_TICKS, wingEventFor } from './wingEvents';
 import { applyWet } from '../effects/statuses';
 import { stepCombo } from './combo';
@@ -63,6 +65,7 @@ import {
 } from './economy';
 import { endStoreAlarm, stealRunOffer, updateStoreAlarm } from './heist';
 import { enterSecretRoom, nearSecretMachine, updateSecretRoom } from './secretRoom';
+import { nearShortcut, takeShortcut } from './shortcut';
 import { layLow, wantedStars } from './wanted';
 import { updateStalker } from './stalker';
 import { nearArcadeCabinet, playArcadeCabinet, updateStoreTwist } from './storeTwists';
@@ -75,6 +78,7 @@ import type {
   MvpRunState,
 } from './types';
 import { spendCharge } from './perks';
+import { clearMvpHeldActions, moveToRoom } from './roomTransition';
 
 /** Second Wind: one heart, and two seconds to get clear. */
 export const SECOND_WIND_HEALTH = 2;
@@ -82,10 +86,7 @@ const SECOND_WIND_INVULNERABILITY = 120;
 
 const NOTHING_NEARBY_LABEL = 'Nothing to interact with here.';
 
-/** Clears persistent interaction levels after blur, pause, or a transition. */
-export function clearMvpHeldActions(state: MvpRunState): void {
-  state.heldActions = { interact: false, steal: false, recall: false };
-}
+export { clearMvpHeldActions };
 
 function currentRoom(state: MvpRunState): WingRoomDefinition {
   return state.wing.rooms[state.roomIndex]!;
@@ -210,6 +211,10 @@ export function nearestMvpInteraction(state: MvpRunState): MvpInteraction {
     candidates.push({ distance: 0, key: 'secret', interaction: { kind: 'secret', label: 'A suspicious vending machine' } });
   }
 
+  if (nearShortcut(state)) {
+    candidates.push({ distance: 0, key: 'shortcut', interaction: { kind: 'shortcut', label: 'Staff passage: skip the next fight (+1 star)' } });
+  }
+
   if (nearArcadeCabinet(state)) {
     candidates.push({ distance: 0, key: 'cabinet', interaction: { kind: 'cabinet', label: 'Arcade cabinet' } });
   }
@@ -259,6 +264,8 @@ export function tryInteract(state: MvpRunState): MvpCommandResult {
       return playArcadeCabinet(state);
     case 'secret':
       return enterSecretRoom(state);
+    case 'shortcut':
+      return takeShortcut(state);
     default:
       return rejected(NOTHING_NEARBY_LABEL);
   }
@@ -295,44 +302,7 @@ export function enterDoorway(state: MvpRunState, side: WingDoorSide): MvpCommand
   }
 
   const enteringFrom = side === 'east' ? ('west' as const) : ('east' as const);
-  const health = state.room.combat.player.health;
-  const combat = buildRoomCombatState(
-    state.wing,
-    destinationIndex,
-    enteringFrom,
-    state.inventory,
-    state.seed,
-    wantedStars(state.heat),
-  );
-  // The wrapped room tracks the run's tick so a room boundary is exactly
-  // reproducible and a restored checkpoint resumes on the same tick.
-  combat.tick = state.tick;
-  combat.player.health = health;
-  combat.behaviorTrace = state.behaviorTrace;
-  if (state.clearedRooms.includes(destination.id)) {
-    clearRoomEnemies(combat);
-  }
-
-  state.roomIndex = destinationIndex;
-  state.room = {
-    roomId: destination.id,
-    variantId: destination.variantId,
-    combat,
-    cleared: !hasLivingEnemies(combat),
-    enteredFrom: enteringFrom,
-    tokens: [],
-    interior: false,
-    storeIndex: 0,
-    twist: null,
-  };
-  state.checkpoint = { roomIndex: destinationIndex, tick: state.tick };
-  state.alarm = null;
-  // Loss Prevention does not walk through the door with you; he follows.
-  state.stalker = null;
-  clearMvpHeldActions(state);
-  // The car follows the shift through the doorway by being re-parked at the
-  // destination's deterministic spot, never by carrying a position across.
-  parkRunCarrier(state);
+  moveToRoom(state, destinationIndex, enteringFrom);
 
   // A room already called "The ..." (a district's, round 50) keeps its own article.
   const message = `Entered ${/^the /i.test(destination.name) ? destination.name : `the ${destination.name}`}.`;
@@ -621,6 +591,9 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
   dropTokensForDeaths(state, livingBeforeCombat);
   // Round 32: now and then an item, and from every boss a rare.
   dropItemsForDeaths(state, livingBeforeCombat);
+  // Round 57: a Volatile elite lights a fuse where it fell, and fuses burn down.
+  burstsForDeaths(state, livingBeforeCombat);
+  updateBursts(state.room.combat);
   // 6c. Cleanup Combo: blows landed, kills, and whether the janitor was hurt.
   {
     const after = new Map(state.room.combat.enemies.map((enemy) => [enemy.id, enemy.health]));

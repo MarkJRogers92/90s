@@ -25,6 +25,7 @@ const SOURCE_NAMES: Record<DamageSource, string> = {
   perfume: 'Perfume Spritzer',
   poodle: 'Rabid Poodle',
   goon: 'Hockey Goon',
+  burst: 'Volatile elite burst',
   other: 'Other',
 };
 

@@ -25,6 +25,7 @@ import { refreshRunLoadout } from './loadout';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { blueLightOfferId } from './roomEvents';
 import { CLEARANCE_PRICE_SCALE, wingEventFor } from './wingEvents';
+import { INFLATION_SURCHARGE } from './nightRules';
 import { HEAT_PER_STAR, WANTED_SURCHARGE_PER_STAR, applyHeatFloor, getawayBonus, wantedStars } from './wanted';
 import { perk } from './perks';
 
@@ -158,7 +159,8 @@ export function runOfferPrice(state: MvpRunState, offer: WingOffer): number {
   // A clearance sale (a floor event) marks the tag down before anything else.
   const tag = wingEventFor(state.wing) === 'clearance' ? Math.ceil(offer.price * CLEARANCE_PRICE_SCALE) : offer.price;
   // Employee Discount (a Break Room perk) comes off like the wallet's.
-  const price = tag + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR - runPurchaseDiscount(state) - perk(state, 'shelfDiscount');
+  // Inflation (a night rule) adds to every tag.
+  const price = tag + wantedStars(state.heat) * WANTED_SURCHARGE_PER_STAR + (state.rule === 'inflation' ? INFLATION_SURCHARGE : 0) - runPurchaseDiscount(state) - perk(state, 'shelfDiscount');
   // BLUE LIGHT SPECIAL: this shift's one half-price item.
   const special = blueLightOfferId(state) === offer.id;
   const shelf = special ? Math.ceil(price / 2) : price;
