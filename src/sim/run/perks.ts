@@ -12,6 +12,7 @@ import { PLAYER_MAX_HEALTH, ROOM_CLEAR_HEAL } from './rooms';
 import { TOKEN_PICKUP_RADIUS } from './tokens';
 import { ELITE_SNACK_CHANCE, SNACK_CHANCE } from './luck';
 import type { MvpRunState } from './types';
+import { GLASS_HEALTH_CUT } from './nightRules';
 
 export type ShiftPerks = {
   /** Seniority: dollars added to the starting float. */
@@ -126,13 +127,14 @@ export function hasPerks(perks: ShiftPerks): boolean {
 }
 
 /** The janitor's health cap for this run. */
-export function runMaxHealth(state: Pick<MvpRunState, 'perks'>): number {
-  return PLAYER_MAX_HEALTH + state.perks.bonusHealth;
+export function runMaxHealth(state: Pick<MvpRunState, 'perks' | 'rule'>): number {
+  return PLAYER_MAX_HEALTH + state.perks.bonusHealth - (state.rule === 'glass' ? GLASS_HEALTH_CUT : 0);
 }
 
 /** What clearing a fight pays back in health this run. */
-export function roomClearHeal(state: Pick<MvpRunState, 'perks'>): number {
-  return ROOM_CLEAR_HEAL + state.perks.clearHealBonus;
+export function roomClearHeal(state: Pick<MvpRunState, 'perks' | 'rule'>): number {
+  // No Breaks: nobody patches the janitor up.
+  return state.rule === 'no_breaks' ? 0 : ROOM_CLEAR_HEAL + state.perks.clearHealBonus;
 }
 
 /** Ticks the dash takes to come back after it ends, this run. */

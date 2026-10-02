@@ -13,6 +13,8 @@ import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { HERO_FUSIONS } from '../../sim/fusion/heroes';
 import { SECRET_MACHINE, enterSecretRoom, secretFor } from '../../sim/run/secretRoom';
 import { SHORTCUT_HATCH, shortcutFor } from '../../sim/run/shortcut';
+import { dailyRule } from '../run/dailyShift';
+import type { NightRuleId } from '../../sim/run/nightRules';
 import { propWalls } from '../../sim/combat/props';
 import { roomEventFor } from '../../sim/run/roomEvents';
 import { isHybridPair } from '../../sim/fusion/hybrid';
@@ -483,7 +485,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.run =
       launch?.checkpoint !== null && launch?.checkpoint !== undefined
         ? restoreMvpRun(launch.checkpoint)
-        : createMvpRun(this.seed, { part: 1, perks: this.shiftPerks() });
+        : createMvpRun(this.seed, { part: 1, perks: this.shiftPerks(), ...this.ruleOption() });
     this.run = this.applyDevFixture(this.run);
     this.startClockIn('launch', launch?.checkpoint != null);
     this.generation = 1;
@@ -768,6 +770,11 @@ export class MvpRunScene extends Phaser.Scene {
     clearMvpHeldActions(this.run);
   }
 
+  /** The Daily Shift's rule of the day (round 57); an ordinary night has none. */
+  private ruleOption(): { readonly rule?: NightRuleId } {
+    return this.dailyDate ? { rule: dailyRule(this.dailyDate) } : {};
+  }
+
   /** A Daily Shift is standard issue; any other shift takes the janitor's Break Room perks. */
   private shiftPerks(): ShiftPerks {
     if (this.dailyDate) return NO_PERKS;
@@ -795,7 +802,7 @@ export class MvpRunScene extends Phaser.Scene {
     const cleared = this.store.clear();
     // Re-read the career: the Break Room is only open between shifts, but a
     // retry should still start with everything the janitor owns.
-    this.run = createMvpRun(this.seed, { part: 1, perks: this.shiftPerks() });
+    this.run = createMvpRun(this.seed, { part: 1, perks: this.shiftPerks(), ...this.ruleOption() });
     this.startClockIn(won ? 'new-shift' : 'retry', false);
     // A fresh run has no previous tick to compare against, so the next sync
     // would read every field as a change and fire a burst of cues.

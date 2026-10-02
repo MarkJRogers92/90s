@@ -11,7 +11,8 @@ import Phaser from 'phaser';
 import { SCENE_TEXTURE_KEYS } from '../presentation/assets';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import { PUNCH_AT_MS, SLOT_Y, benefitsLine, clockInFrame, clockInTime, type ClockInFrame } from './clockInModel';
-import { formatDailyDate } from '../run/dailyShift';
+import { dailyRule, formatDailyDate } from '../run/dailyShift';
+import { NIGHT_RULES } from '../../sim/run/nightRules';
 import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 import { flashAllowed, gameSettings } from '../settings/settings';
 
@@ -56,7 +57,7 @@ export class ClockIn {
       scene.add.image(W / 2, 522, sign.core),
     ];
     // What the Break Room bought, lit up under the sign with it.
-    const benefits = dailyDate ? `DAILY SHIFT - ${formatDailyDate(dailyDate)}` : benefitsLine(perks);
+    const benefits = dailyDate ? `DAILY SHIFT - ${formatDailyDate(dailyDate)} - ${NIGHT_RULES[dailyRule(dailyDate)].name}` : benefitsLine(perks);
     if (benefits) this.title.push(scene.add.image(W / 2, 578, ensurePixelLabel(scene, benefits, '#6aff8a', 2, '#10141a').key));
     const notice = ensurePixelLabel(scene, 'ALL EMPLOYEES MUST CLOCK IN', '#c8b8e0', 1, '#10141a');
     const noticeImage = scene.add.image(W / 2, 46, notice.key);
