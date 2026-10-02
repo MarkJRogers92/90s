@@ -76,6 +76,8 @@ import {
 } from '../../sim/run/bench';
 import { syncRunCarrier } from '../../sim/run/carrier';
 import { createMvpRun } from '../../sim/run/createMvpRun';
+import { createPropTestRun } from '../../sim/run/propTestRoom';
+import { PROP_TEST_ASSETS } from '../presentation/propTestAssets';
 import { refreshRunLoadout } from '../../sim/run/loadout';
 import type { InventoryLeaf } from '../../sim/fusion/types';
 import {
@@ -107,6 +109,7 @@ const RUN_ASSETS = [
   ...NEON_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
   ...CHARACTER_ASSETS.map((asset) => ({ key: asset.key, url: asset.url })),
   ...dressingTextureFiles(),
+  ...PROP_TEST_ASSETS,
 ];
 const PRESENTATION_ASSET_KEYS = new Set(PRESENTATION_ASSETS.map((asset) => asset.key));
 
@@ -172,6 +175,8 @@ class MvpRunInputAdapter {
   } | null = null;
   /** N toggles the soundtrack on its own. */
   public onToggleMusic: (() => void) | null = null;
+  /** The dev prop fixture uses R for reset instead of carrier recall. */
+  public onPropTestReset: (() => void) | null = null;
   /** The end-of-shift card, when it is open: its buttons and key actions. */
   public endCard: {
     readonly isOpen: () => boolean;
@@ -267,7 +272,8 @@ class MvpRunInputAdapter {
     } else if (event.code === 'KeyF') {
       this.pendingSteal = true;
     } else if (event.code === 'KeyR') {
-      this.pendingRecall = true;
+      if (this.onPropTestReset) this.onPropTestReset();
+      else this.pendingRecall = true;
     } else if (/^Digit[1-9]$/.test(event.code)) {
       this.pendingSlot = Number(event.code.slice(5));
     } else if (event.code === 'KeyQ') {
@@ -480,6 +486,7 @@ export class MvpRunScene extends Phaser.Scene {
   public create(): void {
     const launch = takeMvpRunLaunch();
     this.store = launch?.store ?? new InMemoryCheckpointStore();
+    if (this.devFixture() === 'mvp-prop-test') this.store = new InMemoryCheckpointStore();
     this.seed = launch?.checkpoint ? launch.checkpoint.seed : (launch?.seed ?? 0);
     this.seedPinned = launch?.seedPinned ?? true;
     // A restored checkpoint does not carry the daily flag, so it is never a daily run.
@@ -504,6 +511,10 @@ export class MvpRunScene extends Phaser.Scene {
       // button label follows a keyboard toggle exactly as it follows a click.
       () => this.hud?.toggleMute(),
     );
+    if (this.devFixture() === 'mvp-prop-test') {
+      this.inputAdapter.onPropTestReset = () => this.restartRun();
+      this.add.text(480, 150, 'WASD move · Click swing · R reset\nEast door out + back resets props', { fontFamily: 'monospace', fontSize: '12px', color: '#fff4c8', align: 'center' }).setOrigin(0.5).setDepth(8000);
+    }
     // Web Audio may only start from a real user gesture, so the first pointer or
     // key press anywhere unlocks it; until then the engine is silent, not broken.
     window.addEventListener('pointerdown', this.unlockAudio);
@@ -787,7 +798,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** A Daily Shift is standard issue; any other shift takes the janitor's Break Room perks. */
   private shiftPerks(): ShiftPerks {
-    if (this.dailyDate) return NO_PERKS;
+    if (this.dailyDate || this.devFixture() === 'mvp-prop-test') return NO_PERKS;
     // Clocking in eats one of each vending snack in the bag (round 49).
     const store = browserCareer();
     const shift = clockIn(store.load());
@@ -813,6 +824,7 @@ export class MvpRunScene extends Phaser.Scene {
     // Re-read the career: the Break Room is only open between shifts, but a
     // retry should still start with everything the janitor owns.
     this.run = createMvpRun(this.seed, { part: 1, perks: this.shiftPerks(), ...this.ruleOption() });
+    if (this.devFixture() === 'mvp-prop-test') this.run = createPropTestRun(this.seed);
     this.startClockIn(won ? 'new-shift' : 'retry', false);
     // A fresh run has no previous tick to compare against, so the next sync
     // would read every field as a change and fire a burst of cues.
@@ -1055,6 +1067,7 @@ export class MvpRunScene extends Phaser.Scene {
       return state;
     }
     const fixture = new URLSearchParams(window.location.search).get('fixture');
+    if (fixture === 'mvp-prop-test') return createPropTestRun(state.seed);
     // Every fixture below was authored on a floor's boss wing; a new shift now
     // opens on the first wing (round 45), so fixtures start from the boss wing.
     if (fixture && fixture !== 'mvp-lockdown' && state.wing.part === 1 && state.tick === 0) {

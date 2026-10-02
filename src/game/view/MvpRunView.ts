@@ -2594,11 +2594,13 @@ export class MvpRunView {
 
   public presentationSnapshot(): (ReturnType<MallRoomView['debugSnapshot']> & {
     promptDepths: Array<{ id: string; renderDepth: number }>;
+    propImages: ReturnType<HeroPropView['debugSnapshot']>;
   }) | null {
     if (!this.openingConcourse) return null;
     return {
       ...this.openingConcourse.debugSnapshot(),
       promptDepths: [...this.labels].map(([id, label]) => ({ id, renderDepth: label.depth })),
+      propImages: this.heroProps.debugSnapshot(),
     };
   }
 

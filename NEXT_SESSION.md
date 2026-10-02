@@ -1,5 +1,68 @@
 # Next session
 
+## Local verification completed; sync test repairs back to cloud (2026-10-02)
+
+The approved cloud integration is applied only in the isolated worktree on
+`codex/three-prop-test-room`. Main is untouched. The review server remains on
+port 4194, and a playable `?fixture=mvp-prop-test&seed=1` tab is open.
+
+Sync `tests/browser/roomBoundaryCheckpoint.ts`,
+`tests/unit/browser-room-boundary.test.ts`, the updated normal-room browser
+spec and this verification evidence back to the cloud source. The new helper
+builds valid Continue checkpoints by recording prior fights as cleared; it
+does not modify live gameplay. The monitor screenshot is captured before pause.
+The supplied local verification patch is against the delivered cloud ZIP.
+
+Fresh results: 1,329 tests, types/build, 5/5 standard normal/fixture browser
+checks, 5/5 adjacent hero/restart checks and the clear monitor recapture pass.
+The earlier fixture navigation timeout has now passed twice locally under the
+standard configuration. No game behavior repair, merge, push or deployment
+was added locally. See TEST_EVIDENCE.md and the fresh screenshots.
+
+## Verify normal-room three-prop rollout (2026-10-02)
+
+Cloud continuation is prepared against the exact three-prop source snapshot,
+not clean main. Read docs/neon-overhaul/three-prop-rollout/README.md and the new
+TEST_EVIDENCE.md entry first. The portable patch is only for a matching source
+snapshot; compare its changed-file before hashes and preserve newer work.
+Nothing was applied to the original machine or published.
+
+Unit/types/build checks pass; the remaining gate is real browser verification.
+Run prop-test-room, normal-room-props, hero-props and restart specs with the
+standard Playwright configuration, then the full browser suite. Confirm the
+bakery at (280,335) clears the existing mustard, the slush at (680,335) leaves
+the center aisle open, and the Security monitor at (550,60) is correctly
+oriented even after a left-moving cart in the preceding room. Check intact and
+damaged native registration, one-shot effects, south/north collision, exiting
+and reentering shops, checkpoint recovery and non-food rooms. The supplied
+normal-route tests use real input after an ordinary saved checkpoint.
+
+No new screenshots exist yet. Images in artifacts/prop-test-room/ belong to
+the earlier fixture and are not evidence of the normal-room rollout. The cloud
+browser launch restrictions and exact rerun commands are in the rollout README.
+Do not call the browser timeout fixed until a permitted browser run passes.
+
+## Three-prop test room ready for owner review (2026-10-02)
+
+The isolated worktree is
+`/Users/markrogers/Documents/Codex/2026-10-02/task-3/dead-mall`, branch
+`codex/three-prop-test-room`, based on `c9b84f6`. Start with
+`node scripts/serve-prop-test.mjs`, then open
+http://127.0.0.1:4194/?fixture=mvp-prop-test&seed=1 and choose **Night Shift**.
+WASD moves, mouse aims, click swings the real mop, R or RESTART RUN resets.
+The east door and return doorway provide a fresh reentry through the normal
+transition code. Native sizes: bakery 64x48, monitors 56x56, slush 40x56;
+all anchors are bottom-center, all three damaged states keep their solid base.
+
+Review scale against the janitor, the shallow base collision, behind-prop
+visibility, and glass/chip/soda impact readability. This is a visual destruction
+probe: no enemy damage, loot or slush puddle behavior was added. The standard
+Night Shift HUD is retained. Only the three approved test props are wired;
+normal rooms and the original untracked 2026-10-02 art archive are untouched.
+No push, merge or deployment was performed. See TEST_EVIDENCE.md for checks,
+including the load-related timeout resolved by running the full unit suite
+with four workers and using a file-watch-free browser QA session.
+
 ## Start here (updated 2026-10-01)
 
 `origin/main` is at round 57 (merge `4cf40da`): a bot playtester, the staff

@@ -32,6 +32,13 @@ import { pairUpStock } from './recipeHints';
 import type { MvpCommandResult, MvpRunState } from './types';
 import { RARE_ROSTER } from '../items/storeRoster';
 import { floorSpec } from '../wing/floorSpecs';
+import { createProp, propWalls } from '../combat/props';
+
+/** One approved display per food shop; never in the concourse or other stores. */
+const FOOD_SHOP_PROPS: Readonly<Record<string, 'bakery' | 'slush'>> = {
+  'slice-station': 'bakery', 'pretzel-pit': 'bakery', 'cocoa-hut': 'bakery',
+  'cinema-snacks': 'slush', 'candy-cauldron': 'slush', 'frosty-freeze': 'slush',
+};
 
 /**
  * The store floor inside: wall to wall, and down to a front wall that clears
@@ -275,7 +282,11 @@ export function enterStore(state: MvpRunState, index = 0): MvpCommandResult {
   state.room.interior = true;
   state.room.storeIndex = index;
   state.room.twist = null;
-  combat.walls = interiorWalls(store);
+  const propKind = FOOD_SHOP_PROPS[store.templateId];
+  // Front-corner gaps, clear of existing decorations and every straight route
+  // between shelf spots and the door. Do not reroute shopping through displays.
+  combat.props = propKind ? [createProp(1, propKind, propKind === 'bakery' ? 280 : 680, 335)] : [];
+  combat.walls = [...interiorWalls(store), ...propWalls(combat.props)];
   combat.player.x = INTERIOR_ARRIVAL.x;
   combat.player.y = INTERIOR_ARRIVAL.y;
   combat.player.facing = { x: 0, y: -1 };
@@ -297,6 +308,7 @@ export function leaveStore(state: MvpRunState, announce = true): void {
   const door = storeEntrance(state.room.storeIndex);
   state.room.interior = false;
   state.room.twist = null;
+  combat.props = [];
   combat.walls = room.walls.map((wall) => ({ ...wall }));
   combat.enemies = [];
   combat.player.x = door.x;

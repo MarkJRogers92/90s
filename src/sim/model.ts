@@ -392,7 +392,7 @@ export type RunState = {
   hero?: HeroState;
 };
 
-export type MallPropKind = 'cart' | 'soda' | 'rack';
+export type MallPropKind = 'cart' | 'soda' | 'rack' | 'bakery' | 'monitors' | 'slush';
 
 /** A thing in the mall to knock over (round 53). */
 export type MallProp = {
@@ -406,6 +406,8 @@ export type MallProp = {
   vy: number;
   /** A rolling cart's victims this push. */
   hit: number[];
+  /** The combat tick of a one-shot break, for the renderer's exact effect timing. */
+  brokenTick?: number;
   /** A fallen rack: which way it went (1 or -1 along the axis), and the axis. */
   fall?: { axis: 'x' | 'y'; sign: 1 | -1 };
 };

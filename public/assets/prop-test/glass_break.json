@@ -1,0 +1,385 @@
+{
+  "frames": [
+    {
+      "filename": "glass_break_00.png",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_01.png",
+      "frame": {
+        "x": 64,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_02.png",
+      "frame": {
+        "x": 128,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_03.png",
+      "frame": {
+        "x": 192,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_04.png",
+      "frame": {
+        "x": 256,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_05.png",
+      "frame": {
+        "x": 320,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_06.png",
+      "frame": {
+        "x": 384,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_07.png",
+      "frame": {
+        "x": 448,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_08.png",
+      "frame": {
+        "x": 512,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    },
+    {
+      "filename": "glass_break_09.png",
+      "frame": {
+        "x": 576,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "sourceSize": {
+        "w": 64,
+        "h": 64
+      },
+      "duration": 50,
+      "pivot": {
+        "x": 32,
+        "y": 32
+      }
+    }
+  ],
+  "meta": {
+    "app": "DEAD MALL direct pixel authoring",
+    "version": "1",
+    "image": "glass_break_strip.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 640,
+      "h": 64
+    },
+    "scale": "1",
+    "frameTags": [
+      {
+        "name": "glass_break",
+        "from": 0,
+        "to": 9,
+        "direction": "forward",
+        "repeat": "1"
+      }
+    ],
+    "layers": [
+      {
+        "name": "Glass shards",
+        "opacity": 255,
+        "blendMode": "normal"
+      }
+    ],
+    "slices": [
+      {
+        "name": "effect_bounds",
+        "color": "#819faeff",
+        "keys": [
+          {
+            "frame": 0,
+            "bounds": {
+              "x": 0,
+              "y": 0,
+              "w": 64,
+              "h": 64
+            },
+            "pivot": {
+              "x": 32,
+              "y": 32
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "contract": {
+    "name": "glass_break",
+    "frameCount": 10,
+    "frameSize": [
+      64,
+      64
+    ],
+    "durationMs": 500,
+    "fps": 20,
+    "ticksPerFrameAt60Hz": 3,
+    "loop": false,
+    "blend": "NORMAL",
+    "pivotPixels": [
+      32,
+      32
+    ],
+    "originNormalized": [
+      0.5,
+      0.5
+    ],
+    "scale": 1,
+    "trimmed": false,
+    "alpha": "binary",
+    "paletteRGBA": [
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        30,
+        37,
+        57,
+        255
+      ],
+      [
+        53,
+        72,
+        102,
+        255
+      ],
+      [
+        80,
+        116,
+        143,
+        255
+      ],
+      [
+        129,
+        159,
+        174,
+        255
+      ],
+      [
+        169,
+        215,
+        223,
+        255
+      ],
+      [
+        196,
+        222,
+        228,
+        255
+      ]
+    ],
+    "opaqueColorCount": 6,
+    "finalFrame": "fully transparent",
+    "runtimeIntegrationTested": false,
+    "runtimeConsumesThisJson": false,
+    "integrationNote": "Metadata describes the art contract. The current runtime does not consume animation JSON; no loader or gameplay change is included."
+  }
+}

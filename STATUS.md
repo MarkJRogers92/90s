@@ -1,5 +1,77 @@
 # Status
 
+## 2026-10-02 — Normal-room props verified locally in the isolated worktree
+
+Applied the approved cloud patch only to `codex/three-prop-test-room`, after
+matching all 785 baseline snapshot files. The applied tree matched all 794
+cloud source files byte-for-byte. Main remains at `c9b84f6` with only its
+existing untracked art archive. No merge, push or deployment was performed.
+
+Fresh local checks: typecheck/build pass, 1,329 unit/integration tests pass,
+the standard-config normal-room plus fixture browser gate passes 5/5, and
+the five adjacent hero/restart browser checks pass. Native sprites and
+unchanged anchors, collision, single-break effects, repeat hits, occlusion,
+cleanup, shop entry/exit/reentry, fixture reentry and reset were verified.
+Fresh screenshots are in `artifacts/normal-props/` and `artifacts/prop-test-room/`.
+
+The browser run found invalid bakery/Security test checkpoints that skipped
+uncleared fights. A test-only room-boundary helper now includes the required
+prior cleared-room history; three regression cases pass against the real save
+validator. The monitor capture now happens before the pause overlay covers it.
+No production code was changed locally beyond the approved cloud patch.
+The previous fixture timeout is resolved by a real standard-config browser pass.
+
+The review server is running on http://127.0.0.1:4194/ with the integrated code.
+For the three-prop probe use `?fixture=mvp-prop-test&seed=1`, choose Night Shift,
+then WASD, click and R. The normal route contains the approved sparse rollout.
+
+## 2026-10-02 — Three approved props in normal rooms (cloud continuation)
+
+The bounded rollout now places one bakery case in Slice Station, Pretzel Pit
+and Cocoa Hut, one slush machine in Cinema Snacks, Candy Cauldron and Frosty
+Freeze, and one monitor bank in the actual Floor 1 Security Office. Other
+stores, concourses, upper-floor office-role rooms and the seeded cart/soda/rack
+layouts are unchanged. The original dev-only three-prop fixture is preserved.
+All nine native PNGs remain byte-identical, and damage retains scale 1 and the
+same bottom-center anchor. Props rebuild intact on room/store reentry.
+
+Final unit gate: **143 files / 1,326 tests pass**. Typecheck and production build
+pass, with the existing large-bundle warning. Independent focused review passed
+91 tests and found no overlap with existing static dressing across 1,524 prop
+instances. Before/after bot results and the complete evidence are below in
+TEST_EVIDENCE.md and artifacts/normal-props/.
+
+**Not visually verified yet:** this cloud executor could not launch a permitted
+browser. No fresh gameplay screenshots were produced. The keyboard navigation
+helper's split-input overshoot is fixed under four offline latency regressions,
+but its original browser timeout still needs a real-browser rerun. Normal-route
+Continue/store-door browser specs are supplied and discover successfully.
+The code has not been applied to the original worktree, pushed, merged or deployed.
+See docs/neon-overhaul/three-prop-rollout/README.md for placement and patch steps.
+
+## 2026-10-02 — Three-prop playable art test (isolated branch)
+
+Built on `c9b84f6` in `codex/three-prop-test-room`, without changing the normal
+room layouts. The dev-only `?fixture=mvp-prop-test&seed=1` Night Shift route
+contains the bakery case, security monitor bank and twin-bowl slush machine.
+The regular simulation handles movement, mop attacks and solid footprints;
+one hit swaps the exact native intact/damaged PNG at the same bottom-center
+anchor. Glass break, machine chips and soda rupture play once at 50 ms/frame
+using the approved untrimmed strips. Damaged props remain solid. R resets;
+the east door leads to an empty return room, and reentry rebuilds intact props.
+
+Run `node scripts/serve-prop-test.mjs`, open
+http://127.0.0.1:4194/?fixture=mvp-prop-test&seed=1 and choose Night Shift.
+This launcher disables file watching so review sessions stay open while files
+are inspected. Checkpoints stay in memory and the fixture consumes no career
+snacks/perks. The three-prop pack loads only for this dev fixture.
+
+Evidence: 1,292 unit/integration tests pass, types/build pass, the full fixture
+browser flow and normal-route exclusion pass, and five adjacent hero/restart
+browser specs pass. See TEST_EVIDENCE.md and artifacts/prop-test-room/.
+Only these three props are integrated; broader prop rollout awaits the owner's
+judgment of native scale, footprint and destruction feel.
+
 ## 2026-10-01 — Round 57: a bot playtester, a route choice, a coach, a daily rule
 
 Built on `origin/main` (`2b6250d`, round 56) as nine commits (a refactor, then

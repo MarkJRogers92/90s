@@ -5,7 +5,7 @@
  * transitions, and economy live in later M5 modules and consume this shape
  * without widening it.
  */
-import type { Rect, Vec2 } from '../model';
+import type { MallProp, Rect, Vec2 } from '../model';
 import type { StoreSightZone } from '../shop/types';
 import type { FloorNumber } from './floorSpecs';
 import type { DistrictId } from './districts';
@@ -77,6 +77,8 @@ export type WingRoomDefinition = {
   readonly stores?: readonly WingStoreInstance[];
   readonly offers: readonly WingOffer[];
   readonly benchKiosk: Vec2 | null;
+  /** Optional fixed props; absent preserves the ordinary seeded prop layout. */
+  readonly props?: readonly Pick<MallProp, 'kind' | 'x' | 'y'>[];
 };
 
 export type GeneratedWing = {

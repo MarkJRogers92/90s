@@ -257,6 +257,7 @@ const PROP_CLEARANCE = 40;
  * night dresses the same way and nothing needs saving.
  */
 function mallProps(room: WingRoomDefinition, seed: number, roomIndex: number, enemies: readonly EnemyState[]): MallProp[] {
+  if (room.props) return room.props.map((prop, index) => createProp(index + 1, prop.kind, prop.x, prop.y));
   if (room.enemySpawns.length === 0 || room.bossAnchor !== null) return [];
   if (luck(seed, 'props', roomIndex, 0) >= PROP_CHANCE) return [];
   const spots = displayMannequinSpots(room, seed, roomIndex, enemies, 8, 'prop-spot').filter((spot) =>
@@ -344,7 +345,12 @@ export function buildRoomCombatState(
     });
   }
 
-  const props = mallProps(room, seed, roomIndex, enemies);
+  // Only the actual ground-floor Security Office gets a monitor bank. The
+  // other floors and first-wing arenas reuse this room id for different places.
+  // Keep authored fixtures authoritative and the west-east combat lane clear.
+  const props = room.props === undefined && floorNumberOf(wing) === 1 && wing.part !== 1 && room.id === 'security_office'
+    ? [createProp(1, 'monitors', 550, 60)]
+    : mallProps(room, seed, roomIndex, enemies);
 
   const entry =
     enteringFrom === 'west'

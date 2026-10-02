@@ -13,6 +13,8 @@ import { presentationDepth } from '../presentation/depth';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { toppledRackPose } from './toppledRack';
+import { PROP_TEST_ART } from '../presentation/propTestAssets';
+import { presentationOcclusionAlpha } from '../presentation/occlusion';
 
 export type HeroPropLayers = {
   /** On the floor, under everyone. */
@@ -43,7 +45,10 @@ export class HeroPropView {
   /** Draws one frame; anything not drawn this frame is put away. */
   public sync(combat: RunState, tick: number, layers: HeroPropLayers): void {
     const used = new Set<string>();
-    for (const prop of combat.props ?? []) this.drawProp(prop, tick, layers, used);
+    for (const prop of combat.props ?? []) {
+      if (prop.kind === 'bakery' || prop.kind === 'monitors' || prop.kind === 'slush') this.drawTestProp(prop, PROP_TEST_ART[prop.kind], combat, layers, used);
+      else this.drawProp(prop, tick, layers, used);
+    }
     if (combat.hero) this.drawHero(combat, combat.hero, tick, layers, used);
     for (const enemy of combat.enemies) {
       if (enemy.health > 0 && (enemy.dazedTicks ?? 0) > 0) this.drawDazed(enemy.x, enemy.y - enemy.radius * 2.6, tick + enemy.id * 7, layers.effects);
@@ -54,6 +59,36 @@ export class HeroPropView {
         this.images.delete(id);
       }
     }
+  }
+
+  private drawTestProp(prop: MallProp, art: typeof PROP_TEST_ART[keyof typeof PROP_TEST_ART], combat: RunState, layers: HeroPropLayers, used: Set<string>): void {
+    const id = `prop:${prop.id}`;
+    const image = this.image(id, usableTextureKey(this.scene.textures, prop.state === 'broken' ? art.damaged : art.intact));
+    if (!image) return;
+    used.add(id);
+    image.setOrigin(0.5, 1).setScale(1).setAngle(0).setFlipX(false).setPosition(prop.x, prop.y)
+      .setDepth(presentationDepth('actor', prop.y))
+      .setAlpha(presentationOcclusionAlpha('tallForeground', combat.player, { x: prop.x - art.width / 2, y: prop.y - art.height, width: art.width, height: art.height }));
+    layers.shadow(id, prop.x, prop.y, art.width / 64);
+    layers.light(prop.x, prop.y - art.height / 2, 85, 0xffe6c0, 0.8);
+    // Fifty ms = three 60 Hz combat ticks. Pausing freezes the one-shot too.
+    const age = prop.brokenTick === undefined ? -1 : combat.tick - prop.brokenTick;
+    const frame = Math.floor(age / 3);
+    if (age < 0 || frame >= art.frames) return;
+    const fxId = `prop-fx:${prop.id}`;
+    const fx = this.image(fxId, usableTextureKey(this.scene.textures, art.effect));
+    if (!fx) return;
+    used.add(fxId);
+    // Full-sheet origin compensates for manual crop, as the actor renderer does.
+    fx.setCrop(frame * art.frameSize, 0, art.frameSize, art.frameSize)
+      .setOrigin((frame + 0.5) / art.frames, 0.5).setScale(1)
+      .setPosition(prop.x, prop.y - Math.round(art.height * 0.65))
+      .setDepth(presentationDepth('effect', prop.y)).setBlendMode(Phaser.BlendModes.NORMAL)
+      .setData('effectFrame', frame);
+  }
+
+  public debugSnapshot(): Array<{ id: string; texture: string; x: number; y: number; originX: number; originY: number; scaleX: number; scaleY: number; depth: number; alpha: number; effectFrame: number | null }> {
+    return [...this.images].map(([id, image]) => ({ id, texture: image.texture.key, x: image.x, y: image.y, originX: image.originX, originY: image.originY, scaleX: image.scaleX, scaleY: image.scaleY, depth: image.depth, alpha: image.alpha, effectFrame: image.getData('effectFrame') ?? null }));
   }
 
   private drawProp(prop: MallProp, tick: number, layers: HeroPropLayers, used: Set<string>): void {

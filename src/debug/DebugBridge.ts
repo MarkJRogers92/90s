@@ -331,7 +331,7 @@ export type MvpRunDebugSnapshot = {
   /** Whether the Bench Warrant preview is open. */
   previewOpen: boolean;
   /** Round 53: the room's props and the hero fusion's moves. */
-  props: Array<{ kind: string; x: number; y: number; state: string }>;
+  props: Array<{ kind: string; x: number; y: number; state: string; brokenTick?: number }>;
   /** Round 57: a fallen Volatile elite's lit fuses, so acceptance can see one burn down. */
   bursts: Array<{ x: number; y: number; fuseTicks: number }>;
   hero: { records: string[]; decoy: boolean; beams: number; beamCooldown: number } | null;
@@ -363,6 +363,7 @@ export type MvpRunDebugSnapshot = {
     actorDepths: Array<{ id: string; baseY: number; renderDepth: number }>;
     effectDepths: Array<{ id: string; renderDepth: number }>;
     promptDepths: Array<{ id: string; renderDepth: number }>;
+    propImages: ReturnType<import('../game/view/HeroPropView').HeroPropView['debugSnapshot']>;
     depthBands: { tallForeground: number; effect: number; prompt: number };
   };
   /** Last read-only concourse ambience state, retained through disposal. */
@@ -443,7 +444,7 @@ export function installMvpRunDebugBridge(
             };
           }),
           previewOpen: state.preview !== null,
-          props: (state.room.combat.props ?? []).map((prop) => ({ kind: prop.kind, x: prop.x, y: prop.y, state: prop.state })),
+          props: (state.room.combat.props ?? []).map((prop) => ({ kind: prop.kind, x: prop.x, y: prop.y, state: prop.state, ...(prop.brokenTick === undefined ? {} : { brokenTick: prop.brokenTick }) })),
           bursts: (state.room.combat.bursts ?? []).map((burst) => ({ x: burst.x, y: burst.y, fuseTicks: burst.fuseTicks })),
           hero: state.room.combat.hero
             ? { records: state.room.combat.hero.records.map((record) => record.mode), decoy: state.room.combat.hero.decoy !== null, beams: state.room.combat.hero.beams.length, beamCooldown: state.room.combat.hero.beamCooldown }
