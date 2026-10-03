@@ -27,6 +27,10 @@ export const WEAPON_EFFECT_ART = {
   confetti: art('party-confetti', 24, 24, 6, 12, 12, true, 4, 0.75, 8),
   rocket: art('bottle-rocket', 32, 16, 4, 16, 8, true, 3, 0.85, 6),
   extinguisher: art('extinguisher-foam', 32, 24, 6, 16, 12, true, 10, 0.85, 10),
+  // Palette swaps of soaker-water (art/weapon-effects/derived): same shape, pivot and timing.
+  hose: art('hose-stream', 32, 16, 4, 16, 8, true, 5, 1, 7),
+  soda: art('soda-jet', 32, 16, 4, 16, 8, true, 5, 0.9, 7),
+  shower: art('watering-shower', 32, 16, 4, 16, 8, true, 6, 0.8, 7),
 } as const;
 
 export function meleeEffect(definitionId: string): WeaponEffectArt | null {
@@ -43,6 +47,9 @@ const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
   record_toss: WEAPON_EFFECT_ART.vinyl, cd_shuriken: WEAPON_EFFECT_ART.cd,
   party_popper: WEAPON_EFFECT_ART.confetti, bottle_rocket_pack: WEAPON_EFFECT_ART.rocket,
   fire_extinguisher: WEAPON_EFFECT_ART.extinguisher,
+  super_soaker_50: WEAPON_EFFECT_ART.soaker, super_soaker_cps: WEAPON_EFFECT_ART.soaker,
+  garden_hose: WEAPON_EFFECT_ART.hose, soda_gun: WEAPON_EFFECT_ART.soda,
+  watering_can: WEAPON_EFFECT_ART.shower,
 };
 
 export function projectileEffect(traits: { readonly sourceItemId: string; readonly delivery: string }): WeaponEffectArt | null {
@@ -89,6 +96,8 @@ const THROWN: Readonly<Record<string, Omit<ThrownIconEffect, 'iconItemId'>>> = {
   squeaky_toy: { baseRadius: 5, size: 18, motion: 'spin', spinPerTick: 0.3, headingOffset: 0 },
   garden_gnome: { baseRadius: 8, size: 22, motion: 'spin', spinPerTick: 0.15, headingOffset: 0 },
   hockey_puck: { baseRadius: 4, size: 14, motion: 'spin', spinPerTick: 0.45, headingOffset: 0 },
+  // A lobbed balloon wobbles more than it spins.
+  water_balloons: { baseRadius: 8, size: 20, motion: 'spin', spinPerTick: 0.08, headingOffset: 0 },
 };
 export const THROWN_ICON_IDS: readonly string[] = Object.keys(THROWN);
 

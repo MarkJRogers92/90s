@@ -1,5 +1,31 @@
 # Test evidence
 
+## 2026-10-03 UTC — Water weapons get their own water (roadmap V3)
+
+Presentation only; no `src/sim` change.
+- The Super Soaker 50 and CPS fire the authored soaker sheet.
+- The garden hose, soda gun and watering can fire exact palette swaps of it:
+  tap blue, cola brown with cream fizz, and a pale shower. The swaps are
+  derived by `art/weapon-effects/derived/build_water_variants.py`, so there
+  was no generation spend.
+- Water balloons lob as their own wobbling icon, using the thrown-icon path.
+- Muzzle releases use each weapon's own water.
+- New dev fixture `?fixture=mvp-water`.
+- The remaining-effect roster is down to 53 (31 melee, 22 projectile).
+
+Six existing tests used the garden hose as their example of a weapon *without*
+native art. They now use still-unsupported shooters (staple gun, gumball
+launcher), keeping their intent, plus a positive check that a hose-rooted
+fusion keeps the hose's water.
+
+Evidence:
+- Unit: 1,805 of 1,805 across 173 files.
+- The 240 fixed-seed weapon replays match.
+- TypeScript and build pass.
+- New `water-weapon-effects.test.ts` (5 tests) failed first, then passed.
+- Live: all six weapons were captured mid-shot with zero console errors
+  (`artifacts/live-qa/water/water-in-flight.png`).
+
 ## 2026-10-03 UTC — Browser suite fixes, live QA sweep, thrown-weapon icons
 
 Owner's ask: roadmap items B1/B2, V0 and V3 (thrown). Presentation and tests

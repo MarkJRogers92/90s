@@ -158,7 +158,7 @@ describe('weapon-specific release at the true nozzle', () => {
       view.syncMuzzle(source, 0, head);
     }
     expect(images).toHaveLength(0);
-    expect(view.canRenderRanged('garden_hose')).toBe(false);
+    expect(view.canRenderRanged('gumball_launcher')).toBe(false);
     expect(renderer(true).view.canRenderRanged('pump_soaker')).toBe(false);
   });
 });

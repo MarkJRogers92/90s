@@ -1222,10 +1222,10 @@ export class MvpRunScene extends Phaser.Scene {
       state.room.combat.player.y = SHORTCUT_HATCH.y + 30;
       return state;
     }
-    if (fixture === 'mvp-arsenal' || fixture === 'mvp-thrown') {
+    if (fixture === 'mvp-arsenal' || fixture === 'mvp-thrown' || fixture === 'mvp-water') {
       // The food court fight holding every weapon and the visible modifiers,
       // so each weapon's look and each status effect can be seen (keys 1-9).
-      // mvp-thrown holds the eight thrown weapons instead (their flying icons).
+      // mvp-thrown and mvp-water hold those weapon families instead (roadmap V3).
       let guard = 0;
       while (state.wing.rooms[state.roomIndex]?.id !== 'food_court' && guard < 10) {
         guard += 1;
@@ -1235,7 +1235,9 @@ export class MvpRunScene extends Phaser.Scene {
       }
       const ids = fixture === 'mvp-thrown'
         ? ['dodgeball', 'football', 'pog_slammer', 'laserdisc', 'jawbreaker', 'squeaky_toy', 'garden_gnome', 'hockey_puck']
-        : ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
+        : fixture === 'mvp-water'
+          ? ['garden_hose', 'super_soaker_50', 'super_soaker_cps', 'soda_gun', 'watering_can', 'water_balloons']
+          : ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
       state.inventory = {
         ...state.inventory,
         inventory: [
