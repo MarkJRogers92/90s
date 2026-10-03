@@ -57,6 +57,14 @@ Network notes:
   sizes, priority, dash row).
 - Feet registration was measured per facing.
 
+**In progress when this was written:** the Mascot's attack is being regenerated with a
+stronger action text (a deep crouch, then a full forward lunge; see `ANIMATIONS` in
+`art/pixellab/animate_characters.py`). If a session ends mid-way:
+- `python3 art/pixellab/animate_characters.py collect mascot-attack`, check the sheet, then
+  `cp art/pixellab/mascot-attack.png public/assets/neon/enemies/`.
+- If it looks worse, keep the committed `public/assets/neon/enemies/mascot-attack.png`
+  (the first PixelLab pass, already verified live).
+
 **NOT yet verified (next steps for whoever picks this up):**
 1. A live capture of the PixelLab sheets in game. The earlier live checks
    ran on the derived sheets this replaces. Run `scripts/live-capture.mjs`

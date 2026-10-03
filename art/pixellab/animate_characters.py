@@ -27,7 +27,7 @@ ANIMATIONS = [
      'both hands empty, dashes forward in a fast low sprint, body leaning far forward, legs stretched in a long stride, arms swung back',
      'public/assets/neon/player/alex-dash.png'),
     ('mascot-attack', '2370b80c-ac64-49c3-8b07-f225c9e23de7', 6,
-     'crouches low and digs in, winding up, then charges forward shoulder first',
+     'big wind-up: sinks into a deep crouch with shoulders hunched and arms pulled back, then explodes into a full forward lunge, whole body leaning far forward shoulder first like a football tackle',
      'public/assets/neon/enemies/mascot-attack.png'),
     ('spritzer-attack', 'cd520aac-8bba-4d2f-a244-96fe2c7af2a5', 6,
      'draws back her perfume bottle, then thrusts it forward and sprays a cloud of perfume ahead',
