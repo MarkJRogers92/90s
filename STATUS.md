@@ -57,27 +57,18 @@ Network notes:
   sizes, priority, dash row).
 - Feet registration was measured per facing.
 
-**In progress when this was written:** the Mascot's attack is being regenerated with a
-stronger action text (a deep crouch, then a full forward lunge; see `ANIMATIONS` in
-`art/pixellab/animate_characters.py`). If a session ends mid-way:
-- `python3 art/pixellab/animate_characters.py collect mascot-attack`, check the sheet, then
-  `cp art/pixellab/mascot-attack.png public/assets/neon/enemies/`.
-- If it looks worse, keep the committed `public/assets/neon/enemies/mascot-attack.png`
-  (the first PixelLab pass, already verified live).
+**Mascot redo (done, commit d05d6f9):** all 8 directions regenerated with a deep
+crouch then a full shoulder-first lunge (`ANIMATIONS` in `art/pixellab/animate_characters.py`).
+Registration error 0 on every row; 792×1056 unchanged. Live in `mvp-floor-three-brute`:
+the telegraph plays `mascot-attack[0]`…`[5]`, 0 console errors. Full unit suite 1,844 of 1,844 after the redo; build passes.
+PixelLab balance afterwards: 416 of 2,000 generations.
 
-**NOT yet verified (next steps for whoever picks this up):**
-1. A live capture of the PixelLab sheets in game. The earlier live checks
-   ran on the derived sheets this replaces. Run `scripts/live-capture.mjs`
-   or the wind-up/dash capture in `artifacts/live-qa/windups/` (see the
-   previous entry). Check the aim pose with a ranged weapon
-   (`?fixture=mvp-water`), the dash, and the Mascot (`mvp-floor-three-brute`),
-   Roofer (`mvp-floor-four-roofer`) and Spritzer (`mvp-district&floor=2`)
-   telegraphs.
-2. `npm run build` and the browser specs (night-shift:355,
-   break-room:84, presentation-evidence).
-3. The Mascot's PixelLab charge motion is modest (a hunch, no big lunge).
-   Consider a redo with a stronger action text.
-4. Then merge #56, and update `docs/VISUAL_ROADMAP.md` V2/V4 to "PixelLab".
+**Verified live (scripts/live-capture-actions.mjs, `artifacts/live-qa/pixellab/`):**
+Spritzer frames 0–5 and Roofer 0–4 during telegraphs, Mascot 0–5, Alex dash row 6 while
+dashing east and aiming north-west, aim row 6 aiming east and row 2 aiming west. Build
+passes; the browser batch (night-shift:355, break-room:84, presentation-evidence) passes 6/6.
+
+**Remaining:** merge PR #56 when the owner says so.
 
 ## 2026-10-03 UTC — Enemy wind-up sheets (V2) and Alex's dash (V4)
 
