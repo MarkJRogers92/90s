@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { attackFrameFor, playerBodyAction, type Windup } from '../../src/game/view/combatBeats';
+import { ACTION_FIGURE_SCALE, actionFigureScale } from '../../src/game/view/ActorSpriteView';
 import { CHARACTER_ASSETS, ENEMY_TEXTURE_KEYS, NEON_ASSETS, PLAYER_TEXTURE_KEYS } from '../../src/game/presentation/assets';
 import { DASH_TICKS } from '../../src/sim/combat/dash';
 import type { EnemyState } from '../../src/sim/model';
@@ -85,5 +86,18 @@ describe('the dash sheet follows the dash, not the aim', () => {
     expect(evidence.textureKey).toBe(PLAYER_TEXTURE_KEYS.dash);
     expect(evidence.direction).toBe('east');
     expect(evidence.frame).toEqual({ row: 6, column: 1 });
+  });
+});
+
+describe('boss attack sheets drawn at their walk figure size (roadmap V2)', () => {
+  it('shrinks only the sheets PixelLab re-rendered larger, around the feet', () => {
+    expect(actionFigureScale('neon:enemy:owner-walk')).toBe(1);
+    expect(actionFigureScale('neon:enemy:owner-attack')).toBe(1);
+    for (const [key, factor] of Object.entries(ACTION_FIGURE_SCALE)) {
+      expect(key).toMatch(/^neon:enemy:[a-z-]+-attack$/);
+      expect(factor).toBeGreaterThan(0.75);
+      expect(factor).toBeLessThan(1);
+      expect(actionFigureScale(key)).toBe(factor);
+    }
   });
 });

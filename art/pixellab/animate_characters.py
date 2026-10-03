@@ -49,7 +49,7 @@ ANIMATIONS = [
      'keeps his cream beige double-breasted suit, gold tie and gold aviator sunglasses exactly as he is; big wind-up: raises his rolled-up blueprints high overhead like a club, rising up tall, then smashes them down hard onto the floor in front of him, leaning far forward',
      'public/assets/neon/enemies/developer-attack.png'),
     ('santa-attack', '51e6a5de-b9ac-4f48-b127-f400b805a2f7', 6,
-     'big wind-up: swings his heavy sack of presents up high overhead with both hands, then slams it down hard onto the floor in front of him, leaning far forward',
+     'keeps his red Santa suit and his dark red sack of presents exactly as he is; big wind-up: swings the dark red sack up high overhead with both hands, then slams it down hard onto the floor in front of him, leaning far forward',
      'public/assets/neon/enemies/santa-attack.png'),
     ('glamour-queen-attack', 'a1821931-5c3e-4bcf-a119-ea88e224a8cc', 6,
      'big wind-up: raises her flash camera high overhead with both hands, arching back dramatically, then swings it down hard in front of her in a heavy strike, leaning far forward',
@@ -205,15 +205,21 @@ def drift(sheet, size, out):
     re-scales a large character or swaps a colour (the Developer's cream suit came back navy)."""
     walk = Image.open(walk_sheet_for(out)).convert('RGBA')
     wsize = walk.height // 8
+    ratios = []
     for row in range(8):
         w = walk.crop((0, row * wsize, wsize, (row + 1) * wsize))
         a = sheet.crop((0, row * size, size, (row + 1) * size))
         wb, ab = w.getchannel('A').getbbox(), a.getchannel('A').getbbox()
         ratio = (ab[3] - ab[1]) / (wb[3] - wb[1])
+        ratios.append(ratio)
         mean = lambda im: [sum(c) / max(1, len(c)) for c in zip(*[p[:3] for p in im.getdata() if p[3] > 200])]
         dc = max(abs(x - y) for x, y in zip(mean(w), mean(a)))
         if not 0.92 <= ratio <= 1.08 or dc > 30:
             print(f'  WARNING row {row} ({ORDER[row]}): height x{ratio:.2f}, mean colour off by {dc:.0f}; look before publishing')
+    median = sorted(ratios)[4]
+    if median > 1.04:
+        key = 'neon:enemy:' + out.rsplit('/', 1)[1][:-4]
+        print(f"  figure is x{median:.2f} its walk size: add '{key}': {1 / median:.2f} to ACTION_FIGURE_SCALE (ActorSpriteView.ts)")
 
 
 def collect(only=None):

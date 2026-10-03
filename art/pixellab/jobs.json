@@ -125,14 +125,22 @@
     "jobs": {
       "south": "e27cf44a-0b05-4c6f-9c2e-9c084fbf9ae6",
       "south-west": "122eec8a-2ab5-4db4-8733-61010587d028",
-      "west": "bc26a88b-7ed3-426e-acaa-e302025a8cb3"
+      "west": "bc26a88b-7ed3-426e-acaa-e302025a8cb3",
+      "north-west": "c77bc908-aa49-47f8-a204-d7240563608f",
+      "north": "63f86a71-9192-4ac6-b61c-cc2862346a77",
+      "north-east": "d6785db3-ff8f-4dd8-8182-f280d9bcc64c",
+      "east": "0b9f4bef-cdcb-4b8e-acb8-4fbde5c7b9f3",
+      "south-east": "c1733ff3-e6e9-4a96-8b22-56c4fe679724"
     }
   },
   "zamboni-attack": {
     "group": "5a7e5cb4-973c-4636-b256-a042902d55b7",
     "jobs": {
       "south": "57882d14-18a7-4fb3-ba80-6e27bdca9f45",
-      "south-west": "b63ed148-77b7-4e19-b5c1-263f2395e7a5"
+      "south-west": "b63ed148-77b7-4e19-b5c1-263f2395e7a5",
+      "west": "fa1d10e2-1cf4-429b-a47c-878595566795",
+      "north-west": "f0fd4b3f-8338-4dcf-a688-25a205636c22",
+      "north": "9a6b3a02-b9f0-4bc2-9d91-dabd16e07e91"
     }
   }
 }
