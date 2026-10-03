@@ -65,6 +65,7 @@ describe('which pairs fuse, and into what', () => {
     expect(fusionPairFor(byId('pump_soaker'), byId('janitor_mop'))).toMatchObject({ baseId: 'janitor_mop', ingredientId: 'pump_soaker' });
   });
 
+  // Compiles every hybrid in the catalogue: ~2 s alone, past the 5 s default under load.
   it('every hybrid is a valid catalog item that compiles as a loadout', () => {
     for (const a of NON_CARRIERS) {
       for (const b of NON_CARRIERS) {
@@ -77,7 +78,7 @@ describe('which pairs fuse, and into what', () => {
         expect(() => compileLoadout([...ITEM_CATALOG, hybrid], instances, primary), hybrid.id).not.toThrow();
       }
     }
-  });
+  }, 20_000);
 
   it('ids round-trip, and the registry knows hybrids by id', () => {
     const id = hybridDefinitionId('pump_soaker', 'plasma_globe');
