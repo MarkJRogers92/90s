@@ -1,5 +1,12 @@
 # Next session
 
+## Animation work for an image-generation agent (start here)
+
+`docs/ANIMATION_HANDOFF.md` has the full brief: what to draw (attack wind-ups for the
+Bargain Hunter, Poodle, Elf and Goon; then hurt reactions), the exact sheet format,
+shipped PixelLab examples, and the check-and-install steps
+(`art/pixellab/check_sheet.py`).
+
 ## 2026-10-03 UTC — PixelLab boss attack wind-ups (V2 bosses) — DONE (HANDOFF)
 
 Branch `feat/boss-attack-sheets` (PR #56 merged; this is the follow-up). Presentation only;
