@@ -1,5 +1,29 @@
 # Next session
 
+## 2026-10-03 UTC — Review follow-up: wanted strip no longer truncates (branch `fix/wanted-strip-wrap-2026-10-03`)
+
+Review of PRs #47–#49 found the HUD's wanted strip (round 57) mangled by the
+mall-directory HUD: it wrapped with `wrapLogText`, which collapsed the
+double-space clause separators and ended long lines in "...", so four/five-star
+lines lost "NEXT * IN n" or "HOLD YOUR STARS". `wantedRows` now packs whole
+clauses (joined by " / ", up to three rows of 32 characters) and `wantedPanel`
+sizes the panel upward from its fixed baseline; the shop offer card follows
+the panel's top edge. No simulation, art or gameplay change.
+
+Evidence: new `tests/unit/wanted-line-layout.test.ts` failed first
+(`wantedRows is not a function`), then passed. TypeScript passes. The adjacent
+HUD/wanted set (6 files, 87 tests) passes. The full suite was last run before
+this fix on main b4db9ba: 1,779 of 1,780 pass; the one failure was a 5 s
+timeout in `balance-danger.test.ts` (7.7 s under load) that passes in
+isolation with a 30 s timeout. The production build, browser suite and
+`npm run balance` were not run (nothing balance-related changed). Live visual
+QA of the strip at four/five stars is still outstanding.
+
+Open review items, not fixed here: the run menu freezes end cards without
+pausing when opened during the kill cam/ending; `ensurePixelLabel` has no
+texture cap; `balance-danger` needs a longer timeout; NEXT_SESSION's "Start
+here" section still describes round 57 as the tip of `origin/main`.
+
 ## 2026-10-03 UTC — Mall-directory HUD (integration)
 
 The approved in-canvas HUD now uses quiet directory panels, pale tabs and
