@@ -1,5 +1,60 @@
 # Test evidence
 
+## 2026-10-03 UTC — Hanger native reactions, live visual QA, visual roadmap
+
+**First live browser QA in a cloud session.** The pre-installed Chromium works
+when pointed at explicitly. `scripts/live-capture.mjs` launches Night Shift on
+a fixture, screenshots it, walks to and hits enemies, and logs the renderer's
+own texture/frame evidence per hit. `playwright.config.ts` honours
+`PW_CHROMIUM_PATH`, so the existing browser suite runs here too.
+
+**Found live and fixed (F1):** the Menu/Fullscreen toolbar was centred at the
+top and covered the in-canvas PA ticker on most desktop windows. It now sits in
+the free top-right corner, 28 px tall for mouse users. Touch and small screens
+keep 44 px targets in their own rail.
+
+**Found by the browser suite and fixed (F2):** the stage sat right of centre
+on every window wider than 16:10 (32 px at 1280×720, 284 px on an ultrawide).
+The base `place-items: center` re-centred the canvas on top of Phaser's own
+margins. `viewport-layout.spec.ts` caught it; it had never been run before.
+
+**Hanger native reactions (roadmap V1):**
+- A 4-frame × 8-facing hurt strip and a 6-frame chitin-shell impact. Both are
+  *derived* from the Hanger's own walk sheet by a committed script
+  (`art/enemy-reactions/hanger/`): exact palette, no generation spend.
+- Hits chip the shell instead of spraying blood, and its death splat is
+  shell-blue ichor.
+- Live capture showed the Hanger is almost always in its contact-bite loop
+  when hit. It has no timed wind-up in the sim, so for the Hanger only a
+  flinch outranks that pose (`hurtOutranksAttack`); its reach ring still draws.
+  Mannequin and Static telegraphs keep priority.
+- `MATERIAL_REACTIONS` in `EnemyReactionView.ts` is now one table, so the next
+  enemy is a table row plus art. No `src/sim` change.
+
+**Roadmap:** `docs/VISUAL_ROADMAP.md` lists 12 presentation items (V0–V11) with
+status, files, contracts, tests and acceptance criteria, for any agent to
+pick up. It is linked from AGENTS.md, ROADMAP.md and here.
+
+Evidence:
+- Full browser suite, run serially in this container for the first time:
+  93 of 100 passed. Of the 7 failures:
+  - two were load flakes that pass when re-run;
+  - three were the F2 centring/fullscreen specs. They now pass (the whole
+    viewport spec is 11/11). The fullscreen spec needed a 60 s budget for
+    its two full cycles.
+  - two fail identically on `main` (B1 Bench car shots, B2 prop-room walk)
+    and are recorded in the roadmap.
+- Unit: 1,793 of 1,794 passed across 171 files. The one failure was the
+  documented `hybrid-fusion` 5 s timeout (5.25 s), which passes alone and
+  now has a 20 s budget.
+- New tests:
+  - `hanger-reactions.test.ts` (9);
+  - toolbar and centring guards in `viewport-layout.test.ts`;
+  - three desktop toolbar browser cases.
+- TypeScript and the production build pass (existing large-bundle warning).
+Live: in four Hanger hits over two seeds the renderer reported `hanger-hurt`
+frames, and every page logged zero console errors (`artifacts/live-qa/`).
+
 ## 2026-10-03 UTC — Review follow-up: wanted strip no longer truncates (branch `fix/wanted-strip-wrap-2026-10-03`)
 
 Review of PRs #47–#49 found the HUD's wanted strip (round 57) mangled by the

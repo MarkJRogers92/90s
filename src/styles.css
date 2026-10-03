@@ -2219,6 +2219,10 @@ body[data-mode='run'] {
 
 .run-shell[data-mode='run'] #game-host {
   display: block;
+  /* Phaser alone centres the canvas (via its margins). The base rule's
+     place-items: center also applies to block layout in current Chromium,
+     which pushed the stage right by half its margin on wide windows. */
+  place-items: normal;
   width: 100%;
   min-width: 0;
   min-height: 0;
@@ -2238,13 +2242,14 @@ body[data-mode='run'] {
   display: none;
 }
 
+/* The PA ticker owns the canvas's centred top lane (y 6..30); the top-right
+   corner above the map chip (y 34) is free on every room. */
 .run-shell[data-mode='run'] .run-toolbar {
   display: flex;
   position: absolute;
   z-index: 4;
   top: max(4px, env(safe-area-inset-top));
-  left: 50%;
-  transform: translateX(-50%);
+  right: max(8px, env(safe-area-inset-right));
   align-items: center;
   gap: 6px;
   width: max-content;
@@ -2252,9 +2257,9 @@ body[data-mode='run'] {
 }
 
 .run-toolbar button {
-  min-height: 44px;
-  padding: 6px 12px;
-  font-size: 0.72rem;
+  min-height: 28px;
+  padding: 4px 10px;
+  font-size: 0.68rem;
   letter-spacing: 0.03em;
   box-shadow: none;
 }
@@ -2427,6 +2432,12 @@ body[data-mode='run'] {
     left: auto;
     right: max(8px, env(safe-area-inset-right));
     transform: none;
+  }
+
+  .run-toolbar button {
+    min-height: 44px;
+    padding: 6px 12px;
+    font-size: 0.72rem;
   }
 }
 

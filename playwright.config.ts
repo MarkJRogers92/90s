@@ -13,6 +13,9 @@ export default defineConfig({
   use: {
     baseURL: origin,
     trace: 'retain-on-failure',
+    // Cloud sessions ship a Chromium that may not match this Playwright's pinned
+    // build: PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npx playwright test
+    ...(env.PW_CHROMIUM_PATH ? { launchOptions: { executablePath: env.PW_CHROMIUM_PATH } } : {}),
   },
   webServer: {
     command: `npx vite --host 127.0.0.1 --port ${port} --strictPort`,

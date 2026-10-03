@@ -40,6 +40,8 @@ export function enemyRenderer() {
     [ENEMY_TEXTURE_KEYS.mannequinDeath, { width: 672, height: 768 }],
     ['neon:enemy:mannequin-attack', { width: 384, height: 768 }],
     [ENEMY_TEXTURE_KEYS.hangerDeath, { width: 512, height: 512 }],
+    ['neon:enemy:hanger-hurt', { width: 368, height: 736 }],
+    ['neon:enemy:hanger-shell-impact', { width: 288, height: 48 }],
   ]);
   const dimensions = (key: string) => sizes.get(key) ?? { width: 64, height: 64 };
   const image = (x: number, y: number, key: string) => { const result = new ImageSurface(key, dimensions).setPosition(x, y); images.push(result); return result; };

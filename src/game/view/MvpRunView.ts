@@ -83,7 +83,7 @@ import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './pl
 import { attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
-import { exactReactionTexture, type EnemyHurtFrame } from './EnemyReactionView';
+import { hurtOutranksAttack, materialHurtKey, type EnemyHurtFrame } from './EnemyReactionView';
 import { LootView } from './LootView';
 import { WeaponView } from './WeaponView';
 import { WeaponEffectView } from './WeaponEffectView';
@@ -378,13 +378,14 @@ export class MvpRunView {
         const pulse = 0.75 + 0.25 * Math.sin(state.tick / 8 + enemy.id);
         shown = combinePoses(shown, { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1, flash: false, tint: wet ? glow(0x2a90ff, 0.55 * pulse) : glow(0xd08a20, 0.5 * pulse) });
       }
-      const hurt = this.feedback.hurtFor(`enemy:${enemy.id}`, fxTick, attackColumn !== null || charge !== undefined);
+      const flinchFirst = hurtOutranksAttack(enemy.kind);
+      const hurt = this.feedback.hurtFor(`enemy:${enemy.id}`, fxTick, !flinchFirst && (attackColumn !== null || charge !== undefined));
       this.drawMannequinEyes(enemySnapshot, effects, hurt);
       if (!hurt && enemy.kind === 'mannequin' && enemy.phase === 'pursue') {
         // A moving mannequin jitters, like a bad stop-motion frame.
         shown = combinePoses(shown, { offsetX: ((state.tick * 7) % 3) - 1, offsetY: ((state.tick * 5) % 3) - 1, scaleX: 1, scaleY: 1, flash: false });
       }
-      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, shown, attackColumn, null, hurt);
+      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, shown, hurt && flinchFirst ? null : attackColumn, null, hurt);
       const spriteActive = sprite.spriteActive;
       this.drawActorEffectCues(enemySnapshot, sprite, effects);
       if (enemy.kind === 'hanger') {
@@ -1944,10 +1945,8 @@ export class MvpRunView {
     // An attack in progress draws from the attack sheet, which shares the walk
     // sheet's layout (one row per facing, canvases grown around the idle one).
     const attacking = sheet !== null && attackColumn !== null;
-    const hurtKey = snapshot.kind === 'mannequin' ? ENEMY_TEXTURE_KEYS.mannequinHurt
-      : snapshot.kind === 'static' ? ENEMY_TEXTURE_KEYS.staticHurt : null;
-    const nativeHurt = !attacking && !(snapshot.kind === 'static' && snapshot.phase === 'telegraph') && hurtKey && hurt && hurt.spec.textureKey === hurtKey
-      && exactReactionTexture(this.scene.textures, hurt.spec.textureKey, 384, 768) ? hurt : null;
+    const hurtKey = materialHurtKey(this.scene.textures, snapshot.kind);
+    const nativeHurt = !attacking && !(snapshot.kind === 'static' && snapshot.phase === 'telegraph') && hurtKey && hurt && hurt.spec.textureKey === hurtKey ? hurt : null;
     if (nativeHurt) {
       visual = { ...visual, direction: nativeHurt.direction, bobY: 0, lunge: 0, attackLean: 0, damageFlicker: false, damageFeedback: false };
       this.actorMemory.presentFacing(snapshot.id, nativeHurt.direction);

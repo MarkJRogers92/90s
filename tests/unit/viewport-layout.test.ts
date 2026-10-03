@@ -17,9 +17,21 @@ function declaration(selector: string, property: string): string | undefined {
   return value;
 }
 
+function mediaDeclaration(query: string, selector: string, property: string): string | undefined {
+  let value: string | undefined;
+  css.walkAtRules('media', at => {
+    if (!at.params.includes(query)) return;
+    at.walkRules(selector, rule => rule.walkDecls(property, decl => { value = decl.value; }));
+  });
+  return value;
+}
+
 describe('Night Shift viewport shell', () => {
   it('leaves canvas centering solely to Phaser instead of centering its margins twice', () => {
     expect(declaration(".run-shell[data-mode='run'] #game-host", 'display')).toBe('block');
+    // Chromium applies justify-items to block layout: an inherited `place-items: center`
+    // centred the canvas's margin box on top of Phaser's own margin (32 px off at 1280x720).
+    expect(declaration(".run-shell[data-mode='run'] #game-host", 'place-items')).toBe('normal');
     expect(declaration(".run-shell[data-mode='run'] #game-host canvas", 'box-shadow')).toBe('none');
   });
   it('lets the store dropdown escape its chip while only the list scrolls', () => {
@@ -49,9 +61,26 @@ describe('Night Shift viewport shell', () => {
   });
   it('keeps narrow and coarse-pointer controls reachable and dialogs scrollable', () => {
     expect(css.toString()).toContain('(pointer: coarse)');
-    expect(declaration('.run-toolbar button', 'min-height')).toBe('44px');
+    // Touch and small screens keep 44px targets inside the safe rail.
+    expect(mediaDeclaration('(pointer: coarse)', '.run-toolbar button', 'min-height')).toBe('44px');
     expect(declaration('#run-menu-panel', 'overflow-y')).toBe('auto');
     expect(declaration('#run-menu-panel', 'padding')).toContain('env(safe-area-inset');
+  });
+});
+
+describe('desktop toolbar stays out of the in-canvas PA lane', () => {
+  // Live QA (2026-10-03): centred 44px buttons covered the PA ticker (canvas y 6..30,
+  // horizontally centred) whenever the stage reached the top of the window.
+  it('anchors to the free top-right corner instead of the centred PA lane', () => {
+    expect(declaration(".run-shell[data-mode='run'] .run-toolbar", 'transform')).toBeUndefined();
+    expect(declaration(".run-shell[data-mode='run'] .run-toolbar", 'left')).toBeUndefined();
+    expect(declaration(".run-shell[data-mode='run'] .run-toolbar", 'right')).toContain('env(safe-area-inset-right)');
+  });
+  it('is short enough on fine pointers to clear the corner chips (canvas y 34) at 1280x720', () => {
+    const height = Number.parseFloat(declaration('.run-toolbar button', 'min-height') ?? '0');
+    expect(height).toBeGreaterThanOrEqual(24);
+    // top 4px + button height, in canvas pixels at the 1.2 scale of a 1280x720 window.
+    expect((4 + height) / 1.2).toBeLessThan(34);
   });
 });
 

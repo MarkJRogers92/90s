@@ -1,6 +1,6 @@
 # DEAD MALL repository instructions
 
-Read STATUS.md and NEXT_SESSION.md first, then only the design/plan sections needed for the current task.
+Read STATUS.md and NEXT_SESSION.md first, then only the design/plan sections needed for the current task. The presentation backlog, ready to pick up item by item, is docs/VISUAL_ROADMAP.md.
 
 - Keep gameplay rules in src/sim; Phaser renders and collects input but does not own damage, movement, economy, or state transitions.
 - Write a meaningful failing test before production behavior, observe the intended failure, implement minimally, then run targeted adjacent checks.

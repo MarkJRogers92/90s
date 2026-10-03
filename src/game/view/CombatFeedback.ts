@@ -17,7 +17,7 @@ import { presentationDepth } from '../presentation/depth';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { PointLight } from '../presentation/lighting/LightingLayer';
 import { ACTOR_DIRECTION_ORDER, directionForVector, type ActorDirection } from './ActorSpriteView';
-import { MannequinImpactView, StaticImpactView, exactReactionTexture, mannequinHurtFrame, staticHurtFrame, MANNEQUIN_HURT_TICKS, STATIC_HURT_TICKS, type EnemyHurtFrame } from './EnemyReactionView';
+import { HangerImpactView, MannequinImpactView, StaticImpactView, exactReactionTexture, isMaterialKind, materialHurtFrame, materialHurtTicks, type EnemyHurtFrame, type MaterialKind } from './EnemyReactionView';
 import { flashAllowed, gameSettings, shakeScale, washScale } from '../settings/settings';
 import { isBossKind } from '../../sim/combat/boss';
 import {
@@ -93,9 +93,9 @@ function deathSheet(kind: EnemyState['kind']): string {
               : ENEMY_TEXTURE_KEYS.lpManagerDeath;
 }
 
-/** What spills when this kind is hit: blood, green goo, or beige plastic chips. */
+/** What spills when this kind is hit: blood, green goo, beige plastic chips, or the Hanger's blue ichor. */
 function spillColor(kind: EnemyState['kind']): number {
-  return kind === 'spitter' ? 0x9aff6a : kind === 'mannequin' ? 0xf0d0a8 : kind === 'static' ? 0x40e0ff : 0xff3a4a;
+  return kind === 'spitter' ? 0x9aff6a : kind === 'mannequin' ? 0xf0d0a8 : kind === 'static' ? 0x40e0ff : kind === 'hanger' ? 0x6a96b8 : 0xff3a4a;
 }
 
 const VIGNETTE_TEXTURE = 'fx:hurt-vignette';
@@ -130,9 +130,10 @@ export class CombatFeedback {
   private readonly corpses: Corpse[] = [];
   private readonly decals: Phaser.GameObjects.Image[] = [];
   private readonly reactions = new Map<string, Reaction>();
-  private readonly hurts = new Map<string, { born: number; direction: ActorDirection; kind: 'mannequin' | 'static' }>();
+  private readonly hurts = new Map<string, { born: number; direction: ActorDirection; kind: MaterialKind }>();
   private readonly plastic: MannequinImpactView;
   private readonly crt: StaticImpactView;
+  private readonly shell: HangerImpactView;
   private facingFor: (id: string) => ActorDirection = () => 'south';
   private readonly flash: Phaser.GameObjects.Rectangle;
   private readonly vignette: Phaser.GameObjects.Image;
@@ -151,6 +152,7 @@ export class CombatFeedback {
     this.scene = scene;
     this.plastic = new MannequinImpactView(scene);
     this.crt = new StaticImpactView(scene);
+    this.shell = new HangerImpactView(scene);
     this.flash = scene.add
       .rectangle(480, 300, 960, 600, 0xff1a2a, 0)
       .setScrollFactor(0)
@@ -287,8 +289,8 @@ export class CombatFeedback {
     const hurt = this.hurts.get(id);
     if (!hurt) return null;
     const age = tick - hurt.born;
-    if (age < 0 || age >= (hurt.kind === 'static' ? STATIC_HURT_TICKS : MANNEQUIN_HURT_TICKS)) { this.hurts.delete(id); return null; }
-    return attacking ? null : (hurt.kind === 'static' ? staticHurtFrame : mannequinHurtFrame)(this.scene.textures, age, hurt.direction);
+    if (age < 0 || age >= materialHurtTicks(hurt.kind)) { this.hurts.delete(id); return null; }
+    return attacking ? null : materialHurtFrame(this.scene.textures, hurt.kind, age, hurt.direction);
   }
 
   private snapshot(enemies: readonly EnemyState[], projectiles: readonly ProjectileState[]): void {
@@ -313,7 +315,7 @@ export class CombatFeedback {
     const dirY = hit.y - player.y;
     const length = Math.hypot(dirX, dirY) || 1;
     this.reactions.set(`enemy:${hit.id}`, { born: tick, dirX, dirY, heavy });
-    if (hit.kind === 'mannequin' || hit.kind === 'static') {
+    if (isMaterialKind(hit.kind)) {
       const id = `enemy:${hit.id}`;
       this.hurts.set(id, { born: tick, direction: this.facingFor(id), kind: hit.kind });
     }
@@ -329,6 +331,9 @@ export class CombatFeedback {
     } else if (hit.kind === 'static') {
       // Keep casing/glass debris centred on the CRT, independent of hit source.
       this.crt.spawn(hit.x, hit.y - 43, tick);
+    } else if (hit.kind === 'hanger') {
+      // Chitin chips off the shell; the spider has no blood to spill.
+      this.shell.spawn(hit.x, hit.y - 22, tick);
     } else {
       const blood = spillColor(hit.kind);
       this.bursts.push({ kind: 'star', x: ix, y: iy, born: tick, life: heavy ? 9 : 7, radius: heavy ? 34 : 24, color: blood, angle: this.random() * Math.PI });
@@ -493,7 +498,7 @@ export class CombatFeedback {
       .setRotation(this.random() * Math.PI * 2)
       .setAlpha(0.92);
     // Fresh blood reads bright under the mall lights, even on the red food-court tile.
-    decal.setTint(kind === 'spitter' ? 0xc8ff9a : kind === 'mannequin' ? 0xf0dcc0 : isBossKind(kind) && key === DECAL_TEXTURE_KEYS.scorch ? 0x9a8a70 : 0xff8a8a);
+    decal.setTint(kind === 'spitter' ? 0xc8ff9a : kind === 'mannequin' ? 0xf0dcc0 : kind === 'hanger' ? 0x7fb0d0 : isBossKind(kind) && key === DECAL_TEXTURE_KEYS.scorch ? 0x9a8a70 : 0xff8a8a);
     this.decals.push(decal);
     if (this.decals.length > MAX_DECALS) this.decals.shift()?.destroy();
   }
@@ -604,6 +609,7 @@ export class CombatFeedback {
     }
     this.plastic.sync(tick);
     this.crt.sync(tick);
+    this.shell.sync(tick);
     this.drawBursts(tick);
     const settings = gameSettings().get();
     const remaining = this.flashUntil - tick;
@@ -621,6 +627,7 @@ export class CombatFeedback {
     this.hurts.clear();
     this.plastic.reset();
     this.crt.reset();
+    this.shell.reset();
     for (const floater of this.floaters) floater.image.destroy();
     for (const spark of this.sparks) spark.image.destroy();
     for (const decal of this.decals) decal.destroy();
@@ -648,5 +655,6 @@ export class CombatFeedback {
     this.impacts.destroy();
     this.plastic.destroy();
     this.crt.destroy();
+    this.shell.destroy();
   }
 }

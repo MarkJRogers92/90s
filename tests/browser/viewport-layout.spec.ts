@@ -81,6 +81,8 @@ test('menu traps focus, pauses without click-through, restores prior state, and 
 });
 
 test('fullscreen keeps the settings dialog in its target and reflows on repeated exit', async ({ page }) => {
+  // Two full enter/settings/exit cycles: well over 30 s on a loaded machine.
+  test.setTimeout(60_000);
   await launch(page);
   const available = await page.evaluate(() => Boolean(document.fullscreenEnabled && document.getElementById('app')?.requestFullscreen));
   if (!available) {
@@ -165,5 +167,19 @@ for (const width of [320, 390, 844]) {
     await page.mouse.click(confirm.x + confirm.width / 2, confirm.y + confirm.height / 2);
     expect((await snapshot(page)).inventory.revision).toBe(state.inventory.revision);
     await expect(page.locator('#run-menu-panel')).toBeVisible();
+  });
+}
+
+// Live QA 2026-10-03: centred buttons covered the PA ticker (canvas y 6..30, centred,
+// at most ~400 of 960 px wide). The toolbar must sit in the stage's right quarter.
+for (const [width, height] of [[1280, 800], [1280, 720], [1920, 1080]] as const) {
+  test(`desktop toolbar stays out of the PA lane at ${width}x${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await launch(page);
+    const canvas = (await page.locator('canvas').boundingBox())!;
+    const bar = (await page.locator('.run-toolbar').boundingBox())!;
+    expect(bar.x).toBeGreaterThanOrEqual(canvas.x + canvas.width * 0.75);
+    // Above the corner map chip (canvas y 34).
+    expect(bar.y + bar.height).toBeLessThanOrEqual(canvas.y + 34 * (canvas.height / 600));
   });
 }
