@@ -25,18 +25,17 @@ import { itemBlurb } from './itemBlurbs';
 import { blink, flashAllowed, gameSettings } from '../settings/settings';
 import { browserCareer } from '../career/career';
 import { coachActive, nextCoachTip, type CoachTipId } from './coachModel';
+import { fitHudText, hudDockLayout } from './gameHudLayout';
 
 const HUD_DEPTH = 20_000;
 const SCREEN_W = 960;
 const SCREEN_H = 600;
-const PANEL = 0x0b0714;
-const MAGENTA = 0xff3fc8;
-const CYAN = 0x3ff0ff;
-const YELLOW = 0xffd84a;
-const SLOT = 46;
-const SLOT_GAP = 6;
-const TEXT = '#f4ecff';
-const MUTED = '#9a8fb4';
+const PANEL = 0x111726;
+const MAGENTA = 0xc98caf;
+const CYAN = 0x71b8b5;
+const YELLOW = 0xd7bd8b;
+const TEXT = '#f3e9d0';
+const MUTED = '#a7b1b8';
 
 type Label = Phaser.GameObjects.Image;
 type Rect = { x: number; y: number; w: number; h: number };
@@ -79,7 +78,7 @@ export class GameHud {
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    ensureHeartTextures(scene);
+    ensureHeartTextures(scene, 2);
     this.root = scene.add.container(0, 0).setScrollFactor(0).setDepth(HUD_DEPTH);
     this.peekKey = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.TAB);
     this.frame = scene.add.graphics();
@@ -88,10 +87,10 @@ export class GameHud {
     this.bottom.add(this.bottomFrame);
     this.root.add([this.frame, this.bottom]);
     const portraitKey = usableTextureKey(scene.textures, PORTRAIT_TEXTURE_KEYS.alex);
-    this.portrait = portraitKey ? scene.add.image(12 + 40, SCREEN_H - 12 - 40, portraitKey).setDisplaySize(76, 76) : null;
+    this.portrait = portraitKey ? scene.add.image(51, 547, portraitKey).setDisplaySize(56, 56) : null;
     if (this.portrait) this.bottom.add(this.portrait);
-    for (let i = 0; i < 3; i += 1) {
-      const heart = scene.add.image(0, 0, HEART_TEXTURES.full);
+    for (let i = 0; i < 6; i += 1) {
+      const heart = scene.add.image(0, 0, HEART_TEXTURES.full).setVisible(false);
       this.hearts.push(heart);
       this.bottom.add(heart);
     }
@@ -191,7 +190,7 @@ export class GameHud {
     const toastAge = this.toast ? state.tick - this.toast.startedTick : null;
     const cardAge = state.roomIndex === 0 ? state.tick - (this.shiftStartTick ?? state.tick) : null;
     const logAges = this.log.map((entry) => bucket(state.tick - entry.tick)).join(',');
-    const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
+    const hurt = state.room.combat.player.invulnerableTicks > 0 && flashAllowed(gameSettings().get()) && Math.floor(state.tick / 6) % 2 === 0;
     return JSON.stringify([
       model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, this.windupActive(state),
       state.room.combat.player.y > 200,
@@ -209,8 +208,8 @@ export class GameHud {
 
   /* ---------------------------------------------------------------------- */
 
-  private text(id: string, text: string, x: number, y: number, color = TEXT, scale = 2, inBottom = false, alpha = 1, anchor: 'left' | 'center' | 'right' = 'left'): Label {
-    const spec = ensurePixelLabel(this.scene, text, color, scale);
+  private text(id: string, text: string, x: number, y: number, color = TEXT, scale = 2, inBottom = false, alpha = 1, anchor: 'left' | 'center' | 'right' = 'left', outline = '#0a0610'): Label {
+    const spec = ensurePixelLabel(this.scene, text, color, scale, outline);
     let label = this.labels.get(id);
     if (!label) {
       label = this.scene.add.image(x, y, spec.key);
@@ -224,18 +223,29 @@ export class GameHud {
     return label;
   }
 
-  private panel(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number, edge = MAGENTA, alpha = 0.84): void {
+  private panel(g: Phaser.GameObjects.Graphics, x: number, y: number, w: number, h: number, edge = MAGENTA, alpha = 0.92): void {
+    g.fillStyle(0x080b11, 0.45).fillRect(x + 2, y + 2, w, h);
     g.fillStyle(PANEL, alpha).fillRect(x, y, w, h);
-    g.lineStyle(2, edge, 0.95).strokeRect(x + 1, y + 1, w - 2, h - 2);
-    g.fillStyle(edge, 1).fillRect(x, y, 10, 2).fillRect(x, y, 2, 10);
-    g.fillRect(x + w - 10, y + h - 2, 10, 2).fillRect(x + w - 2, y + h - 10, 2, 10);
+    g.lineStyle(1, 0x637278, 0.95).strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    g.fillStyle(edge, 1).fillRect(x, y, 4, h);
+    g.fillStyle(0x99a4a0, 0.5).fillRect(x + 6, y + 1, w - 8, 1);
+  }
+
+  private stamp(g: Phaser.GameObjects.Graphics, id: string, text: string, x: number, y: number, color = YELLOW, inBottom = false): void {
+    g.fillStyle(color, 1).fillRect(x, y, text.length * 6 + 8, 13);
+    this.text(id, text, x + 4, y + 2, '#1b2530', 1, inBottom, 1, 'left', `#${color.toString(16).padStart(6, '0')}`);
+  }
+
+  private fitted(id: string, text: string, x: number, y: number, width: number, color = TEXT, scale = 2, inBottom = false, outline = '#0a0610'): void {
+    const fit = fitHudText(text, width, scale);
+    this.text(id, fit.text, x, y, color, fit.scale, inBottom, 1, 'left', outline);
   }
 
   private keycap(g: Phaser.GameObjects.Graphics, id: string, key: string, x: number, y: number, disabled = false): number {
     const width = key.length * 12 + 10;
     g.fillStyle(disabled ? 0x5a5270 : 0xf4ecff, 1).fillRect(x, y, width, 22);
     g.fillStyle(disabled ? 0x3a3450 : 0x8a7fa8, 1).fillRect(x, y + 20, width, 2);
-    this.text(id, key, x + 5, y + 4, '#0b0714', 2);
+    this.text(id, key, x + 5, y + 4, '#0b0714', 2, false, 1, 'left', disabled ? '#5a5270' : '#f4ecff');
     return width;
   }
 
@@ -267,18 +277,16 @@ export class GameHud {
 
   private drawObjectives(model: GameHudModel): void {
     if (!this.expanded) {
-      // Collapsed: one chip in the corner with the objective that matters now.
-      const text = `> ${collapsedObjective(model) ?? 'ALL CLEAR'}`;
-      const width = text.length * 6 + 52;
-      this.panel(this.frame, 8, 6, width, 20, MAGENTA, 0.78);
-      this.text('obj-chip', text, 16, 13, TEXT, 1);
-      this.text('obj-tab', 'TAB', 8 + width - 26, 13, MUTED, 1);
+      // The PA owns y=6..30. These corner chips stay below it even while it speaks.
+      this.panel(this.frame, 12, 34, 274, 24, MAGENTA);
+      this.fitted('obj-chip', `> ${collapsedObjective(model) ?? 'ALL CLEAR'}`, 22, 42, 222, TEXT, 1);
+      this.text('obj-tab', 'TAB', 258, 42, MUTED, 1);
       return;
     }
     const x = 10;
     const y = 58;
     const lineH = 20;
-    const width = 300;
+    const width = 276;
     this.panel(this.frame, x, y, width, 26 + model.objectives.length * lineH);
     this.text('obj-title', 'TONIGHT', x + 10, y + 8, '#3ff0ff', 1);
     model.objectives.forEach((objective, index) => {
@@ -288,31 +296,24 @@ export class GameHud {
         this.frame.fillStyle(0x6aff8a, 1).fillRect(x + 13, oy + 7, 2, 2).fillRect(x + 15, oy + 9, 2, 2).fillRect(x + 17, oy + 4, 2, 5);
       }
       // Long lines (wanted, lockdown) drop to the small size to fit the panel.
-      this.text(`obj-${index}`, objective.text, x + 30, oy + (objective.text.length > 22 ? 3 : 0), objective.done ? MUTED : TEXT, objective.text.length > 22 ? 1 : 2);
+      this.fitted(`obj-${index}`, objective.text, x + 30, oy + (objective.text.length > 19 ? 3 : 0), width - 42, objective.done ? MUTED : TEXT, 2);
     });
   }
 
   private drawMinimap(model: GameHudModel, state: MvpRunState): void {
     if (!this.expanded) {
-      // Collapsed: a strip of small room chips in the corner, and where you are.
-      const chipW = 14;
-      const chipH = 10;
-      const gap = 4;
       const current = model.rooms.findIndex((room) => room.state === 'current');
-      const count = `${current + 1}/${model.rooms.length}`;
-      const chipsW = model.rooms.length * (chipW + gap) - gap;
-      const width = chipsW + count.length * 6 + 26;
-      const x = SCREEN_W - width - 8;
-      this.panel(this.frame, x, 6, width, 20, CYAN, 0.78);
-      this.text('map-count', count, x + 8, 13, MUTED, 1);
+      const x = 672;
+      this.panel(this.frame, x, 34, 276, 34, CYAN);
+      this.fitted('map-name', `F${model.floor} / ${model.rooms[current]?.short ?? ''}`, x + 12, 40, 248, '#d5dfda', 1);
       model.rooms.forEach((room, index) => {
-        const cx = x + 16 + count.length * 6 + index * (chipW + gap);
-        const cy = 11;
-        const fill = room.state === 'current' ? CYAN : room.state === 'cleared' ? 0x3a3052 : 0x1c1628;
-        this.frame.fillStyle(fill, 1).fillRect(cx, cy, chipW, chipH);
-        this.frame.lineStyle(1, room.boss ? 0xff3a4a : 0x8a7fa8, 1).strokeRect(cx + 0.5, cy + 0.5, chipW - 1, chipH - 1);
-        if (room.store && room.state !== 'current') this.frame.fillStyle(0xffd84a, 1).fillRect(cx + chipW / 2 - 1, cy + chipH / 2 - 1, 3, 3);
+        const cx = x + 12 + index * 24;
+        const fill = room.state === 'current' ? CYAN : room.state === 'cleared' ? 0x42495c : 0x22293b;
+        this.frame.fillStyle(fill, 1).fillRect(cx, 52, 18, 12);
+        this.frame.lineStyle(1, room.boss ? 0xff6f7a : 0x75848b, 1).strokeRect(cx + 0.5, 52.5, 17, 11);
+        this.text(`map-cell-${index}`, room.boss ? '!' : room.store ? '$' : `${index + 1}`, cx + 6, 54, room.state === 'current' ? '#13222c' : '#b7c0c0', 1);
       });
+      this.text('map-count', `${current + 1}/${model.rooms.length}`, x + 242, 54, MUTED, 1);
       return;
     }
     const cellW = 32;
@@ -334,7 +335,7 @@ export class GameHud {
       else if (room.store) this.text(`map-store-${index}`, '$', cx + cellW / 2, cy + 3, room.state === 'current' ? '#0b0714' : '#ffd84a', 2, false, 1, 'center');
     });
     const currentIndex = model.rooms.findIndex((room) => room.state === 'current');
-    this.text('map-name', model.rooms[currentIndex]?.short ?? '', x + 10, y + 38, '#ff6fc8');
+    this.fitted('map-name', model.rooms[currentIndex]?.short ?? '', x + 10, y + 38, width - 68, '#c98caf');
     this.text('map-count', `${currentIndex + 1}/${model.rooms.length}`, x + width - 10, y + 38, MUTED, 2, false, 1, 'right');
   }
 
@@ -399,123 +400,112 @@ export class GameHud {
 
   private drawVitals(model: GameHudModel, state: MvpRunState): void {
     const g = this.bottomFrame;
-    const px = 12;
-    const py = SCREEN_H - 12 - 80;
-    g.fillStyle(PANEL, 0.9).fillRect(px, py, 80, 80);
-    g.lineStyle(3, MAGENTA, 1).strokeRect(px + 1, py + 1, 78, 78);
-    if (!this.portrait) g.fillStyle(0x3a2a50, 1).fillRect(px + 4, py + 4, 72, 72);
-    const hurt = state.room.combat.player.invulnerableTicks > 0 && Math.floor(state.tick / 6) % 2 === 0;
+    this.panel(g, 12, 506, 218, 82);
+    g.fillStyle(0x333443, 1).fillRect(22, 518, 58, 58);
+    g.lineStyle(1, 0x687b83, 1).strokeRect(22.5, 518.5, 57, 57);
+    const hurt = state.room.combat.player.invulnerableTicks > 0 && flashAllowed(gameSettings().get()) && Math.floor(state.tick / 6) % 2 === 0;
     this.portrait?.setTint(hurt ? 0xff6070 : 0xffffff);
-    this.panel(g, px + 86, py + 6, 132, 74);
-    this.text('name', 'ALEX', px + 96, py + 12, '#ffd84a', 1, true);
-    model.hearts.forEach((heart, index) => {
-      const image = this.hearts[index];
-      image?.setTexture(HEART_TEXTURES[heart]).setPosition(px + 96 + index * 26 + image.width / 2, py + 24 + image.height / 2);
+    this.stamp(g, 'name', 'ALEX', 90, 514, YELLOW, true);
+    // All supported health upgrades remain visible, and old hearts vanish on restart.
+    this.hearts.forEach((image, index) => {
+      const heart = model.hearts[index];
+      image.setVisible(heart !== undefined);
+      if (heart) image.setTexture(HEART_TEXTURES[heart]).setPosition(98 + index * 20, 542);
     });
-    this.text('cash', `$${model.cash}`, px + 96, py + 54, '#6aff8a', 2, true);
-    this.drawStars(g, model.wanted, px + 210, py + 61, state.tick);
-    // What the stars cost, and when the next one comes (round 57).
+    this.fitted('cash', `$${model.cash}`, 90, 560, 66, '#d3df9b', 2, true);
+    this.text('wanted-label', 'WANTED', 166, 554, MUTED, 1, true);
+    this.drawStars(g, model.wanted, 220, 573, state.tick);
     if (model.wantedLine) {
-      this.panel(g, px, py - 24, Math.max(220, model.wantedLine.length * 6 + 20), 20, 0xff5d7a, 0.88);
-      this.text('wanted-line', model.wantedLine, px + 10, py - 18, '#ff8da1', 1, true);
+      this.panel(g, 12, 466, 218, 32, 0xf3ab65);
+      wrapLogText(model.wantedLine, 32, 2).forEach((line, i) => this.text(`wanted-line-${i}`, line, 22, 473 + i * 11, '#edc2a3', 1, true));
     }
   }
 
   private drawHotbar(model: GameHudModel): void {
     const g = this.bottomFrame;
-    const weaponCount = Math.max(3, model.weapons.length);
-    const passiveW = model.passives.length > 0 ? 18 + model.passives.length * 32 : 0;
-    const weaponsW = weaponCount * (SLOT + SLOT_GAP) - SLOT_GAP;
-    const nameW = (model.equipped?.name.length ?? 9) * 12;
-    const totalW = Math.max(weaponsW + (passiveW > 0 ? passiveW + 12 : 0), nameW, 300);
-    const x = Math.round((SCREEN_W - totalW) / 2) + 16;
-    const y = SCREEN_H - SLOT - 14;
-
-    // Equipped weapon name and what it does, directly above the bar.
-    const nameY = y - 38;
-    this.panel(g, x - 10, nameY - 6, totalW + 20, SLOT + 54, CYAN, 0.86);
-    this.text('equipped', model.equipped?.name ?? 'NO WEAPON', x, nameY, '#3ff0ff', 2, true);
-    this.text('equipped-blurb', model.equipped?.blurb ?? '', x, nameY + 18, MUTED, 1, true);
-    this.text('switch-hint', model.weapons.length > 1 ? '1-9 / Q / WHEEL: SWITCH' : 'BUY A WEAPON TO SWITCH', x + totalW, nameY + 19, '#ffd84a', 1, true, 1, 'right');
+    const layout = hudDockLayout(model);
+    const { x, y, w, h } = layout.equipment;
+    this.panel(g, x, y, w, h, CYAN);
+    this.stamp(g, 'equipment-label', 'EQUIPPED', x + 10, y - 6, CYAN, true);
+    const selected = model.weapons.find((weapon) => weapon.selected);
+    const tag = selected?.hot ? 'HOT' : selected?.fused ? 'FUSED' : '';
+    if (tag) this.stamp(g, 'equipped-tag', tag, x + w - tag.length * 6 - 18, y - 6, selected?.hot ? 0xf3ab65 : 0xb2d099, true);
+    const range = model.weapons.length > 9 ? `${layout.start + 1}-${Math.min(layout.start + 9, model.weapons.length)} OF ${model.weapons.length} / Q WHEEL` : model.weapons.length > 1 ? '1-9 / Q / WHEEL' : 'BUY A WEAPON TO SWITCH';
+    this.fitted('switch-hint', range, x + 90, y - 3, tag ? 260 : 356, MUTED, 1, true);
+    this.fitted('equipped', model.equipped?.name ?? 'NO WEAPON', x + 12, y + 14, w - 24, TEXT, 2, true);
+    this.fitted('equipped-blurb', model.equipped?.blurb ?? '', x + 12, y + 32, w - 24, MUTED, 1, true);
 
     this.slotRects = [];
-    for (let i = 0; i < 9; i += 1) {
-      const icon = this.weaponIcons[i]!;
-      if (i >= weaponCount) {
-        icon.setVisible(false);
-        continue;
-      }
-      const sx = x + i * (SLOT + SLOT_GAP);
-      const weapon = model.weapons[i];
+    this.weaponIcons.forEach((icon, i) => {
+      const cell = layout.weapons[i];
+      if (!cell) { icon.setVisible(false); return; }
+      const weapon = model.weapons[cell.index];
       const selected = weapon?.selected ?? false;
-      g.fillStyle(selected ? 0x2a1840 : 0x140e20, 1).fillRect(sx, y, SLOT, SLOT);
-      g.lineStyle(selected ? 3 : 1, selected ? CYAN : 0x3a3052, 1).strokeRect(sx + 1, y + 1, SLOT - 2, SLOT - 2);
-      if (selected) g.fillStyle(CYAN, 0.18).fillRect(sx + 3, y + 3, SLOT - 6, SLOT - 6);
+      const { x: sx, y: sy, w: size } = cell;
+      g.fillStyle(selected ? 0x25283d : 0x131e2c, 1).fillRect(sx, sy, size, size);
+      g.lineStyle(selected ? 2 : 1, selected ? 0xf4e4b7 : 0x53616c, 1).strokeRect(sx + 1, sy + 1, size - 2, size - 2);
       const usable = weapon ? usableItemIcon(this.scene, weapon.itemDefinitionId) : null;
       if (usable) {
-        if (icon.texture.key !== usable) icon.setTexture(usable);
-        icon.setScale(Math.min((SLOT - 10) / icon.width, (SLOT - 10) / icon.height)).setVisible(true).setPosition(sx + SLOT / 2, y + SLOT / 2);
+        icon.setTexture(usable).setScale(Math.min((size - 10) / icon.width, (size - 10) / icon.height)).setVisible(true).setPosition(sx + size / 2, sy + size / 2);
       } else {
         icon.setVisible(false);
+        if (weapon) this.text(`slot-missing-${i}`, '?', sx + size / 2 - 6, sy + size / 2 - 8, MUTED, 2, true);
       }
-      if (weapon?.fused) g.fillStyle(0x6aff8a, 1).fillRect(sx + SLOT - 9, y + 3, 6, 6);
-      if (weapon?.hot) {
-        // Stolen and unfused: a flame-coloured border and a HOT tag until the bench launders it.
-        g.lineStyle(2, 0xff7a1e, 1).strokeRect(sx + 1, y + 1, SLOT - 2, SLOT - 2);
-        g.fillStyle(0xff7a1e, 1).fillRect(sx + SLOT - 22, y + SLOT - 11, 20, 9);
-        this.text(`slot-hot-${i}`, 'HOT', sx + SLOT - 20, y + SLOT - 10, '#0b0714', 1, true);
+      if (weapon?.fused || weapon?.hot) {
+        const text = weapon.hot ? 'HOT' : 'FUSED';
+        const tw = text.length * 6 + 2;
+        g.fillStyle(weapon.hot ? 0xf3ab65 : 0xb2d099, 1).fillRect(sx + size - tw, sy + size - 9, tw, 9);
+        this.text(`slot-tag-${i}`, text, sx + size - tw, sy + size - 9, '#1b2530', 1, true, 1, 'left', weapon.hot ? '#f3ab65' : '#b2d099');
       }
-      // Number badge in the corner: the key that equips this slot.
-      g.fillStyle(selected ? CYAN : 0x3a3052, 1).fillRect(sx, y, 14, 14);
-      this.text(`slot-key-${i}`, `${i + 1}`, sx + 3, y + 3, selected ? '#0b0714' : TEXT, 1, true);
-      if (weapon) this.slotRects.push({ slot: weapon.slot, x: sx, y, w: SLOT, h: SLOT });
-    }
+      // Badges are actual inventory ordinals; only 1–9 have keyboard shortcuts.
+      const key = `${weapon?.slot ?? cell.index + 1}`;
+      g.fillStyle(selected ? 0xedd5b4 : 0x505e6c, 1).fillRect(sx, sy, key.length * 6 + 5, 12);
+      this.text(`slot-key-${i}`, key, sx + 2, sy + 2, selected ? '#15202b' : TEXT, 1, true, 1, 'left', selected ? '#edd5b4' : '#505e6c');
+      if (weapon) this.slotRects.push({ slot: weapon.slot, x: sx, y: sy, w: size, h: size });
+    });
 
-    // Passives are never numbered, because they are never "equipped": always on.
-    for (let i = 0; i < this.passiveIcons.length; i += 1) {
-      const icon = this.passiveIcons[i]!;
-      const passive = model.passives[i];
-      if (!passive) {
-        icon.setVisible(false);
-        continue;
-      }
-      const px = x + weaponsW + 22 + i * 32;
-      g.fillStyle(0x14201a, 1).fillRect(px, y + 16, 28, 28);
-      g.lineStyle(1, 0x6aff8a, 0.8).strokeRect(px + 0.5, y + 16.5, 27, 27);
+    this.passiveIcons.forEach((icon, i) => {
+      const cell = layout.passives[i];
+      const passive = cell ? model.passives[cell.index] : undefined;
+      if (!cell || !passive) { icon.setVisible(false); return; }
+      const { x: px, y: py, w: size } = cell;
+      g.fillStyle(0x20302a, 1).fillRect(px, py, size, size);
+      g.lineStyle(1, passive.hot ? 0xf3ab65 : 0x91aa83, 0.9).strokeRect(px + 0.5, py + 0.5, size - 1, size - 1);
       const usable = usableItemIcon(this.scene, passive.itemDefinitionId);
-      if (usable) {
-        if (icon.texture.key !== usable) icon.setTexture(usable);
-        icon.setScale(Math.min(22 / icon.width, 22 / icon.height)).setVisible(true).setPosition(px + 14, y + 30);
-      } else icon.setVisible(false);
+      if (usable) icon.setTexture(usable).setScale(Math.min((size - 4) / icon.width, (size - 4) / icon.height)).setVisible(true).setPosition(px + size / 2, py + size / 2);
+      else { icon.setVisible(false); this.text(`passive-missing-${i}`, '?', px + 8, py + 8, MUTED, 1, true); }
+      if (passive.fused || passive.hot) this.text(`passive-tag-${i}`, passive.hot ? 'H' : 'F', px + size - 7, py, passive.hot ? '#f3ab65' : '#b2d099', 1, true);
+    });
+    if (model.passives.length > 0) this.text('passive-label', 'ALWAYS ON', layout.dense ? 452 : 420, layout.dense ? 516 : 546, '#c1d6ab', 1, true);
+    if (layout.passiveOverflow > 0) {
+      g.fillStyle(0x20302a, 1).fillRect(612, 560, 24, 24);
+      this.fitted('passive-overflow', `+${layout.passiveOverflow}`, 613, 568, 23, '#c1d6ab', 1, true);
     }
-    if (model.passives.length > 0) {
-      g.fillStyle(0x6aff8a, 0.5).fillRect(x + weaponsW + 10, y + 4, 2, SLOT - 8);
-      this.text('passive-label', 'ALWAYS ON', x + weaponsW + 22, y + 4, '#6aff8a', 1, true);
-    }
+    const attack = model.readiness.attackTenths > 0 ? `ATTACK ${(model.readiness.attackTenths / 10).toFixed(1)}S` : 'ATTACK READY';
+    this.panel(g, layout.attack.x, layout.attack.y, layout.attack.w, layout.attack.h, CYAN);
+    this.fitted('attack-ready', attack, layout.attack.x + 10, layout.attack.y + 9, layout.attack.w - 20, model.readiness.attackTenths > 0 ? '#d7bd8b' : '#c9dc9f', 1, true);
+    this.panel(g, 722, 506, 226, 38, 0xc4ce98);
+    this.stamp(g, 'dash-key', 'SPACE', 732, 500, YELLOW, true);
+    const dash = model.readiness.dashing ? 'DASHING' : model.readiness.dashTenths > 0 ? `DASH ${(model.readiness.dashTenths / 10).toFixed(1)}S` : 'DASH READY';
+    this.fitted('dash-ready', dash, 782, 520, 154, model.readiness.dashTenths > 0 ? MUTED : '#d8e3b6', 2, true);
   }
 
   private pushLog(state: MvpRunState): void {
     this.lastRecent = state.recentChange;
     const text = state.recentChange.toUpperCase().replace(/—/g, '-');
     // Newest on top; a long message takes two lines rather than losing its end.
-    for (const line of wrapLogText(text).reverse()) this.log.unshift({ text: line, tick: state.tick });
+    for (const line of wrapLogText(text, 33).reverse()) this.log.unshift({ text: line, tick: state.tick });
     this.log.length = Math.min(this.log.length, 4);
   }
 
   private drawLog(state: MvpRunState): void {
-    const visible = this.log.filter((entry) => state.tick - entry.tick < 60 * 8);
+    const visible = this.log.filter((entry) => state.tick - entry.tick >= 0 && state.tick - entry.tick < 60 * 8);
     if (visible.length === 0) return;
-    const width = 220;
-    const x = SCREEN_W - width - 12;
-    const y = SCREEN_H - 12 - 80;
-    this.panel(this.bottomFrame, x, y, width, 80, 0x4a3d62);
-    const newest = visible[0]!.tick;
-    visible.forEach((entry, index) => {
-      const age = state.tick - entry.tick;
-      const fresh = entry.tick === newest;
-      const alpha = fresh ? 1 : Math.max(0.35, 1 - age / 480);
-      this.text(`log-${index}`, entry.text, x + 10, y + 10 + index * 16, fresh ? '#ffd84a' : '#c8b8e0', 1, true, alpha);
-    });
+    // The existing transient log gets receipt-paper styling; LootView retains
+    // ownership of its near-player pickup receipts and success detection.
+    this.bottomFrame.fillStyle(0xd6d0b7, 0.95).fillRect(722, 554, 226, 34);
+    this.bottomFrame.fillStyle(0xad946b, 1).fillRect(722, 554, 4, 34);
+    visible.slice(0, 2).forEach((entry, index) => this.fitted(`log-${index}`, entry.text, 734, 562 + index * 11, 202, '#29303a', 1, true, '#d6d0b7'));
   }
 
   private drawPrompt(model: GameHudModel, playerLow = false): void {
@@ -523,7 +513,7 @@ export class GameHud {
     this.promptIcon.setVisible(false);
     if (!prompt) return;
     if (prompt.detail) {
-      this.drawOfferCard(prompt, prompt.detail, playerLow);
+      this.drawOfferCard(prompt, prompt.detail, playerLow, Math.min(hudDockLayout(model).equipment.y, model.wantedLine ? 466 : 600));
       return;
     }
     const keysW = prompt.keys.reduce((sum, key) => sum + key.key.length * 12 + 10 + 8 + key.action.length * 12 + 16, 0);
@@ -563,14 +553,14 @@ export class GameHud {
    * and the one line that decides it — how short you are, or what stealing
    * costs.
    */
-  private drawOfferCard(prompt: NonNullable<GameHudModel['prompt']>, detail: HudOfferDetail, playerLow: boolean): void {
+  private drawOfferCard(prompt: NonNullable<GameHudModel['prompt']>, detail: HudOfferDetail, playerLow: boolean, dockTop: number): void {
     const width = 560;
     // A recipe-hint half gets one more line: what the pair makes.
     const height = detail.pair ? 122 : 104;
     const x = Math.round((SCREEN_W - width) / 2);
     // Never cover the shelf the janitor is standing at: flip to the top when
     // they are in the lower half of the room.
-    const y = playerLow ? 192 : 372;
+    const y = playerLow ? 192 : Math.min(372, dockTop - height - 8);
     this.panel(this.frame, x, y, width, height, detail.canBuy ? YELLOW : 0xff5a6a);
     // Icon well.
     this.frame.fillStyle(0x140d22, 1).fillRect(x + 12, y + 12, 80, 80);
@@ -658,7 +648,7 @@ export class GameHud {
     }
     for (const weapon of model.weapons) {
       if (!this.knownItems.has(weapon.instanceId)) {
-        this.toast = { title: `NEW WEAPON: ${weapon.name}`, titleColor: '#3ff0ff', body: itemBlurb(weapon.itemDefinitionId), hint: `PRESS ${weapon.slot} TO EQUIP`, startedTick: state.tick };
+        this.toast = { title: `NEW WEAPON: ${weapon.name}`, titleColor: '#3ff0ff', body: itemBlurb(weapon.itemDefinitionId), hint: weapon.slot <= 9 ? `PRESS ${weapon.slot} TO EQUIP` : 'Q / WHEEL OR CLICK TO EQUIP', startedTick: state.tick };
       }
     }
     for (const passive of model.passives) {
