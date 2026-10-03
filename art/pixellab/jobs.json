@@ -85,7 +85,43 @@
     "group": "181b21c7-571f-4acf-ab92-50e9df2e28a7",
     "jobs": {
       "south": "3493cc78-4b76-4660-94fc-b782620cdf38",
-      "south-west": "c6838496-d164-4c5c-a852-9db5dc7277fa"
+      "south-west": "c6838496-d164-4c5c-a852-9db5dc7277fa",
+      "west": "729bb8e4-cbfc-449a-9d5c-6bb3e51abc24",
+      "north-west": "7bf18b24-7268-4d38-855f-7cd510325ede",
+      "north": "e3677b93-9bc0-4204-999e-f50ce8eb5365",
+      "north-east": "00457f21-2f47-476f-bf33-5c8999163d2e",
+      "east": "4bf5a070-66ed-4299-88da-caf512d090b7",
+      "south-east": "f81ec277-512d-4a17-892c-cf505e6ce895"
+    }
+  },
+  "santa-attack": {
+    "group": "b7442f00-0f12-4de5-beda-58bb1f22d18c",
+    "jobs": {
+      "south": "7961af56-f720-4429-9aef-4e2762ebd86d",
+      "south-west": "3bfd5c4b-5732-4ba9-bcd9-28ee22c188a0",
+      "west": "3b0ebb24-eaf2-4be6-a3c1-7592c6b2ba34"
+    }
+  },
+  "glamour-queen-attack": {
+    "group": "0c5053a8-90b0-4409-b768-6652458f1d5e",
+    "jobs": {
+      "south": "da843aec-fac1-49c7-aef8-abe1e4bd3d65",
+      "south-west": "ae37cc7c-e9db-43ad-bccf-d95142d849ae",
+      "west": "1b7a106d-d952-47d2-bfa9-4878295a2b13",
+      "north-west": "2e8d5efe-c711-4d44-a41d-51eec703b338"
+    }
+  },
+  "whiskers-attack": {
+    "group": "de43528a-0f02-4a77-9c7f-35e0377c77f2",
+    "jobs": {
+      "south": "e27cf44a-0b05-4c6f-9c2e-9c084fbf9ae6"
+    }
+  },
+  "zamboni-attack": {
+    "group": "5a7e5cb4-973c-4636-b256-a042902d55b7",
+    "jobs": {
+      "south": "57882d14-18a7-4fb3-ba80-6e27bdca9f45",
+      "south-west": "b63ed148-77b7-4e19-b5c1-263f2395e7a5"
     }
   }
 }
