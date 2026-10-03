@@ -54,5 +54,18 @@
       "east": "a1c7a07f-ee09-4f29-a16f-b81325fb3186",
       "south-east": "c8c2918f-5cb6-42fe-ab70-8dc0ccaa7e4d"
     }
+  },
+  "owner-attack": {
+    "group": "b777b943-53c9-46d1-8e81-2321173cb9b8",
+    "jobs": {
+      "south": "7cb3e070-d755-41fd-b703-f623fdbe0818",
+      "south-west": "9a00ce0d-33c1-488d-98d2-a60cf24e527a",
+      "west": "f87514b2-9a3f-43bc-8a7d-0656aaf36181",
+      "north-west": "953856df-e408-4821-8f62-100d322b42b8",
+      "north": "66fa8baa-ae47-40b6-8883-796fd039e535",
+      "north-east": "6436adb1-55ba-4626-9ace-6479f2a800bd",
+      "east": "f6c37c2c-b4e8-4564-a12c-6f6d7c325f5d",
+      "south-east": "b7b931e3-7c87-4d81-a426-57a7829fbb6e"
+    }
   }
 }

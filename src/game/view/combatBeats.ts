@@ -339,7 +339,9 @@ export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], fr
   // Charges and lobs (Mascot, Bargain Hunter, Poodle, Spritzer, Roofer, Elf) release when
   // the telegraph ends, so their sheet anticipates over most of it and snaps to the
   // release frames in the last 15% (roadmap V2).
-  const lunge = windups.find((windup) => windup.kind === 'charge' || windup.kind === 'lob');
+  // A boss's lobs are tar buckets already in the air while it walks on, not its own throw.
+  const boss = isBossKind(enemy.kind);
+  const lunge = windups.find((windup) => windup.kind === 'charge' || (windup.kind === 'lob' && !boss));
   if (lunge) {
     if (lunge.progress < WINDUP_RELEASE_AT) return Math.min(windupFrames - 1, Math.floor((lunge.progress / WINDUP_RELEASE_AT) * windupFrames));
     return Math.min(frames - 1, windupFrames + Math.floor(((lunge.progress - WINDUP_RELEASE_AT) / (1 - WINDUP_RELEASE_AT)) * release));

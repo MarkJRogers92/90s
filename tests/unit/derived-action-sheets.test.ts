@@ -23,6 +23,13 @@ describe('charge and lob wind-ups drive authored attack frames (roadmap V2)', ()
     expect(attackFrameFor(enemy('spitter'), [windup('spit', 0.5)], 6, 0)).toBe(2);
     expect(attackFrameFor(enemy('owner'), [windup('charge', 0.5)], 0, 0)).toBeNull();
   });
+  it('a boss body ignores tar buckets already in the air (Developer, Santa barrages)', () => {
+    const walking = { ...enemy('developer'), phase: 'pursue' } as EnemyState;
+    expect(attackFrameFor(walking, [windup('lob', 0.2), windup('lob', 0.9)], 6, 0)).toBeNull();
+    // Its own telegraph still winds the sheet up, and a boss charge still lunges.
+    expect(attackFrameFor(enemy('developer'), [windup('slam', 0.5), windup('lob', 0.9)], 6, 0)).toBe(2);
+    expect(attackFrameFor(enemy('owner'), [windup('charge', 0.9)], 6, 0)).toBe(4);
+  });
   it('registers each PixelLab attack sheet (walk canvas grown evenly, feet re-registered)', () => {
     for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216]] as const) {
       const found = NEON_ASSETS.filter((asset) => asset.key === key);

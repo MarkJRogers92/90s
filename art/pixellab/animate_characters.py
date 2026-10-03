@@ -6,7 +6,8 @@ them), so animating them keeps identity, palette and scale exact. Needs PIXELLAB
     python3 art/pixellab/animate_characters.py submit   # queue jobs, write jobs.json
     python3 art/pixellab/animate_characters.py collect  # wait, then pack the sheets
 
-Cost: 1 subscription generation per direction (8 per animation).
+Cost: 1 subscription generation per direction (8 per animation) at 64 px; larger characters cost more
+(the 96 px Mascot redo cost about 16). Check GET /balance before and after.
 """
 import io, json, os, sys, time, urllib.error, urllib.request, zipfile
 from pathlib import Path
@@ -35,6 +36,29 @@ ANIMATIONS = [
     ('roofer-attack', 'd6eb1ca9-7b67-4f9e-909c-18eac03de22f', 6,
      'swings a bucket of hot tar back behind him, then heaves it forward and throws it overhand',
      'public/assets/neon/enemies/roofer-attack.png'),
+    # Bosses: every attack starts with the same telegraph (a slam, a charge or a barrage),
+    # so one big wind-up then a heavy release per boss covers all of them.
+    ('manager-attack', '1daf7771-c708-4e8e-82bd-3b95a04c0b65', 6,
+     'big wind-up: raises his clipboard high overhead with both hands, rising up tall, then slams it down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/manager-attack.png'),
+    ('owner-attack', 'ae2fc5eb-9686-4b18-b65e-c41bbc3c3ff1', 6,
+     'big wind-up: rears back and raises both huge robotic bear arms high overhead, then brings them crashing down together in a heavy ground slam, leaning forward',
+     'public/assets/neon/enemies/owner-attack.png'),
+    ('developer-attack', 'e3e0c843-5397-4c40-9515-e134f7113522', 6,
+     'big wind-up: raises his rolled-up blueprints high overhead like a club, rising up tall, then smashes them down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/developer-attack.png'),
+    ('santa-attack', '51e6a5de-b9ac-4f48-b127-f400b805a2f7', 6,
+     'big wind-up: swings his heavy sack of presents up high overhead with both hands, then slams it down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/santa-attack.png'),
+    ('glamour-queen-attack', 'a1821931-5c3e-4bcf-a119-ea88e224a8cc', 6,
+     'big wind-up: raises her flash camera high overhead with both hands, arching back dramatically, then swings it down hard in front of her in a heavy strike, leaning far forward',
+     'public/assets/neon/enemies/glamour-queen-attack.png'),
+    ('whiskers-attack', 'aaf35aa7-d075-4c9a-8c2f-2bb1aed59eeb', 6,
+     'big wind-up: crouches low and rears up on its hind legs with both clawed front paws raised high, then pounces forward and slams both front paws down onto the floor',
+     'public/assets/neon/enemies/whiskers-attack.png'),
+    ('zamboni-attack', '721b6f96-ab96-4a61-89a6-d73daf6b294b', 6,
+     'big wind-up: raises his long steel ice scraper high overhead with both hands, rising up tall, then smashes it down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/zamboni-attack.png'),
 ]
 
 
