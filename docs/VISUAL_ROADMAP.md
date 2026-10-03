@@ -37,10 +37,10 @@ or start something; keep items small enough for one PR.
 
 | ID | Item | Status | Size |
 |---|---|---|---|
-| V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **partly done** (back hall, toolbar) | S |
+| V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **Hanger done**; 16 kinds left | M per batch |
 | V2 | Authored attack sheets for wind-up enemies and bosses | open | L |
-| V3 | Native effects for the 67 remaining weapons (by family) | open | M per family |
+| V3 | Native effects for the 67 remaining weapons (by family) | **thrown family done** (8); 59 left | M per family |
 | V4 | Alex: dash and ranged-aim animations | open | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
@@ -51,8 +51,8 @@ or start something; keep items small enough for one PR.
 | V11 | Remaining vector rooms and earlier modes to the neon kit | open | L |
 | F1 | HUD toolbar covered the PA ticker | **done** 2026-10-03 | — |
 | F2 | Stage off-centre on every window wider than 16:10 | **done** 2026-10-03 | — |
-| B1 | Browser: Bench Warrant car shots spec fails (also on main) | open | S |
-| B2 | Browser: prop-test-room keyboard walk times out (also on main) | open | S |
+| B1 | Browser: Bench Warrant car shots spec fails (also on main) | **done** 2026-10-03 | — |
+| B2 | Browser: prop-test-room keyboard walk times out (also on main) | **done** 2026-10-03 | — |
 
 ---
 
@@ -64,11 +64,28 @@ found two layout defects (F1, F2, both fixed) and two failing specs that fail on
 `main` too (B1, B2). They also confirmed that the Mannequin and Hanger
 reactions, loot labels and HUD render.
 
-Still to look at, one capture each: Static hurt/death (Floor 2,
-`?fixture=mvp-floor-two-lobby`); weapon grips for a gun, a thrown item and a
-fused weapon (`?fixture=mvp-arsenal`); the wanted strip at four and five stars
-(`?fixture=mvp-wanted`); a dense nine-weapon dock; fullscreen and the run menu
-at 390×844 and 1920×1080. Accept: no overlap, no clipping, no console errors.
+**Done 2026-10-03.** `scripts/live-qa-sweep.mjs` captures the whole set in one
+run (images in `artifacts/live-qa/sweep/`). It found no new defects, and every
+page logged zero console errors. What it checked:
+- the arsenal's 9 weapons mid-attack (grips plus effects);
+- the 10-weapon dense dock ("1-9 OF 10 / Q WHEEL");
+- the five-star wanted strip, which reads whole after #50;
+- Static hits on Floor 2;
+- the stage and menu at 390×844, 1920×1080 and 3440×1440 (centred, toolbar
+  in its corner).
+
+Notes for the next sweep:
+- In the food court a held weapon can look as if it floats over a headless
+  Alex in small crops. That is the room's spotlight leaving his torso in
+  shadow, not a sprite defect: the renderer reports the full idle frame.
+  Check at 1920×1200 before filing it.
+- On a phone in portrait the 960×600 stage draws at 0.4×, so in-canvas HUD
+  text is unreadable. Landscape is the supported phone orientation; a
+  portrait HUD would be a new item.
+- Not yet captured live: the Alex hurt and death sheets, and the escalator
+  and ending cinematics.
+
+Re-run the sweep after any presentation change.
 
 ## V1 — Native hurt reactions for the remaining enemies
 
@@ -123,10 +140,10 @@ before the release. Needs new art (PixelLab or Retro Diffusion): ask the
 owner. Accept: wind-up visible from the first telegraph tick in a live
 capture, and `npm run balance:reaction` unchanged (presentation only).
 
-## V3 — Native effects for the 67 remaining weapons
+## V3 — Native effects for the remaining weapons (59 of 67 left)
 
 The list is in `diagnostics/weapon-visuals/remaining-effect-roster.json`
-(31 melee, 36 projectile). Work by family rather than by item: one sheet each
+(31 melee, 28 projectile since the thrown family landed). Work by family rather than by item: one sheet each
 in `public/assets/neon/weapon-effects/`, mapped in `src/game/view/weaponEffects.ts`.
 
 | Family | Weapons (examples) | Effect |
@@ -140,8 +157,15 @@ in `public/assets/neon/weapon-effects/`, mapped in `src/game/view/weaponEffects.
 | energy | laser_pointer, lightsaber_toy, laser_tag_rifle, flash_camera, lava_lamp, game_brick, camcorder | thin beam/bolt with a bloom core |
 | mechanical | staple_gun, slingshot, tennis_ball_launcher, gumball_launcher, pepperoni_launcher, marshmallow_shooter, seed_spreader | small projectile sprite per item |
 
-Start with **thrown**: it needs no new art, because spinning the inventory icon
-reads well and covers 8 weapons. Keep the 240 fixed-seed replay
+**Thrown: done 2026-10-03.** The eight thrown weapons now fly as their own
+inventory icon: balls, discs, the gnome and the puck spin and roll the way they
+travel, and the football flies point-first with a wobble. See `THROWN` in
+`src/game/view/weaponEffects.ts`, the dev fixture `?fixture=mvp-thrown`
+(slots 2-9) and `artifacts/live-qa/thrown/thrown-in-flight.png`. Fusions throw
+the shooter inside them. Next cheapest: **water** (recolour soaker-water per
+source).
+
+Keep the 240 fixed-seed replay
 (`diagnostics/weapon-visuals/replay.test.ts`) unchanged.
 
 ## V4 — Alex: dash and ranged-aim animations
@@ -221,7 +245,12 @@ second time. The fix is `place-items: normal` in run mode. Found by the
 existing `viewport-layout.spec.ts`, which had never been executed until now.
 Before/after: `artifacts/live-qa/centering-and-toolbar-before-after.png`.
 
-## B1 — Bench Warrant car shots browser spec
+## B1 — Bench Warrant car shots browser spec (fixed 2026-10-03)
+
+The cause was the test, not the game: Party Popper confetti lives only a few
+ticks, so a snapshot taken after releasing the button raced the shots' expiry.
+The spec now reads the shots while the button is held, with the same "began at
+the car" assertion. Original notes:
 
 `tests/browser/night-shift.spec.ts` "the Bench Warrant kiosk previews and
 fuses the car, and shots then start at the car" fails on `main` and here: no
@@ -231,7 +260,11 @@ load), then at whether a click on the car's position can land on a DOM
 control. Run it alone with
 `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npx playwright test tests/browser/night-shift.spec.ts:1079`.
 
-## B2 — prop-test-room keyboard walk times out
+## B2 — prop-test-room keyboard walk times out (fixed 2026-10-03)
+
+The walk was not stuck. It takes about 2.7 minutes serially, in short
+overshoot-safe key pulses around three props, so 90 s always timed out. The
+budget is now 240 s. Original notes:
 
 `tests/browser/prop-test-room.spec.ts` times out inside `walkTo`
 (`tests/browser/keyboardNavigation.ts`) on `main` and here. That helper has a
