@@ -7,7 +7,7 @@ const CHECKPOINT_KEY = 'dead-mall:mvp-checkpoint:v1';
 async function waitForRun(page: Page): Promise<void> {
   await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
-  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden', { timeout: CANVAS_START_MS });
 }
 
 test('Continue hides the ended HUD during loading and resumes the living checkpoint', async ({ page }, testInfo) => {

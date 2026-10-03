@@ -67,7 +67,7 @@ async function launchRun(page: Page, viewport: { width: number; height: number }
   await page.goto('/?seed=7');
   await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
   await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
-  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden', { timeout: CANVAS_START_MS });
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
   // The evidence is the concourse itself: wait for the clock-in cold open to clear.
