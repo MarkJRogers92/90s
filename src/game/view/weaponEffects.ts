@@ -31,6 +31,11 @@ export const WEAPON_EFFECT_ART = {
   hose: art('hose-stream', 32, 16, 4, 16, 8, true, 5, 1, 7),
   soda: art('soda-jet', 32, 16, 4, 16, 8, true, 5, 0.9, 7),
   shower: art('watering-shower', 32, 16, 4, 16, 8, true, 6, 0.8, 7),
+  // Palette swaps of extinguisher-foam, each sized to its own weapon's hitbox.
+  hairspray: art('hairspray-mist', 32, 24, 6, 16, 12, true, 6, 0.6, 7),
+  flea: art('flea-mist', 32, 24, 6, 16, 12, true, 5, 0.6, 6),
+  ketchup: art('ketchup-squirt', 32, 24, 6, 16, 12, true, 4, 0.55, 5),
+  whoopee: art('whoopee-puff', 32, 24, 6, 16, 12, true, 8, 0.75, 8),
 } as const;
 
 export function meleeEffect(definitionId: string): WeaponEffectArt | null {
@@ -50,6 +55,8 @@ const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
   super_soaker_50: WEAPON_EFFECT_ART.soaker, super_soaker_cps: WEAPON_EFFECT_ART.soaker,
   garden_hose: WEAPON_EFFECT_ART.hose, soda_gun: WEAPON_EFFECT_ART.soda,
   watering_can: WEAPON_EFFECT_ART.shower,
+  hairspray: WEAPON_EFFECT_ART.hairspray, flea_spray: WEAPON_EFFECT_ART.flea,
+  ketchup_bottle: WEAPON_EFFECT_ART.ketchup, whoopee_cushion: WEAPON_EFFECT_ART.whoopee,
 };
 
 export function projectileEffect(traits: { readonly sourceItemId: string; readonly delivery: string }): WeaponEffectArt | null {
