@@ -81,7 +81,7 @@ import { WATCH_HALF_ANGLE } from '../../sim/combat/mannequin';
 import { blueLightOfferId, roomEventFor } from '../../sim/run/roomEvents';
 import { flashAllowed, flickerTick, gameSettings, shakeScale } from '../settings/settings';
 import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './playerCues';
-import { attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
+import { REST_POSE, attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { hurtOutranksAttack, materialHurtKey, type EnemyHurtFrame } from './EnemyReactionView';
@@ -89,7 +89,7 @@ import { LootView } from './LootView';
 import { ELITE_GLYPHS, eliteRingSegments, type EliteMarkTrait } from './eliteMarks';
 import { WeaponView } from './WeaponView';
 import { WeaponEffectView } from './WeaponEffectView';
-import { enemySpriteSheet } from './ActorSpriteView';
+import { directionForVector, enemySpriteSheet } from './ActorSpriteView';
 import { ENEMY_TEXTURE_KEYS, PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { revealSparkCount, type FusionRevealModel } from '../ui/fusionRevealModel';
@@ -126,6 +126,8 @@ type ActorFrameEvidence = {
 export type ActorPresentationDebugSnapshot = {
   readonly player: (ActorFrameEvidence & { readonly mopArcVisible: boolean; readonly mopArcDepth: number | null }) | null;
   readonly hangers: Array<ActorFrameEvidence & { readonly id: string }>;
+  /** Every enemy's displayed sheet and frame, for live QA of authored animations. */
+  readonly enemies: Array<{ readonly id: string; readonly kind: string; readonly textureKey: string; readonly frame: { readonly row: number; readonly column: number } }>;
   readonly telegraphs: Array<{ readonly id: string; readonly visible: boolean; readonly effectDepth: number }>;
   readonly activeDeathEffectCount: number;
   readonly depthBands: { readonly tallForeground: number; readonly effect: number };
@@ -327,6 +329,7 @@ export class MvpRunView {
     });
 
     const hangerEvidence: ActorPresentationDebugSnapshot['hangers'] = [];
+    const enemyEvidence: ActorPresentationDebugSnapshot['enemies'] = [];
     this.threats.length = 0;
     const telegraphs: ActorPresentationDebugSnapshot['telegraphs'] = [];
     for (const enemy of state.room.combat.enemies) {
@@ -397,6 +400,7 @@ export class MvpRunView {
       if (enemy.kind === 'hanger') {
         hangerEvidence.push({ id: `enemy:${enemy.id}`, ...sprite });
       }
+      enemyEvidence.push({ id: `enemy:${enemy.id}`, kind: enemy.kind, textureKey: sprite.textureKey, frame: sprite.frame });
       this.contactShadow(`enemy:${enemy.id}`, enemy.x, enemy.y, isBossKind(enemy.kind) ? 2.2 : 1.2);
       if (charge) {
         const color = charge.kind === 'spit' ? 0x9aff6a : charge.kind === 'volley' ? 0xff3fc8 : 0xffb040;
@@ -450,7 +454,7 @@ export class MvpRunView {
       attackTicks: player.attackActiveTicks, damaged: playerHurtCue, phase: 'idle',
       // Isaac-style: the janitor looks where the pointer aims, even while backpedalling.
       faceX: player.facing.x, faceY: player.facing.y,
-    }, state.tick, playerDepth, combinePoses(this.feedback.poseFor('player', fxTick), dashPose(player)), null, bodyAction);
+    }, state.tick, playerDepth, combinePoses(this.feedback.poseFor('player', fxTick), bodyAction?.sheet === 'dash' ? REST_POSE : dashPose(player)), null, bodyAction);
     this.syncDashTrail(state, fxTick);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.drawDashReadiness(state, playerEffects, fxTick);
@@ -497,6 +501,7 @@ export class MvpRunView {
         mopArcDepth: mopArcVisible ? presentationDepth('effect', 1) : null,
       },
       hangers: hangerEvidence,
+      enemies: enemyEvidence,
       telegraphs,
       activeDeathEffectCount: this.deathEffects.snapshot().length,
       depthBands: {
@@ -1944,6 +1949,7 @@ export class MvpRunView {
     // Reduced flashes: sprites never go solid white on a hit or a release.
     if (pose.flash && !flashAllowed(gameSettings().get())) pose = { ...pose, flash: false };
     if (snapshot.kind === 'alex') {
+      if (bodyAction?.direction) visual = { ...visual, direction: bodyAction.direction };
       const neon = this.neonPlayerSpec(visual.walking, bodyAction);
       if (neon) return this.syncSheetSprite(snapshot, visual, tick, depth, neon, pose);
     }
@@ -2238,18 +2244,24 @@ export class MvpRunView {
     const dead = state.status === 'dead';
     if (dead && this.deadSince === null) this.deadSince = this.scene.time.now;
     if (!dead) this.deadSince = null;
-    return playerBodyAction(
+    const action = playerBodyAction(
       {
         swing: primary.delivery === 'direct' ? this.weapon.swingAt(state.tick) : null,
         hurtAge: this.feedback.playerHurtAge(fxTick),
         deadMs: this.deadSince === null ? null : this.scene.time.now - this.deadSince,
+        dashAge: (player.dashTicks ?? 0) > 0 ? DASH_TICKS - (player.dashTicks ?? 0) : null,
       },
       {
         swing: this.sheetColumns(PLAYER_TEXTURE_KEYS.swing),
         hurt: this.sheetColumns(PLAYER_TEXTURE_KEYS.hurt),
         death: this.sheetColumns(PLAYER_TEXTURE_KEYS.death),
+        dash: this.sheetColumns(PLAYER_TEXTURE_KEYS.dash),
       },
     );
+    // The smear trails the dash itself, whichever way the pointer aims.
+    return action?.sheet === 'dash'
+      ? { ...action, direction: directionForVector(player.dashX ?? player.facing.x, player.dashY ?? player.facing.y, 'south') }
+      : action;
   }
 
   /** The 64px PixelLab janitor, when its sheets loaded. */
@@ -2658,6 +2670,7 @@ export class MvpRunView {
     return {
       player: null,
       hangers: [],
+      enemies: [],
       telegraphs: [],
       activeDeathEffectCount: 0,
       depthBands: {

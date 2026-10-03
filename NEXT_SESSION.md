@@ -1,5 +1,43 @@
 # Next session
 
+## 2026-10-03 UTC — Enemy wind-up sheets (V2) and Alex's dash (V4)
+
+Presentation only; no `src/sim` change, so the balance bot cannot move.
+
+- **Wind-ups:** the Spritzer, Mascot Brute and Roofer have 6-frame attack
+  sheets: four frames of anticipation (lean away, crouch) and two of release
+  (lunge along the facing). They are derived from each walk sheet by
+  `art/derived-poses/build_poses.py`.
+- **`attackFrameFor` fix:** charge and lob wind-ups now drive attack frames.
+  Before, only spit and slam did, so these kinds could never have used a
+  sheet.
+- **Dash:** Alex has a 4-frame, 8-facing dash (lean in, stretch plus smear,
+  fade, recover) that replaces the procedural stretch. It draws along the
+  dash direction, not the aim; live QA caught the first version leaning
+  toward the mouse.
+- **Debug bridge:** the renderer evidence now lists every enemy's displayed
+  sheet and frame (`actorPresentation.enemies`).
+- **Generation spend:** Retro Diffusion was tried once ($0.18, about $3.50
+  left). The pose was good, but scale and palette drifted, so derived art
+  was used.
+- **Still open:** Alex's aim pose (needs new art), more wind-up kinds, and
+  the bosses. The wind-up glow tint still dominates late in a telegraph;
+  easing it is a design call.
+
+Evidence:
+- Unit: 1,840 of 1,840 across 178 files. TypeScript and build pass, and the
+  240 replays match.
+- Browser: the actor-presentation, Sneakers-dash and presentation-evidence
+  specs pass (6/6).
+- New `derived-action-sheets.test.ts` (7 tests) failed first. The dash-row
+  test reproduced the live bug (`northwest`, not `east`) before its fix.
+- Live:
+  - all 6 frames of each attack sheet were displayed during real telegraphs;
+  - dashes east, west and south drew rows 6, 2 and 0 while aiming top-left;
+  - zero console errors.
+
+  See `artifacts/live-qa/windups/`.
+
 ## 2026-10-03 UTC — Spray weapons (V3) and elite trait marks (V10)
 
 Presentation only; no `src/sim` change. Built on main `235bca9`, which
