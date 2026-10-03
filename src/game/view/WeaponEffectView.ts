@@ -7,7 +7,8 @@ import type Phaser from 'phaser';
 import type { ProjectileState } from '../../sim/model';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { presentationDepth } from '../presentation/depth';
-import { meleeEffect, projectileEffect, projectileEffectPose, WEAPON_EFFECT_ART, type WeaponEffectArt } from './weaponEffects';
+import { meleeEffect, projectileEffect, projectileEffectPose, thrownIconEffect, thrownIconPose, WEAPON_EFFECT_ART, type WeaponEffectArt } from './weaponEffects';
+import { itemIconKey } from '../presentation/assets';
 
 type ProjectileImage = { readonly image: Phaser.GameObjects.Image; born: number };
 type HeadPose = { readonly head: { readonly x: number; readonly y: number }; readonly angle: number; readonly flipY: boolean };
@@ -38,7 +39,8 @@ export class WeaponEffectView {
       sourceItemId: projectile.payload?.payloadEffect.sourceItemId ?? '',
       delivery: projectile.payload?.delivery ?? '',
     });
-    if (!art || !usableTextureKey(this.scene.textures, art.key)) return null;
+    if (!art) return this.syncThrown(projectile, tick);
+    if (!usableTextureKey(this.scene.textures, art.key)) return null;
     let entry = this.projectiles.get(projectile.id);
     if (!entry) {
       entry = { image: this.scene.add.image(0, 0, art.key), born: tick };
@@ -54,6 +56,28 @@ export class WeaponEffectView {
       .setFlipY(false).setAlpha(1).setVisible(true)
       // A separate global effect image clears room darkness and stays over
       // modifier graphics, so sticky/rewind sparks never swallow its core.
+      .setDepth(presentationDepth('effect', 2));
+    return { radius: pose.radius };
+  }
+
+  /** Thrown weapons without a sheet: their own icon, spinning or flying point-first. */
+  private syncThrown(projectile: ProjectileState, tick: number): { readonly radius: number } | null {
+    const effect = thrownIconEffect(projectile.payload?.payloadEffect.sourceItemId ?? '');
+    const key = effect ? itemIconKey(effect.iconItemId) : null;
+    if (!effect || !key || !usableTextureKey(this.scene.textures, key)) return null;
+    let entry = this.projectiles.get(projectile.id);
+    if (!entry) {
+      entry = { image: this.scene.add.image(0, 0, key), born: tick };
+      this.projectiles.set(projectile.id, entry);
+    } else if (entry.image.texture.key !== key) {
+      entry.image.setTexture(key);
+      entry.born = tick;
+    }
+    this.usedProjectiles.add(projectile.id);
+    const pose = thrownIconPose(effect, projectile, tick - entry.born);
+    entry.image.setCrop().setOrigin(0.5, 0.5)
+      .setPosition(pose.x, pose.y).setRotation(pose.rotation).setScale(pose.scale)
+      .setFlipY(false).setAlpha(1).setVisible(true)
       .setDepth(presentationDepth('effect', 2));
     return { radius: pose.radius };
   }

@@ -1222,9 +1222,10 @@ export class MvpRunScene extends Phaser.Scene {
       state.room.combat.player.y = SHORTCUT_HATCH.y + 30;
       return state;
     }
-    if (fixture === 'mvp-arsenal') {
+    if (fixture === 'mvp-arsenal' || fixture === 'mvp-thrown') {
       // The food court fight holding every weapon and the visible modifiers,
       // so each weapon's look and each status effect can be seen (keys 1-9).
+      // mvp-thrown holds the eight thrown weapons instead (their flying icons).
       let guard = 0;
       while (state.wing.rooms[state.roomIndex]?.id !== 'food_court' && guard < 10) {
         guard += 1;
@@ -1232,14 +1233,16 @@ export class MvpRunScene extends Phaser.Scene {
         tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
         if (!enterDoorway(state, 'east').accepted) break;
       }
-      const ids = ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
+      const ids = fixture === 'mvp-thrown'
+        ? ['dodgeball', 'football', 'pog_slammer', 'laserdisc', 'jawbreaker', 'squeaky_toy', 'garden_gnome', 'hockey_puck']
+        : ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
       state.inventory = {
         ...state.inventory,
         inventory: [
           ...state.inventory.inventory,
           ...ids.map((id): InventoryLeaf => ({ kind: 'leaf', instanceId: `dev-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: state.tick })),
         ],
-        selectedPrimaryInstanceId: 'dev-pump_soaker',
+        selectedPrimaryInstanceId: `dev-${ids[0]}`,
         revision: state.inventory.revision + 1,
       };
       refreshRunLoadout(state);
