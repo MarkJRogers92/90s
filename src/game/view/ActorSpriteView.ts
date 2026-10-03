@@ -91,6 +91,7 @@ export const DISTRICT_SPRITES: Readonly<Record<'elf' | 'spritzer' | 'poodle' | '
 export const ACTION_FIGURE_SCALE: Readonly<Record<string, number>> = {
   'neon:enemy:developer-attack': 0.88,
   'neon:enemy:whiskers-attack': 0.95,
+  'neon:enemy:santa-attack': 0.86,
 };
 
 export function actionFigureScale(textureKey: string): number {

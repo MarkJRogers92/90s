@@ -32,7 +32,7 @@ describe('charge and lob wind-ups drive authored attack frames (roadmap V2)', ()
     expect(attackFrameFor(enemy('owner'), [windup('charge', 0.9)], 6, 0)).toBe(4);
   });
   it('registers each PixelLab attack sheet (walk canvas grown evenly, feet re-registered)', () => {
-    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216], ['neon:enemy:owner-attack', 'owner-attack.png', 1032, 1376], ['neon:enemy:manager-attack', 'manager-attack.png', 768, 1024], ['neon:enemy:glamour-queen-attack', 'glamour-queen-attack.png', 1296, 1728], ['neon:enemy:developer-attack', 'developer-attack.png', 1488, 1984], ['neon:enemy:whiskers-attack', 'whiskers-attack.png', 960, 1280], ['neon:enemy:zamboni-attack', 'zamboni-attack.png', 1248, 1664]] as const) {
+    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216], ['neon:enemy:owner-attack', 'owner-attack.png', 1032, 1376], ['neon:enemy:manager-attack', 'manager-attack.png', 768, 1024], ['neon:enemy:glamour-queen-attack', 'glamour-queen-attack.png', 1296, 1728], ['neon:enemy:developer-attack', 'developer-attack.png', 1488, 1984], ['neon:enemy:whiskers-attack', 'whiskers-attack.png', 960, 1280], ['neon:enemy:zamboni-attack', 'zamboni-attack.png', 1248, 1664], ['neon:enemy:santa-attack', 'santa-attack.png', 1296, 1728]] as const) {
       const found = NEON_ASSETS.filter((asset) => asset.key === key);
       expect(found, key).toHaveLength(1);
       expect(found[0]!.url).toBe(`/assets/neon/enemies/${file}`);
@@ -96,6 +96,7 @@ describe('boss attack sheets drawn at their walk figure size (roadmap V2)', () =
     // Measured by animate_characters.py collect (walk height / attack height, median of 8 facings).
     expect(actionFigureScale('neon:enemy:developer-attack')).toBe(0.88);
     expect(actionFigureScale('neon:enemy:whiskers-attack')).toBe(0.95);
+    expect(actionFigureScale('neon:enemy:santa-attack')).toBe(0.86);
     for (const [key, factor] of Object.entries(ACTION_FIGURE_SCALE)) {
       expect(key).toMatch(/^neon:enemy:[a-z-]+-attack$/);
       expect(factor).toBeGreaterThan(0.75);
