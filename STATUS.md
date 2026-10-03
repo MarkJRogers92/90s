@@ -1,5 +1,57 @@
 # Status
 
+## 2026-10-03 UTC — Cumulative weapon presentation integration
+
+This change integrates the two reviewed weapon-effect passes below: 13 native
+animations / 60 frames, grip metadata for all 80 roots, and the focused cutter
+size correction. Editable Aseprite and Forge sources are in art/weapon-effects.
+The earlier unpublished notes describe the review checkpoints, not this PR.
+Live gameplay visual QA remains outstanding. No simulation or inventory-icon
+changes are included; 67 roots retain prior effect art.
+
+## 2026-10-03 UTC — Five more native weapon effects (cloud review, unpublished)
+
+Second pass adds broom bristles, box-cutter glints, paper confetti, a paper
+bottle rocket with wooden guide stick/exhaust, and fine extinguisher foam.
+The cumulative native set is 13 animations / 60 frames. The box cutter alone
+now uses a believable 20px held-size override, including fused variants. All
+other held sizes and the first eight native animations remain unchanged.
+
+Final verification: 1,575 tests in 152 files pass serially; typecheck and
+production build pass; 240 fixed-seed gameplay traces match the original
+baseline. Native Forge/Aseprite roundtrips pass. Simulation and inventory
+icons are unchanged. Missing-texture, fusion, muzzle reuse, swap, death and
+room cleanup regressions are covered.
+
+This cumulative source includes incremental and original-main patch options.
+Offline exact-transform/light/dark previews are supplied; the live browser
+gate remains outstanding because local-server navigation is blocked. No Mac
+access, generation spending, push, merge or deployment occurred.
+
+Still using prior effect art: 31 melee and 36 projectile weapons. See
+diagnostics/weapon-visuals/remaining-effect-roster.json for exact IDs.
+
+
+## 2026-10-03 UTC — Weapon visual first slice (cloud review, unpublished)
+
+Authored grip/head/barrel metadata now covers all 80 primary weapons, including
+root/nested fusion inheritance and upright gun orientation. Eight native Forge
+animations (34 frames) cover mop/golden mop, pump soaker, foam ball, nail, VHS,
+vinyl and CD. Other attacks retain existing vector fallback; this is not an
+all 80-effect replacement. Weapon-swap/death lifecycle regressions are fixed.
+
+Final verification: 1511 tests in 151 files pass with one worker, TypeScript and
+production build pass, and240 fixed-seed traces (80 weapons × 3 seeds × 420 steps)
+match the pre-change baseline exactly. Earlier parallel runs hit the existing
+5-second hybrid-fusion/balance-danger timeouts; timeout settings are unchanged.
+Simulation and inventory art are unchanged. Independent review is approved.
+
+Art/source previews are offline exact-transform composites. Live browser
+verification is outstanding: the cloud browser refused the local server with
+ERR_BLOCKED_BY_CLIENT. No Mac access, push, merge or deployment occurred.
+Baseline main: 8c30b488fa502df2021e34fc86fb912959ff6c68.
+
+
 ## 2026-10-02 — Three-prop integration merged into main
 
 The owner approved merge and push. Feature commit `3e2833a15c389b3bc0bae5d981a53451d30a6bfa`

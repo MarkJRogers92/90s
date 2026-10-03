@@ -1,0 +1,114 @@
+{
+  "name": "foam-ball",
+  "description": "Small orange molded foam ball with pitted pores, a rotating recessed seam and warm plastic-toy palette.",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    96,
+    24
+  ],
+  "pivotPixels": [
+    12,
+    12
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    75,
+    75,
+    75,
+    75
+  ],
+  "sourcePalette": {
+    "k": "#2c0926",
+    "s": "#902522",
+    "d": "#b2362d",
+    "m": "#d54c3b",
+    "l": "#f4bf6d",
+    "h": "#ecd1ba"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "foam-ball-blaster",
+      "sha256": "6b7966a667509cf3fd548deec170af82fa5685059d6ffa1aaade419802015f61"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        5,
+        5,
+        19,
+        19
+      ],
+      "opaquePixels": 142,
+      "rgbaSha256": "f99c2279e931d63cdcec50456fa42779c7fc99689cfed6951cdb6982c8af530c",
+      "pngSha256": "0f5920668ba1f6a6a03a6bf2be2f192a2781467a6b9b910752d1f02b1dec1bec",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        5,
+        5,
+        19,
+        19
+      ],
+      "opaquePixels": 142,
+      "rgbaSha256": "d28605d9daf64d27fe0ccb1b98d92fb501a931e34bff25df184c23d4a5af0a94",
+      "pngSha256": "8c65950323293d00409b5ec2bdad6f74907f12623f546aec3ea8febe49382375",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        5,
+        5,
+        19,
+        19
+      ],
+      "opaquePixels": 142,
+      "rgbaSha256": "1ceb21170653a1eec0b8c675770134f8335a31846fe1e8711c8e308797571d2d",
+      "pngSha256": "05d4d540f670ac2d9298395d010ee9370441fdaf5161af4ea965af1ef4e0e9d7",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        5,
+        5,
+        19,
+        19
+      ],
+      "opaquePixels": 142,
+      "rgbaSha256": "56ac49453b25e15c88fe18a515f2ef64e490d2f765fde52e390c6d25321a18fd",
+      "pngSha256": "7f07c511f4017629e7e6467d986623454e0188dcdaedeaaba2bd834cd742b5ca",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

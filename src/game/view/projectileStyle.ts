@@ -4,7 +4,8 @@
  * (sticky, rewind, conductive). Pure, so every weapon provably reads
  * differently and a new weapon falls back to a plain bolt.
  */
-import { hybridParts, rootItemId } from '../../sim/fusion/hybrid';
+import { hybridParts } from '../../sim/fusion/hybrid';
+import { ITEM_CATALOG } from '../../sim/items/catalog';
 
 export type ProjectileShape = 'droplet' | 'confetti' | 'rocket' | 'cloud' | 'dart' | 'ball' | 'slush' | 'bubble' | 'bolt';
 export type ProjectileTrail = 'droplets' | 'streamers' | 'flame' | 'mist' | 'ink' | 'none' | 'ice';
@@ -63,6 +64,15 @@ const BASE: Record<string, Pick<ProjectileStyle, 'shape' | 'color' | 'accent' | 
 
 const BOLT = { shape: 'bolt' as const, color: 0xf0e6d2, accent: 0x9ad8ff, trail: 'none' as const, scale: 1 };
 
+const SHOOTER_IDS = new Set(ITEM_CATALOG.filter((item) => item.base?.delivery === 'projectile').map((item) => item.id));
+
+/** The first shooter down the base-first fusion tree, including melee hybrids. */
+export function projectileSourceItemId(sourceItemId: string): string | null {
+  const parts = hybridParts(sourceItemId);
+  if (!parts) return SHOOTER_IDS.has(sourceItemId) ? sourceItemId : null;
+  return projectileSourceItemId(parts.baseId) ?? projectileSourceItemId(parts.ingredientId);
+}
+
 /**
  * A fused shot: the shooter's own look (or, for a melee hybrid, the look of
  * the weapon fused into it), trimmed in the other ingredient's colour.
@@ -70,9 +80,11 @@ const BOLT = { shape: 'bolt' as const, color: 0xf0e6d2, accent: 0x9ad8ff, trail:
 function baseLook(sourceItemId: string): Pick<ProjectileStyle, 'shape' | 'color' | 'accent' | 'trail' | 'scale'> {
   const parts = hybridParts(sourceItemId);
   if (!parts) return BASE[sourceItemId] ?? BOLT;
-  // A deeper fusion looks like the items at the root of each side.
-  const base = BASE[rootItemId(parts.baseId)];
-  const ingredient = BASE[rootItemId(parts.ingredientId)];
+  // Search each side recursively: a melee root can contain a shooter deeper inside.
+  const baseId = projectileSourceItemId(parts.baseId);
+  const ingredientId = projectileSourceItemId(parts.ingredientId);
+  const base = baseId ? BASE[baseId] ?? BOLT : undefined;
+  const ingredient = ingredientId ? BASE[ingredientId] ?? BOLT : undefined;
   if (base) return { ...base, accent: ingredient?.color ?? base.accent, scale: base.scale * 1.15 };
   return ingredient ?? BOLT;
 }

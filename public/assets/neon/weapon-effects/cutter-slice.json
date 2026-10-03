@@ -1,0 +1,112 @@
+{
+  "name": "cutter-slice",
+  "description": "Narrow steel cutting glint with tiny separated silver chips; no copied blade or large white wedge.",
+  "frameWidth": 32,
+  "frameHeight": 24,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    24
+  ],
+  "pivotPixels": [
+    24,
+    12
+  ],
+  "originNormalized": [
+    0.75,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": false,
+  "durationsMs": [
+    67,
+    66,
+    67,
+    67
+  ],
+  "sourcePalette": {
+    "d": "#3e434d",
+    "m": "#697281",
+    "l": "#9198a5",
+    "h": "#c0bdb8"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "box-cutter",
+      "sha256": "db4836d95c5df3dd29fef2d63c37ba553b17625a4ec9a1ead91094b095ebd3e2"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        19,
+        11,
+        25,
+        14
+      ],
+      "opaquePixels": 12,
+      "rgbaSha256": "50d1a7d8f7da086bfd7ea0030a07b9029982ecbb3517acb1308f2da2fde7a5ee",
+      "pngSha256": "7894ec91cdc661269da37e9b378ceb1a50c783f4ea810b04728781a92c7f0430",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        8,
+        5,
+        25,
+        18
+      ],
+      "opaquePixels": 40,
+      "rgbaSha256": "cf7b62edfb41dfb9c3b2e50bd281e0efe2502861350a203374125add01a0bb29",
+      "pngSha256": "3c0d54b8c9f59b699c332734cab10994658fa609aa349b161a24540e725a11e3",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        5,
+        6,
+        26,
+        19
+      ],
+      "opaquePixels": 45,
+      "rgbaSha256": "396459948629d66d1004f7ea3d9c52c9c9a182bf55e8b1b3644f0080065d1284",
+      "pngSha256": "17e7a88a3295faee064770a4974fa3d6967399f9cf357c55f3ff0a1af9d56a27",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        15,
+        11,
+        24,
+        16
+      ],
+      "opaquePixels": 21,
+      "rgbaSha256": "46202b7d24cc7a1a4154693d7d3f296622f049dcc11f0bb905650372609166d3",
+      "pngSha256": "8761a7f8f57c59ce34de1817126d2b966b8e9a31c6442ead83041336ecb44a4d",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

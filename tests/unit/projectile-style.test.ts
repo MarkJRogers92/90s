@@ -1,5 +1,6 @@
+import { ITEM_CATALOG } from '../../src/sim/items/catalog';
 import { describe, expect, it } from 'vitest';
-import { projectileStyle } from '../../src/game/view/projectileStyle';
+import { projectileStyle, projectileSourceItemId } from '../../src/game/view/projectileStyle';
 
 const shot = (source: string, extras: Partial<{ delivery: string; sticky: boolean; returning: boolean; conductive: boolean }> = {}) => ({
   sourceItemId: source,
@@ -52,5 +53,29 @@ describe('fused shots', () => {
 
   it('a melee hybrid throws the shot of the weapon fused into it', () => {
     expect(projectileStyle({ ...traits, sourceItemId: 'hybrid__janitor_mop__pump_soaker' }).shape).toBe('droplet');
+  });
+});
+
+describe('nested shooter identity', () => {
+  const traits = { delivery: 'water_projectile', sticky: false, returning: false, conductive: false };
+  it('keeps the shooter inside a melee base when another modifier is fused onto it', () => {
+    const nested = projectileStyle({ ...traits, sourceItemId: 'hybrid__(hybrid__janitor_mop__pump_soaker)__gel_pens' });
+    expect(nested.shape).toBe('droplet');
+    expect(nested.color).toBe(projectileStyle({ ...traits, sourceItemId: 'pump_soaker' }).color);
+  });
+  it('finds a shooter inside a nested melee ingredient', () => {
+    expect(projectileStyle({ ...traits, sourceItemId: 'hybrid__box_cutter__(hybrid__janitor_mop__nail_gun)' }).shape).toBe('dart');
+  });
+});
+
+
+describe('all catalog shooter roots retain identity', () => {
+  it.each(ITEM_CATALOG.filter((item) => item.base?.delivery === 'projectile').map((item) => item.id))('%s cannot adopt its fused soaker ingredient identity', (source) => {
+    expect(projectileSourceItemId(`hybrid__${source}__pump_soaker`)).toBe(source);
+  });
+  it('retains procedural fallback for a root shooter without first-slice art', () => {
+    const traits = { delivery: 'water_projectile', sticky: false, returning: false, conductive: false };
+    expect(projectileStyle({ ...traits, sourceItemId: 'hybrid__gumball_launcher__pump_soaker' }).shape)
+      .toBe(projectileStyle({ ...traits, sourceItemId: 'gumball_launcher' }).shape);
   });
 });

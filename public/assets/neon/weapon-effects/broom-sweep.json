@@ -1,0 +1,147 @@
+{
+  "name": "broom-sweep",
+  "description": "Sparse straw-and-wood streaks behind the leading tip: short windup, split-bristle flare and taper. No duplicate head or ferrule.",
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    288,
+    48
+  ],
+  "pivotPixels": [
+    36,
+    24
+  ],
+  "originNormalized": [
+    0.75,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": false,
+  "durationsMs": [
+    50,
+    50,
+    50,
+    50,
+    33,
+    34
+  ],
+  "sourcePalette": {
+    "s": "#533b31",
+    "d": "#835620",
+    "m": "#b67c32",
+    "l": "#f4bf6d",
+    "h": "#ecd1ba"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "broken-broom-handle",
+      "sha256": "6ca768b8bc4c714c98b49a5d58b4a61be9202d267eb870ea02a6989bb439a2c1"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        28,
+        22,
+        37,
+        28
+      ],
+      "opaquePixels": 40,
+      "rgbaSha256": "ca7a1965691ef6256cef96b13c365213f490b324383cc3ba8c19db630b5e23c1",
+      "pngSha256": "3ca49c4981964969c71a44afd28b84112284147ec968661964673605475c02f3",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        19,
+        19,
+        36,
+        32
+      ],
+      "opaquePixels": 107,
+      "rgbaSha256": "418ae9b5f067711a1c789ebeac414607700a3014fac1beb710cfd44ddc7b3232",
+      "pngSha256": "e48662ec59bc12f2d6f345c1cf17ef1777380814f2d05556942d2923bcbbf55d",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        8,
+        16,
+        36,
+        35
+      ],
+      "opaquePixels": 204,
+      "rgbaSha256": "5df42631a869e1bc8e9480e9d6e4a23acd5cc9b60d4dbb9cc778a18d5d1ab75c",
+      "pngSha256": "64c6246d181ba48418d563fd0bb5da6b59f1784dade9fb255d73bc2694ab776b",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        5,
+        15,
+        36,
+        36
+      ],
+      "opaquePixels": 226,
+      "rgbaSha256": "80470f2e4f126f2842e9518a61d6d78da465b5320d5b3eb35540b7f9da3d2e9c",
+      "pngSha256": "fdb5b303b3258c66e351f35e455b5672093c340496368ce9f5ea02f1d78301c4",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 4,
+      "boundingBoxExclusive": [
+        15,
+        18,
+        36,
+        33
+      ],
+      "opaquePixels": 141,
+      "rgbaSha256": "9a36eb6cb0fd2c0cfb25562a55aa9d0f7b56a5ce2833d240a88cbd9984e4c729",
+      "pngSha256": "27c5447889fee71be54b31dc0a966f998ab5928930d9255b59eb66488cde9656",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 5,
+      "boundingBoxExclusive": [
+        27,
+        22,
+        37,
+        29
+      ],
+      "opaquePixels": 45,
+      "rgbaSha256": "c1b00980361d52a832e812648abba3b17c8a350e0e7c08ec21c927bce2cf7977",
+      "pngSha256": "671a0ff00ab12ce6cd999e87e6bf03a1c3863e9cc383c03e53d9bb2829b2127f",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

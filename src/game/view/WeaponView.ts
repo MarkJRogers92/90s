@@ -5,26 +5,19 @@
  * The simulation's melee hit window is six ticks (a tenth of a second), which
  * is correct for game feel but far too short to *see*. This view starts a
  * presentation-only swing whenever a new attack begins and plays it for about
- * a quarter second: the weapon sprite sweeps through the real attack cone and
- * leaves a crescent smear drawn at the weapon's true range and half-angle, so
- * the picture is exactly the hitbox. Ranged weapons are held pointed at the
- * aim and flash on each shot. Nothing here feeds back into the simulation.
+ * a quarter second. Covered weapons attach a material trail to the held head;
+ * these trails do not depict the full damage hitbox. Other melee weapons keep
+ * the range/cone crescent fallback. Ranged weapons aim with an optional
+ * material-specific release. Nothing here feeds back into the simulation.
  */
 import Phaser from 'phaser';
 import { ATTACK_ACTIVE_TICKS } from '../../sim/effects/constants';
 import { itemIconKey } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
-import { presentationDepth } from '../presentation/depth';
+import { heldWeaponTransform, weaponPresentation, type HeldWeaponTransform } from './weaponPresentation';
 import type { PointLight } from '../presentation/lighting/LightingLayer';
 
 export const SWING_VISUAL_TICKS = 16;
-
-/** How each icon is drawn: the angle its business end points in the source art. */
-const ICON_HEAD_ANGLE: Readonly<Record<string, number>> = {
-  janitor_mop: (3 * Math.PI) / 4,
-  broken_broom_handle: (3 * Math.PI) / 4,
-  box_cutter: -Math.PI / 4,
-};
 
 const SMEAR_COLOR: Readonly<Record<string, number>> = {
   janitor_mop: 0xbfe8ff,
@@ -39,6 +32,8 @@ export type WeaponSnapshot = {
   readonly facingY: number;
   readonly attackActiveTicks: number;
   readonly definitionId: string;
+  /** Distinguishes separate owned copies; older view callers may omit it. */
+  readonly instanceId?: string;
   readonly delivery: 'direct' | 'projectile';
   readonly range: number;
   readonly halfAngleRadians: number;
@@ -63,6 +58,9 @@ export class WeaponView {
   private swingAngle = 0;
   private lastActive = 0;
   private lastTick = -1;
+  private lastDefinitionId: string | null = null;
+  private lastInstanceId: string | null = null;
+  private heldTransform: HeldWeaponTransform | null = null;
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -74,8 +72,18 @@ export class WeaponView {
    * length. Safe to call more than once per tick, so the body sprite can ask
    * before the weapon is drawn and both start the swing on the same frame.
    */
-  public noteAttack(weapon: Pick<WeaponSnapshot, 'attackActiveTicks' | 'facingX' | 'facingY'>, tick: number): void {
-    if (tick < this.lastTick) this.swingStartTick = null;
+  public noteAttack(weapon: Pick<WeaponSnapshot, 'definitionId' | 'instanceId' | 'attackActiveTicks' | 'facingX' | 'facingY'>, tick: number): void {
+    const instanceId = weapon.instanceId ?? null;
+    const changedWeapon = weapon.definitionId !== this.lastDefinitionId || instanceId !== this.lastInstanceId;
+    if (tick < this.lastTick || changedWeapon) {
+      this.swingStartTick = null;
+      this.heldTransform = null;
+    }
+    this.lastDefinitionId = weapon.definitionId;
+    this.lastInstanceId = instanceId;
+    // Keep the previous active-window value across a swap: an unchanged six
+    // belongs to the old attack, not a fresh one. A genuine rising edge on the
+    // swap tick still starts below, before either body or weapon is drawn.
     this.lastTick = tick;
     if (weapon.attackActiveTicks === ATTACK_ACTIVE_TICKS && this.lastActive !== ATTACK_ACTIVE_TICKS) {
       this.swingStartTick = tick;
@@ -90,7 +98,7 @@ export class WeaponView {
   }
 
   /** Draws the held weapon and any live swing; returns lights for this frame. */
-  public sync(weapon: WeaponSnapshot, tick: number, effects: Phaser.GameObjects.Graphics, actorDepth: number): PointLight[] {
+  public sync(weapon: WeaponSnapshot, tick: number, effects: Phaser.GameObjects.Graphics, actorDepth: number, nativeMeleeEffect = false, nativeRangedEffect = false): PointLight[] {
     this.noteAttack(weapon, tick);
     const aim = Math.atan2(weapon.facingY, weapon.facingX);
     const lights: PointLight[] = [];
@@ -103,15 +111,15 @@ export class WeaponView {
       const half = weapon.halfAngleRadians;
       // While idle the weapon rests at the trailing edge of its cone, ready to swing.
       const sweep = progress === null ? aim - half * 0.9 : this.swingAngle - half + 2 * half * easeOut(progress);
-      const reach = progress === null ? 22 : 26 + 10 * Math.sin(Math.PI * progress);
+      const reach = progress === null ? 10 : 12 + 4 * Math.sin(Math.PI * progress);
       this.placeHeld(usable, weapon, sweep, reach, actorDepth, progress === null ? 1.05 : 1.35);
-      if (progress !== null) lights.push(...this.drawSmear(effects, weapon, progress));
+      if (progress !== null && (!nativeMeleeEffect || !this.heldTransform)) lights.push(...this.drawSmear(effects, weapon, progress));
     } else {
       const recoil = progress === null ? 0 : Math.max(0, 1 - progress * 3) * 6;
-      this.placeHeld(usable, weapon, aim, 20 - recoil, actorDepth, 1.1);
-      if (progress !== null && progress < 0.3) {
-        const mx = weapon.x + Math.cos(aim) * 34;
-        const my = weapon.y - 12 + Math.sin(aim) * 34;
+      this.placeHeld(usable, weapon, aim, 10 - recoil, actorDepth, 1.1);
+      if ((!nativeRangedEffect || !this.heldTransform) && progress !== null && progress < 0.3) {
+        const mx = this.heldTransform?.head.x ?? weapon.x + Math.cos(aim) * 34;
+        const my = this.heldTransform?.head.y ?? weapon.y - 12 + Math.sin(aim) * 34;
         effects.fillStyle(0xfff4c0, 1 - progress * 3).fillCircle(mx, my, 7 - progress * 12);
         effects.fillStyle(0xffffff, 1 - progress * 3).fillCircle(mx, my, 3);
         lights.push({ x: mx, y: my, radius: 70, color: 0xfff0b0, intensity: 0.9 * (1 - progress * 3) });
@@ -129,20 +137,29 @@ export class WeaponView {
     scale: number,
   ): void {
     if (!usable) {
+      this.heldTransform = null;
       this.held.setVisible(false);
       return;
     }
     if (this.held.texture.key !== usable) this.held.setTexture(usable);
-    const headAngle = ICON_HEAD_ANGLE[weapon.definitionId] ?? 0;
     const size = Math.max(this.held.width, this.held.height);
-    // Melee weapons are held at a readable length; guns stay compact.
-    const base = (weapon.delivery === 'direct' ? 40 : 28) / size;
+    // Small tools may override the shared melee/gun tile size. Fusion roots
+    // inherit their source icon's metadata, including this visual-only scale.
+    const base = (weaponPresentation(weapon.definitionId).heldSize ?? (weapon.delivery === 'direct' ? 40 : 28)) / size;
+    const transform = heldWeaponTransform({
+      definitionId: weapon.definitionId, aimAngle: angle,
+      gripX: Math.round(weapon.x + Math.cos(angle) * reach),
+      gripY: Math.round(weapon.y - 20 + Math.sin(angle) * reach * 0.8),
+      scale: base * scale,
+    });
+    this.heldTransform = transform;
     this.held
       .setVisible(true)
-      .setPosition(Math.round(weapon.x + Math.cos(angle) * reach), Math.round(weapon.y - 20 + Math.sin(angle) * reach * 0.8))
-      .setRotation(angle - headAngle)
-      .setScale(base * scale)
-      .setFlipY(false)
+      .setOrigin(transform.originX, transform.originY)
+      .setPosition(transform.grip.x, transform.grip.y)
+      .setRotation(transform.rotation)
+      .setScale(transform.scale)
+      .setFlipY(transform.flipY)
       // Behind the janitor when pointing up the screen, in front otherwise.
       .setDepth(Math.sin(angle) < -0.2 ? actorDepth - 1 : actorDepth + 1);
   }
@@ -191,7 +208,13 @@ export class WeaponView {
     return [{ x: cx + Math.cos(tip) * outer * 0.7, y: cy + Math.sin(tip) * outer * 0.7, radius: 80, color, intensity: 0.7 * fade }];
   }
 
+  /** Current image geometry, including its actual visible head/nozzle position. */
+  public headAt(): HeldWeaponTransform | null {
+    return this.heldTransform;
+  }
+
   public hide(): void {
+    this.heldTransform = null;
     this.held.setVisible(false);
   }
 
@@ -199,10 +222,14 @@ export class WeaponView {
     this.swingStartTick = null;
     this.lastActive = 0;
     this.lastTick = -1;
+    this.lastDefinitionId = null;
+    this.lastInstanceId = null;
+    this.heldTransform = null;
     this.held.setVisible(false);
   }
 
   public destroy(): void {
+    this.heldTransform = null;
     this.held.destroy();
   }
 }

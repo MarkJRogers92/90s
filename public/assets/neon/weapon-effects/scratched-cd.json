@@ -1,0 +1,121 @@
+{
+  "name": "scratched-cd",
+  "description": "Thin spinning silver compact disc with cyan-magenta-gold diffraction wedges, small scratches and actual center hole.",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    32
+  ],
+  "pivotPixels": [
+    16,
+    16
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    65,
+    65,
+    65,
+    65
+  ],
+  "sourcePalette": {
+    "k": "#060a0e",
+    "d": "#2d394c",
+    "m": "#697281",
+    "g": "#9198a5",
+    "h": "#c0bdb8",
+    "c": "#5ebdc1",
+    "p": "#d040a8",
+    "a": "#dea828",
+    "s": "#334e5f"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "cd-shuriken",
+      "sha256": "d09c4a289f85c7f9f99a336a7db5461a44f0803c94cf28ce6ab8410eb06220ce"
+    },
+    {
+      "name": "laserdisc",
+      "sha256": "54aaafd8ab5238169a2b01925820c5f6f2ea3650af64a871e08790aff7fa1d20"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        6,
+        6,
+        27,
+        27
+      ],
+      "opaquePixels": 338,
+      "rgbaSha256": "464ff80a9464dd8b489f49feb9ebc033e0d4e433f88b84c3553c14043b9990fd",
+      "pngSha256": "1a0348ac895786000728e367591f4da9718b1796b32fe7072fde274d610a06bf",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        5,
+        9,
+        28,
+        24
+      ],
+      "opaquePixels": 261,
+      "rgbaSha256": "71f0fb128558759c848d73159822752476674d801e7e52dd5eae786792b2b5fb",
+      "pngSha256": "217f94b7537b57f43d666cd84a5b7a04e50670e1bccb102c3fd32c95c45cc927",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        6,
+        13,
+        27,
+        20
+      ],
+      "opaquePixels": 106,
+      "rgbaSha256": "91909efe93f9435749f32fc582ae4347dfcbbdb95e676002de97ba04e8899b3c",
+      "pngSha256": "f4be203483192af466116eb118c64605b95b18ebae02f03a2f7bd1a4d70803b4",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        5,
+        9,
+        28,
+        24
+      ],
+      "opaquePixels": 261,
+      "rgbaSha256": "493e43faa70bf640b370e0e211d7255063c7a95a91dfa32f6dc9aec9568b9c4b",
+      "pngSha256": "59de281287998ad375881aa72b5eef26d65d45f36bd6b7212fefa76b624b492d",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

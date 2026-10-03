@@ -1,0 +1,148 @@
+{
+  "name": "mop-sweep",
+  "description": "Loose cream cotton streaks trail left from a fixed leading tip; short windup, full ragged flare and contracting sparse decay. No duplicate mop head or binding.",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    384,
+    64
+  ],
+  "pivotPixels": [
+    48,
+    32
+  ],
+  "originNormalized": [
+    0.75,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": false,
+  "durationsMs": [
+    50,
+    50,
+    50,
+    50,
+    33,
+    34
+  ],
+  "sourcePalette": {
+    "s": "#533b31",
+    "d": "#796453",
+    "m": "#9d8579",
+    "b": "#b59984",
+    "l": "#eacdb7",
+    "h": "#ecd1ba"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "mop",
+      "sha256": "1066a7a40a02673990c3188ffd788a9ff02f18494c26defff21e9916dd95e03e"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        35,
+        28,
+        49,
+        37
+      ],
+      "opaquePixels": 63,
+      "rgbaSha256": "a672b461d908a62ce1ded39724f23f51ca2bf54777507c07754c521b23016ee6",
+      "pngSha256": "09b07e1e5c9fa45163493e7421356b735087ff4b838042e9516c2ffd0fa4ddbe",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        21,
+        24,
+        49,
+        42
+      ],
+      "opaquePixels": 218,
+      "rgbaSha256": "01901ee2b28924626a23635bf55bdaf6bc1779b882ebb457e96d5c104b70c2af",
+      "pngSha256": "963ba51b3206080cee3aa5bcfedf07b5379e4196eba7f31eeaed60f1feff2d30",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        6,
+        20,
+        49,
+        47
+      ],
+      "opaquePixels": 460,
+      "rgbaSha256": "6e41ef2bbcef570016a1b3f0324f237a170bbfd196c45701a35334580aee89c1",
+      "pngSha256": "e9a7468e7ef3280ffc1ee42f0743fbe92c29c81b40deec6e313f0c6770cc9938",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        3,
+        22,
+        49,
+        45
+      ],
+      "opaquePixels": 419,
+      "rgbaSha256": "8df81d02cb1f674b4f4fc33c152d8abcf33016174a98d98f4991b59dc31bf400",
+      "pngSha256": "e5358920f35446aefded06503514e8a728ed8354222a5aacbdbaea8514403d73",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 4,
+      "boundingBoxExclusive": [
+        20,
+        26,
+        49,
+        40
+      ],
+      "opaquePixels": 183,
+      "rgbaSha256": "85690fdd8d47c12ed9ca870fa3872ac48a03ceee2456b9de500e662eb3acc6d6",
+      "pngSha256": "e3d2d63f7371205ae551d7903d6318e5e3a8a6781b59d59e26a6ac0cefd7cc83",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 5,
+      "boundingBoxExclusive": [
+        36,
+        31,
+        49,
+        35
+      ],
+      "opaquePixels": 33,
+      "rgbaSha256": "a09443df521d8ffa90dca608783bcbc985fc47e117a720a2d1136e1ba745de49",
+      "pngSha256": "04f6889bdc24e96205266a621a84380461db6537d1a1e5c311c5a1311d2ff29a",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

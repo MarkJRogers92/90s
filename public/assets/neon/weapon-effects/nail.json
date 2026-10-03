@@ -1,0 +1,79 @@
+{
+  "name": "nail",
+  "description": "Slim metal nail with a broad flat rear head, sharp right-facing point and two-frame hard steel glint.",
+  "frameWidth": 24,
+  "frameHeight": 16,
+  "frameCount": 2,
+  "layout": "horizontal",
+  "sheetSize": [
+    48,
+    16
+  ],
+  "pivotPixels": [
+    12,
+    8
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    65,
+    65
+  ],
+  "sourcePalette": {
+    "k": "#060a0e",
+    "d": "#3e434d",
+    "m": "#697281",
+    "l": "#9198a5",
+    "h": "#c0bdb8"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "nail-gun",
+      "sha256": "2a313cd0b8a24bb7770612ecbc1965a8248911790063b0ee69fd3ea8321c788f"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        3,
+        5,
+        23,
+        13
+      ],
+      "opaquePixels": 91,
+      "rgbaSha256": "fd09affb104fba692d6730c3a14cfa76dff3abcfd5f3a996053248f55acdb63e",
+      "pngSha256": "6d0fb1a75724ad1b2b8cacbbd8806fc7f4474a0dae994a85037556788bdf7960",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        3,
+        5,
+        23,
+        13
+      ],
+      "opaquePixels": 91,
+      "rgbaSha256": "021998bfc7cca7492692b7cf1ec35ff69ebafb93f9e538a96f24e6081cb04d0d",
+      "pngSha256": "79bc0d5079bbc1595269bc8a13b2c67c288996ad39983f4c2c0db4a3d44966b1",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}
