@@ -140,7 +140,10 @@
       "south-west": "b63ed148-77b7-4e19-b5c1-263f2395e7a5",
       "west": "fa1d10e2-1cf4-429b-a47c-878595566795",
       "north-west": "f0fd4b3f-8338-4dcf-a688-25a205636c22",
-      "north": "9a6b3a02-b9f0-4bc2-9d91-dabd16e07e91"
+      "north": "9a6b3a02-b9f0-4bc2-9d91-dabd16e07e91",
+      "north-east": "b3dcaf5a-fd39-4eb3-8d6e-1aa83c043c59",
+      "east": "3da4d25b-ce9f-4762-9a22-2a1c5e883b45",
+      "south-east": "9466a2ce-71de-492a-9cf1-7edbb122f6fe"
     }
   }
 }
