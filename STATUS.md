@@ -13,7 +13,7 @@ LP Manager's sheet already does. `enemySpriteSheet` already names the keys
 |---|---|---|---|
 | Mall Owner (floor 3) | `ae2fc5eb` | `owner-attack.png` 1032×1376 (172 px) | **done, live-checked** (frames 0–3 in telegraph, 0 errors) |
 | Manager (floor 2) | `1daf7771` (mall manager v2) | `manager-attack.png` 768×1024 (128 px) | **done, live-checked** (south row redone; frames 0–3, 0 errors) |
-| Developer (floor 4) | `e3e0c843` | `developer-attack.png` | queued |
+| Developer (floor 4) | `e3e0c843` | `developer-attack.png` | **regenerating**: first pass came back in a navy suit and 7–17% too big (`collect` now warns about this); the action text now pins the cream suit |
 | Santa (holiday district) | `51e6a5de` | `santa-attack.png` | queued |
 | Glamour Queen | `a1821931` | `glamour-queen-attack.png` | queued |
 | Mr Whiskers | `aaf35aa7` (feral A, the shipped one) | `whiskers-attack.png` | queued |

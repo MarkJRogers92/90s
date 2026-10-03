@@ -115,13 +115,17 @@
       "west": "1b7a106d-d952-47d2-bfa9-4878295a2b13",
       "north-west": "2e8d5efe-c711-4d44-a41d-51eec703b338",
       "north": "dee01e34-8fb4-4ed5-8eb9-07d9dfb7f3cd",
-      "north-east": "e780623d-5e32-444c-9d71-2e2822f07a32"
+      "north-east": "e780623d-5e32-444c-9d71-2e2822f07a32",
+      "east": "58f5554e-f341-4521-acfb-1e529b11b6c5",
+      "south-east": "ed1880c0-61b6-468a-98d0-1595c28c9940"
     }
   },
   "whiskers-attack": {
     "group": "de43528a-0f02-4a77-9c7f-35e0377c77f2",
     "jobs": {
-      "south": "e27cf44a-0b05-4c6f-9c2e-9c084fbf9ae6"
+      "south": "e27cf44a-0b05-4c6f-9c2e-9c084fbf9ae6",
+      "south-west": "122eec8a-2ab5-4db4-8733-61010587d028",
+      "west": "bc26a88b-7ed3-426e-acaa-e302025a8cb3"
     }
   },
   "zamboni-attack": {

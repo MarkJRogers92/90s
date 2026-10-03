@@ -46,7 +46,7 @@ ANIMATIONS = [
      'big wind-up: rears back and raises both huge robotic bear arms high overhead, then brings them crashing down together in a heavy ground slam, leaning forward',
      'public/assets/neon/enemies/owner-attack.png'),
     ('developer-attack', 'e3e0c843-5397-4c40-9515-e134f7113522', 6,
-     'big wind-up: raises his rolled-up blueprints high overhead like a club, rising up tall, then smashes them down hard onto the floor in front of him, leaning far forward',
+     'keeps his cream beige double-breasted suit, gold tie and gold aviator sunglasses exactly as he is; big wind-up: raises his rolled-up blueprints high overhead like a club, rising up tall, then smashes them down hard onto the floor in front of him, leaning far forward',
      'public/assets/neon/enemies/developer-attack.png'),
     ('santa-attack', '51e6a5de-b9ac-4f48-b127-f400b805a2f7', 6,
      'big wind-up: swings his heavy sack of presents up high overhead with both hands, then slams it down hard onto the floor in front of him, leaning far forward',
@@ -200,6 +200,22 @@ def register(sheet, size, count, out):
     return fixed
 
 
+def drift(sheet, size, out):
+    """Warn when the animation drew a different figure from the walk sheet: v3 sometimes
+    re-scales a large character or swaps a colour (the Developer's cream suit came back navy)."""
+    walk = Image.open(walk_sheet_for(out)).convert('RGBA')
+    wsize = walk.height // 8
+    for row in range(8):
+        w = walk.crop((0, row * wsize, wsize, (row + 1) * wsize))
+        a = sheet.crop((0, row * size, size, (row + 1) * size))
+        wb, ab = w.getchannel('A').getbbox(), a.getchannel('A').getbbox()
+        ratio = (ab[3] - ab[1]) / (wb[3] - wb[1])
+        mean = lambda im: [sum(c) / max(1, len(c)) for c in zip(*[p[:3] for p in im.getdata() if p[3] > 200])]
+        dc = max(abs(x - y) for x, y in zip(mean(w), mean(a)))
+        if not 0.92 <= ratio <= 1.08 or dc > 30:
+            print(f'  WARNING row {row} ({ORDER[row]}): height x{ratio:.2f}, mean colour off by {dc:.0f}; look before publishing')
+
+
 def collect(only=None):
     archives = {}
     for name, character, frames, action, out in ANIMATIONS:
@@ -216,6 +232,7 @@ def collect(only=None):
             for column, frame in enumerate(rows[direction][:count]):
                 sheet.alpha_composite(frame, (column * size, row * size))
         sheet = register(sheet, size, count, out)
+        drift(sheet, size, out)
         raw_path = HERE / f'{name}.png'
         sheet.save(raw_path)
         print(f'{name}: {count} frames x 8 facings at {size}px -> {raw_path.relative_to(ROOT)}', flush=True)
