@@ -82,6 +82,22 @@ export const DISTRICT_SPRITES: Readonly<Record<'elf' | 'spritzer' | 'poodle' | '
   zamboni: { prefix: 'zamboni', canvas: 160, displaySize: 136, ticksPerFrame: 6 },
 };
 
+/**
+ * PixelLab's v3 animations re-render the largest bosses a little bigger than their
+ * walk sheets. The renderer draws every sheet of a kind at one scale, so these attack
+ * sheets are shrunk back to the walk figure (around the feet, where the sprite is
+ * anchored). Factors come from `animate_characters.py collect` (walk ÷ attack height).
+ */
+export const ACTION_FIGURE_SCALE: Readonly<Record<string, number>> = {
+  'neon:enemy:developer-attack': 0.88,
+  'neon:enemy:whiskers-attack': 0.95,
+  'neon:enemy:santa-attack': 0.86,
+};
+
+export function actionFigureScale(textureKey: string): number {
+  return Object.hasOwn(ACTION_FIGURE_SCALE, textureKey) ? ACTION_FIGURE_SCALE[textureKey]! : 1;
+}
+
 export function enemySpriteSheet(
   kind: ActorKind,
   walking: boolean,

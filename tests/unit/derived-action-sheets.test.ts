@@ -2,6 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { attackFrameFor, playerBodyAction, type Windup } from '../../src/game/view/combatBeats';
+import { ACTION_FIGURE_SCALE, actionFigureScale } from '../../src/game/view/ActorSpriteView';
 import { CHARACTER_ASSETS, ENEMY_TEXTURE_KEYS, NEON_ASSETS, PLAYER_TEXTURE_KEYS } from '../../src/game/presentation/assets';
 import { DASH_TICKS } from '../../src/sim/combat/dash';
 import type { EnemyState } from '../../src/sim/model';
@@ -23,8 +24,15 @@ describe('charge and lob wind-ups drive authored attack frames (roadmap V2)', ()
     expect(attackFrameFor(enemy('spitter'), [windup('spit', 0.5)], 6, 0)).toBe(2);
     expect(attackFrameFor(enemy('owner'), [windup('charge', 0.5)], 0, 0)).toBeNull();
   });
+  it('a boss body ignores tar buckets already in the air (Developer, Santa barrages)', () => {
+    const walking = { ...enemy('developer'), phase: 'pursue' } as EnemyState;
+    expect(attackFrameFor(walking, [windup('lob', 0.2), windup('lob', 0.9)], 6, 0)).toBeNull();
+    // Its own telegraph still winds the sheet up, and a boss charge still lunges.
+    expect(attackFrameFor(enemy('developer'), [windup('slam', 0.5), windup('lob', 0.9)], 6, 0)).toBe(2);
+    expect(attackFrameFor(enemy('owner'), [windup('charge', 0.9)], 6, 0)).toBe(4);
+  });
   it('registers each PixelLab attack sheet (walk canvas grown evenly, feet re-registered)', () => {
-    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216]] as const) {
+    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216], ['neon:enemy:owner-attack', 'owner-attack.png', 1032, 1376], ['neon:enemy:manager-attack', 'manager-attack.png', 768, 1024], ['neon:enemy:glamour-queen-attack', 'glamour-queen-attack.png', 1296, 1728], ['neon:enemy:developer-attack', 'developer-attack.png', 1488, 1984], ['neon:enemy:whiskers-attack', 'whiskers-attack.png', 960, 1280], ['neon:enemy:zamboni-attack', 'zamboni-attack.png', 1248, 1664], ['neon:enemy:santa-attack', 'santa-attack.png', 1296, 1728]] as const) {
       const found = NEON_ASSETS.filter((asset) => asset.key === key);
       expect(found, key).toHaveLength(1);
       expect(found[0]!.url).toBe(`/assets/neon/enemies/${file}`);
@@ -78,5 +86,22 @@ describe('the dash sheet follows the dash, not the aim', () => {
     expect(evidence.textureKey).toBe(PLAYER_TEXTURE_KEYS.dash);
     expect(evidence.direction).toBe('east');
     expect(evidence.frame).toEqual({ row: 6, column: 1 });
+  });
+});
+
+describe('boss attack sheets drawn at their walk figure size (roadmap V2)', () => {
+  it('shrinks only the sheets PixelLab re-rendered larger, around the feet', () => {
+    expect(actionFigureScale('neon:enemy:owner-walk')).toBe(1);
+    expect(actionFigureScale('neon:enemy:owner-attack')).toBe(1);
+    // Measured by animate_characters.py collect (walk height / attack height, median of 8 facings).
+    expect(actionFigureScale('neon:enemy:developer-attack')).toBe(0.88);
+    expect(actionFigureScale('neon:enemy:whiskers-attack')).toBe(0.95);
+    expect(actionFigureScale('neon:enemy:santa-attack')).toBe(0.86);
+    for (const [key, factor] of Object.entries(ACTION_FIGURE_SCALE)) {
+      expect(key).toMatch(/^neon:enemy:[a-z-]+-attack$/);
+      expect(factor).toBeGreaterThan(0.75);
+      expect(factor).toBeLessThan(1);
+      expect(actionFigureScale(key)).toBe(factor);
+    }
   });
 });

@@ -89,7 +89,7 @@ import { LootView } from './LootView';
 import { ELITE_GLYPHS, eliteRingSegments, type EliteMarkTrait } from './eliteMarks';
 import { WeaponView } from './WeaponView';
 import { WeaponEffectView } from './WeaponEffectView';
-import { directionForVector, enemySpriteSheet } from './ActorSpriteView';
+import { actionFigureScale, directionForVector, enemySpriteSheet } from './ActorSpriteView';
 import { ENEMY_TEXTURE_KEYS, PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { revealSparkCount, type FusionRevealModel } from '../ui/fusionRevealModel';
@@ -1984,7 +1984,7 @@ export class MvpRunView {
       // A grown walk canvas is centred on the idle canvas, so the feet sit
       // half the growth lower than 84% of the idle frame.
       const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
-      spec = { textureKey, frameWidth: frameSize, frameHeight: frameSize, scale: sheet.displaySize / idleFrame, feetY };
+      spec = { textureKey, frameWidth: frameSize, frameHeight: frameSize, scale: (sheet.displaySize / idleFrame) * actionFigureScale(textureKey), feetY };
     } else if (snapshot.kind === 'hanger') {
       spec = { textureKey, frameWidth: 48, frameHeight: 48, scale: 1 };
     }

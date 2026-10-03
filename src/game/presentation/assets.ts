@@ -270,10 +270,18 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.hangerAttack, 'enemies/hanger-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerDeath, 'enemies/hanger-death.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerHurt, 'enemies/hanger-hurt.png'),
-  // Derived wind-up attack sheets (art/derived-poses): named by enemySpriteSheet.
+  // PixelLab wind-up attack sheets (art/pixellab): named by enemySpriteSheet.
   neon('neon:enemy:spritzer-attack', 'enemies/spritzer-attack.png'),
   neon('neon:enemy:mascot-attack', 'enemies/mascot-attack.png'),
   neon('neon:enemy:roofer-attack', 'enemies/roofer-attack.png'),
+  // PixelLab boss wind-ups (roadmap V2): the telegraph before a slam, charge or barrage.
+  neon('neon:enemy:owner-attack', 'enemies/owner-attack.png'),
+  neon('neon:enemy:manager-attack', 'enemies/manager-attack.png'),
+  neon('neon:enemy:glamour-queen-attack', 'enemies/glamour-queen-attack.png'),
+  neon('neon:enemy:developer-attack', 'enemies/developer-attack.png'),
+  neon('neon:enemy:whiskers-attack', 'enemies/whiskers-attack.png'),
+  neon('neon:enemy:zamboni-attack', 'enemies/zamboni-attack.png'),
+  neon('neon:enemy:santa-attack', 'enemies/santa-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerShellImpact, 'enemies/hanger-shell-impact.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinIdle, 'enemies/mannequin-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinWalk, 'enemies/mannequin-walk.png'),

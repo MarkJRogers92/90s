@@ -5,8 +5,10 @@ them), so animating them keeps identity, palette and scale exact. Needs PIXELLAB
 
     python3 art/pixellab/animate_characters.py submit   # queue jobs, write jobs.json
     python3 art/pixellab/animate_characters.py collect  # wait, then pack the sheets
+    python3 art/pixellab/animate_characters.py publish <name>  # after review: copy into public/
 
-Cost: 1 subscription generation per direction (8 per animation).
+Cost: 1 subscription generation per direction (8 per animation) at 64 px; larger characters cost more
+(the 96 px Mascot redo cost about 16). Check GET /balance before and after.
 """
 import io, json, os, sys, time, urllib.error, urllib.request, zipfile
 from pathlib import Path
@@ -35,6 +37,29 @@ ANIMATIONS = [
     ('roofer-attack', 'd6eb1ca9-7b67-4f9e-909c-18eac03de22f', 6,
      'swings a bucket of hot tar back behind him, then heaves it forward and throws it overhand',
      'public/assets/neon/enemies/roofer-attack.png'),
+    # Bosses: every attack starts with the same telegraph (a slam, a charge or a barrage),
+    # so one big wind-up then a heavy release per boss covers all of them.
+    ('manager-attack', '1daf7771-c708-4e8e-82bd-3b95a04c0b65', 6,
+     'big wind-up: raises his clipboard high overhead with both hands, rising up tall, then slams it down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/manager-attack.png'),
+    ('owner-attack', 'ae2fc5eb-9686-4b18-b65e-c41bbc3c3ff1', 6,
+     'big wind-up: rears back and raises both huge robotic bear arms high overhead, then brings them crashing down together in a heavy ground slam, leaning forward',
+     'public/assets/neon/enemies/owner-attack.png'),
+    ('developer-attack', 'e3e0c843-5397-4c40-9515-e134f7113522', 6,
+     'keeps his cream beige double-breasted suit, gold tie and gold aviator sunglasses exactly as he is; big wind-up: raises his rolled-up blueprints high overhead like a club, rising up tall, then smashes them down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/developer-attack.png'),
+    ('santa-attack', '51e6a5de-b9ac-4f48-b127-f400b805a2f7', 6,
+     'keeps his red Santa suit and his dark red sack of presents exactly as he is; big wind-up: swings the dark red sack up high overhead with both hands, then slams it down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/santa-attack.png'),
+    ('glamour-queen-attack', 'a1821931-5c3e-4bcf-a119-ea88e224a8cc', 6,
+     'big wind-up: raises her flash camera high overhead with both hands, arching back dramatically, then swings it down hard in front of her in a heavy strike, leaning far forward',
+     'public/assets/neon/enemies/glamour-queen-attack.png'),
+    ('whiskers-attack', 'aaf35aa7-d075-4c9a-8c2f-2bb1aed59eeb', 6,
+     'big wind-up: crouches low and rears up on its hind legs with both clawed front paws raised high, then pounces forward and slams both front paws down onto the floor',
+     'public/assets/neon/enemies/whiskers-attack.png'),
+    ('zamboni-attack', '721b6f96-ab96-4a61-89a6-d73daf6b294b', 6,
+     'holding the same long straight wooden-handled ice scraper pole with a flat steel blade on the end that he always carries, no other tools or effects; big wind-up: raises the long scraper pole high overhead with both hands, rising up tall, then smashes it down hard onto the floor in front of him, leaning far forward',
+     'public/assets/neon/enemies/zamboni-attack.png'),
 ]
 
 
@@ -108,9 +133,16 @@ def group_of(character, name):
 
 
 def redo(args):
-    """Regenerate single drifted directions: redo <name> <direction> [<name> <direction> ...]."""
-    pairs = list(zip(args[0::2], args[1::2]))
+    """Regenerate drifted directions: redo <name> <direction> [<direction> ...] [<name> <direction> ...]."""
     specs = {a[0]: a for a in ANIMATIONS}
+    pairs, name = [], None
+    for word in args:
+        if word in specs:
+            name = word
+        elif word in ORDER and name:
+            pairs.append((name, word))
+        else:
+            raise SystemExit(f'redo: {word!r} is neither an animation nor a direction')
     for name, direction in pairs:
         _, character, frames, action, _ = specs[name]
         group = group_of(character, name)
@@ -175,6 +207,28 @@ def register(sheet, size, count, out):
     return fixed
 
 
+def drift(sheet, size, out):
+    """Warn when the animation drew a different figure from the walk sheet: v3 sometimes
+    re-scales a large character or swaps a colour (the Developer's cream suit came back navy)."""
+    walk = Image.open(walk_sheet_for(out)).convert('RGBA')
+    wsize = walk.height // 8
+    ratios = []
+    for row in range(8):
+        w = walk.crop((0, row * wsize, wsize, (row + 1) * wsize))
+        a = sheet.crop((0, row * size, size, (row + 1) * size))
+        wb, ab = w.getchannel('A').getbbox(), a.getchannel('A').getbbox()
+        ratio = (ab[3] - ab[1]) / (wb[3] - wb[1])
+        ratios.append(ratio)
+        mean = lambda im: [sum(c) / max(1, len(c)) for c in zip(*[p[:3] for p in im.get_flattened_data() if p[3] > 200])]
+        dc = max(abs(x - y) for x, y in zip(mean(w), mean(a)))
+        if not 0.92 <= ratio <= 1.08 or dc > 30:
+            print(f'  WARNING row {row} ({ORDER[row]}): height x{ratio:.2f}, mean colour off by {dc:.0f}; look before publishing')
+    median = sorted(ratios)[4]
+    if median > 1.04:
+        key = 'neon:enemy:' + out.rsplit('/', 1)[1][:-4]
+        print(f"  figure is x{median:.2f} its walk size: add '{key}': {1 / median:.2f} to ACTION_FIGURE_SCALE (ActorSpriteView.ts)")
+
+
 def collect(only=None):
     archives = {}
     for name, character, frames, action, out in ANIMATIONS:
@@ -191,9 +245,22 @@ def collect(only=None):
             for column, frame in enumerate(rows[direction][:count]):
                 sheet.alpha_composite(frame, (column * size, row * size))
         sheet = register(sheet, size, count, out)
+        drift(sheet, size, out)
         raw_path = HERE / f'{name}.png'
         sheet.save(raw_path)
         print(f'{name}: {count} frames x 8 facings at {size}px -> {raw_path.relative_to(ROOT)}', flush=True)
+
+
+def publish(only=None):
+    """After reviewing art/pixellab/<name>.png, copy it to its runtime path, losslessly recompressed."""
+    for name, _, _, _, out in ANIMATIONS:
+        if only and name not in only:
+            continue
+        src = Image.open(HERE / f'{name}.png').convert('RGBA')
+        for path in (HERE / f'{name}.png', ROOT / out):
+            src.save(path, optimize=True, compress_level=9)
+        assert Image.open(ROOT / out).convert('RGBA').tobytes() == src.tobytes()
+        print(f'{name}: published {out} ({(ROOT / out).stat().st_size // 1024} KB)')
 
 
 if __name__ == '__main__':
@@ -201,4 +268,4 @@ if __name__ == '__main__':
         redo(sys.argv[2:])
         raise SystemExit
     only = set(sys.argv[2:]) or None
-    {'submit': submit, 'topup': topup, 'collect': collect}[sys.argv[1]](only)
+    {'submit': submit, 'topup': topup, 'collect': collect, 'publish': publish}[sys.argv[1]](only)

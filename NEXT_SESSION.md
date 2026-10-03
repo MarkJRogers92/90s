@@ -1,8 +1,61 @@
 # Next session
 
+## 2026-10-03 UTC — PixelLab boss attack wind-ups (V2 bosses) — DONE (HANDOFF)
+
+Branch `feat/boss-attack-sheets` (PR #56 merged; this is the follow-up). Presentation only;
+no `src/sim` change, so the balance bot cannot move. **All seven bosses are done.**
+
+**Goal:** a 6-frame PixelLab attack sheet for each boss, played over its telegraph
+(wind-up frames 0–3) and the slam/charge/barrage release (frames 4–5), exactly as the
+LP Manager's sheet already does. `enemySpriteSheet` already names the keys
+(`neon:enemy:<prefix>-attack`); each sheet only needs registering in `NEON_ASSETS`.
+
+| Boss | PixelLab character | Sheet | State |
+|---|---|---|---|
+| Mall Owner (floor 3) | `ae2fc5eb` | `owner-attack.png` 1032×1376 (172 px) | **done, live-checked** (frames 0–3 in telegraph, 0 errors) |
+| Manager (floor 2) | `1daf7771` (mall manager v2) | `manager-attack.png` 768×1024 (128 px) | **done, live-checked** (south row redone; frames 0–3, 0 errors) |
+| Developer (floor 4) | `e3e0c843` | `developer-attack.png` 1488×1984 (248 px) | **done, live-checked** (frames 0–3, 0 errors). The PixelLab character itself is navy (the cream walk came from an older template), so every v3 animation is navy: `art/pixellab/recolor.py developer-attack` maps the suit onto the walk sheet's cream ramp. `ACTION_FIGURE_SCALE` 0.88 |
+| Santa (holiday district) | `51e6a5de` | `santa-attack.png` 1296×1728 (216 px) | **done, live-checked** (frames 0–3, 0 errors). All 8 facings redone with the dark red sack pinned; the PixelLab character itself carries a flat black sack facing SW and E, so `recolor.py santa-attack` fills and shades that sack from the walk sheet's reds (boots and belt untouched). Scale 0.86 |
+| Glamour Queen | `a1821931` | `glamour-queen-attack.png` 1296×1728 (216 px, size matches) | **done, live-checked** (frames 0–3, 0 errors) |
+| Mr Whiskers | `aaf35aa7` (feral A, the shipped one) | `whiskers-attack.png` 960×1280 (160 px) | **done, live-checked** (frames 0–3, 0 errors); scale 0.95 |
+| Zamboni Driver | `721b6f96` | `zamboni-attack.png` 1248×1664 (208 px, size matches) | **done, live-checked** (frames 0–3, 0 errors); S, NW, N, SE redone because the scraper changed shape (a barbell, a pick) — the action text now describes the pole |
+
+**Code (done, tested):** `attackFrameFor` no longer reads a boss's airborne tar buckets
+(Developer/Santa barrage `lob` wind-ups) as its own throw, which would have looped the
+attack sheet while it walked (`derived-action-sheets.test.ts`, failed first).
+
+**Also new (code, tested first):** `ACTION_FIGURE_SCALE` in `ActorSpriteView.ts` draws an
+attack sheet smaller when PixelLab re-rendered the figure larger than its walk sheet
+(160–180 px bosses come back ~1.1–1.2x); the sprite is anchored at the feet, so they stay
+put. `collect` now warns about size or colour drift and prints the factor.
+`art/pixellab/recolor.py` fixes colours the PixelLab *character itself* has wrong (a redo
+cannot: v3 animation follows the character's rotations, not the action text).
+
+**Evidence:** unit 1,846 of 1,846 (179 files); `tsc` and `npm run build` pass; browser
+batch (night-shift:355, break-room:84, presentation-evidence) 6/6; the seven boss
+browser tests (night-shift:636, 653, 726, 753, 768, 788, 803) 7/7. Live: every boss plays
+`<prefix>-attack[0..3]` in its telegraph with 0 console errors
+(`artifacts/live-qa/bosses/`). The seven sheets add 2.3 MB. PixelLab: 416 → 114
+generations (redos included).
+
+**To add or redo a boss** (all in `art/pixellab/animate_characters.py`):
+1. `python3 art/pixellab/animate_characters.py topup <name>` until 8 directions are queued.
+2. `python3 art/pixellab/animate_characters.py collect <name>` (waits out HTTP 423), then
+   look at `art/pixellab/<name>.png`; `redo <name> <direction>` for any drifted row.
+3. `python3 art/pixellab/animate_characters.py publish <name>` (lossless copy into `public/`).
+4. Add `neon('neon:enemy:<prefix>-attack', 'enemies/<prefix>-attack.png')` under the
+   Owner's line in `src/game/presentation/assets.ts`, and its size to the registration
+   test in `tests/unit/derived-action-sheets.test.ts`.
+5. Live: `CHROME=/opt/pw-browsers/chromium node scripts/live-capture-actions.mjs --only <kind> --out artifacts/live-qa/bosses`
+   with the debug dev server on 4180; expect `<prefix>-attack[0..3]` and 0 errors.
+
+**Cost:** 3 generations per direction at 128 px, about 4–5 at 160–180 px.
+**Not done:** the LP Manager already had an attack sheet; the Spitter, Static, Bargain
+Hunter, Elf, Poodle and Goon still use the procedural squash (V2 non-bosses).
+
 ## 2026-10-03 UTC — PixelLab animations: Alex aim + dash, Spritzer/Mascot/Roofer attacks (HANDOFF)
 
-Branch `feat/attack-windups-alex-dash`, PR #56 (not merged). Presentation only;
+Branch `feat/attack-windups-alex-dash`, PR #56 (merged). Presentation only;
 no `src/sim` change.
 
 **Done.** These were made by animating the game's *original* PixelLab
