@@ -1,5 +1,34 @@
 # Next session
 
+## 2026-10-03 UTC — Mall-directory HUD (integration)
+
+The approved in-canvas HUD now uses quiet directory panels, pale tabs and
+receipt-style feedback. It shows all supported 2–6 heart capacities, keeps
+numbered weapons separate from always-on passives, and labels FUSED/HOT
+weapons. Fused weapons without authored blurbs show their actual component
+names. Attack readiness is the player's shared timer; dash has its own
+active/recovery state. Neither changes gameplay or invents per-slot timers.
+
+The fixed dock handles nine weapons plus twelve passives without widening
+into its neighbours. Larger weapon collections follow the selected weapon
+in a nine-card window; excess passives use an honest count. The existing
+selection controls, Tab disclosure, lower-player fading and overlay timing
+remain. Shop cards avoid the wanted strip and dense dock. Corner chips leave
+the PA lane clear, and reduced flashes suppress portrait hit-flashing.
+
+Verification: 1,780 tests across 169 files, TypeScript and production build
+pass. The 76 focused HUD checks include 720 complete run-state comparisons.
+All 240 fixed-seed weapon replays match baseline. All 96 simulation files and
+411 runtime assets are byte-identical to main d5e78984. Source review approved
+both fixes found during review and the final clarity refinements.
+
+Eight source-hash-verified, command-recorded offline previews cover ordinary,
+crowded, fused, hot, shop, boss, reduced-flash/low-health and overflow states.
+These are not live gameplay screenshots. Live browser compositing, native
+interaction, animation and world-occlusion validation remain outstanding;
+the previously recorded cloud-localhost restriction was not bypassed. This integration preserves all unrelated files from main d5e78984.
+The earlier notes below describe their original review checkpoints.
+
 ## 2026-10-03 UTC — Combined enemy, loot and viewport integration
 
 This change integrates the reviewed mannequin and Static/CRT reactions, loot

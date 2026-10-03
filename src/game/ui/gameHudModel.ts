@@ -73,7 +73,13 @@ export type HudWeapon = {
   readonly hot: boolean;
 };
 
-export type HudPassive = { readonly instanceId: string; readonly itemDefinitionId: string; readonly name: string };
+export type HudPassive = {
+  readonly instanceId: string;
+  readonly itemDefinitionId: string;
+  readonly name: string;
+  readonly fused: boolean;
+  readonly hot: boolean;
+};
 
 /** What pressing a key would do right now, spelled out with the key. */
 export type HudOfferDetail = {
@@ -95,6 +101,8 @@ export type HudPrompt = {
 
 export type GameHudModel = {
   readonly hearts: readonly HeartState[];
+  /** Remaining authoritative timers in tenths; attack recovery is shared by all weapons. */
+  readonly readiness: { readonly attackTenths: number; readonly dashTenths: number; readonly dashing: boolean };
   readonly cash: number;
   readonly heat: number;
   /** Wanted stars, 0 to 5. */
@@ -314,11 +322,33 @@ export function buildGameHudModel(state: MvpRunState): GameHudModel {
     hot: state.inventory.inventory.some((node) => node.instanceId === weapon.instanceId && isHotNode(node)),
   }));
   const equippedWeapon = weapons.find((weapon) => weapon.selected);
+  let equippedBlurb = equippedWeapon ? itemBlurb(equippedWeapon.itemDefinitionId) : '';
+  if (equippedWeapon && equippedBlurb === '') {
+    const selectedNode = state.inventory.inventory.find((node) => node.instanceId === equippedWeapon.instanceId);
+    if (selectedNode?.kind === 'composite') {
+      equippedBlurb = compositeLeaves(selectedNode)
+        .map((leaf) => itemDefinitionName(leaf.itemDefinitionId).toUpperCase()).join(' + ');
+    }
+  }
+  const player = state.room.combat.player;
 
   return {
     weapons,
-    passives: runPassiveItems(state).map((item) => ({ ...item, name: itemDefinitionName(item.itemDefinitionId).toUpperCase() })),
-    equipped: equippedWeapon ? { name: equippedWeapon.name, blurb: itemBlurb(equippedWeapon.itemDefinitionId) } : null,
+    passives: runPassiveItems(state).map((item): HudPassive => {
+      const node = state.inventory.inventory.find((candidate) => candidate.instanceId === item.instanceId);
+      return {
+        ...item,
+        name: itemDefinitionName(item.itemDefinitionId).toUpperCase(),
+        fused: node?.kind === 'composite',
+        hot: node ? isHotNode(node) : false,
+      };
+    }),
+    readiness: {
+      attackTenths: Math.ceil(Math.max(0, player.attackCooldownTicks) / 6),
+      dashTenths: Math.ceil(Math.max(0, player.dashCooldownTicks ?? 0) / 6),
+      dashing: (player.dashTicks ?? 0) > 0,
+    },
+    equipped: equippedWeapon ? { name: equippedWeapon.name, blurb: equippedBlurb } : null,
     prompt: promptFor(state),
     combo: comboFor(state),
     hearts: heartsFor(state.room.combat.player.health, runMaxHealth(state)),
