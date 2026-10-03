@@ -25,7 +25,7 @@ import { itemBlurb } from './itemBlurbs';
 import { blink, flashAllowed, gameSettings } from '../settings/settings';
 import { browserCareer } from '../career/career';
 import { coachActive, nextCoachTip, type CoachTipId } from './coachModel';
-import { fitHudText, hudDockLayout } from './gameHudLayout';
+import { fitHudText, hudDockLayout, wantedPanel, wantedRows } from './gameHudLayout';
 
 const HUD_DEPTH = 20_000;
 const SCREEN_W = 960;
@@ -416,8 +416,10 @@ export class GameHud {
     this.text('wanted-label', 'WANTED', 166, 554, MUTED, 1, true);
     this.drawStars(g, model.wanted, 220, 573, state.tick);
     if (model.wantedLine) {
-      this.panel(g, 12, 466, 218, 32, 0xf3ab65);
-      wrapLogText(model.wantedLine, 32, 2).forEach((line, i) => this.text(`wanted-line-${i}`, line, 22, 473 + i * 11, '#edc2a3', 1, true));
+      const rows = wantedRows(model.wantedLine);
+      const strip = wantedPanel(rows.length);
+      this.panel(g, strip.x, strip.y, strip.w, strip.h, 0xf3ab65);
+      rows.forEach((line, i) => this.text(`wanted-line-${i}`, line, 22, strip.y + 7 + i * 11, '#edc2a3', 1, true));
     }
   }
 
@@ -513,7 +515,7 @@ export class GameHud {
     this.promptIcon.setVisible(false);
     if (!prompt) return;
     if (prompt.detail) {
-      this.drawOfferCard(prompt, prompt.detail, playerLow, Math.min(hudDockLayout(model).equipment.y, model.wantedLine ? 466 : 600));
+      this.drawOfferCard(prompt, prompt.detail, playerLow, Math.min(hudDockLayout(model).equipment.y, model.wantedLine ? wantedPanel(wantedRows(model.wantedLine).length).y : 600));
       return;
     }
     const keysW = prompt.keys.reduce((sum, key) => sum + key.key.length * 12 + 10 + 8 + key.action.length * 12 + 16, 0);
