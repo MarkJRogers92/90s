@@ -1,5 +1,32 @@
 # Next session
 
+## 2026-10-03 UTC — Review follow-up: wanted strip no longer truncates (branch `fix/wanted-strip-wrap-2026-10-03`)
+
+Review of PRs #47–#49 found the HUD's wanted strip (round 57) mangled by the
+mall-directory HUD: it wrapped with `wrapLogText`, which collapsed the
+double-space clause separators and ended long lines in "...", so four/five-star
+lines lost "NEXT * IN n" or "HOLD YOUR STARS". `wantedRows` now packs whole
+clauses (joined by " / ", up to three rows of 32 characters) and `wantedPanel`
+sizes the panel upward from its fixed baseline; the shop offer card follows
+the panel's top edge. No simulation, art or gameplay change.
+
+Evidence: new `tests/unit/wanted-line-layout.test.ts` failed first
+(`wantedRows is not a function`), then passed. TypeScript passes. The adjacent
+HUD/wanted set (6 files, 87 tests) passes. The full suite was last run before
+this fix on main b4db9ba: 1,779 of 1,780 pass; the one failure was a 5 s
+timeout in `balance-danger.test.ts` (7.7 s under load) that passes in
+isolation with a 30 s timeout. The production build, browser suite and
+`npm run balance` were not run (nothing balance-related changed). Live visual
+QA of the strip at four/five stars is still outstanding.
+
+Also in this change: `balance-danger.test.ts` now has a 30 s timeout (it
+passes alone in ~13 s; it hit the 5 s default under load). Reviewed and left
+alone on purpose: the run menu freezing end-card cinematics while open (they
+are time-driven and resume on close, so it reads as a modal pause), and the
+uncapped `ensurePixelLabel` cache (labels are a few KB each, and evicting one
+a one-shot image still holds risks a blank sprite). NEXT_SESSION's "Start
+here" section now names the real tip of `origin/main`.
+
 ## 2026-10-03 UTC — Mall-directory HUD (integration)
 
 The approved in-canvas HUD now uses quiet directory panels, pale tabs and
@@ -293,9 +320,12 @@ No push, merge or deployment was performed. See TEST_EVIDENCE.md for checks,
 including the load-related timeout resolved by running the full unit suite
 with four workers and using a file-watch-free browser QA session.
 
-## Start here (updated 2026-10-01)
+## Start here (updated 2026-10-03)
 
-`origin/main` is at round 57 (merge `4cf40da`): a bot playtester, the staff
+`origin/main` is at the mall-directory HUD merge (`b4db9ba`, PR #49), after
+PRs #47 (weapon effects) and #48 (enemy reactions, loot, viewport) and the wanted-strip fix
+that followed them; none of those touch `src/sim`. Round 57 (merge `4cf40da`) is the last
+gameplay round: a bot playtester, the staff
 passage, the coach, the daily rule, elite traits, the seed card and wanted
 clarity, on top of round 56's floor-exclusive stores and leaner economy (rounds
 54 and 55 are in it too). Round 57 was built as nine commits (a refactor, one

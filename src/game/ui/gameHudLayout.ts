@@ -32,3 +32,20 @@ export function fitHudText(text: string, width: number, preferredScale = 2): { t
   const chars = Math.max(0, Math.floor((width - 1) / 6));
   return { text: chars >= 3 ? `${text.slice(0, chars - 3).trimEnd()}...` : text.slice(0, chars), scale: 1 };
 }
+
+/** Packs the wanted line's clauses (split on its double spaces) whole into rows, joined by " / ". */
+export function wantedRows(line: string, width = 32): string[] {
+  const rows: string[] = [];
+  for (const clause of line.split('  ').filter(Boolean)) {
+    const last = rows[rows.length - 1];
+    if (last !== undefined && last.length + 3 + clause.length <= width) rows[rows.length - 1] = `${last} / ${clause}`;
+    else rows.push(clause);
+  }
+  return rows;
+}
+
+/** The wanted strip grows upward from a fixed baseline so it never nears the vitals panel. */
+export function wantedPanel(rows: number): HudRect {
+  const h = rows * 11 + 10;
+  return { x: 12, y: 498 - h, w: 218, h };
+}
