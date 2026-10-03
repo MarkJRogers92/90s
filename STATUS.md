@@ -1,8 +1,45 @@
 # Status
 
+## 2026-10-03 UTC — PixelLab boss attack wind-ups (V2 bosses) — IN PROGRESS (HANDOFF)
+
+Branch `feat/boss-attack-sheets` (PR #56 merged; this is the follow-up). Presentation only.
+
+**Goal:** a 6-frame PixelLab attack sheet for each boss, played over its telegraph
+(wind-up frames 0–3) and the slam/charge/barrage release (frames 4–5), exactly as the
+LP Manager's sheet already does. `enemySpriteSheet` already names the keys
+(`neon:enemy:<prefix>-attack`); each sheet only needs registering in `NEON_ASSETS`.
+
+| Boss | PixelLab character | Sheet | State |
+|---|---|---|---|
+| Mall Owner (floor 3) | `ae2fc5eb` | `owner-attack.png` 1032×1376 (172 px) | **done, live-checked** (frames 0–3 in telegraph, 0 errors) |
+| Manager (floor 2) | `1daf7771` (mall manager v2) | `manager-attack.png` | queued |
+| Developer (floor 4) | `e3e0c843` | `developer-attack.png` | queued |
+| Santa (holiday district) | `51e6a5de` | `santa-attack.png` | queued |
+| Glamour Queen | `a1821931` | `glamour-queen-attack.png` | queued |
+| Mr Whiskers | `aaf35aa7` (feral A, the shipped one) | `whiskers-attack.png` | queued |
+| Zamboni Driver | `721b6f96` | `zamboni-attack.png` | queued |
+
+**Code (done, tested):** `attackFrameFor` no longer reads a boss's airborne tar buckets
+(Developer/Santa barrage `lob` wind-ups) as its own throw, which would have looped the
+attack sheet while it walked (`derived-action-sheets.test.ts`, failed first).
+
+**To finish one boss** (all in `art/pixellab/animate_characters.py`):
+1. `python3 art/pixellab/animate_characters.py topup <name>` until 8 directions are queued.
+2. `python3 art/pixellab/animate_characters.py collect <name>` (waits out HTTP 423), then
+   look at `art/pixellab/<name>.png`; `redo <name> <direction>` for any drifted row.
+3. `python3 art/pixellab/animate_characters.py publish <name>` (lossless copy into `public/`).
+4. Add `neon('neon:enemy:<prefix>-attack', 'enemies/<prefix>-attack.png')` under the
+   Owner's line in `src/game/presentation/assets.ts`, and its size to the registration
+   test in `tests/unit/derived-action-sheets.test.ts`.
+5. Live: `CHROME=/opt/pw-browsers/chromium node scripts/live-capture-actions.mjs --only <kind> --out artifacts/live-qa/bosses`
+   with the debug dev server on 4180; expect `<prefix>-attack[0..3]` and 0 errors.
+
+**Cost:** the 128 px Owner cost 24 generations (3 per direction); 160–180 px bosses
+likely 4–5 per direction. Balance before the bosses: 416 of 2,000.
+
 ## 2026-10-03 UTC — PixelLab animations: Alex aim + dash, Spritzer/Mascot/Roofer attacks (HANDOFF)
 
-Branch `feat/attack-windups-alex-dash`, PR #56 (not merged). Presentation only;
+Branch `feat/attack-windups-alex-dash`, PR #56 (merged). Presentation only;
 no `src/sim` change.
 
 **Done.** These were made by animating the game's *original* PixelLab
