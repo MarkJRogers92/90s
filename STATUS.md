@@ -17,7 +17,7 @@ LP Manager's sheet already does. `enemySpriteSheet` already names the keys
 | Santa (holiday district) | `51e6a5de` | `santa-attack.png` | **regenerating**: first pass had a black/brown sack (walk sheet: dark red) and a figure x1.14 too big; action text now pins the sack. Large re-renders are scaled back with `ACTION_FIGURE_SCALE` (collect prints the factor) |
 | Glamour Queen | `a1821931` | `glamour-queen-attack.png` 1296×1728 (216 px, size matches) | **done, live-checked** (frames 0–3, 0 errors) |
 | Mr Whiskers | `aaf35aa7` (feral A, the shipped one) | `whiskers-attack.png` 960×1280 (160 px) | **done, live-checked** (frames 0–3, 0 errors); scale 0.95 |
-| Zamboni Driver | `721b6f96` | `zamboni-attack.png` | queued |
+| Zamboni Driver | `721b6f96` | `zamboni-attack.png` 1248×1664 (208 px, size matches) | **done, live-checked** (frames 0–3, 0 errors); S, NW, N, SE redone because the scraper changed shape (a barbell, a pick) — the action text now describes the pole |
 
 **Code (done, tested):** `attackFrameFor` no longer reads a boss's airborne tar buckets
 (Developer/Santa barrage `lob` wind-ups) as its own throw, which would have looped the
