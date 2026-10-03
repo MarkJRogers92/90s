@@ -1,3 +1,4 @@
+import { WEAPON_EFFECT_ART } from '../view/weaponEffects';
 import { rootItemId } from '../../sim/fusion/hybrid';
 import { ALL_ROSTER } from '../../sim/items/storeRoster';
 export interface PresentationAsset {
@@ -247,6 +248,10 @@ const neon = (key: string, file: string, frameWidth?: number, frameHeight?: numb
 
 /** Everything the neon presentation loads besides the dressing kit. */
 export const NEON_ASSETS: readonly PresentationAsset[] = [
+  ...Object.values(WEAPON_EFFECT_ART).map((art): PresentationAsset => ({
+    key: art.key, url: `/assets/neon/weapon-effects/${art.file}`,
+    frameWidth: art.width, frameHeight: art.height, requiredFor: 'effect',
+  })),
   neon(ENEMY_TEXTURE_KEYS.hangerIdle, 'enemies/hanger-idle.png', 48, 48),
   neon(ENEMY_TEXTURE_KEYS.hangerWalk, 'enemies/hanger-walk.png', 48, 48),
   neon(ENEMY_TEXTURE_KEYS.spitterIdle, 'enemies/spitter-idle.png', 48, 48),

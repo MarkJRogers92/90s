@@ -1,0 +1,120 @@
+{
+  "name": "soaker-water",
+  "description": "Compact broken water ribbon with an irregular leading crest, narrow bright core and detached droplets.",
+  "frameWidth": 32,
+  "frameHeight": 16,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    16
+  ],
+  "pivotPixels": [
+    16,
+    8
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    55,
+    55,
+    55,
+    55
+  ],
+  "sourcePalette": {
+    "d": "#334e5f",
+    "c": "#5ebdc1",
+    "l": "#b7d9d6",
+    "h": "#e8eee9"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "super-soaker-50",
+      "sha256": "f0a8add98cea9364a41cb51390272de5b147cd70885be8fba53ff4b2bccbb46f"
+    },
+    {
+      "name": "super-soaker-cps",
+      "sha256": "213e9300b63425500e27ac15c5f0494528e250b993a66f35f3d718e7515b8995"
+    },
+    {
+      "name": "pump-soaker",
+      "sha256": "5599a483c09f5867e7c53e0d1b6066241adf5280dc428f3740f3c42255dbb8ed"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        4,
+        4,
+        28,
+        11
+      ],
+      "opaquePixels": 62,
+      "rgbaSha256": "5f7f486eb075dbc8b7fe8dc0921de95f676a8856e603ffc552bd92a8b76a8eb4",
+      "pngSha256": "467ef8328583ac4518e15b0e658ba605a52b7d9244531910388a2bdd4ac53dc4",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        10,
+        4,
+        28,
+        11
+      ],
+      "opaquePixels": 56,
+      "rgbaSha256": "57e407b3fff038a2f741a0a4c98522c031d9f196ae67304e5a5f6f9c1825f835",
+      "pngSha256": "4f80a8d3717b14557db9445c66e5325eb7d51280b46b0738def52769e19e4316",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        5,
+        5,
+        28,
+        10
+      ],
+      "opaquePixels": 61,
+      "rgbaSha256": "9fb6a798f4d874b3f8e4163117c72b87109f9969d8dd9b78b1e0651fed08f6e3",
+      "pngSha256": "f6a5b555b1fa4b30e1da9f6a6520bdb2515b739d08a42ad35773f6ab74aafd53",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        28,
+        11
+      ],
+      "opaquePixels": 53,
+      "rgbaSha256": "504db834a841bad75a8de226f607ec1eb57e1dc78d6c99ec495046c298665179",
+      "pngSha256": "bc85105b91b841871182e5bf3bb2d64da4d4738bf85b5c211cbcf00119a1d9a8",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "name": "extinguisher-foam",
+  "description": "Compact directional chalky aerosol packets with perforated irregular lobes, thin pressure streaks, fine stippled fringe and progressive breakup; no round particle balls.",
+  "frameWidth": 32,
+  "frameHeight": 24,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    192,
+    24
+  ],
+  "pivotPixels": [
+    16,
+    12
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    55,
+    55,
+    55,
+    55,
+    55,
+    55
+  ],
+  "sourcePalette": {
+    "d": "#697281",
+    "m": "#9198a5",
+    "l": "#c0bdb8",
+    "w": "#eacdb7",
+    "h": "#e8eee9"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "fire-extinguisher",
+      "sha256": "f098c2cb698493cd5e99cc53d5a1cd76e05d13169368ec26f7841cb6ddc127ba"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        4,
+        6,
+        28,
+        17
+      ],
+      "opaquePixels": 43,
+      "rgbaSha256": "89c593d4a10472e5beb20b693219106dc0a5839fdae0091812022188ea65dbf7",
+      "pngSha256": "3fa55f2a1f69856065ab7e48bd0a9485d59a52df49f8f48ca0835a1f565694d0",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        5,
+        6,
+        28,
+        17
+      ],
+      "opaquePixels": 45,
+      "rgbaSha256": "f54af4afe1ccee64fce50a46cca26944858051fe4e2c880522510e0a4654bbbe",
+      "pngSha256": "38076207ac786d0d081364c4ed3a296c051ab5ac44447cca818caec8c730cc4f",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        4,
+        6,
+        29,
+        17
+      ],
+      "opaquePixels": 42,
+      "rgbaSha256": "40006b4a61d2280bab380f703bdf644f7edfaec7da255e5db491f983d2b76465",
+      "pngSha256": "beb4cfe732c3acab29ebf0718f6f33719ac5d3cbd2b0967035c9d460bef66441",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        5,
+        6,
+        29,
+        18
+      ],
+      "opaquePixels": 38,
+      "rgbaSha256": "cbe841a346892377950dde685a3eea09809e36e675fcc1c6926cc2d7dfe1b832",
+      "pngSha256": "c38b1d3f129e73c1f4baebf903f6a6ed72b128d36fee9d092f7e81b614219e6f",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 4,
+      "boundingBoxExclusive": [
+        4,
+        6,
+        29,
+        18
+      ],
+      "opaquePixels": 39,
+      "rgbaSha256": "e1e7e3a3501fccbf4699d9b009b5d4ca5ea9054460410b042785c0237405da4b",
+      "pngSha256": "3fbeae66d83dadba927d4bcaaf047052bef2029c889017654df38a4d2ddad179",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 5,
+      "boundingBoxExclusive": [
+        5,
+        7,
+        27,
+        17
+      ],
+      "opaquePixels": 35,
+      "rgbaSha256": "7d55c485e575a730b816846a830673944fb5e96f1f4df28c85d288c6a91e5868",
+      "pngSha256": "c76e2923713b7ebace2ac336a67d1acdeb9df8b6147256842e953bda9653ce02",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "name": "golden-mop-sweep",
+  "description": "Loose golden cloth streaks trail left with warm folded creases and cream glints; no duplicate head or binding.",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    384,
+    64
+  ],
+  "pivotPixels": [
+    48,
+    32
+  ],
+  "originNormalized": [
+    0.75,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": false,
+  "durationsMs": [
+    50,
+    50,
+    50,
+    50,
+    33,
+    34
+  ],
+  "sourcePalette": {
+    "s": "#5c380a",
+    "d": "#835620",
+    "m": "#b67c33",
+    "b": "#dea828",
+    "l": "#ffdc5a",
+    "h": "#fff8c8"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "golden-mop",
+      "sha256": "5d390ffeca8dff6fd5b1218e91fc835b52e42838ec34e2b9252fe62a4f954b0c"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        35,
+        28,
+        49,
+        37
+      ],
+      "opaquePixels": 63,
+      "rgbaSha256": "dd7fb6fee0cbcacaf7aea6bae703ecb86dc8ae827210386fd991e10b236e391f",
+      "pngSha256": "63cdc2da5935195f4cd28f700be59919f4d3e9dec4fda7f2dd00a06b511abe71",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        21,
+        24,
+        49,
+        42
+      ],
+      "opaquePixels": 218,
+      "rgbaSha256": "89b07dc8a293767c9d57e735935b2b4122f0c1c6bd59990f78da8a6825e6f3a9",
+      "pngSha256": "7a146b42eda714c42a6a748350742b3fbe53a8fd86caea1f692f444f8b2fb0d4",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        6,
+        20,
+        49,
+        47
+      ],
+      "opaquePixels": 460,
+      "rgbaSha256": "cbd5d8d18cab4bafe68f746e51117e14e32fbf19b7205582a7cbcff9a8fb2a64",
+      "pngSha256": "84ab84d4fbccf69c1cfe3775953f069c5ba8a6d57c7a95ecea7f4de6563e3b60",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        3,
+        22,
+        49,
+        45
+      ],
+      "opaquePixels": 419,
+      "rgbaSha256": "00eea0ce5bab18c7beac9d7cdc5d7f0de2dfb07062f822fd4636de3a48c86a41",
+      "pngSha256": "6af6865aa56017cd9c3c5c6536366f77695ea952c98d250c06b17d3b0e94ae22",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 4,
+      "boundingBoxExclusive": [
+        20,
+        26,
+        49,
+        40
+      ],
+      "opaquePixels": 183,
+      "rgbaSha256": "8c81c166c9cbed6d20038b39ed71e5dae9310db9656eae164c49797c8923f2cc",
+      "pngSha256": "ec03926bba2dbd2d8962a4dad78b165feda0384c5f434fc8e3473a37de454af3",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 5,
+      "boundingBoxExclusive": [
+        36,
+        31,
+        49,
+        35
+      ],
+      "opaquePixels": 33,
+      "rgbaSha256": "b3e4aacce8c58fe53da8c0b5c399d7ef967d6120cddf9a984b8df5c34496203c",
+      "pngSha256": "a4c4e650d64b7eecdeb8416ab56408c161601e3273f43f4f828fa81bd7411d46",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

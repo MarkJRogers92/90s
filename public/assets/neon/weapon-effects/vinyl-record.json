@@ -1,0 +1,117 @@
+{
+  "name": "vinyl-record",
+  "description": "Black vinyl disc flipping through face and edge views, visible grooves, red-pink paper label and punched spindle hole.",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    32
+  ],
+  "pivotPixels": [
+    16,
+    16
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    70,
+    70,
+    70,
+    70
+  ],
+  "sourcePalette": {
+    "k": "#060a0e",
+    "d": "#1f1a1d",
+    "m": "#2b2b2f",
+    "g": "#4b3731",
+    "h": "#697281",
+    "c": "#5ebdc1",
+    "p": "#dd565b",
+    "a": "#b2362d",
+    "s": "#334e5f"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "record-toss",
+      "sha256": "2c7a5fb21f65f157a824749952b17ee11ba78a9811f7afe42465f22ba1ae23fb"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        6,
+        6,
+        27,
+        27
+      ],
+      "opaquePixels": 337,
+      "rgbaSha256": "ca680e98d27af96be848215ae7fb8dd3307166c294c5b2e8cb6f570126d09727",
+      "pngSha256": "e5f6f329ed76d575eeca2bfa92f8c19b17a020e40b748f2b1002ef488a7192e8",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        5,
+        9,
+        28,
+        24
+      ],
+      "opaquePixels": 261,
+      "rgbaSha256": "fd93757f39997512e614faf3dabe962c9fb13db40aaa76a4013ca9af8911b078",
+      "pngSha256": "8b250ee352f85aa7f27d83c6777ddf0cd94f8d46c865e27fc4f51f3da1439974",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        6,
+        13,
+        27,
+        20
+      ],
+      "opaquePixels": 106,
+      "rgbaSha256": "6e4fbcbd12dd6eed243e9caf1d7bb82a7d1ef389860f3d25e5685b626641de6a",
+      "pngSha256": "3b6cd50b0ed80d48269443cecb4cef38aaf1cf043a05b7a0528ca64dd6bb6925",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        5,
+        9,
+        28,
+        24
+      ],
+      "opaquePixels": 261,
+      "rgbaSha256": "fd2dd3cb6330c42bf8eb17455c471866723fce115183fe3ff42c0e86e1cfdded",
+      "pngSha256": "94fa0990139a0906fdc8176e9e17d66535afc10fe8a74f592a3de45073427cd6",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

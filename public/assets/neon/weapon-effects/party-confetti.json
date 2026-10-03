@@ -1,0 +1,149 @@
+{
+  "name": "party-confetti",
+  "description": "Four independent pink, yellow and cyan curled paper strips tumble through face and edge views, plus a tiny gold offcut; open irregular cluster without a circular burst.",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    144,
+    24
+  ],
+  "pivotPixels": [
+    12,
+    12
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    65,
+    65,
+    65,
+    65,
+    65,
+    65
+  ],
+  "sourcePalette": {
+    "p": "#d040a8",
+    "P": "#962078",
+    "y": "#f4bf6d",
+    "Y": "#b67c32",
+    "c": "#3ab7e2",
+    "C": "#5d7daf",
+    "h": "#eacdb7"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "party-popper",
+      "sha256": "733ca74b6196a91e010d9d73207df65b85d942462a84f47151912f8f8ce7ba34"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        4,
+        7,
+        21,
+        20
+      ],
+      "opaquePixels": 29,
+      "rgbaSha256": "a5930cb7e5665c37d283ad4b3da1e29bcb789b8a53385ede5623cf521e5b7814",
+      "pngSha256": "947ccd48e14f62f1c8bfdfed5b012e3f798cf5d737e5d79bd6c0d722c27cef52",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        4,
+        6,
+        20,
+        19
+      ],
+      "opaquePixels": 26,
+      "rgbaSha256": "acbf870fd6e5ba0f598e20af4a99964c02ef1baa5eb49dab80dca6b0b9d94818",
+      "pngSha256": "868da914dfbcb88f2596f8e3ddc3fdd64b15c655b907833422799cc0685a6c9a",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        5,
+        5,
+        22,
+        19
+      ],
+      "opaquePixels": 25,
+      "rgbaSha256": "3275fd3ea45b60236123ce3d3d6a5b3b057abfadff347903bdf9dd1512be9bb7",
+      "pngSha256": "9071a1259346f0c7ade91cf48ff9c6977a4f4296d7f116612e4c95638458a52a",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        5,
+        4,
+        22,
+        20
+      ],
+      "opaquePixels": 29,
+      "rgbaSha256": "5e47dc09bb711fcc6938db1d90a760d5e9144e4d502b7bc39d4c924f0bf37f68",
+      "pngSha256": "d627194dd717b36c738b18014c9128cedaa5cc89a2d9ba1b4e2073c3ade8bf43",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 4,
+      "boundingBoxExclusive": [
+        4,
+        4,
+        21,
+        21
+      ],
+      "opaquePixels": 27,
+      "rgbaSha256": "7bcbfa3bbe1d01891e445e051233cf2e78e27d671dbf475e5fb4d47ded22de39",
+      "pngSha256": "1c70896d73f58e9d9b942718852d849df88b6a181aa35f9dc9a8899edc9572d6",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 5,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        20,
+        19
+      ],
+      "opaquePixels": 24,
+      "rgbaSha256": "61df2ffa171af85941ede53680d879088a359d7301ca5f2d6a6d36ea100a0109",
+      "pngSha256": "c2cf791ef4bd7d4c4e6ea30651b20f55fb8d926669c747bababec6dc8e9ed83b",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

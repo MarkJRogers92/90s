@@ -84,6 +84,7 @@ import { attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyA
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { WeaponView } from './WeaponView';
+import { WeaponEffectView } from './WeaponEffectView';
 import { enemySpriteSheet } from './ActorSpriteView';
 import { PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
@@ -149,6 +150,7 @@ export class MvpRunView {
   private mallRoomKey = '';
   private readonly feedback: CombatFeedback;
   private readonly weapon: WeaponView;
+  private readonly weaponEffects: WeaponEffectView;
   private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
   private readonly offerNames = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedOfferIcons = new Set<string>();
@@ -201,6 +203,7 @@ export class MvpRunView {
     this.effectGraphics = scene.add.graphics().setDepth(presentationDepth('effect', 1));
     this.feedback = new CombatFeedback(scene);
     this.weapon = new WeaponView(scene);
+    this.weaponEffects = new WeaponEffectView(scene);
     this.storeGraphics = scene.add.graphics().setDepth(presentationDepth('decal', 800));
     this.heroProps = new HeroPropView(scene);
   }
@@ -213,10 +216,13 @@ export class MvpRunView {
     const graphics = this.graphics;
     const room = state.wing.rooms[state.roomIndex];
     if (!room) {
+      this.weaponEffects.reset();
       return;
     }
     // Going into a store and back out rebuilds the room, like a doorway.
     const roomKey = `${state.roomIndex}:${room.id}:${state.room.interior ? `inside-${state.room.storeIndex}` : 'concourse'}`;
+    this.weaponEffects.beginFrame(roomKey, state.tick);
+    if (this.mallRoomKey !== roomKey) this.weapon.reset();
     if (this.openingConcourse && this.mallRoomKey !== roomKey) {
       this.concourseAmbience = this.openingConcourse.leaveRoom(state.tick);
       this.openingConcourse.destroy();
@@ -403,7 +409,7 @@ export class MvpRunView {
     this.drawDeathEffects(opening);
 
     for (const projectile of state.room.combat.projectiles) {
-      this.drawProjectile(projectile, opening?.effectGraphics(`projectile:${projectile.id}`) ?? this.effectGraphics);
+      this.drawProjectile(projectile, opening?.effectGraphics(`projectile:${projectile.id}`) ?? this.effectGraphics, state.tick, state.status !== 'dead');
     }
     this.drawChainArcs(state);
 
@@ -487,10 +493,12 @@ export class MvpRunView {
     for (const light of this.feedback.drainLights()) opening?.addLight(light);
     for (const projectile of state.room.combat.projectiles) {
       const enemyShot = projectile.faction === 'enemy';
+      if (!enemyShot && state.status === 'dead') continue;
       opening?.addLight({ x: projectile.x, y: projectile.y, radius: enemyShot ? 46 : 36, color: enemyShot ? 0xff3fc8 : 0x9ad8ff, intensity: 0.85 });
     }
     opening?.renderLighting(state.tick);
     opening?.endFrame();
+    this.weaponEffects.endFrame();
     this.pruneShadows();
     this.pruneEliteTags();
     this.pruneOfferIcons();
@@ -1594,7 +1602,10 @@ export class MvpRunView {
    * player's shots, water reads blue and physical reads bone, and a burst reads
    * as a wide translucent bubble so a spread is distinguishable from a bolt.
    */
-  private drawProjectile(projectile: ProjectileState, graphics = this.graphics): void {
+  private drawProjectile(projectile: ProjectileState, graphics = this.graphics, tick = 0, playerAlive = true): void {
+    // Death freezes simulation projectiles in place. Stop submitting player
+    // shots so the native pool releases them, without painting fallback ghosts.
+    if (!playerAlive && projectile.faction === 'player') return;
     if (projectile.faction === 'enemy') {
       // A hot magenta glob with a dark outline and a fading trail, so it reads
       // on bright terrazzo and dark carpet alike. The solid core is the hitbox.
@@ -1619,7 +1630,8 @@ export class MvpRunView {
       returning: projectile.phase === 'return',
       conductive: (payload?.reactionEffects.length ?? 0) > 0,
     });
-    this.drawShot(projectile, style, graphics);
+    const native = this.weaponEffects.syncProjectile(projectile, tick);
+    this.drawShot(projectile, style, graphics, native?.radius);
   }
 
   /**
@@ -1671,116 +1683,121 @@ export class MvpRunView {
   }
 
   /** One player shot in its weapon's look: a trail, the body, then its modifiers. */
-  private drawShot(projectile: ProjectileState, style: ProjectileStyle, g: Phaser.GameObjects.Graphics): void {
+  private drawShot(projectile: ProjectileState, style: ProjectileStyle, g: Phaser.GameObjects.Graphics, nativeRadius?: number): void {
     const { x, y } = projectile;
     const speed = Math.hypot(projectile.velocityX, projectile.velocityY) || 1;
     const ux = projectile.velocityX / speed;
     const uy = projectile.velocityY / speed;
     const angle = Math.atan2(uy, ux);
-    // Drawn well above hitbox size: a 3 px bolt is invisible in a fight.
-    const r = Math.max(6, projectile.radius * style.scale * 1.8);
+    // Native material cores choose their own modest bounds. Unsupported art
+    // keeps the existing procedural size and silhouette as a safe fallback.
+    const r = nativeRadius ?? Math.max(6, projectile.radius * style.scale * 1.8);
     const t = projectile.remainingTicks + projectile.id * 7;
     this.openingConcourse?.addLight({ x, y, radius: 40 + r * 2, color: style.color, intensity: 0.8 });
-    // Trails first, streaming back along the flight line.
-    for (let i = 1; i <= 5; i += 1) {
-      const bx = x - ux * i * (r * 0.9);
-      const by = y - uy * i * (r * 0.9);
-      const fade = 1 - i / 6;
-      switch (style.trail) {
-        case 'flame':
-          g.fillStyle(i < 3 ? 0xffd84a : 0xff5a3a, 0.8 * fade).fillCircle(bx + Math.sin(t + i) * 1.5, by + Math.cos(t + i) * 1.5, r * (0.9 - i * 0.12));
-          if (i > 3) g.fillStyle(0x5a5060, 0.3 * fade).fillCircle(bx - ux * 6, by - uy * 6, r * 0.8);
-          break;
-        case 'droplets':
-          if (i % 2 === 0) g.fillStyle(0x9ae0ff, 0.7 * fade).fillCircle(bx + Math.sin(t * 0.7 + i) * 2, by + Math.cos(t * 0.7 + i) * 2, 1.8);
-          break;
-        case 'mist':
-          g.fillStyle(0xe8f0ff, 0.18 * fade).fillCircle(bx, by, r * (0.5 + i * 0.1));
-          break;
-        case 'streamers':
-          g.fillStyle(i % 2 === 0 ? 0xffd84a : 0x3ff0ff, 0.9 * fade).fillRect(bx + Math.sin(t + i * 2) * 4, by + Math.cos(t + i * 2) * 4, 3, 3);
-          break;
-        case 'ink':
-          g.lineStyle(3, style.color, 0.6 * fade).lineBetween(bx, by, bx + ux * 6, by + uy * 6);
-          break;
-        case 'ice':
-          if (i % 2 === 1) g.fillStyle(0xe0f0ff, 0.8 * fade).fillRect(bx - 1, by - 1, 2, 2);
-          break;
-        default:
-          break;
-      }
-    }
     const perp = { x: -uy, y: ux };
     const tri = (a: number, b: number, c: number, d: number, e: number, f: number) => g.fillTriangle(a, b, c, d, e, f);
-    switch (style.shape) {
-      case 'droplet': {
-        g.fillStyle(0x0a2a44, 0.9).fillCircle(x, y, r + 2);
-        g.fillStyle(style.color, 1).fillCircle(x, y, r);
-        tri(x + ux * r * 2, y + uy * r * 2, x + perp.x * r, y + perp.y * r, x - perp.x * r, y - perp.y * r);
-        g.fillStyle(style.accent, 1).fillCircle(x - ux * r * 0.3 - perp.x * r * 0.3, y - uy * r * 0.3 - perp.y * r * 0.3, r * 0.35);
-        break;
-      }
-      case 'rocket': {
-        const nose = { x: x + ux * r * 1.6, y: y + uy * r * 1.6 };
-        const tail = { x: x - ux * r * 1.4, y: y - uy * r * 1.4 };
-        g.lineStyle(r * 1.1, style.color, 1).lineBetween(tail.x, tail.y, nose.x, nose.y);
-        g.fillStyle(0xffffff, 1);
-        tri(nose.x + ux * r, nose.y + uy * r, nose.x + perp.x * r * 0.6, nose.y + perp.y * r * 0.6, nose.x - perp.x * r * 0.6, nose.y - perp.y * r * 0.6);
-        g.fillStyle(style.accent, 1);
-        tri(tail.x, tail.y, tail.x - ux * r + perp.x * r, tail.y - uy * r + perp.y * r, tail.x + perp.x * r * 0.3, tail.y + perp.y * r * 0.3);
-        tri(tail.x, tail.y, tail.x - ux * r - perp.x * r, tail.y - uy * r - perp.y * r, tail.x - perp.x * r * 0.3, tail.y - perp.y * r * 0.3);
-        break;
-      }
-      case 'confetti': {
-        g.fillStyle(0x1a0a2a, 0.8).fillCircle(x, y, r + 2);
-        const colors = [0xff3fc8, 0xffd84a, 0x3ff0ff, 0x6aff8a];
-        for (let i = 0; i < 6; i += 1) {
-          const a = t * 0.4 + i * (Math.PI / 3);
-          g.fillStyle(colors[i % 4]!, 1).fillRect(x + Math.cos(a) * r * 0.8 - 1.5, y + Math.sin(a) * r * 0.8 - 1.5, 3, 3);
+    // Authored sheets already contain their material motion. Never paint the
+    // old generic body or broad trail underneath a native core.
+    if (nativeRadius === undefined) {
+      // Trails first, streaming back along the flight line.
+      for (let i = 1; i <= 5; i += 1) {
+        const bx = x - ux * i * (r * 0.9);
+        const by = y - uy * i * (r * 0.9);
+        const fade = 1 - i / 6;
+        switch (style.trail) {
+          case 'flame':
+            g.fillStyle(i < 3 ? 0xffd84a : 0xff5a3a, 0.8 * fade).fillCircle(bx + Math.sin(t + i) * 1.5, by + Math.cos(t + i) * 1.5, r * (0.9 - i * 0.12));
+            if (i > 3) g.fillStyle(0x5a5060, 0.3 * fade).fillCircle(bx - ux * 6, by - uy * 6, r * 0.8);
+            break;
+          case 'droplets':
+            if (i % 2 === 0) g.fillStyle(0x9ae0ff, 0.7 * fade).fillCircle(bx + Math.sin(t * 0.7 + i) * 2, by + Math.cos(t * 0.7 + i) * 2, 1.8);
+            break;
+          case 'mist':
+            g.fillStyle(0xe8f0ff, 0.18 * fade).fillCircle(bx, by, r * (0.5 + i * 0.1));
+            break;
+          case 'streamers':
+            g.fillStyle(i % 2 === 0 ? 0xffd84a : 0x3ff0ff, 0.9 * fade).fillRect(bx + Math.sin(t + i * 2) * 4, by + Math.cos(t + i * 2) * 4, 3, 3);
+            break;
+          case 'ink':
+            g.lineStyle(3, style.color, 0.6 * fade).lineBetween(bx, by, bx + ux * 6, by + uy * 6);
+            break;
+          case 'ice':
+            if (i % 2 === 1) g.fillStyle(0xe0f0ff, 0.8 * fade).fillRect(bx - 1, by - 1, 2, 2);
+            break;
+          default:
+            break;
         }
-        g.fillStyle(style.color, 1).fillCircle(x, y, r * 0.5);
-        break;
       }
-      case 'cloud': {
-        for (let i = 0; i < 4; i += 1) {
-          const a = t * 0.2 + i * (Math.PI / 2);
-          g.fillStyle(i % 2 === 0 ? style.color : style.accent, 0.75).fillCircle(x + Math.cos(a) * r * 0.4, y + Math.sin(a) * r * 0.4, r * 0.6);
+      switch (style.shape) {
+        case 'droplet': {
+          g.fillStyle(0x0a2a44, 0.9).fillCircle(x, y, r + 2);
+          g.fillStyle(style.color, 1).fillCircle(x, y, r);
+          tri(x + ux * r * 2, y + uy * r * 2, x + perp.x * r, y + perp.y * r, x - perp.x * r, y - perp.y * r);
+          g.fillStyle(style.accent, 1).fillCircle(x - ux * r * 0.3 - perp.x * r * 0.3, y - uy * r * 0.3 - perp.y * r * 0.3, r * 0.35);
+          break;
         }
-        break;
-      }
-      case 'dart': {
-        const head = { x: x + ux * r * 1.8, y: y + uy * r * 1.8 };
-        g.lineStyle(4, 0x05030a, 1).lineBetween(x - ux * r * 1.5, y - uy * r * 1.5, head.x, head.y);
-        g.lineStyle(2, style.color, 1).lineBetween(x - ux * r * 1.5, y - uy * r * 1.5, head.x, head.y);
-        g.fillStyle(style.color, 1);
-        tri(head.x + ux * 5, head.y + uy * 5, head.x + perp.x * 3, head.y + perp.y * 3, head.x - perp.x * 3, head.y - perp.y * 3);
-        break;
-      }
-      case 'ball': {
-        g.fillStyle(0x05030a, 0.9).fillCircle(x, y, r + 2);
-        g.fillStyle(style.color, 1).fillCircle(x, y, r);
-        // Foam seams spinning as it flies.
-        g.lineStyle(2, style.accent, 1).beginPath().arc(x, y, r * 0.7, t * 0.5, t * 0.5 + Math.PI * 0.8).strokePath();
-        g.fillStyle(0xffffff, 0.8).fillCircle(x - r * 0.35, y - r * 0.35, r * 0.25);
-        break;
-      }
-      case 'slush': {
-        g.fillStyle(0x1a0a2a, 0.9).fillCircle(x, y, r + 2);
-        g.fillStyle(style.color, 1).fillCircle(x, y, r);
-        g.fillStyle(style.accent, 1).fillCircle(x + perp.x * r * 0.3, y + perp.y * r * 0.3, r * 0.55);
-        for (let i = 0; i < 3; i += 1) g.fillStyle(0xffffff, 0.9).fillRect(x + Math.cos(t + i * 2) * r * 0.5, y + Math.sin(t + i * 2) * r * 0.5, 2, 2);
-        break;
-      }
-      case 'bubble': {
-        const wob = Math.sin(t / 3) * 1.5;
-        g.fillStyle(0xb8f0ff, 0.18).fillEllipse(x, y, (r + wob) * 2, (r - wob) * 2);
-        g.lineStyle(2, [0xff9af0, 0x9af0ff, 0xf0ff9a][Math.floor(t / 6) % 3]!, 0.9).strokeEllipse(x, y, (r + wob) * 2, (r - wob) * 2);
-        g.fillStyle(0xffffff, 0.9).fillEllipse(x - r * 0.4, y - r * 0.45, r * 0.5, r * 0.3);
-        break;
-      }
-      default: {
-        g.fillStyle(style.color, 1).fillCircle(x, y, r);
-        g.lineStyle(2, 0x2b3a44, 0.9).strokeCircle(x, y, r + 2);
+        case 'rocket': {
+          const nose = { x: x + ux * r * 1.6, y: y + uy * r * 1.6 };
+          const tail = { x: x - ux * r * 1.4, y: y - uy * r * 1.4 };
+          g.lineStyle(r * 1.1, style.color, 1).lineBetween(tail.x, tail.y, nose.x, nose.y);
+          g.fillStyle(0xffffff, 1);
+          tri(nose.x + ux * r, nose.y + uy * r, nose.x + perp.x * r * 0.6, nose.y + perp.y * r * 0.6, nose.x - perp.x * r * 0.6, nose.y - perp.y * r * 0.6);
+          g.fillStyle(style.accent, 1);
+          tri(tail.x, tail.y, tail.x - ux * r + perp.x * r, tail.y - uy * r + perp.y * r, tail.x + perp.x * r * 0.3, tail.y + perp.y * r * 0.3);
+          tri(tail.x, tail.y, tail.x - ux * r - perp.x * r, tail.y - uy * r - perp.y * r, tail.x - perp.x * r * 0.3, tail.y - perp.y * r * 0.3);
+          break;
+        }
+        case 'confetti': {
+          g.fillStyle(0x1a0a2a, 0.8).fillCircle(x, y, r + 2);
+          const colors = [0xff3fc8, 0xffd84a, 0x3ff0ff, 0x6aff8a];
+          for (let i = 0; i < 6; i += 1) {
+            const a = t * 0.4 + i * (Math.PI / 3);
+            g.fillStyle(colors[i % 4]!, 1).fillRect(x + Math.cos(a) * r * 0.8 - 1.5, y + Math.sin(a) * r * 0.8 - 1.5, 3, 3);
+          }
+          g.fillStyle(style.color, 1).fillCircle(x, y, r * 0.5);
+          break;
+        }
+        case 'cloud': {
+          for (let i = 0; i < 4; i += 1) {
+            const a = t * 0.2 + i * (Math.PI / 2);
+            g.fillStyle(i % 2 === 0 ? style.color : style.accent, 0.75).fillCircle(x + Math.cos(a) * r * 0.4, y + Math.sin(a) * r * 0.4, r * 0.6);
+          }
+          break;
+        }
+        case 'dart': {
+          const head = { x: x + ux * r * 1.8, y: y + uy * r * 1.8 };
+          g.lineStyle(4, 0x05030a, 1).lineBetween(x - ux * r * 1.5, y - uy * r * 1.5, head.x, head.y);
+          g.lineStyle(2, style.color, 1).lineBetween(x - ux * r * 1.5, y - uy * r * 1.5, head.x, head.y);
+          g.fillStyle(style.color, 1);
+          tri(head.x + ux * 5, head.y + uy * 5, head.x + perp.x * 3, head.y + perp.y * 3, head.x - perp.x * 3, head.y - perp.y * 3);
+          break;
+        }
+        case 'ball': {
+          g.fillStyle(0x05030a, 0.9).fillCircle(x, y, r + 2);
+          g.fillStyle(style.color, 1).fillCircle(x, y, r);
+          // Foam seams spinning as it flies.
+          g.lineStyle(2, style.accent, 1).beginPath().arc(x, y, r * 0.7, t * 0.5, t * 0.5 + Math.PI * 0.8).strokePath();
+          g.fillStyle(0xffffff, 0.8).fillCircle(x - r * 0.35, y - r * 0.35, r * 0.25);
+          break;
+        }
+        case 'slush': {
+          g.fillStyle(0x1a0a2a, 0.9).fillCircle(x, y, r + 2);
+          g.fillStyle(style.color, 1).fillCircle(x, y, r);
+          g.fillStyle(style.accent, 1).fillCircle(x + perp.x * r * 0.3, y + perp.y * r * 0.3, r * 0.55);
+          for (let i = 0; i < 3; i += 1) g.fillStyle(0xffffff, 0.9).fillRect(x + Math.cos(t + i * 2) * r * 0.5, y + Math.sin(t + i * 2) * r * 0.5, 2, 2);
+          break;
+        }
+        case 'bubble': {
+          const wob = Math.sin(t / 3) * 1.5;
+          g.fillStyle(0xb8f0ff, 0.18).fillEllipse(x, y, (r + wob) * 2, (r - wob) * 2);
+          g.lineStyle(2, [0xff9af0, 0x9af0ff, 0xf0ff9a][Math.floor(t / 6) % 3]!, 0.9).strokeEllipse(x, y, (r + wob) * 2, (r - wob) * 2);
+          g.fillStyle(0xffffff, 0.9).fillEllipse(x - r * 0.4, y - r * 0.45, r * 0.5, r * 0.3);
+          break;
+        }
+        default: {
+          g.fillStyle(style.color, 1).fillCircle(x, y, r);
+          g.lineStyle(2, 0x2b3a44, 0.9).strokeCircle(x, y, r + 2);
+        }
       }
     }
     if (projectile.hasBurst === true) g.lineStyle(2, style.accent, 0.5).strokeCircle(x, y, r + 7);
@@ -1866,6 +1883,7 @@ export class MvpRunView {
     if (state.status === 'dead') {
       // The mop falls with him: the death sheet has empty hands.
       this.weapon.hide();
+      this.weaponEffects.hideMelee();
       return;
     }
     const lights = this.weapon.sync({
@@ -1875,10 +1893,16 @@ export class MvpRunView {
       facingY: player.facing.y,
       attackActiveTicks: player.attackActiveTicks,
       definitionId: primary.definitionId,
+      instanceId: state.inventory.selectedPrimaryInstanceId,
       delivery: primary.delivery,
       range: primary.range,
       halfAngleRadians: primary.halfAngleRadians,
-    }, state.tick, effects, presentationDepth('actor', player.y));
+    }, state.tick, effects, presentationDepth('actor', player.y),
+    this.weaponEffects.canRenderMelee(primary.definitionId), this.weaponEffects.canRenderRanged(primary.definitionId));
+    const progress = this.weapon.swingAt(state.tick);
+    const head = this.weapon.headAt();
+    if (primary.delivery === 'direct') this.weaponEffects.syncMelee(primary.definitionId, progress, head);
+    else this.weaponEffects.syncMuzzle(primary.definitionId, progress, head);
     for (const light of lights) this.openingConcourse?.addLight(light);
   }
 
@@ -2138,7 +2162,13 @@ export class MvpRunView {
   private playerAction(state: MvpRunState, fxTick: number): PlayerBodyAction | null {
     const player = state.room.combat.player;
     const primary = state.room.combat.compiledLoadout.primary;
-    this.weapon.noteAttack({ attackActiveTicks: player.attackActiveTicks, facingX: player.facing.x, facingY: player.facing.y }, state.tick);
+    this.weapon.noteAttack({
+      definitionId: primary.definitionId,
+      instanceId: state.inventory.selectedPrimaryInstanceId,
+      attackActiveTicks: player.attackActiveTicks,
+      facingX: player.facing.x,
+      facingY: player.facing.y,
+    }, state.tick);
     const dead = state.status === 'dead';
     if (dead && this.deadSince === null) this.deadSince = this.scene.time.now;
     if (!dead) this.deadSince = null;
@@ -2466,6 +2496,7 @@ export class MvpRunView {
     this.offerIcons.clear();
     this.feedback.destroy();
     this.weapon.destroy();
+    this.weaponEffects.destroy();
     this.storeGraphics.destroy();
     this.openingConcourse?.destroy();
     this.openingConcourse = undefined;
@@ -2488,6 +2519,7 @@ export class MvpRunView {
     this.heldTicks = 0;
     this.feedback.resetRoom('');
     this.weapon.reset();
+    this.weaponEffects.reset();
     this.clearDashGhosts();
     this.dashesThisRun = 0;
     this.enemyFirstSeen.clear();

@@ -1,0 +1,119 @@
+{
+  "name": "bottle-rocket",
+  "description": "One red paper rocket with a pointed cap, foil band and exposed wooden guide stick. Four small advancing flame silhouettes; source x0..9 is exhaust-only for nozzle release.",
+  "frameWidth": 32,
+  "frameHeight": 16,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    16
+  ],
+  "pivotPixels": [
+    16,
+    8
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    55,
+    55,
+    55,
+    55
+  ],
+  "sourcePalette": {
+    "k": "#060a0e",
+    "s": "#611516",
+    "d": "#842120",
+    "r": "#b2362d",
+    "R": "#d54c3b",
+    "w": "#835620",
+    "W": "#b67c32",
+    "g": "#9198a5",
+    "h": "#c0bdb8",
+    "f": "#f4bf6d",
+    "c": "#ecd1ba"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "bottle-rocket-pack",
+      "sha256": "875dabb8b3396c6c6e728a7dbacab401cdcd14f07896db5fe77a2c4db719de36"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        2,
+        5,
+        29,
+        14
+      ],
+      "opaquePixels": 127,
+      "rgbaSha256": "685ba4f467e9015e2c34b82f473130c6adcbfff86ef9fcb8cb40d2a9e9c8583f",
+      "pngSha256": "d9e32a6ca6e39e27d4ff6bded38da68c08bec25407497646c9ed828b858225d4",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        3,
+        5,
+        29,
+        14
+      ],
+      "opaquePixels": 126,
+      "rgbaSha256": "fb813b0b529d77a28957b8cbef761fa5e8656b42972f6c2896b569fab140e5fe",
+      "pngSha256": "d89f12ffcd534be2680fb7465c2182536cf15f0735a34ed5ed758cefe4e10e41",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        2,
+        5,
+        29,
+        14
+      ],
+      "opaquePixels": 131,
+      "rgbaSha256": "f141888bdf4043449fd60119cc651efa71d6fd8fc0836ba8f4315baee07eb731",
+      "pngSha256": "d2c2111b4e7482439c79b2f9c4f27cd28bc13076249dd3daf91397948e28219c",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        3,
+        5,
+        29,
+        14
+      ],
+      "opaquePixels": 129,
+      "rgbaSha256": "21a7f076c969aace0bb6078e5f7285bc526733a9a761948363f2c97381102ac9",
+      "pngSha256": "266776368e45ef7b250796644d4b5da1fdf880d556a21163cdd4ce2b7d89102c",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

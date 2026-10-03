@@ -1,0 +1,117 @@
+{
+  "name": "vhs-tape",
+  "description": "Tumbling black VHS cassette with paired visible reel windows, pink label and molded lower lip.",
+  "frameWidth": 32,
+  "frameHeight": 32,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    32
+  ],
+  "pivotPixels": [
+    16,
+    16
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    70,
+    70,
+    70,
+    70
+  ],
+  "sourcePalette": {
+    "k": "#060a0e",
+    "s": "#0c1314",
+    "d": "#1f1a1d",
+    "b": "#2b2b2f",
+    "m": "#4b3731",
+    "l": "#697281",
+    "h": "#9198a5",
+    "r": "#b2362d",
+    "p": "#dd565b"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "iconsInspected": [
+    {
+      "name": "vhs-tape",
+      "sha256": "fe7fd7714d302a3c57d5300472c873111f276a848a90681f4de35fab8b5c708b"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        4,
+        9,
+        27,
+        24
+      ],
+      "opaquePixels": 333,
+      "rgbaSha256": "b396dc5196ce31693d9ff9c36cd196bcb23fd3cc457e1674a8a1e75e467f3b29",
+      "pngSha256": "7903fd2f0fef61ed5a64c1e9fcf0598b59b2e211daf3a94cdfe9edcdc8e7f40b",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        3,
+        4,
+        27,
+        28
+      ],
+      "opaquePixels": 327,
+      "rgbaSha256": "636fd14970891721bf8ec6d5df83e8c41585c189406b50dd2567c9e0b2804a2d",
+      "pngSha256": "95e3e045e33d7de2b7e3d2b05c67b5a13ce63e63271b95233cab73aec0a002a3",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        8,
+        4,
+        23,
+        27
+      ],
+      "opaquePixels": 333,
+      "rgbaSha256": "af060cef1ef8455c586cebb742ede1d3283ed22b6a5b4cffa527338ac10c1082",
+      "pngSha256": "c8465f061c2a81482df97c0cb6499d4cb3c65010de1aed296d9efe3969a35959",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        4,
+        3,
+        28,
+        27
+      ],
+      "opaquePixels": 327,
+      "rgbaSha256": "4c03d14f947464e8066db93d544cec9d2c7baf6e35563fb8f4edfff85addaa35",
+      "pngSha256": "62f98d4990a8ed8852fc6438591a79e9ddb0618538a6c64c0cec67cec5a17c63",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}
