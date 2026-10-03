@@ -67,5 +67,18 @@
       "east": "f6c37c2c-b4e8-4564-a12c-6f6d7c325f5d",
       "south-east": "b7b931e3-7c87-4d81-a426-57a7829fbb6e"
     }
+  },
+  "manager-attack": {
+    "group": "e2038605-2b60-40e7-b97a-0d7fb9347fc9",
+    "jobs": {
+      "south": "3568e083-68b1-4c75-9041-add5f74da03d",
+      "south-west": "d1af6d12-44d5-4788-921f-c38ae91f00d2",
+      "west": "42386a52-0e74-4345-b6a2-855bfaef7ac5",
+      "north-west": "3b08b26f-cc32-44b2-9589-14e3cd9b270e",
+      "north": "a3bcded2-28b9-4ed2-9522-7d03ba9ffce1",
+      "north-east": "f53c951e-2dcc-49cf-8c42-870eeea209d7",
+      "east": "a533e78f-fa19-4a36-9bf8-bb4a2a5c8aaa",
+      "south-east": "c3871054-4938-4b9f-be76-77771251cd54"
+    }
   }
 }

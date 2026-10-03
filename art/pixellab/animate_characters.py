@@ -5,6 +5,7 @@ them), so animating them keeps identity, palette and scale exact. Needs PIXELLAB
 
     python3 art/pixellab/animate_characters.py submit   # queue jobs, write jobs.json
     python3 art/pixellab/animate_characters.py collect  # wait, then pack the sheets
+    python3 art/pixellab/animate_characters.py publish <name>  # after review: copy into public/
 
 Cost: 1 subscription generation per direction (8 per animation) at 64 px; larger characters cost more
 (the 96 px Mascot redo cost about 16). Check GET /balance before and after.
@@ -220,9 +221,21 @@ def collect(only=None):
         print(f'{name}: {count} frames x 8 facings at {size}px -> {raw_path.relative_to(ROOT)}', flush=True)
 
 
+def publish(only=None):
+    """After reviewing art/pixellab/<name>.png, copy it to its runtime path, losslessly recompressed."""
+    for name, _, _, _, out in ANIMATIONS:
+        if only and name not in only:
+            continue
+        src = Image.open(HERE / f'{name}.png').convert('RGBA')
+        for path in (HERE / f'{name}.png', ROOT / out):
+            src.save(path, optimize=True, compress_level=9)
+        assert Image.open(ROOT / out).convert('RGBA').tobytes() == src.tobytes()
+        print(f'{name}: published {out} ({(ROOT / out).stat().st_size // 1024} KB)')
+
+
 if __name__ == '__main__':
     if sys.argv[1] == 'redo':
         redo(sys.argv[2:])
         raise SystemExit
     only = set(sys.argv[2:]) or None
-    {'submit': submit, 'topup': topup, 'collect': collect}[sys.argv[1]](only)
+    {'submit': submit, 'topup': topup, 'collect': collect, 'publish': publish}[sys.argv[1]](only)

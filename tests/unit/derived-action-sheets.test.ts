@@ -31,7 +31,7 @@ describe('charge and lob wind-ups drive authored attack frames (roadmap V2)', ()
     expect(attackFrameFor(enemy('owner'), [windup('charge', 0.9)], 6, 0)).toBe(4);
   });
   it('registers each PixelLab attack sheet (walk canvas grown evenly, feet re-registered)', () => {
-    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216]] as const) {
+    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216], ['neon:enemy:owner-attack', 'owner-attack.png', 1032, 1376]] as const) {
       const found = NEON_ASSETS.filter((asset) => asset.key === key);
       expect(found, key).toHaveLength(1);
       expect(found[0]!.url).toBe(`/assets/neon/enemies/${file}`);
