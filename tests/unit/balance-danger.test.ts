@@ -31,7 +31,8 @@ function winding(combat: RunState, kind: 'mascot' | 'shopper', x: number, y: num
   return monster;
 }
 
-describe('balance bot danger model (round 57 follow-up)', () => {
+// Each case plays whole boss fights headlessly: ~3-8 s when the machine is busy, over the 5 s default.
+describe('balance bot danger model (round 57 follow-up)', { timeout: 30_000 }, () => {
   it('reads a Mascot Brute winding up as a charge that starts when the wind-up ends', () => {
     const combat = arena();
     winding(combat, 'mascot', 480, 80, 0, 1, 30);

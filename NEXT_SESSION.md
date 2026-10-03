@@ -19,10 +19,13 @@ isolation with a 30 s timeout. The production build, browser suite and
 `npm run balance` were not run (nothing balance-related changed). Live visual
 QA of the strip at four/five stars is still outstanding.
 
-Open review items, not fixed here: the run menu freezes end cards without
-pausing when opened during the kill cam/ending; `ensurePixelLabel` has no
-texture cap; `balance-danger` needs a longer timeout; NEXT_SESSION's "Start
-here" section still describes round 57 as the tip of `origin/main`.
+Also in this change: `balance-danger.test.ts` now has a 30 s timeout (it
+passes alone in ~13 s; it hit the 5 s default under load). Reviewed and left
+alone on purpose: the run menu freezing end-card cinematics while open (they
+are time-driven and resume on close, so it reads as a modal pause), and the
+uncapped `ensurePixelLabel` cache (labels are a few KB each, and evicting one
+a one-shot image still holds risks a blank sprite). NEXT_SESSION's "Start
+here" section now names the real tip of `origin/main`.
 
 ## 2026-10-03 UTC — Mall-directory HUD (integration)
 
@@ -317,9 +320,12 @@ No push, merge or deployment was performed. See TEST_EVIDENCE.md for checks,
 including the load-related timeout resolved by running the full unit suite
 with four workers and using a file-watch-free browser QA session.
 
-## Start here (updated 2026-10-01)
+## Start here (updated 2026-10-03)
 
-`origin/main` is at round 57 (merge `4cf40da`): a bot playtester, the staff
+`origin/main` is at the mall-directory HUD merge (`b4db9ba`, PR #49), after
+PRs #47 (weapon effects) and #48 (enemy reactions, loot, viewport) and the wanted-strip fix
+that followed them; none of those touch `src/sim`. Round 57 (merge `4cf40da`) is the last
+gameplay round: a bot playtester, the staff
 passage, the coach, the daily rule, elite traits, the seed card and wanted
 clarity, on top of round 56's floor-exclusive stores and leaner economy (rounds
 54 and 55 are in it too). Round 57 was built as nine commits (a refactor, one
