@@ -1,5 +1,76 @@
 # Next session
 
+## 2026-10-03 UTC — PixelLab animations: Alex aim + dash, Spritzer/Mascot/Roofer attacks (HANDOFF)
+
+Branch `feat/attack-windups-alex-dash`, PR #56 (not merged). Presentation only;
+no `src/sim` change.
+
+**Done.** These were made by animating the game's *original* PixelLab
+characters through the PixelLab v2 API, so identity, palette and scale match
+the existing sheets:
+
+| Sheet | Character id | Frames |
+|---|---|---|
+| `alex-aim.png` | 943aa1b2 | 4 |
+| `alex-dash.png` | 943aa1b2 | 4 |
+| `mascot-attack.png` | 2370b80c | 6 |
+| `spritzer-attack.png` | cd520aac | 6 |
+| `roofer-attack.png` | d6eb1ca9 | 6 |
+
+All are 8 facings.
+
+- **Aim:** a new body sheet that plays while a ranged weapon fires. The held
+  gun moves out to the outstretched hand (`AIM_POSE_REACH`). It yields to
+  death, hurt and the dash.
+- **Dash:** draws along the dash direction, not the aim.
+- **Attacks:** the charge and lob wind-ups now drive attack frames
+  (`attackFrameFor`, `WINDUP_RELEASE_AT`).
+- **Redos:** three drifted directions were regenerated (Alex's aim NW, the
+  Spritzer NE, the Roofer W).
+- **Re-registration:** every sheet is re-registered so each facing's
+  rest-frame feet and centre match its walk sheet (zero px error). Without
+  it, the Roofer floated about 15 px up when attacking.
+- **Derived pass removed:** `art/derived-poses` is gone, so nothing
+  overwrites the PixelLab art.
+- **Spend:** 68 of 500 subscription generations; 432 remain. The earlier
+  Retro Diffusion trial was $0.18.
+
+**How to redo or extend (needs `PIXELLAB_API_KEY`):**
+
+    python3 art/pixellab/animate_characters.py submit [names]   # queue (waits out 429)
+    python3 art/pixellab/animate_characters.py topup            # API drops directions past free job slots; queue the rest
+    python3 art/pixellab/animate_characters.py redo <name> <direction> ...
+    python3 art/pixellab/animate_characters.py collect [names]  # pack from the character ZIP export + re-register feet
+
+Then copy `art/pixellab/<name>.png` into `public/assets/neon/...`.
+
+Network notes:
+- `backblaze.pixellab.ai` (the frame CDN) is blocked here, which is why
+  frames come from `GET /v2/characters/{id}/zip` on `api.pixellab.ai`.
+- `GET /v2/balance` shows the generation allowance.
+- `GET /v2/characters` lists every character id. The Bargain Hunter, Poodle,
+  Elf, Goon and the bosses are all there for the next wind-ups.
+
+**Verified:**
+- Unit: 1,844 of 1,844 across 179 files. TypeScript passes.
+- Tests: `alex-aim.test.ts` and `derived-action-sheets.test.ts` (sheet
+  sizes, priority, dash row).
+- Feet registration was measured per facing.
+
+**NOT yet verified (next steps for whoever picks this up):**
+1. A live capture of the PixelLab sheets in game. The earlier live checks
+   ran on the derived sheets this replaces. Run `scripts/live-capture.mjs`
+   or the wind-up/dash capture in `artifacts/live-qa/windups/` (see the
+   previous entry). Check the aim pose with a ranged weapon
+   (`?fixture=mvp-water`), the dash, and the Mascot (`mvp-floor-three-brute`),
+   Roofer (`mvp-floor-four-roofer`) and Spritzer (`mvp-district&floor=2`)
+   telegraphs.
+2. `npm run build` and the browser specs (night-shift:355,
+   break-room:84, presentation-evidence).
+3. The Mascot's PixelLab charge motion is modest (a hunch, no big lunge).
+   Consider a redo with a stronger action text.
+4. Then merge #56, and update `docs/VISUAL_ROADMAP.md` V2/V4 to "PixelLab".
+
 ## 2026-10-03 UTC — Enemy wind-up sheets (V2) and Alex's dash (V4)
 
 Presentation only; no `src/sim` change, so the balance bot cannot move.

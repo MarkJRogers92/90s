@@ -1,0 +1,204 @@
+"""Animate the game's original PixelLab characters (roadmap V2/V4) and pack 8-row sheets.
+
+The characters already exist in the account (their walk/idle sheets were made from
+them), so animating them keeps identity, palette and scale exact. Needs PIXELLAB_API_KEY.
+
+    python3 art/pixellab/animate_characters.py submit   # queue jobs, write jobs.json
+    python3 art/pixellab/animate_characters.py collect  # wait, then pack the sheets
+
+Cost: 1 subscription generation per direction (8 per animation).
+"""
+import io, json, os, sys, time, urllib.error, urllib.request, zipfile
+from pathlib import Path
+from PIL import Image
+
+API = 'https://api.pixellab.ai/v2'
+ROOT = Path(__file__).resolve().parents[2]
+HERE = Path(__file__).resolve().parent
+JOBS = HERE / 'jobs.json'
+ORDER = ['south', 'south-west', 'west', 'north-west', 'north', 'north-east', 'east', 'south-east']  # ACTOR_DIRECTION_ORDER
+
+ANIMATIONS = [
+    # name, character id, frames, action, output sheet
+    ('alex-aim', '943aa1b2-012d-4991-ad6b-3fbe34635d9c', 4,
+     'both hands completely empty and open, holding nothing at all, raises both arms straight forward at chest height and holds them steady pointing ahead as if aiming, holds the pose',
+     'public/assets/neon/player/alex-aim.png'),
+    ('alex-dash', '943aa1b2-012d-4991-ad6b-3fbe34635d9c', 4,
+     'both hands empty, dashes forward in a fast low sprint, body leaning far forward, legs stretched in a long stride, arms swung back',
+     'public/assets/neon/player/alex-dash.png'),
+    ('mascot-attack', '2370b80c-ac64-49c3-8b07-f225c9e23de7', 6,
+     'crouches low and digs in, winding up, then charges forward shoulder first',
+     'public/assets/neon/enemies/mascot-attack.png'),
+    ('spritzer-attack', 'cd520aac-8bba-4d2f-a244-96fe2c7af2a5', 6,
+     'draws back her perfume bottle, then thrusts it forward and sprays a cloud of perfume ahead',
+     'public/assets/neon/enemies/spritzer-attack.png'),
+    ('roofer-attack', 'd6eb1ca9-7b67-4f9e-909c-18eac03de22f', 6,
+     'swings a bucket of hot tar back behind him, then heaves it forward and throws it overhand',
+     'public/assets/neon/enemies/roofer-attack.png'),
+]
+
+
+def call(method, path, body=None, raw=False):
+    req = urllib.request.Request(f'{API}{path}', method=method, data=None if body is None else json.dumps(body).encode(),
+                                 headers={'Authorization': f'Bearer {os.environ["PIXELLAB_API_KEY"]}', 'Content-Type': 'application/json'})
+    for attempt in range(5):
+        try:
+            with urllib.request.urlopen(req, timeout=180) as r:
+                data = r.read()
+                return data if raw else json.loads(data)
+        except urllib.error.HTTPError:
+            raise
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            # Large ZIP exports occasionally drop through the proxy; back off and retry.
+            time.sleep(2 ** (attempt + 1))
+    raise SystemExit(f'{method} {path}: network kept failing')
+
+
+def submit(only=None):
+    """Queue each animation in turn; the plan limits concurrent jobs (HTTP 429), so wait it out."""
+    done = json.loads(JOBS.read_text()) if JOBS.exists() else {}
+    for name, character, frames, action, _ in ANIMATIONS:
+        if name in done or (only and name not in only):
+            continue
+        for _ in range(120):
+            try:
+                res = call('POST', '/characters/animations', {
+                    'character_id': character, 'mode': 'v3', 'animation_name': name, 'action_description': action,
+                    'frame_count': frames, 'keep_first_frame': False, 'directions': ORDER})
+                break
+            except urllib.error.HTTPError as error:
+                if error.code not in (423, 429):
+                    raise
+                time.sleep(20)
+        done[name] = {'group': res['animation_group_id'], 'jobs': dict(zip(res['directions'], res['background_job_ids']))}
+        JOBS.write_text(json.dumps(done, indent=2))
+        print(name, 'queued', len(res['background_job_ids']), 'directions', flush=True)
+
+
+def topup(only=None):
+    """The API accepts only as many directions as there are free job slots and drops the
+    rest, so queue each animation's missing directions onto its group until all 8 are in."""
+    done = json.loads(JOBS.read_text())
+    for name, character, frames, action, _ in ANIMATIONS:
+        if (only and name not in only) or name not in done or not done[name]['jobs']:
+            continue
+        while missing := [d for d in ORDER if d not in done[name]['jobs']]:
+            try:
+                res = call('POST', '/characters/animations', {
+                    'character_id': character, 'mode': 'v3', 'animation_group_id': done[name]['group'],
+                    'animation_name': name, 'action_description': action,
+                    'frame_count': frames, 'keep_first_frame': False, 'directions': missing})
+            except urllib.error.HTTPError as error:
+                if error.code not in (423, 429):
+                    raise
+                time.sleep(20)
+                continue
+            done[name]['jobs'].update(dict(zip(res['directions'], res['background_job_ids'])))
+            JOBS.write_text(json.dumps(done, indent=2))
+            print(name, 'queued', res['directions'], flush=True)
+            if not res['directions']:
+                time.sleep(20)
+
+
+def group_of(character, name):
+    for anim in call('GET', f'/characters/{character}')['animations']:
+        if anim.get('display_name') == name:
+            return anim['animation_group_id']
+    raise SystemExit(f'{name}: no animation on {character}')
+
+
+def redo(args):
+    """Regenerate single drifted directions: redo <name> <direction> [<name> <direction> ...]."""
+    pairs = list(zip(args[0::2], args[1::2]))
+    specs = {a[0]: a for a in ANIMATIONS}
+    for name, direction in pairs:
+        _, character, frames, action, _ = specs[name]
+        group = group_of(character, name)
+        call('DELETE', f'/characters/{character}/animations/{group}/directions/{direction}')
+        while True:
+            try:
+                res = call('POST', '/characters/animations', {
+                    'character_id': character, 'mode': 'v3', 'animation_group_id': group, 'animation_name': name,
+                    'action_description': action, 'frame_count': frames, 'keep_first_frame': False, 'directions': [direction]})
+                if res['directions']:
+                    break
+            except urllib.error.HTTPError as error:
+                if error.code not in (423, 429):
+                    raise
+            time.sleep(20)
+        print(name, direction, 'regenerating', flush=True)
+
+
+def export(character):
+    """The character ZIP (api host) carries every animation's frames; 423 while jobs run."""
+    for _ in range(120):
+        try:
+            return zipfile.ZipFile(io.BytesIO(call('GET', f'/characters/{character}/zip', raw=True)))
+        except urllib.error.HTTPError as error:
+            if error.code != 423:
+                raise
+            time.sleep(15)
+    raise SystemExit(f'{character}: still generating')
+
+
+WALK_SHEETS = {
+    'public/assets/neon/player/': 'public/assets/neon/player/alex-walk.png',
+}
+
+
+def walk_sheet_for(out):
+    folder, name = out.rsplit('/', 1)
+    if folder + '/' in WALK_SHEETS:
+        return ROOT / WALK_SHEETS[folder + '/']
+    return ROOT / folder / (name.rsplit('-', 1)[0] + '-walk.png')
+
+
+def register(sheet, size, count, out):
+    """PixelLab places a character anywhere in its (often larger) canvas. The renderer
+    assumes an action canvas is the walk canvas grown evenly, so shift each facing row
+    until its rest frame's feet and centre sit where the walk sheet puts them."""
+    walk = Image.open(walk_sheet_for(out)).convert('RGBA')
+    wsize = walk.height // 8
+    grow = (size - wsize) / 2
+    fixed = Image.new('RGBA', sheet.size, (0, 0, 0, 0))
+    for row in range(8):
+        wb = walk.crop((0, row * wsize, wsize, (row + 1) * wsize)).getchannel('A').getbbox()
+        ab = sheet.crop((0, row * size, size, (row + 1) * size)).getchannel('A').getbbox()
+        dx = round((wb[0] + wb[2]) / 2 + grow - (ab[0] + ab[2]) / 2)
+        dy = round(wb[3] + grow - ab[3])
+        for column in range(count):
+            cell = sheet.crop((column * size, row * size, (column + 1) * size, (row + 1) * size))
+            shifted = Image.new('RGBA', (size, size), (0, 0, 0, 0))
+            shifted.alpha_composite(cell, (dx, dy)) if dx >= 0 and dy >= 0 else shifted.paste(cell.transform(cell.size, Image.AFFINE, (1, 0, -dx, 0, 1, -dy)), (0, 0))
+            fixed.alpha_composite(shifted, (column * size, row * size))
+        print(f'  row {row}: shift ({dx:+d}, {dy:+d})')
+    return fixed
+
+
+def collect(only=None):
+    archives = {}
+    for name, character, frames, action, out in ANIMATIONS:
+        if only and name not in only:
+            continue
+        archive = archives.get(character) or archives.setdefault(character, export(character))
+        meta = json.loads(archive.read('metadata.json'))
+        anims = meta['states'][0]['frames']['animations'][name]
+        rows = {d: [Image.open(io.BytesIO(archive.read(path))).convert('RGBA') for path in anims[d]] for d in ORDER}
+        size = rows[ORDER[0]][0].size[0]
+        count = min(len(r) for r in rows.values())
+        sheet = Image.new('RGBA', (size * count, size * 8), (0, 0, 0, 0))
+        for row, direction in enumerate(ORDER):
+            for column, frame in enumerate(rows[direction][:count]):
+                sheet.alpha_composite(frame, (column * size, row * size))
+        sheet = register(sheet, size, count, out)
+        raw_path = HERE / f'{name}.png'
+        sheet.save(raw_path)
+        print(f'{name}: {count} frames x 8 facings at {size}px -> {raw_path.relative_to(ROOT)}', flush=True)
+
+
+if __name__ == '__main__':
+    if sys.argv[1] == 'redo':
+        redo(sys.argv[2:])
+        raise SystemExit
+    only = set(sys.argv[2:]) or None
+    {'submit': submit, 'topup': topup, 'collect': collect}[sys.argv[1]](only)

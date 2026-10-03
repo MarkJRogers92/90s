@@ -157,6 +157,8 @@ export class MvpRunView {
   private readonly feedback: CombatFeedback;
   private readonly weapon: WeaponView;
   private readonly weaponEffects: WeaponEffectView;
+  /** The body sheet drawn this frame: the held gun follows the authored aim pose. */
+  private playerBodySheet: PlayerBodyAction['sheet'] | null = null;
   private readonly offerIcons = new Map<string, Phaser.GameObjects.Image>();
   private readonly offerNames = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedOfferIcons = new Set<string>();
@@ -446,6 +448,7 @@ export class MvpRunView {
     const playerDelta = this.actorMovement.movementFor('player', player.x, player.y);
     const playerDepth = presentationDepth('actor', player.y);
     const bodyAction = this.playerAction(state, fxTick);
+    this.playerBodySheet = bodyAction?.sheet ?? null;
     // Invulnerability freezes with the sim at game over; its flicker and ring
     // would strobe over the death fall, so they only show during a live shift.
     const playerHurtCue = player.invulnerableTicks > 0 && state.status === 'playing';
@@ -1921,7 +1924,8 @@ export class MvpRunView {
       range: primary.range,
       halfAngleRadians: primary.halfAngleRadians,
     }, state.tick, effects, presentationDepth('actor', player.y),
-    this.weaponEffects.canRenderMelee(primary.definitionId), this.weaponEffects.canRenderRanged(primary.definitionId));
+    this.weaponEffects.canRenderMelee(primary.definitionId), this.weaponEffects.canRenderRanged(primary.definitionId),
+    this.playerBodySheet === 'aim');
     const progress = this.weapon.swingAt(state.tick);
     const head = this.weapon.headAt();
     if (primary.delivery === 'direct') this.weaponEffects.syncMelee(primary.definitionId, progress, head);
@@ -2250,12 +2254,14 @@ export class MvpRunView {
         hurtAge: this.feedback.playerHurtAge(fxTick),
         deadMs: this.deadSince === null ? null : this.scene.time.now - this.deadSince,
         dashAge: (player.dashTicks ?? 0) > 0 ? DASH_TICKS - (player.dashTicks ?? 0) : null,
+        aim: primary.delivery === 'direct' ? null : this.weapon.swingAt(state.tick),
       },
       {
         swing: this.sheetColumns(PLAYER_TEXTURE_KEYS.swing),
         hurt: this.sheetColumns(PLAYER_TEXTURE_KEYS.hurt),
         death: this.sheetColumns(PLAYER_TEXTURE_KEYS.death),
         dash: this.sheetColumns(PLAYER_TEXTURE_KEYS.dash),
+        aim: this.sheetColumns(PLAYER_TEXTURE_KEYS.aim),
       },
     );
     // The smear trails the dash itself, whichever way the pointer aims.

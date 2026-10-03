@@ -23,8 +23,8 @@ describe('charge and lob wind-ups drive authored attack frames (roadmap V2)', ()
     expect(attackFrameFor(enemy('spitter'), [windup('spit', 0.5)], 6, 0)).toBe(2);
     expect(attackFrameFor(enemy('owner'), [windup('charge', 0.5)], 0, 0)).toBeNull();
   });
-  it('registers each derived attack sheet at its walk canvas', () => {
-    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 552, 736], ['neon:enemy:mascot-attack', 'mascot-attack.png', 576, 768], ['neon:enemy:roofer-attack', 'roofer-attack.png', 816, 1088]] as const) {
+  it('registers each PixelLab attack sheet (walk canvas grown evenly, feet re-registered)', () => {
+    for (const [key, file, w, h] of [['neon:enemy:spritzer-attack', 'spritzer-attack.png', 624, 832], ['neon:enemy:mascot-attack', 'mascot-attack.png', 792, 1056], ['neon:enemy:roofer-attack', 'roofer-attack.png', 912, 1216]] as const) {
       const found = NEON_ASSETS.filter((asset) => asset.key === key);
       expect(found, key).toHaveLength(1);
       expect(found[0]!.url).toBe(`/assets/neon/enemies/${file}`);
@@ -50,12 +50,12 @@ describe('Alex dashes with an authored body sheet (roadmap V4)', () => {
     expect(playerBodyAction({ ...none, dashAge: 2, swing: 0.5 }, frames)?.sheet).toBe('dash');
     expect(playerBodyAction({ ...none, dashAge: 2 }, { ...frames, dash: 0 })).toBeNull();
   });
-  it('registers alex-dash at the walk canvas', () => {
+  it('registers the PixelLab alex-dash at the 92 px action canvas', () => {
     expect(PLAYER_TEXTURE_KEYS.dash).toBe('neon:player:alex-dash');
     const found = CHARACTER_ASSETS.filter((asset) => asset.key === PLAYER_TEXTURE_KEYS.dash);
     expect(found).toHaveLength(1);
     const png = readFileSync(`public${found[0]!.url}`);
-    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([256, 512]);
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([368, 736]);
   });
 });
 
@@ -67,7 +67,7 @@ describe('the dash sheet follows the dash, not the aim', () => {
     const { ActorPresentationMemory } = await import('../../src/game/view/ActorSpriteView');
     const { enemyRenderer } = await import('../support/enemy-renderer');
     const renderer = enemyRenderer();
-    renderer.sizes.set(PLAYER_TEXTURE_KEYS.dash, { width: 256, height: 512 });
+    renderer.sizes.set(PLAYER_TEXTURE_KEYS.dash, { width: 368, height: 736 });
     renderer.sizes.set(PLAYER_TEXTURE_KEYS.idle, { width: 512, height: 64 });
     renderer.sizes.set(PLAYER_TEXTURE_KEYS.walk, { width: 384, height: 512 });
     const context = Object.assign(Object.create(MvpRunView.prototype), { scene: renderer.scene, actorMemory: new ActorPresentationMemory(), actorSprites: new Map(), usedActorSpriteIds: new Set() });

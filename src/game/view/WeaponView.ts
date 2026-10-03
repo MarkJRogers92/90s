@@ -18,6 +18,8 @@ import { heldWeaponTransform, weaponPresentation, type HeldWeaponTransform } fro
 import type { PointLight } from '../presentation/lighting/LightingLayer';
 
 export const SWING_VISUAL_TICKS = 16;
+/** How far the outstretched hands reach in alex-aim.png (24 px from the body centre, less the grip). */
+export const AIM_POSE_REACH = 22;
 
 const SMEAR_COLOR: Readonly<Record<string, number>> = {
   janitor_mop: 0xbfe8ff,
@@ -98,7 +100,7 @@ export class WeaponView {
   }
 
   /** Draws the held weapon and any live swing; returns lights for this frame. */
-  public sync(weapon: WeaponSnapshot, tick: number, effects: Phaser.GameObjects.Graphics, actorDepth: number, nativeMeleeEffect = false, nativeRangedEffect = false): PointLight[] {
+  public sync(weapon: WeaponSnapshot, tick: number, effects: Phaser.GameObjects.Graphics, actorDepth: number, nativeMeleeEffect = false, nativeRangedEffect = false, aimPose = false): PointLight[] {
     this.noteAttack(weapon, tick);
     const aim = Math.atan2(weapon.facingY, weapon.facingX);
     const lights: PointLight[] = [];
@@ -116,7 +118,8 @@ export class WeaponView {
       if (progress !== null && (!nativeMeleeEffect || !this.heldTransform)) lights.push(...this.drawSmear(effects, weapon, progress));
     } else {
       const recoil = progress === null ? 0 : Math.max(0, 1 - progress * 3) * 6;
-      this.placeHeld(usable, weapon, aim, 10 - recoil, actorDepth, 1.1);
+      // The authored aim pose holds the arms out: the gun sits at the outstretched hand.
+      this.placeHeld(usable, weapon, aim, (aimPose ? AIM_POSE_REACH : 10) - recoil, actorDepth, 1.1);
       if ((!nativeRangedEffect || !this.heldTransform) && progress !== null && progress < 0.3) {
         const mx = this.heldTransform?.head.x ?? weapon.x + Math.cos(aim) * 34;
         const my = this.heldTransform?.head.y ?? weapon.y - 12 + Math.sin(aim) * 34;

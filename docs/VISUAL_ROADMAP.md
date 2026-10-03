@@ -39,9 +39,9 @@ or start something; keep items small enough for one PR.
 |---|---|---|---|
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **Hanger done**; 16 kinds left | M per batch |
-| V2 | Authored attack sheets for wind-up enemies and bosses | **Spritzer, Mascot, Roofer done**; others open | L |
+| V2 | Authored attack sheets for wind-up enemies and bosses | **Spritzer, Mascot, Roofer done (PixelLab, PR #56)**; others open | L |
 | V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
-| V4 | Alex: dash and ranged-aim animations | **dash done**; aim pose open | M |
+| V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live QA pending | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
 | V7 | Skylight/roof weather | open | M |
@@ -140,7 +140,7 @@ before the release. Needs new art (PixelLab or Retro Diffusion): ask the
 owner. Accept: wind-up visible from the first telegraph tick in a live
 capture, and `npm run balance:reaction` unchanged (presentation only).
 
-**Done 2026-10-03: Spritzer, Mascot Brute, Roofer.**
+**Done 2026-10-03: Spritzer, Mascot Brute, Roofer — now PixelLab animations of the original characters (see STATUS.md handoff; `art/pixellab/animate_characters.py`). The derived description below was the first pass and has been replaced.**
 - Six-frame sheets are *derived* from each walk sheet by
   `art/derived-poses/build_poses.py`: four frames of anticipation (lean
   away, crouch) and two of release (lunge along the facing). There was no

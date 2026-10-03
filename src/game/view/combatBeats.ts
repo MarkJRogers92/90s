@@ -359,7 +359,7 @@ export const PLAYER_HURT_TICKS_PER_FRAME = 3;
 export const PLAYER_DEATH_MS_PER_FRAME = 110;
 
 export type PlayerBodyAction = {
-  readonly sheet: 'swing' | 'hurt' | 'death' | 'dash';
+  readonly sheet: 'swing' | 'hurt' | 'death' | 'dash' | 'aim';
   readonly column: number;
   /** Overrides the aim-facing row: a dash draws along its own direction. */
   readonly direction?: ActorDirection;
@@ -372,8 +372,8 @@ export type PlayerBodyAction = {
  * frames is not loaded and is skipped.
  */
 export function playerBodyAction(
-  input: { readonly swing: number | null; readonly hurtAge: number | null; readonly deadMs: number | null; readonly dashAge?: number | null },
-  frames: { readonly swing: number; readonly hurt: number; readonly death: number; readonly dash?: number },
+  input: { readonly swing: number | null; readonly hurtAge: number | null; readonly deadMs: number | null; readonly dashAge?: number | null; readonly aim?: number | null },
+  frames: { readonly swing: number; readonly hurt: number; readonly death: number; readonly dash?: number; readonly aim?: number },
 ): PlayerBodyAction | null {
   if (input.deadMs !== null && frames.death > 0) {
     return { sheet: 'death', column: Math.min(frames.death - 1, Math.floor(Math.max(0, input.deadMs) / PLAYER_DEATH_MS_PER_FRAME)) };
@@ -385,6 +385,11 @@ export function playerBodyAction(
   const dashFrames = frames.dash ?? 0;
   if (input.dashAge != null && dashFrames > 0 && input.dashAge >= 0 && input.dashAge < DASH_TICKS) {
     return { sheet: 'dash', column: Math.min(dashFrames - 1, Math.floor((input.dashAge / DASH_TICKS) * dashFrames)) };
+  }
+  // A ranged shot (roadmap V4, PixelLab): straight to the arms-forward frames, then hold.
+  const aimFrames = frames.aim ?? 0;
+  if (input.aim != null && aimFrames > 0) {
+    return { sheet: 'aim', column: Math.max(0, aimFrames - (input.aim < 0.5 ? 2 : 1)) };
   }
   if (input.swing !== null && frames.swing > 0) {
     return { sheet: 'swing', column: Math.min(frames.swing - 1, Math.floor(clamp01(input.swing) * frames.swing)) };
