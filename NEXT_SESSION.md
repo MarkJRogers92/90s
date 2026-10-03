@@ -1,5 +1,34 @@
 # Next session
 
+## 2026-10-03 UTC — Spray weapons (V3) and elite trait marks (V10)
+
+Presentation only; no `src/sim` change. Built on main `235bca9`, which
+includes #54's back-hall lighting.
+
+- **Sprays:** hairspray, flea spray, ketchup and the whoopee cushion fire
+  palette swaps of the extinguisher foam (lilac with gold, green, red with
+  mustard, a sickly puff with pink). They are derived by
+  `art/weapon-effects/derived/build_spray_variants.py`, sized to each
+  weapon's own hitbox, with matching nozzle releases. Dev fixture
+  `?fixture=mvp-spray`. The roster is down to 49 (31 melee, 18 projectile).
+- **Elite marks:** each trait now has a glyph beside its tag and its own ring
+  shape. Clearance is a price tag and a solid ring; Swift a `>>` chevron and
+  a turning dashed ring (still under Flashes: Reduced); Volatile a lit fuse
+  and a double ring. They are distinct in greyscale, which answers the
+  round-57 question of whether you can tell Swift from Volatile at a glance.
+  A pooled tag now also follows a trait change. Dev fixture
+  `?fixture=mvp-elites`.
+
+Evidence:
+- Unit: 1,833 of 1,833 across 177 files.
+- The 240 fixed-seed weapon replays match.
+- TypeScript and build pass.
+- New tests failed first, then passed: `spray-weapon-effects.test.ts` (5)
+  and `elite-marks.test.ts` (4).
+- Live, with zero console errors: all five sprays mid-shot
+  (`artifacts/live-qa/spray/spray-in-flight.png`), and the three elites side
+  by side in colour and greyscale (`artifacts/live-qa/elites/elite-marks.png`).
+
 ## 2026-10-03 UTC — Water weapons get their own water (roadmap V3)
 
 Presentation only; no `src/sim` change.

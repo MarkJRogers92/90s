@@ -40,14 +40,14 @@ or start something; keep items small enough for one PR.
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **Hanger done**; 16 kinds left | M per batch |
 | V2 | Authored attack sheets for wind-up enemies and bosses | open | L |
-| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water done** (14); 53 left | M per family |
+| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
 | V4 | Alex: dash and ranged-aim animations | open | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
 | V7 | Skylight/roof weather | open | M |
 | V8 | Per-floor colour grading | open | S |
 | V9 | Colourblind-safe telegraph shapes | open | M |
-| V10 | Elite trait glyphs (Swift / Volatile) | open | S |
+| V10 | Elite trait glyphs (Swift / Volatile) | **done** 2026-10-03 | S |
 | V11 | Remaining vector rooms and earlier modes to the neon kit | open | L |
 | F1 | HUD toolbar covered the PA ticker | **done** 2026-10-03 | — |
 | F2 | Stage off-centre on every window wider than 16:10 | **done** 2026-10-03 | — |
@@ -140,10 +140,10 @@ before the release. Needs new art (PixelLab or Retro Diffusion): ask the
 owner. Accept: wind-up visible from the first telegraph tick in a live
 capture, and `npm run balance:reaction` unchanged (presentation only).
 
-## V3 — Native effects for the remaining weapons (53 of 67 left)
+## V3 — Native effects for the remaining weapons (49 of 67 left)
 
 The list is in `diagnostics/weapon-visuals/remaining-effect-roster.json`
-(31 melee, 22 projectile since the thrown and water families landed). Work by family rather than by item: one sheet each
+(31 melee, 18 projectile since the thrown, water and spray families landed). Work by family rather than by item: one sheet each
 in `public/assets/neon/weapon-effects/`, mapped in `src/game/view/weaponEffects.ts`.
 
 | Family | Weapons (examples) | Effect |
@@ -175,8 +175,19 @@ the shooter inside them.
 - Dev fixture `?fixture=mvp-water` (slots 2-7);
   `artifacts/live-qa/water/water-in-flight.png`.
 
-Next cheapest: **spray** (hairspray, flea spray, ketchup, whoopee cushion),
-done the same way as palette swaps of `extinguisher-foam`.
+**Spray: done 2026-10-03.**
+- Hairspray (lilac with gold flecks), flea spray (green), ketchup (red with
+  mustard flecks) and the whoopee cushion (a sickly puff with pink flecks)
+  are five-colour palette swaps of `extinguisher-foam`, built by
+  `art/weapon-effects/derived/build_spray_variants.py`.
+- Each is sized to its own hitbox, and each releases its own mist at the
+  nozzle.
+- Dev fixture `?fixture=mvp-spray`. They read as short puffs, like the
+  extinguisher.
+
+Next: **energy** (laser pointer, lightsaber, laser tag rifle and others) needs
+a new beam sheet. **Mechanical** shooters could reuse their icons the way the
+thrown family does.
 
 Keep the 240 fixed-seed replay
 (`diagnostics/weapon-visuals/replay.test.ts`) unchanged.
@@ -231,6 +242,18 @@ Accept: a greyscale screenshot still separates every telegraph.
 Swift (cyan) and Volatile (orange) differ by aura colour only. Add a small
 glyph to the price tag (a chevron for Swift, a fuse spark for Volatile). This
 answers the round-57 playtest question about telling them apart.
+
+## V10 done (2026-10-03)
+
+The elite traits now read by shape as well as colour:
+- Clearance: a price-tag glyph and one solid ring.
+- Swift: a `>>` chevron and a dashed ring that turns (still under Flashes:
+  Reduced).
+- Volatile: a lit-fuse glyph and a double ring.
+
+They stay distinct in greyscale (`artifacts/live-qa/elites/elite-marks.png`).
+See `src/game/view/eliteMarks.ts` and the dev fixture `?fixture=mvp-elites`.
+This also covers part of V9 (colour-blind telegraphs) for elites.
 
 ## V11 — Remaining vector rooms and earlier modes
 
