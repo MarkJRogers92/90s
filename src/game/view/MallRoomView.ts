@@ -18,6 +18,7 @@ import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, NEON_CIVILIAN_KEYS, ch
 import { presentationDepth } from '../presentation/depth';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
 import { GLOW_DEPTH, LightingLayer, type PointLight } from '../presentation/lighting/LightingLayer';
+import { applyBackHallLightingPilot, BACK_HALL_PILOT_STYLE, ensureBackHallContactShadow, isBackHallLightingPilot } from '../presentation/lighting/backHallLightingPilot';
 import { FX_TEXTURES, ensureFxTextures, ensureNeonSign, ensurePixelLabel, floorTextureKey, type NeonSignSpec } from '../presentation/neon/proceduralTextures';
 import {
   FACADE_BASE_Y,
@@ -73,6 +74,9 @@ export class MallRoomView {
   private readonly interior: boolean;
   public readonly plan: DressingPlan;
   public readonly lighting: LightingLayer;
+  /** The same shadow cache may survive a doorway; callers reselect this texture. */
+  public readonly contactShadowTexture: string;
+  private readonly lightingPilot: boolean;
   private readonly scene: Phaser.Scene;
   private readonly actors: Phaser.GameObjects.Graphics;
   private readonly floor: Layer;
@@ -122,7 +126,9 @@ export class MallRoomView {
     ensureFxTextures(scene);
     const room = state.wing.rooms[state.roomIndex]!;
     this.interior = state.room.interior;
-    this.plan = planRoomDressing(room, state.wing.floor ?? 1, this.interior ? state.room.storeIndex : null, state.wing.part, state.wing.district);
+    this.lightingPilot = isBackHallLightingPilot(state);
+    this.plan = applyBackHallLightingPilot(planRoomDressing(room, state.wing.floor ?? 1, this.interior ? state.room.storeIndex : null, state.wing.part, state.wing.district), state);
+    this.contactShadowTexture = this.lightingPilot ? ensureBackHallContactShadow(scene) : FX_TEXTURES.shadow;
     this.themeId = this.plan.themeId;
     this.floor = this.layer('floor');
     this.decal = this.layer('decal');
@@ -327,10 +333,11 @@ export class MallRoomView {
     const sign = ensureNeonSign(this.scene, spec);
     const plate = this.graphics(this.structure);
     plate.fillStyle(0x0a0710, 0.92).fillRoundedRect(cx - sign.width / 2 + 6, cy - sign.height / 2 + 6, sign.width - 12, sign.height - 12, 3);
-    const halo = this.scene.add.image(cx, cy, sign.halo).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0.9);
+    const haloAlpha = this.lightingPilot ? BACK_HALL_PILOT_STYLE.signHalo : 0.9;
+    const halo = this.scene.add.image(cx, cy, sign.halo).setBlendMode(Phaser.BlendModes.ADD).setAlpha(haloAlpha);
     const core = this.scene.add.image(cx, cy, sign.core);
     this.glow.add([halo, core]);
-    this.pulsing.push({ object: halo, base: 0.9, seed: this.pulsing.length });
+    this.pulsing.push({ object: halo, base: haloAlpha, seed: this.pulsing.length });
     this.signs.push({ core, halo, seed: propSeed(`${spec.text}@${Math.round(cx)}`) });
     this.textureKeys.add(sign.core);
     if (reflect) {
@@ -338,7 +345,7 @@ export class MallRoomView {
       const reflection = this.scene.add
         .image(cx, FACADE_BASE_Y + 22, sign.halo)
         .setBlendMode(Phaser.BlendModes.ADD)
-        .setAlpha(0.08)
+        .setAlpha(this.lightingPilot ? BACK_HALL_PILOT_STYLE.signReflection : 0.08)
         .setFlipY(true)
         .setScale(1, 1.6);
       this.glow.add(reflection);
@@ -477,9 +484,10 @@ export class MallRoomView {
       return null;
     }
     this.textureKeys.add(usable);
-    const shadow = this.scene.add.image(Math.round(x), Math.round(y) - 1, FX_TEXTURES.shadow)
-      .setDisplaySize(Math.round(width * 1.05), Math.max(6, Math.round(height * 0.16)))
-      .setAlpha(0.8);
+    const shadow = this.scene.add.image(Math.round(x), Math.round(y) - 1, this.contactShadowTexture)
+      .setDisplaySize(Math.round(width * (this.lightingPilot ? BACK_HALL_PILOT_STYLE.propShadowWidth : 1.05)),
+        Math.max(6, Math.round(height * (this.lightingPilot ? BACK_HALL_PILOT_STYLE.propShadowHeight : 0.16))))
+      .setAlpha(this.lightingPilot ? BACK_HALL_PILOT_STYLE.propShadowAlpha : 0.8);
     this.lowProp.add(shadow);
     const image = this.scene.add.image(Math.round(x), Math.round(y), usable, frame)
       .setOrigin(0.5, 1)

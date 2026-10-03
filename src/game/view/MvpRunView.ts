@@ -59,6 +59,7 @@ import { SHORTCUT_HATCH, shortcutHere } from '../../sim/run/shortcut';
 import { VOLATILE_BURST_RADIUS, VOLATILE_FUSE_TICKS } from '../../sim/combat/eliteTraits';
 
 import { presentationDepth } from '../presentation/depth';
+import { isBackHallLightingPilot } from '../presentation/lighting/backHallLightingPilot';
 import { usableTextureKey } from '../presentation/assetFallback';
 import {
   ACTOR_DEATH_EFFECT_TICKS,
@@ -231,16 +232,19 @@ export class MvpRunView {
     }
     // Going into a store and back out rebuilds the room, like a doorway.
     const roomKey = `${state.roomIndex}:${room.id}:${state.room.interior ? `inside-${state.room.storeIndex}` : 'concourse'}`;
+    // The lighting pilot can end even when a restored room has the same ID.
+    // Keep loot/weapon event scopes unchanged; only the room view uses this key.
+    const mallRoomKey = `${roomKey}${isBackHallLightingPilot(state) ? ':lighting-pilot' : ''}`;
     this.weaponEffects.beginFrame(roomKey, state.tick);
-    if (this.mallRoomKey !== roomKey) this.weapon.reset();
-    if (this.openingConcourse && this.mallRoomKey !== roomKey) {
+    if (this.mallRoomKey !== mallRoomKey) this.weapon.reset();
+    if (this.openingConcourse && this.mallRoomKey !== mallRoomKey) {
       this.concourseAmbience = this.openingConcourse.leaveRoom(state.tick);
       this.openingConcourse.destroy();
       this.openingConcourse = undefined;
     }
     if (!this.openingConcourse) {
       this.openingConcourse = new MallRoomView(this.scene, graphics, state);
-      this.mallRoomKey = roomKey;
+      this.mallRoomKey = mallRoomKey;
     }
     this.openingConcourse.render(state);
     const blackout = roomEventFor(state, state.roomIndex) === 'blackout';
@@ -2381,11 +2385,13 @@ export class MvpRunView {
 
   private contactShadow(id: string, x: number, y: number, scale: number): void {
     this.usedShadows.add(id);
+    const texture = this.openingConcourse?.contactShadowTexture ?? FX_TEXTURES.shadow;
     let shadow = this.shadows.get(id);
     if (!shadow) {
-      shadow = this.scene.add.image(x, y, FX_TEXTURES.shadow).setDepth(presentationDepth('lowProp', 900));
+      shadow = this.scene.add.image(x, y, texture).setDepth(presentationDepth('lowProp', 900));
       this.shadows.set(id, shadow);
     }
+    if (shadow.texture.key !== texture) shadow.setTexture(texture);
     shadow.setPosition(Math.round(x), Math.round(y + 2)).setScale(scale, scale).setVisible(true);
   }
 
