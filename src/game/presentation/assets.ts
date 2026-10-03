@@ -276,6 +276,7 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon('neon:enemy:roofer-attack', 'enemies/roofer-attack.png'),
   // PixelLab boss wind-ups (roadmap V2): the telegraph before a slam, charge or barrage.
   neon('neon:enemy:owner-attack', 'enemies/owner-attack.png'),
+  neon('neon:enemy:manager-attack', 'enemies/manager-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerShellImpact, 'enemies/hanger-shell-impact.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinIdle, 'enemies/mannequin-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinWalk, 'enemies/mannequin-walk.png'),

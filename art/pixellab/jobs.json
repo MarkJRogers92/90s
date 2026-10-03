@@ -99,7 +99,12 @@
     "jobs": {
       "south": "7961af56-f720-4429-9aef-4e2762ebd86d",
       "south-west": "3bfd5c4b-5732-4ba9-bcd9-28ee22c188a0",
-      "west": "3b0ebb24-eaf2-4be6-a3c1-7592c6b2ba34"
+      "west": "3b0ebb24-eaf2-4be6-a3c1-7592c6b2ba34",
+      "north-west": "49f8c878-d6ea-434e-94a5-4898d8afb9d7",
+      "north": "b7d71297-bfc5-4f96-b1ef-0d0a55606c54",
+      "north-east": "450d9111-9146-478d-99d8-d16b7ed74a4f",
+      "east": "7c1b9a03-119a-44bc-b2ca-9632ac4ec6d5",
+      "south-east": "7a186ade-5a32-431b-bcb9-d3acd4303c62"
     }
   },
   "glamour-queen-attack": {
@@ -108,7 +113,9 @@
       "south": "da843aec-fac1-49c7-aef8-abe1e4bd3d65",
       "south-west": "ae37cc7c-e9db-43ad-bccf-d95142d849ae",
       "west": "1b7a106d-d952-47d2-bfa9-4878295a2b13",
-      "north-west": "2e8d5efe-c711-4d44-a41d-51eec703b338"
+      "north-west": "2e8d5efe-c711-4d44-a41d-51eec703b338",
+      "north": "dee01e34-8fb4-4ed5-8eb9-07d9dfb7f3cd",
+      "north-east": "e780623d-5e32-444c-9d71-2e2822f07a32"
     }
   },
   "whiskers-attack": {
