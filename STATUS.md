@@ -13,10 +13,10 @@ LP Manager's sheet already does. `enemySpriteSheet` already names the keys
 |---|---|---|---|
 | Mall Owner (floor 3) | `ae2fc5eb` | `owner-attack.png` 1032×1376 (172 px) | **done, live-checked** (frames 0–3 in telegraph, 0 errors) |
 | Manager (floor 2) | `1daf7771` (mall manager v2) | `manager-attack.png` 768×1024 (128 px) | **done, live-checked** (south row redone; frames 0–3, 0 errors) |
-| Developer (floor 4) | `e3e0c843` | `developer-attack.png` | **regenerating**: first pass came back in a navy suit and 7–17% too big (`collect` now warns about this); the action text now pins the cream suit |
+| Developer (floor 4) | `e3e0c843` | `developer-attack.png` 1488×1984 (248 px) | **done, live-checked** (frames 0–3, 0 errors). The PixelLab character itself is navy (the cream walk came from an older template), so every v3 animation is navy: `art/pixellab/recolor.py developer-attack` maps the suit onto the walk sheet's cream ramp. `ACTION_FIGURE_SCALE` 0.88 |
 | Santa (holiday district) | `51e6a5de` | `santa-attack.png` | **regenerating**: first pass had a black/brown sack (walk sheet: dark red) and a figure x1.14 too big; action text now pins the sack. Large re-renders are scaled back with `ACTION_FIGURE_SCALE` (collect prints the factor) |
 | Glamour Queen | `a1821931` | `glamour-queen-attack.png` 1296×1728 (216 px, size matches) | **done, live-checked** (frames 0–3, 0 errors) |
-| Mr Whiskers | `aaf35aa7` (feral A, the shipped one) | `whiskers-attack.png` | queued |
+| Mr Whiskers | `aaf35aa7` (feral A, the shipped one) | `whiskers-attack.png` 960×1280 (160 px) | **done, live-checked** (frames 0–3, 0 errors); scale 0.95 |
 | Zamboni Driver | `721b6f96` | `zamboni-attack.png` | queued |
 
 **Code (done, tested):** `attackFrameFor` no longer reads a boss's airborne tar buckets

@@ -58,7 +58,7 @@ ANIMATIONS = [
      'big wind-up: crouches low and rears up on its hind legs with both clawed front paws raised high, then pounces forward and slams both front paws down onto the floor',
      'public/assets/neon/enemies/whiskers-attack.png'),
     ('zamboni-attack', '721b6f96-ab96-4a61-89a6-d73daf6b294b', 6,
-     'big wind-up: raises his long steel ice scraper high overhead with both hands, rising up tall, then smashes it down hard onto the floor in front of him, leaning far forward',
+     'holding the same long straight wooden-handled ice scraper pole with a flat steel blade on the end that he always carries, no other tools or effects; big wind-up: raises the long scraper pole high overhead with both hands, rising up tall, then smashes it down hard onto the floor in front of him, leaning far forward',
      'public/assets/neon/enemies/zamboni-attack.png'),
 ]
 
@@ -133,9 +133,16 @@ def group_of(character, name):
 
 
 def redo(args):
-    """Regenerate single drifted directions: redo <name> <direction> [<name> <direction> ...]."""
-    pairs = list(zip(args[0::2], args[1::2]))
+    """Regenerate drifted directions: redo <name> <direction> [<direction> ...] [<name> <direction> ...]."""
     specs = {a[0]: a for a in ANIMATIONS}
+    pairs, name = [], None
+    for word in args:
+        if word in specs:
+            name = word
+        elif word in ORDER and name:
+            pairs.append((name, word))
+        else:
+            raise SystemExit(f'redo: {word!r} is neither an animation nor a direction')
     for name, direction in pairs:
         _, character, frames, action, _ = specs[name]
         group = group_of(character, name)

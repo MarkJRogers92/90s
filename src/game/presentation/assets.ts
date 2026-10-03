@@ -278,6 +278,8 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon('neon:enemy:owner-attack', 'enemies/owner-attack.png'),
   neon('neon:enemy:manager-attack', 'enemies/manager-attack.png'),
   neon('neon:enemy:glamour-queen-attack', 'enemies/glamour-queen-attack.png'),
+  neon('neon:enemy:developer-attack', 'enemies/developer-attack.png'),
+  neon('neon:enemy:whiskers-attack', 'enemies/whiskers-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerShellImpact, 'enemies/hanger-shell-impact.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinIdle, 'enemies/mannequin-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinWalk, 'enemies/mannequin-walk.png'),

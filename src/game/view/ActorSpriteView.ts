@@ -88,7 +88,10 @@ export const DISTRICT_SPRITES: Readonly<Record<'elf' | 'spritzer' | 'poodle' | '
  * sheets are shrunk back to the walk figure (around the feet, where the sprite is
  * anchored). Factors come from `animate_characters.py collect` (walk ÷ attack height).
  */
-export const ACTION_FIGURE_SCALE: Readonly<Record<string, number>> = {};
+export const ACTION_FIGURE_SCALE: Readonly<Record<string, number>> = {
+  'neon:enemy:developer-attack': 0.88,
+  'neon:enemy:whiskers-attack': 0.95,
+};
 
 export function actionFigureScale(textureKey: string): number {
   return Object.hasOwn(ACTION_FIGURE_SCALE, textureKey) ? ACTION_FIGURE_SCALE[textureKey]! : 1;
