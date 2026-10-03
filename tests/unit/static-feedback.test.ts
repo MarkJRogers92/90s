@@ -48,10 +48,11 @@ describe('static material-specific combat feedback', () => {
 
   it('leaves other enemy blood, impact rings, white pose and player-facing death untouched', () => {
     const { sync, feedback, images, marks } = setup();
-    sync(0, [enemy({ kind: 'hanger' })]); sync(1, [enemy({ kind: 'hanger', health: 7 })]);
-    expect(images.some((image) => image.texture.key.includes('decal:blood'))).toBe(true);
+    sync(0, [enemy({ kind: 'spitter' })]); sync(1, [enemy({ kind: 'spitter', health: 7 })]);
+    expect(images.some((image) => image.texture.key.includes('decal:'))).toBe(true);
     expect(marks).toContain('strokeCircle'); expect(feedback.poseFor('enemy:1', 1).flash).toBe(true);
-    sync(2, []);
+    // The Hanger has native hits now but keeps its generic death and corpse.
+    sync(2, [enemy({ kind: 'hanger', id: 2 })]); sync(3, []);
     const corpse = images.find((image) => image.texture.key === ENEMY_TEXTURE_KEYS.hangerDeath)!;
     expect(corpse.crop.y).toBe(384); expect(corpse.tint).toBe(0xffffff);
   });
@@ -174,10 +175,10 @@ describe('Static kind replacement in a reused renderer slot', () => {
   it('drops the old native hurt when the same id now represents a different enemy kind', () => {
     const { sync, feedback } = setup();
     sync(0, [enemy()]); sync(1, [enemy({ health: 7 })]);
-    sync(2, [enemy({ kind: 'hanger', health: 8 })]);
+    sync(2, [enemy({ kind: 'spitter', health: 8 })]);
     expect(feedback.hurtFor('enemy:1', 2)).toBeNull();
     expect(feedback.poseFor('enemy:1', 2)).toEqual(REST_POSE);
-    sync(3, [enemy({ kind: 'hanger', health: 7 })]);
+    sync(3, [enemy({ kind: 'spitter', health: 7 })]);
     expect(feedback.poseFor('enemy:1', 3).flash).toBe(true);
   });
 });
@@ -200,7 +201,7 @@ describe('kind replacement starts a fresh presentation baseline', () => {
   });
   it('clears an old generic pose even when the prior actor never had a native hurt record', () => {
     const { sync, feedback, shakes } = setup();
-    sync(0, [enemy({ kind: 'hanger' })]); sync(1, [enemy({ kind: 'hanger', health: 7 })]);
+    sync(0, [enemy({ kind: 'spitter' })]); sync(1, [enemy({ kind: 'spitter', health: 7 })]);
     expect(feedback.poseFor('enemy:1', 1).flash).toBe(true);
     feedback.takeHitStop(); shakes.length = 0;
     sync(2, [enemy({ kind: 'static' })]);
