@@ -8,7 +8,9 @@ type Snapshot = { generation: number; tick: number; roomIndex: number; player: {
 const snapshot = (page: Page): Promise<Snapshot> => page.evaluate(() => window.__DEAD_MALL_DEBUG__!.snapshot() as unknown as Snapshot);
 
 test('three exact sprite pairs break once, collide, sort, clean up and reset through real input', async ({ page }) => {
-  test.setTimeout(90_000);
+  // Three props, each walked around in short overshoot-safe key pulses (keyboardNavigation.ts):
+  // ~2.7 min serially in a cloud container, so 90 s always timed out.
+  test.setTimeout(240_000);
   const errors: string[] = [];
   page.on('pageerror', (error) => errors.push(error.message));
   page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });

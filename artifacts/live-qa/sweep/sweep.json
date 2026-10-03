@@ -1,0 +1,105 @@
+[
+  {
+    "name": "arsenal",
+    "errors": [],
+    "shots": [
+      {
+        "slot": 1,
+        "equipped": "mvp-associate-mop"
+      },
+      {
+        "slot": 2,
+        "equipped": "dev-pump_soaker"
+      },
+      {
+        "slot": 3,
+        "equipped": "dev-party_popper"
+      },
+      {
+        "slot": 4,
+        "equipped": "dev-bottle_rocket_pack"
+      },
+      {
+        "slot": 5,
+        "equipped": "dev-fire_extinguisher"
+      },
+      {
+        "slot": 6,
+        "equipped": "dev-paint_marker"
+      },
+      {
+        "slot": 7,
+        "equipped": "dev-foam_ball_blaster"
+      },
+      {
+        "slot": 8,
+        "equipped": "dev-slushie_cup"
+      },
+      {
+        "slot": 9,
+        "equipped": "dev-box_cutter"
+      }
+    ]
+  },
+  {
+    "name": "wanted",
+    "errors": [],
+    "heat": 100
+  },
+  {
+    "name": "floor-two-static",
+    "errors": [],
+    "staticHits": 2
+  },
+  {
+    "name": "viewport-390x844",
+    "errors": [],
+    "offCentreX": 0,
+    "toolbar": [
+      218,
+      4,
+      164,
+      44
+    ],
+    "canvas": [
+      0,
+      328,
+      390,
+      244
+    ]
+  },
+  {
+    "name": "viewport-1920x1080",
+    "errors": [],
+    "offCentreX": 0,
+    "toolbar": [
+      1762,
+      4,
+      150,
+      28
+    ],
+    "canvas": [
+      96,
+      0,
+      1728,
+      1080
+    ]
+  },
+  {
+    "name": "viewport-3440x1440",
+    "errors": [],
+    "offCentreX": 0,
+    "toolbar": [
+      3282,
+      4,
+      150,
+      28
+    ],
+    "canvas": [
+      568,
+      0,
+      2304,
+      1440
+    ]
+  }
+]

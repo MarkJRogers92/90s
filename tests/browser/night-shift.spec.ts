@@ -1142,11 +1142,16 @@ test('the Bench Warrant kiosk previews and fuses the car, and shots then start a
   await page.mouse.move(box.x + point.x, box.y + point.y);
   await page.waitForTimeout(80);
 
+  // Party Popper confetti lives only a few ticks: read the shots while the
+  // button is still held. A snapshot after release raced their expiry under load.
   await page.mouse.down();
-  await page.waitForTimeout(140);
+  let after = await runSnapshot(page);
+  await expect.poll(async () => {
+    after = await runSnapshot(page);
+    return after.projectiles.filter((shot) => shot.faction === 'player').length;
+  }, { timeout: 5_000, intervals: [10] }).toBeGreaterThan(0);
   await page.mouse.up();
 
-  const after = await runSnapshot(page);
   // Only the player's own shots are in question, and the assertion is made
   // against where each shot BEGAN rather than where it has travelled to. A
   // travelled-position comparison is a proxy that a fast shot moving away from

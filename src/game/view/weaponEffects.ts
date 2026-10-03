@@ -63,3 +63,50 @@ export function projectileEffectPose(art: WeaponEffectArt,
     scale, radius: art.coreRadius * scale,
   };
 }
+
+/**
+ * Thrown weapons with no authored sheet fly as their own inventory icon (roadmap V3):
+ * a ball spins and rolls the way it travels, a football flies point-first with a
+ * slight wobble. `size` is the on-screen icon size at the item's base radius.
+ */
+export type ThrownIconEffect = {
+  readonly iconItemId: string;
+  readonly baseRadius: number;
+  readonly size: number;
+  readonly motion: 'spin' | 'flight';
+  /** Radians per tick for spinners. */
+  readonly spinPerTick: number;
+  /** For flight-aligned icons: the icon's own head direction, from its grip/head metadata. */
+  readonly headingOffset: number;
+};
+const THROWN: Readonly<Record<string, Omit<ThrownIconEffect, 'iconItemId'>>> = {
+  dodgeball: { baseRadius: 10, size: 24, motion: 'spin', spinPerTick: 0.18, headingOffset: 0 },
+  // weaponPresentation: grip (12, 21) to head (24, 8), so the tip points at atan2(-13, 12).
+  football: { baseRadius: 4, size: 18, motion: 'flight', spinPerTick: 0, headingOffset: -Math.atan2(-13, 12) },
+  pog_slammer: { baseRadius: 4, size: 14, motion: 'spin', spinPerTick: 0.5, headingOffset: 0 },
+  laserdisc: { baseRadius: 8, size: 22, motion: 'spin', spinPerTick: 0.4, headingOffset: 0 },
+  jawbreaker: { baseRadius: 6, size: 16, motion: 'spin', spinPerTick: 0.2, headingOffset: 0 },
+  squeaky_toy: { baseRadius: 5, size: 18, motion: 'spin', spinPerTick: 0.3, headingOffset: 0 },
+  garden_gnome: { baseRadius: 8, size: 22, motion: 'spin', spinPerTick: 0.15, headingOffset: 0 },
+  hockey_puck: { baseRadius: 4, size: 14, motion: 'spin', spinPerTick: 0.45, headingOffset: 0 },
+};
+export const THROWN_ICON_IDS: readonly string[] = Object.keys(THROWN);
+
+export function thrownIconEffect(sourceItemId: string): ThrownIconEffect | null {
+  const id = projectileSourceItemId(sourceItemId);
+  if (!id || PROJECTILE_ART[id]) return null;
+  const effect = THROWN[id];
+  return effect ? { iconItemId: id, ...effect } : null;
+}
+
+export function thrownIconPose(effect: ThrownIconEffect,
+  projectile: { readonly x: number; readonly y: number; readonly velocityX: number; readonly velocityY: number; readonly radius: number },
+  age: number) {
+  // Same gentle growth rule as the authored sheets: a modified hitbox never balloons the icon.
+  const grow = Math.max(0.75, Math.min(1.5, projectile.radius / effect.baseRadius));
+  const ticks = Math.max(0, age);
+  const rotation = effect.motion === 'flight'
+    ? Math.atan2(projectile.velocityY, projectile.velocityX) + effect.headingOffset + Math.sin(ticks * 0.6) * 0.08
+    : (projectile.velocityX < 0 ? -1 : 1) * effect.spinPerTick * ticks;
+  return { x: projectile.x, y: projectile.y, rotation, scale: (effect.size / 32) * grow, radius: (effect.size / 2) * grow * 0.8 };
+}

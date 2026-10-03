@@ -1,5 +1,50 @@
 # Next session
 
+## 2026-10-03 UTC — Browser suite fixes, live QA sweep, thrown-weapon icons
+
+Owner's ask: roadmap items B1/B2, V0 and V3 (thrown). Presentation and tests
+only; no `src/sim` change.
+
+**B1/B2, the two browser specs that also failed on main:**
+- B1: the Bench Warrant car-shot spec read Party Popper shots after releasing
+  the button, by which time the few-tick confetti had expired. It now reads
+  them while the button is held, with the same origin assertion.
+- B2: the prop-room walk takes about 2.7 minutes in overshoot-safe pulses, so
+  its budget went from 90 s to 240 s.
+- Both pass alone; before, both failed on `main`.
+
+**V0, the live sweep.** `scripts/live-qa-sweep.mjs` captures in one run:
+- the arsenal's 9 weapons mid-attack;
+- the 10-weapon dense dock;
+- the five-star wanted strip (reads whole);
+- Static hits on Floor 2;
+- the stage and menu at 390×844, 1920×1080 and 3440×1440.
+
+It found no new defects, and every page logged zero console errors
+(`artifacts/live-qa/sweep/`). A "headless Alex" in small crops turned out to
+be the food-court spotlight; the renderer reports his full idle frame.
+Portrait phones draw the stage at 0.4×, so landscape is the supported phone
+orientation.
+
+**V3 thrown:**
+- Dodgeball, football, pog slammer, laserdisc, jawbreaker, squeaky toy,
+  garden gnome and hockey puck now fly as their own inventory icon instead of
+  a coloured blob. Spinners roll the way they travel; the football flies
+  point-first with a wobble. Modified hitboxes grow the icon gently
+  (0.75–1.5×), and fusions throw the shooter inside them. A missing icon
+  falls back to the old procedural shot.
+- New dev fixture `?fixture=mvp-thrown` (slots 2-9).
+- `remaining-effect-roster.json` drops the eight (59 left), and a test keeps
+  the roster honest.
+
+Evidence:
+- Unit: 1,800 of 1,800 across 172 files. TypeScript and build pass.
+- The 240 fixed-seed weapon replays still match the baseline.
+- New `thrown-weapon-effects.test.ts` (6 tests) failed first, then passed.
+- Live, 7 of 8 thrown icons were captured mid-flight
+  (`artifacts/live-qa/thrown/thrown-in-flight.png`). The pog spray had
+  expired before capture, so it is covered by unit tests only.
+
 ## 2026-10-03 UTC — Hanger native reactions, live visual QA, visual roadmap
 
 **First live browser QA in a cloud session.** The pre-installed Chromium works
