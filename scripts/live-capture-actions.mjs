@@ -1,7 +1,7 @@
 // Live QA for authored action sheets (roadmap V2/V4): logs the renderer's own sheet/frame
 // evidence during real enemy telegraphs, Alex's dash and a ranged shot, and saves crops.
 //   VITE_ENABLE_DEBUG_BRIDGE=true npx vite --host 127.0.0.1 --port 4180 --strictPort &
-//   CHROME=/opt/pw-browsers/chromium node scripts/live-capture-actions.mjs [--out artifacts/live-qa/pixellab]
+//   CHROME=/opt/pw-browsers/chromium node scripts/live-capture-actions.mjs [--out artifacts/live-qa/pixellab] [--only owner,santa]
 import { chromium } from 'playwright';
 import { mkdirSync } from 'node:fs';
 const arg = (n, f) => { const i = process.argv.indexOf(`--${n}`); return i < 0 ? f : process.argv[i + 1]; };
@@ -23,23 +23,32 @@ async function crop(p, box, x, y, file, half = 90) {
   const s = box.width / 960;
   await p.screenshot({ path: `${out}/${file}`, clip: { x: box.x + c.x - half * s, y: box.y + c.y - half * s, width: 2 * half * s, height: 2 * half * s } });
 }
-for (const [query, kind] of [['fixture=mvp-floor-three-brute&seed=1', 'mascot'], ['fixture=mvp-floor-four-roofer&seed=1', 'roofer'], ['fixture=mvp-district&floor=2&seed=1', 'spritzer']]) {
+const TARGETS = [
+  ['fixture=mvp-floor-three-brute&seed=1', 'mascot'], ['fixture=mvp-floor-four-roofer&seed=1', 'roofer'], ['fixture=mvp-district&floor=2&seed=1', 'spritzer'],
+  // Bosses: the floor fights, and each district's mini-boss in its Lockdown room.
+  ['fixture=mvp-floor-two-boss&seed=1', 'manager'], ['fixture=mvp-floor-three-boss&seed=1', 'owner'], ['fixture=mvp-floor-four-boss&seed=1', 'developer'],
+  ['fixture=mvp-district&floor=1&room=security_office&seed=1', 'santa'], ['fixture=mvp-district&floor=2&room=security_office&seed=1', 'glamour_queen'],
+  ['fixture=mvp-district&floor=3&room=security_office&seed=1', 'whiskers'], ['fixture=mvp-district&floor=4&room=security_office&seed=1', 'zamboni'],
+];
+// --only owner,santa limits the run to those kinds (and skips Alex unless "alex" is named).
+const only = arg('only', null)?.split(',');
+for (const [query, kind] of TARGETS.filter(([, k]) => !only || only.includes(k))) {
   const { p, errors, box } = await open(query);
-  const seen = new Set(); let shots = 0;
+  const seen = new Set(); let shots = 0; const big = TARGETS.indexOf(TARGETS.find(([, k]) => k === kind)) >= 3;
   for (let i = 0; i < 500; i++) {
     const s = await snap(p); if (s.status !== 'playing') break;
     const ev = s.actorPresentation?.enemies ?? [];
     for (const e of s.enemies) if (e.kind === kind && e.phase === 'telegraph') {
       const x = ev.find((v) => v.id === `enemy:${e.id}`); if (!x) continue;
       seen.add(`${x.textureKey.split(':').pop()}[${x.frame.column}]`);
-      if (shots < 3 && x.textureKey.includes('attack') && x.frame.column >= shots * 2) { await crop(p, box, e.x, e.y - 40, `${kind}-${shots}.png`); shots += 1; }
+      if (shots < 3 && x.textureKey.includes('attack') && x.frame.column >= shots * 2) { await crop(p, box, e.x, e.y - (big ? 70 : 40), `${kind}-${shots}.png`, big ? 130 : 90); shots += 1; }
     }
     await p.waitForTimeout(15);
   }
   report[kind] = { frames: [...seen].sort(), errors: errors.length };
   await p.close();
 }
-{ // Alex: dash east while aiming top-left, then fire a ranged weapon.
+if (!only || only.includes('alex')) { // Alex: dash east while aiming top-left, then fire a ranged weapon.
   const { p, errors, box } = await open('fixture=mvp-water&seed=3');
   await p.mouse.move(box.x + 40, box.y + 40); await p.waitForTimeout(800);
   await p.keyboard.down('d'); await p.waitForTimeout(100); await p.keyboard.press('Space');

@@ -80,5 +80,12 @@
       "east": "a533e78f-fa19-4a36-9bf8-bb4a2a5c8aaa",
       "south-east": "c3871054-4938-4b9f-be76-77771251cd54"
     }
+  },
+  "developer-attack": {
+    "group": "181b21c7-571f-4acf-ab92-50e9df2e28a7",
+    "jobs": {
+      "south": "3493cc78-4b76-4660-94fc-b782620cdf38",
+      "south-west": "c6838496-d164-4c5c-a852-9db5dc7277fa"
+    }
   }
 }
