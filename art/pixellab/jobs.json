@@ -1,0 +1,58 @@
+{
+  "alex-aim": {
+    "group": "recovered-from-character-zip",
+    "jobs": {}
+  },
+  "alex-dash": {
+    "group": "2b64e903-dae8-4b07-908d-e9ac8a8b82da",
+    "jobs": {
+      "south": "e68b5935-2d6a-43b5-be0b-378e75467822",
+      "south-west": "ea30a9e2-b771-4df4-aff1-68964c1a84ab",
+      "west": "fd96bb16-38f9-4d1c-ad86-d25be6470382",
+      "north-west": "b4ee01e0-7ac3-4553-9480-52c0ae1f6b45",
+      "north": "3274b96f-d11e-4fcc-9d06-d53c838251e4",
+      "north-east": "62bde3cb-07f0-48af-a6e3-a27aba12e2a9",
+      "east": "4aca0756-0ec4-442b-b594-dbb39e74a417",
+      "south-east": "f135452e-1637-4a43-b0c6-df7d26916456"
+    }
+  },
+  "mascot-attack": {
+    "group": "7efd977c-c4c5-4306-9263-f413f69d9037",
+    "jobs": {
+      "south": "38aad160-2e2d-4c86-a0b7-a5f5643803d0",
+      "south-west": "602cc178-13c2-4e9e-ae9f-388ee31fdf68",
+      "west": "68ba6d6d-f0cc-4a0d-a203-8e188551b3f2",
+      "north-west": "f7e54255-b4d6-4f8b-b0a4-335919835513",
+      "north": "93723011-6671-48cc-aa7c-da43fb3376c0",
+      "north-east": "0c2bad36-a674-40ed-9c4f-80c5039e859f",
+      "east": "13eca559-10f8-4f18-9c7e-834f7d4e2841",
+      "south-east": "f79c9497-1845-48ae-aa65-e11d70ce9df3"
+    }
+  },
+  "spritzer-attack": {
+    "group": "2914f752-b2f4-4495-a727-c1d748c5e606",
+    "jobs": {
+      "south": "17703adf-41d9-4d33-ba5a-c9defabadff3",
+      "south-west": "2d29e5c5-333e-4ee3-b663-eadb734daac1",
+      "west": "424c3a29-778b-43da-a6d3-f8db417cb539",
+      "north-west": "39fc50b7-3eca-4a7b-a930-7a5dfdb94013",
+      "north": "6cf6ba62-2367-4354-9f9e-cf0b1934cadb",
+      "north-east": "e0b7e800-020f-4fc2-b992-a8ebe7a9462c",
+      "east": "1ba2113b-b0e3-47ba-bb11-53222c26afc2",
+      "south-east": "e4ba58ac-bb35-40a4-a921-d3b7137c91da"
+    }
+  },
+  "roofer-attack": {
+    "group": "d80d025c-77c6-48b2-8fdc-cce37ab76fc0",
+    "jobs": {
+      "south": "cfe23db1-3875-4bea-87d3-6916e371f8f5",
+      "south-west": "7f7cfc58-212a-495b-bf0f-c85cb138779d",
+      "west": "742ac069-2ce3-4a03-9534-d130890e77ca",
+      "north-west": "7f84fd94-0c66-49ed-8fda-a3375d9b1ae8",
+      "north": "4c49f063-386a-4a99-8174-616c37c097ae",
+      "north-east": "b7247dae-d8b4-4f28-8b7b-0cf148285afa",
+      "east": "a1c7a07f-ee09-4f29-a16f-b81325fb3186",
+      "south-east": "c8c2918f-5cb6-42fe-ab70-8dc0ccaa7e4d"
+    }
+  }
+}

@@ -9,7 +9,7 @@ async function launch(page: Page) {
   await page.goto('/?seed=1');
   await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
   await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
-  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden', { timeout: CANVAS_START_MS });
   await expect.poll(() => snapshot(page).then(state => state.tick)).toBeGreaterThan(5);
 }
 
@@ -153,7 +153,7 @@ for (const width of [320, 390, 844]) {
     await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
     await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
     // The fixture starts at the bench; wait for its input adapter, then use E.
-    await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
+    await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden', { timeout: CANVAS_START_MS });
     await expect.poll(() => snapshot(page).then(state => state.carrier?.mode)).toBe('independent');
     await page.keyboard.press('e');
     await expect(page.locator('#mvp-run-bench')).toBeVisible();

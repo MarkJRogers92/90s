@@ -7,3 +7,4 @@ test-results/
 .worktrees/
 .claude/
 docs/art/neon-overhaul/retrodiffusion/
+__pycache__/

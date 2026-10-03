@@ -25,6 +25,8 @@ import { MASCOT_CHARGE_SPEED_PER_TICK, MASCOT_CHARGE_TICKS, MASCOT_TELEGRAPH_TIC
 import { ROOFER_LOB_TICKS, TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
 import { ELF_CROUCH_TICKS, ELF_HOP_TICKS, ELF_STOMP_RADIUS, GOON_WINDUP_TICKS, POODLE_CROUCH_TICKS, POODLE_DASH_SPEED, POODLE_DASH_TICKS, SPRITZ_WINDUP_TICKS } from '../../sim/combat/districtEnemies';
 import { PERFUME_CLOUD_RADIUS } from '../../sim/combat/perfume';
+import { DASH_TICKS } from '../../sim/combat/dash';
+import type { ActorDirection } from './ActorSpriteView';
 
 /** How far a Bargain Hunter's charge carries: the lane the renderer draws. */
 const SHOPPER_CHARGE_REACH = SHOPPER_CHARGE_TICKS * 9;
@@ -321,6 +323,9 @@ export const ATTACK_RELEASE_TICKS = 14;
  * simulation fires; the last third plays during the first ticks of recovery.
  * A hanger's strike loops while it is touching distance from the janitor.
  */
+/** Where a charge or lob telegraph snaps from anticipation to its release frames. */
+export const WINDUP_RELEASE_AT = 0.85;
+
 export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], frames: number, tick: number): number | null {
   if (frames < 2 || enemy.health <= 0) return null;
   const release = Math.max(1, Math.floor(frames / 3));
@@ -331,6 +336,14 @@ export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], fr
   }
   const charge = windups.find((windup) => windup.kind === 'spit' || windup.kind === 'slam');
   if (charge) return Math.min(windupFrames - 1, Math.floor(charge.progress * windupFrames));
+  // Charges and lobs (Mascot, Bargain Hunter, Poodle, Spritzer, Roofer, Elf) release when
+  // the telegraph ends, so their sheet anticipates over most of it and snaps to the
+  // release frames in the last 15% (roadmap V2).
+  const lunge = windups.find((windup) => windup.kind === 'charge' || windup.kind === 'lob');
+  if (lunge) {
+    if (lunge.progress < WINDUP_RELEASE_AT) return Math.min(windupFrames - 1, Math.floor((lunge.progress / WINDUP_RELEASE_AT) * windupFrames));
+    return Math.min(frames - 1, windupFrames + Math.floor(((lunge.progress - WINDUP_RELEASE_AT) / (1 - WINDUP_RELEASE_AT)) * release));
+  }
   if (enemy.phase !== 'recover') return null;
   const recoverTicks = enemy.kind === 'spitter'
     ? SPITTER_RECOVER_TICKS
@@ -345,7 +358,12 @@ export const PLAYER_HURT_TICKS_PER_FRAME = 3;
 /** Milliseconds per frame of the death fall; the clock stops at game over. */
 export const PLAYER_DEATH_MS_PER_FRAME = 110;
 
-export type PlayerBodyAction = { readonly sheet: 'swing' | 'hurt' | 'death'; readonly column: number };
+export type PlayerBodyAction = {
+  readonly sheet: 'swing' | 'hurt' | 'death' | 'dash' | 'aim';
+  readonly column: number;
+  /** Overrides the aim-facing row: a dash draws along its own direction. */
+  readonly direction?: ActorDirection;
+};
 
 /**
  * Which of the janitor's action sheets to draw, or null for walk/idle.
@@ -354,14 +372,24 @@ export type PlayerBodyAction = { readonly sheet: 'swing' | 'hurt' | 'death'; rea
  * frames is not loaded and is skipped.
  */
 export function playerBodyAction(
-  input: { readonly swing: number | null; readonly hurtAge: number | null; readonly deadMs: number | null },
-  frames: { readonly swing: number; readonly hurt: number; readonly death: number },
+  input: { readonly swing: number | null; readonly hurtAge: number | null; readonly deadMs: number | null; readonly dashAge?: number | null; readonly aim?: number | null },
+  frames: { readonly swing: number; readonly hurt: number; readonly death: number; readonly dash?: number; readonly aim?: number },
 ): PlayerBodyAction | null {
   if (input.deadMs !== null && frames.death > 0) {
     return { sheet: 'death', column: Math.min(frames.death - 1, Math.floor(Math.max(0, input.deadMs) / PLAYER_DEATH_MS_PER_FRAME)) };
   }
   if (input.hurtAge !== null && frames.hurt > 0 && input.hurtAge >= 0 && input.hurtAge < frames.hurt * PLAYER_HURT_TICKS_PER_FRAME) {
     return { sheet: 'hurt', column: Math.floor(input.hurtAge / PLAYER_HURT_TICKS_PER_FRAME) };
+  }
+  // The authored dash (roadmap V4) spans the sim's dash window and outranks a swing.
+  const dashFrames = frames.dash ?? 0;
+  if (input.dashAge != null && dashFrames > 0 && input.dashAge >= 0 && input.dashAge < DASH_TICKS) {
+    return { sheet: 'dash', column: Math.min(dashFrames - 1, Math.floor((input.dashAge / DASH_TICKS) * dashFrames)) };
+  }
+  // A ranged shot (roadmap V4, PixelLab): straight to the arms-forward frames, then hold.
+  const aimFrames = frames.aim ?? 0;
+  if (input.aim != null && aimFrames > 0) {
+    return { sheet: 'aim', column: Math.max(0, aimFrames - (input.aim < 0.5 ? 2 : 1)) };
   }
   if (input.swing !== null && frames.swing > 0) {
     return { sheet: 'swing', column: Math.min(frames.swing - 1, Math.floor(clamp01(input.swing) * frames.swing)) };

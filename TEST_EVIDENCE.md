@@ -1,5 +1,113 @@
 # Test evidence
 
+## 2026-10-03 UTC — PixelLab animations: Alex aim + dash, Spritzer/Mascot/Roofer attacks (HANDOFF)
+
+Branch `feat/attack-windups-alex-dash`, PR #56 (not merged). Presentation only;
+no `src/sim` change.
+
+**Done.** These were made by animating the game's *original* PixelLab
+characters through the PixelLab v2 API, so identity, palette and scale match
+the existing sheets:
+
+| Sheet | Character id | Frames |
+|---|---|---|
+| `alex-aim.png` | 943aa1b2 | 4 |
+| `alex-dash.png` | 943aa1b2 | 4 |
+| `mascot-attack.png` | 2370b80c | 6 |
+| `spritzer-attack.png` | cd520aac | 6 |
+| `roofer-attack.png` | d6eb1ca9 | 6 |
+
+All are 8 facings.
+
+- **Aim:** a new body sheet that plays while a ranged weapon fires. The held
+  gun moves out to the outstretched hand (`AIM_POSE_REACH`). It yields to
+  death, hurt and the dash.
+- **Dash:** draws along the dash direction, not the aim.
+- **Attacks:** the charge and lob wind-ups now drive attack frames
+  (`attackFrameFor`, `WINDUP_RELEASE_AT`).
+- **Redos:** three drifted directions were regenerated (Alex's aim NW, the
+  Spritzer NE, the Roofer W).
+- **Re-registration:** every sheet is re-registered so each facing's
+  rest-frame feet and centre match its walk sheet (zero px error). Without
+  it, the Roofer floated about 15 px up when attacking.
+- **Derived pass removed:** `art/derived-poses` is gone, so nothing
+  overwrites the PixelLab art.
+- **Spend:** 68 of 500 subscription generations; 432 remain. The earlier
+  Retro Diffusion trial was $0.18.
+
+**How to redo or extend (needs `PIXELLAB_API_KEY`):**
+
+    python3 art/pixellab/animate_characters.py submit [names]   # queue (waits out 429)
+    python3 art/pixellab/animate_characters.py topup            # API drops directions past free job slots; queue the rest
+    python3 art/pixellab/animate_characters.py redo <name> <direction> ...
+    python3 art/pixellab/animate_characters.py collect [names]  # pack from the character ZIP export + re-register feet
+
+Then copy `art/pixellab/<name>.png` into `public/assets/neon/...`.
+
+Network notes:
+- `backblaze.pixellab.ai` (the frame CDN) is blocked here, which is why
+  frames come from `GET /v2/characters/{id}/zip` on `api.pixellab.ai`.
+- `GET /v2/balance` shows the generation allowance.
+- `GET /v2/characters` lists every character id. The Bargain Hunter, Poodle,
+  Elf, Goon and the bosses are all there for the next wind-ups.
+
+**Verified:**
+- Unit: 1,844 of 1,844 across 179 files. TypeScript passes.
+- Tests: `alex-aim.test.ts` and `derived-action-sheets.test.ts` (sheet
+  sizes, priority, dash row).
+- Feet registration was measured per facing.
+
+**Mascot redo (done, commit d05d6f9):** all 8 directions regenerated with a deep
+crouch then a full shoulder-first lunge (`ANIMATIONS` in `art/pixellab/animate_characters.py`).
+Registration error 0 on every row; 792×1056 unchanged. Live in `mvp-floor-three-brute`:
+the telegraph plays `mascot-attack[0]`…`[5]`, 0 console errors. Full unit suite 1,844 of 1,844 after the redo; build passes.
+PixelLab balance afterwards: 416 of 2,000 generations.
+
+**Verified live (scripts/live-capture-actions.mjs, `artifacts/live-qa/pixellab/`):**
+Spritzer frames 0–5 and Roofer 0–4 during telegraphs, Mascot 0–5, Alex dash row 6 while
+dashing east and aiming north-west, aim row 6 aiming east and row 2 aiming west. Build
+passes; the browser batch (night-shift:355, break-room:84, presentation-evidence) passes 6/6.
+
+**Remaining:** merge PR #56 when the owner says so.
+
+## 2026-10-03 UTC — Enemy wind-up sheets (V2) and Alex's dash (V4)
+
+Presentation only; no `src/sim` change, so the balance bot cannot move.
+
+- **Wind-ups:** the Spritzer, Mascot Brute and Roofer have 6-frame attack
+  sheets: four frames of anticipation (lean away, crouch) and two of release
+  (lunge along the facing). They are derived from each walk sheet by
+  `art/derived-poses/build_poses.py`.
+- **`attackFrameFor` fix:** charge and lob wind-ups now drive attack frames.
+  Before, only spit and slam did, so these kinds could never have used a
+  sheet.
+- **Dash:** Alex has a 4-frame, 8-facing dash (lean in, stretch plus smear,
+  fade, recover) that replaces the procedural stretch. It draws along the
+  dash direction, not the aim; live QA caught the first version leaning
+  toward the mouse.
+- **Debug bridge:** the renderer evidence now lists every enemy's displayed
+  sheet and frame (`actorPresentation.enemies`).
+- **Generation spend:** Retro Diffusion was tried once ($0.18, about $3.50
+  left). The pose was good, but scale and palette drifted, so derived art
+  was used.
+- **Still open:** Alex's aim pose (needs new art), more wind-up kinds, and
+  the bosses. The wind-up glow tint still dominates late in a telegraph;
+  easing it is a design call.
+
+Evidence:
+- Unit: 1,840 of 1,840 across 178 files. TypeScript and build pass, and the
+  240 replays match.
+- Browser: the actor-presentation, Sneakers-dash and presentation-evidence
+  specs pass (6/6).
+- New `derived-action-sheets.test.ts` (7 tests) failed first. The dash-row
+  test reproduced the live bug (`northwest`, not `east`) before its fix.
+- Live:
+  - all 6 frames of each attack sheet were displayed during real telegraphs;
+  - dashes east, west and south drew rows 6, 2 and 0 while aiming top-left;
+  - zero console errors.
+
+  See `artifacts/live-qa/windups/`.
+
 ## 2026-10-03 UTC — Spray weapons (V3) and elite trait marks (V10)
 
 Presentation only; no `src/sim` change. Built on main `235bca9`, which

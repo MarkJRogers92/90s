@@ -39,9 +39,9 @@ or start something; keep items small enough for one PR.
 |---|---|---|---|
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **Hanger done**; 16 kinds left | M per batch |
-| V2 | Authored attack sheets for wind-up enemies and bosses | open | L |
+| V2 | Authored attack sheets for wind-up enemies and bosses | **Spritzer, Mascot, Roofer done (PixelLab, PR #56)**; others open | L |
 | V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
-| V4 | Alex: dash and ranged-aim animations | open | M |
+| V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live QA pending | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
 | V7 | Skylight/roof weather | open | M |
@@ -140,6 +140,29 @@ before the release. Needs new art (PixelLab or Retro Diffusion): ask the
 owner. Accept: wind-up visible from the first telegraph tick in a live
 capture, and `npm run balance:reaction` unchanged (presentation only).
 
+**Done 2026-10-03: Spritzer, Mascot Brute, Roofer — now PixelLab animations of the original characters (see STATUS.md handoff; `art/pixellab/animate_characters.py`). The derived description below was the first pass and has been replaced.**
+- Six-frame sheets are *derived* from each walk sheet by
+  `art/derived-poses/build_poses.py`: four frames of anticipation (lean
+  away, crouch) and two of release (lunge along the facing). There was no
+  generation spend.
+- `attackFrameFor` previously mapped only spit and slam wind-ups to attack
+  frames. It now maps **charge** and **lob** too: anticipation over the first
+  85% of the telegraph (`WINDUP_RELEASE_AT`), then the release frames. So the
+  Bargain Hunter, Poodle and Elf pick up a sheet the moment one exists:
+  derive it with the same script, add a `neon()` entry, done.
+- Live renderer evidence (`actorPresentation.enemies`, new in the debug
+  bridge) showed all 6 frames of each sheet during real telegraphs.
+- Honest limit: the existing wind-up glow tint still dominates late in the
+  telegraph (the Mascot washes near-white), so the new frames add body
+  language under it rather than replacing it. Easing that tint is a design
+  call for the owner.
+- Retro Diffusion was tried for a true new pose ($0.18, about $3.50 left).
+  The pose was good, but it came out about 1.5× scale and changed the
+  palette, and per-facing generations would drift, so derived art won for
+  now.
+
+Still open: Bargain Hunter, Poodle, Elf and Goon, and the bosses.
+
 ## V3 — Native effects for the remaining weapons (49 of 67 left)
 
 The list is in `diagnostics/weapon-visuals/remaining-effect-roster.json`
@@ -201,6 +224,20 @@ and an aim pose (1-2 frames with the arms forward). A derived dash (re-posed
 walk frames plus a motion smear) is possible with the Hanger script approach.
 Accept: the dash reads in a live capture at 1x, and the ghosts still follow
 Flashes: Reduced.
+
+**Dash done 2026-10-03.**
+- `alex-dash.png` has 4 frames × 8 facings at the 64 px walk canvas, derived
+  by `art/derived-poses/build_poses.py`: lean in, stretch plus motion smear,
+  smear fading, recover.
+- It plays across the sim's 12-tick dash, outranks a swing and yields to
+  hurt and death. It replaces the procedural stretch; the dash ghosts
+  remain.
+- It draws along the **dash direction** (`dashX`/`dashY`), not the aim.
+  Live QA caught the first version leaning toward the mouse.
+- Preview: `art/derived-poses/preview.png`.
+
+**Aim pose still open.** Re-posing cannot invent forward arms: this one
+needs a generation or hand-pixelled frames.
 
 ## V5 — Purpose-made Alex portrait
 

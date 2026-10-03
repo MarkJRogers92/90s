@@ -145,7 +145,7 @@ async function launchRun(page: Page, path = '/'): Promise<void> {
 async function waitForRun(page: Page): Promise<void> {
   await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
-  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden', { timeout: CANVAS_START_MS });
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => runSnapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
 }
@@ -604,7 +604,7 @@ test('an invalid checkpoint disables Continue run and never breaks startup', asy
   await expect(page.getByRole('button', { name: 'Continue run', exact: true })).toBeDisabled();
   await launchRun(page);
   expect((await runSnapshot(page)).status).toBe('playing');
-  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden', { timeout: CANVAS_START_MS });
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);

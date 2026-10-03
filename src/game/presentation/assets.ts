@@ -270,6 +270,10 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.hangerAttack, 'enemies/hanger-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerDeath, 'enemies/hanger-death.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerHurt, 'enemies/hanger-hurt.png'),
+  // Derived wind-up attack sheets (art/derived-poses): named by enemySpriteSheet.
+  neon('neon:enemy:spritzer-attack', 'enemies/spritzer-attack.png'),
+  neon('neon:enemy:mascot-attack', 'enemies/mascot-attack.png'),
+  neon('neon:enemy:roofer-attack', 'enemies/roofer-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.hangerShellImpact, 'enemies/hanger-shell-impact.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinIdle, 'enemies/mannequin-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.mannequinWalk, 'enemies/mannequin-walk.png'),
@@ -342,6 +346,8 @@ export const PLAYER_TEXTURE_KEYS = {
   swing: 'neon:player:alex-swing',
   hurt: 'neon:player:alex-hurt',
   death: 'neon:player:alex-death',
+  dash: 'neon:player:alex-dash',
+  aim: 'neon:player:alex-aim',
 } as const;
 
 export const NEON_CIVILIAN_KEYS = {
@@ -355,6 +361,8 @@ export const CHARACTER_ASSETS: readonly PresentationAsset[] = [
   neon(PLAYER_TEXTURE_KEYS.idle, 'player/alex-idle.png'),
   neon(PLAYER_TEXTURE_KEYS.walk, 'player/alex-walk.png'),
   neon(PLAYER_TEXTURE_KEYS.death, 'player/alex-death.png'),
+  neon(PLAYER_TEXTURE_KEYS.dash, 'player/alex-dash.png'),
+  neon(PLAYER_TEXTURE_KEYS.aim, 'player/alex-aim.png'),
   neon(PLAYER_TEXTURE_KEYS.swing, 'player/alex-swing.png'),
   neon(PLAYER_TEXTURE_KEYS.hurt, 'player/alex-hurt.png'),
   ...Object.values(NEON_CIVILIAN_KEYS).flatMap((keys) => [
