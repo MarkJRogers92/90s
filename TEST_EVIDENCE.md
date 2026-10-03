@@ -15,7 +15,7 @@ LP Manager's sheet already does. `enemySpriteSheet` already names the keys
 | Manager (floor 2) | `1daf7771` (mall manager v2) | `manager-attack.png` 768×1024 (128 px) | **done, live-checked** (south row redone; frames 0–3, 0 errors) |
 | Developer (floor 4) | `e3e0c843` | `developer-attack.png` | **regenerating**: first pass came back in a navy suit and 7–17% too big (`collect` now warns about this); the action text now pins the cream suit |
 | Santa (holiday district) | `51e6a5de` | `santa-attack.png` | **regenerating**: first pass had a black/brown sack (walk sheet: dark red) and a figure x1.14 too big; action text now pins the sack. Large re-renders are scaled back with `ACTION_FIGURE_SCALE` (collect prints the factor) |
-| Glamour Queen | `a1821931` | `glamour-queen-attack.png` | queued |
+| Glamour Queen | `a1821931` | `glamour-queen-attack.png` 1296×1728 (216 px, size matches) | **done, live-checked** (frames 0–3, 0 errors) |
 | Mr Whiskers | `aaf35aa7` (feral A, the shipped one) | `whiskers-attack.png` | queued |
 | Zamboni Driver | `721b6f96` | `zamboni-attack.png` | queued |
 

@@ -212,7 +212,7 @@ def drift(sheet, size, out):
         wb, ab = w.getchannel('A').getbbox(), a.getchannel('A').getbbox()
         ratio = (ab[3] - ab[1]) / (wb[3] - wb[1])
         ratios.append(ratio)
-        mean = lambda im: [sum(c) / max(1, len(c)) for c in zip(*[p[:3] for p in im.getdata() if p[3] > 200])]
+        mean = lambda im: [sum(c) / max(1, len(c)) for c in zip(*[p[:3] for p in im.get_flattened_data() if p[3] > 200])]
         dc = max(abs(x - y) for x, y in zip(mean(w), mean(a)))
         if not 0.92 <= ratio <= 1.08 or dc > 30:
             print(f'  WARNING row {row} ({ORDER[row]}): height x{ratio:.2f}, mean colour off by {dc:.0f}; look before publishing')
