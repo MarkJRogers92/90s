@@ -1,3 +1,4 @@
+import { openRunMenu } from './runMenu';
 import { expect, test, type CDPSession, type Page } from '@playwright/test';
 import { worldToCanvas } from './projection';
 import { CANVAS_START_MS } from './timing';
@@ -66,7 +67,7 @@ async function launchRun(page: Page, viewport: { width: number; height: number }
   await page.goto('/?seed=7');
   await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
   await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
-  await expect(page.locator('#mvp-run-hud')).toBeVisible();
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => snapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
   // The evidence is the concourse itself: wait for the clock-in cold open to clear.
@@ -298,6 +299,7 @@ test('ten restart cycles keep one opening view, stable listeners, and one ambien
 
   let generation = first.generation;
   for (let cycle = 1; cycle <= 10; cycle += 1) {
+    await openRunMenu(page);
     await page.getByRole('button', { name: 'Restart run', exact: true }).click();
     generation += 1;
     await expect.poll(() => snapshot(page).then((state) => state.generation)).toBe(generation);

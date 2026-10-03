@@ -1,0 +1,14 @@
+{
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "frames": 6,
+  "ticksPerFrame": 2,
+  "pivot": [
+    24,
+    24
+  ],
+  "loop": false,
+  "alpha": "binary",
+  "material": "CRT casing, glass, cut cable; localized muted discharge",
+  "source": "actual Forge DSL hand-pixel authoring"
+}

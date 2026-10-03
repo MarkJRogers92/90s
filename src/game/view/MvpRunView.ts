@@ -7,7 +7,7 @@
  * state and never mutates it; damage, movement, economy, and transitions
  * stay in `src/sim`.
  */
-import { runDashCooldown, runMaxHealth } from '../../sim/run/perks';
+import { runDashCooldown } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { BOSS_MAX_HEALTH, BOSS_SLAM_REACH, isBossKind } from '../../sim/combat/boss';
 import { itemDefinitionName, runOfferPriceLabel } from '../../sim/run/economy';
@@ -83,10 +83,12 @@ import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './pl
 import { attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
+import { exactReactionTexture, type EnemyHurtFrame } from './EnemyReactionView';
+import { LootView } from './LootView';
 import { WeaponView } from './WeaponView';
 import { WeaponEffectView } from './WeaponEffectView';
 import { enemySpriteSheet } from './ActorSpriteView';
-import { PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
+import { ENEMY_TEXTURE_KEYS, PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
 import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { revealSparkCount, type FusionRevealModel } from '../ui/fusionRevealModel';
 import { projectileStyle, type ProjectileStyle } from './projectileStyle';
@@ -162,7 +164,7 @@ export class MvpRunView {
   private readonly twistImages = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedTwistImages = new Set<string>();
   private readonly storeGraphics: Phaser.GameObjects.Graphics;
-  private readonly tokenSprites = new Map<string, Phaser.GameObjects.Image>();
+  private readonly loot: LootView;
   private readonly shadows = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedShadows = new Set<string>();
   private concourseAmbience: ConcourseAmbienceSnapshot | null = null;
@@ -206,6 +208,14 @@ export class MvpRunView {
     this.weaponEffects = new WeaponEffectView(scene);
     this.storeGraphics = scene.add.graphics().setDepth(presentationDepth('decal', 800));
     this.heroProps = new HeroPropView(scene);
+    this.loot = new LootView(scene);
+  }
+
+  /** Presentation observation only; called after each authoritative fixed step. */
+  public observeLoot(state: MvpRunState): void {
+    const room = state.wing.rooms[state.roomIndex];
+    if (!room) return;
+    this.loot.observe(state, `${state.seed}:${state.wing.floor ?? 1}:${state.roomIndex}:${room.id}:${state.room.interior ? `inside-${state.room.storeIndex}` : 'concourse'}`);
   }
 
   /** Where the janitor stood last frame, for effects fired from outside a sync. */
@@ -276,11 +286,11 @@ export class MvpRunView {
     const opening = this.openingConcourse;
     opening?.beginFrame();
     const actorScope = `${state.roomIndex}:${room.id}`;
-    if (this.actorMovement.beginScope(actorScope)) this.actorMemory.reset();
+    if (this.actorMovement.beginScope(actorScope, state.tick)) this.actorMemory.reset();
     this.deathEffects.sync(
       actorScope,
       state.tick,
-      state.room.combat.enemies.map((enemy) => ({ id: `enemy:${enemy.id}`, x: enemy.x, y: enemy.y })),
+      state.room.combat.enemies.map((enemy) => ({ id: `enemy:${enemy.id}`, kind: enemy.kind, x: enemy.x, y: enemy.y })),
     );
     // Feedback reads this tick's hits first, so a struck sprite reacts on the
     // same frame the damage number appears.
@@ -294,6 +304,7 @@ export class MvpRunView {
       // the same tick the status changes, and it deserves its impact too.
       state.paused,
       state.room.combat.projectiles,
+      (id) => this.actorMemory.facingFor(id),
     );
     for (const patch of state.room.combat.surfaces) {
       this.drawSurfacePatch(patch, opening?.effectGraphics(`patch:${patch.id}`) ?? this.effectGraphics);
@@ -347,11 +358,6 @@ export class MvpRunView {
         effects.lineStyle(4 * (1 - t) + 1, enemy.kind === 'spitter' ? 0x9aff6a : 0xff3a5a, 1 - t).strokeEllipse(enemy.x, enemy.y, r * 2, r);
       }
       this.threats.push({ enemy, windups });
-      if (enemy.kind === 'mannequin' && enemy.phase === 'pursue') {
-        // Moving: red eyes in the blank face.
-        this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 52, radius: 20, color: 0xff2a3a, intensity: 1 });
-        effects.fillStyle(0xff2a3a, 1).fillRect(Math.round(enemy.x) - 4, Math.round(enemy.y) - 54, 2, 2).fillRect(Math.round(enemy.x) + 2, Math.round(enemy.y) - 54, 2, 2);
-      }
       if (enemy.elite) {
         // CLEARANCE: a pulsing aura and a price-tag label. Gold for the plain elite;
         // a Swift one is cyan and a Volatile one orange (round 57), so the trait reads at a glance.
@@ -372,11 +378,13 @@ export class MvpRunView {
         const pulse = 0.75 + 0.25 * Math.sin(state.tick / 8 + enemy.id);
         shown = combinePoses(shown, { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1, flash: false, tint: wet ? glow(0x2a90ff, 0.55 * pulse) : glow(0xd08a20, 0.5 * pulse) });
       }
-      if (enemy.kind === 'mannequin' && enemy.phase === 'pursue') {
+      const hurt = this.feedback.hurtFor(`enemy:${enemy.id}`, fxTick, attackColumn !== null || charge !== undefined);
+      this.drawMannequinEyes(enemySnapshot, effects, hurt);
+      if (!hurt && enemy.kind === 'mannequin' && enemy.phase === 'pursue') {
         // A moving mannequin jitters, like a bad stop-motion frame.
         shown = combinePoses(shown, { offsetX: ((state.tick * 7) % 3) - 1, offsetY: ((state.tick * 5) % 3) - 1, scaleX: 1, scaleY: 1, flash: false });
       }
-      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, shown, attackColumn);
+      const sprite = this.syncActorSprite(enemySnapshot, state.tick, actorDepth, shown, attackColumn, null, hurt);
       const spriteActive = sprite.spriteActive;
       this.drawActorEffectCues(enemySnapshot, sprite, effects);
       if (enemy.kind === 'hanger') {
@@ -489,7 +497,10 @@ export class MvpRunView {
         effect: presentationDepth('effect', 1),
       },
     };
-    this.drawTokens(state);
+    this.loot.sync(state, `${state.seed}:${state.wing.floor ?? 1}:${roomKey}`, {
+      shadow: (id, x, y, scale) => this.contactShadow(id, x, y, scale),
+      light: light => opening?.addLight(light),
+    });
     for (const light of this.feedback.drainLights()) opening?.addLight(light);
     for (const projectile of state.room.combat.projectiles) {
       const enemyShot = projectile.faction === 'enemy';
@@ -1920,8 +1931,9 @@ export class MvpRunView {
     pose: ActorPose = NEUTRAL_POSE,
     attackColumn: number | null = null,
     bodyAction: PlayerBodyAction | null = null,
+    hurt: EnemyHurtFrame | null = null,
   ): ActorFrameEvidence {
-    const visual = actorPresentation(this.actorMemory, snapshot, tick);
+    let visual = actorPresentation(this.actorMemory, snapshot, tick);
     // Reduced flashes: sprites never go solid white on a hit or a release.
     if (pose.flash && !flashAllowed(gameSettings().get())) pose = { ...pose, flash: false };
     if (snapshot.kind === 'alex') {
@@ -1932,7 +1944,15 @@ export class MvpRunView {
     // An attack in progress draws from the attack sheet, which shares the walk
     // sheet's layout (one row per facing, canvases grown around the idle one).
     const attacking = sheet !== null && attackColumn !== null;
-    const walkKey = attacking ? sheet.attack
+    const hurtKey = snapshot.kind === 'mannequin' ? ENEMY_TEXTURE_KEYS.mannequinHurt
+      : snapshot.kind === 'static' ? ENEMY_TEXTURE_KEYS.staticHurt : null;
+    const nativeHurt = !attacking && !(snapshot.kind === 'static' && snapshot.phase === 'telegraph') && hurtKey && hurt && hurt.spec.textureKey === hurtKey
+      && exactReactionTexture(this.scene.textures, hurt.spec.textureKey, 384, 768) ? hurt : null;
+    if (nativeHurt) {
+      visual = { ...visual, direction: nativeHurt.direction, bobY: 0, lunge: 0, attackLean: 0, damageFlicker: false, damageFeedback: false };
+      this.actorMemory.presentFacing(snapshot.id, nativeHurt.direction);
+    }
+    const walkKey = nativeHurt ? nativeHurt.spec.textureKey : attacking ? sheet.attack
       : sheet?.walk && usableTextureKey(this.scene.textures, sheet.walk) ? sheet.walk : null;
     const neonIdle = sheet && usableTextureKey(this.scene.textures, sheet.idle) ? sheet.idle : null;
     const textureKey = walkKey ?? neonIdle ?? actorTextureKey(snapshot.kind, visual.walking);
@@ -1953,8 +1973,9 @@ export class MvpRunView {
     } else if (snapshot.kind === 'hanger') {
       spec = { textureKey, frameWidth: 48, frameHeight: 48, scale: 1 };
     }
+    if (nativeHurt) spec = nativeHurt.spec;
     const usable = usableTextureKey(this.scene.textures, textureKey) !== null
-      && (snapshot.kind === 'alex' || snapshot.kind === 'hanger' || neonIdle !== null);
+      && (nativeHurt !== null || snapshot.kind === 'alex' || snapshot.kind === 'hanger' || neonIdle !== null);
     let view = this.actorSprites.get(snapshot.id);
     if (!view) {
       view = new ActorSpriteView(this.scene, spec);
@@ -1963,7 +1984,7 @@ export class MvpRunView {
     this.usedActorSpriteIds.add(snapshot.id);
     const walkingFrames = (visual.walking && snapshot.kind === 'alex') || walkKey !== null;
     const walkFrame = actorFrameFor(walkingFrames ? 'walk' : 'idle', visual.direction, tick, walkFrames, sheet?.ticksPerFrame ?? 5);
-    const frame = attacking ? { row: walkFrame.row, column: Math.min(walkFrames - 1, attackColumn) } : walkFrame;
+    const frame = nativeHurt ? nativeHurt.frame : attacking ? { row: walkFrame.row, column: Math.min(walkFrames - 1, attackColumn) } : walkFrame;
     // The walk bob and lunge would fight the attack pose, so an attack stands still.
     const shownVisual = attacking ? { ...visual, lunge: 0, bobY: 0 } : visual;
     const spriteActive = view.sync(snapshot, frame, shownVisual, usable, depth, spec, pose);
@@ -1981,6 +2002,13 @@ export class MvpRunView {
       lungeCueDepth: visual.lunge > 0 ? presentationDepth('effect', 1) : null,
       actorDepth: depth,
     };
+  }
+
+  /** Fixed pursuit eyes belong to the idle/walk head, not a moving hurt pose. */
+  private drawMannequinEyes(actor: ActorSnapshot, effects: Phaser.GameObjects.Graphics, hurt: EnemyHurtFrame | null): void {
+    if (actor.kind !== 'mannequin' || actor.phase !== 'pursue' || hurt) return;
+    this.openingConcourse?.addLight({ x: actor.x, y: actor.y - 52, radius: 20, color: 0xff2a3a, intensity: 1 });
+    effects.fillStyle(0xff2a3a, 1).fillRect(Math.round(actor.x) - 4, Math.round(actor.y) - 54, 2, 2).fillRect(Math.round(actor.x) + 2, Math.round(actor.y) - 54, 2, 2);
   }
 
   private readonly enemyMaxHealth = new Map<string, number>();
@@ -2274,7 +2302,7 @@ export class MvpRunView {
         );
       }
     }
-    if (evidence.damageCueVisible) {
+    if (evidence.damageCueVisible && actor.kind !== 'mannequin') {
       effects.lineStyle(3, 0xffd45d, 0.95);
       effects.strokeCircle(actor.x, actor.y, actor.kind === 'alex' ? 17 : 21);
       effects.lineStyle(1, 0xf4edd8, 0.9);
@@ -2362,56 +2390,6 @@ export class MvpRunView {
     shadow.setPosition(Math.round(x), Math.round(y + 2)).setScale(scale, scale).setVisible(true);
   }
 
-  /** Dropped Mall Tokens: spinning brass coins with their own little glow. */
-  private drawTokens(state: MvpRunState): void {
-    const live = new Set<string>();
-    for (const token of state.room.tokens) {
-      live.add(token.id);
-      let sprite = this.tokenSprites.get(token.id);
-      const snack = token.kind === 'snack';
-      // Round 32: a dropped item shows as itself, bobbing in a glow (gold for a rare).
-      const itemKey = token.kind === 'item' && token.itemDefinitionId ? itemIconKey(token.itemDefinitionId) : null;
-      const itemTexture = itemKey ? usableTextureKey(this.scene.textures, itemKey) : null;
-      if (!sprite) {
-        sprite = this.scene.add.image(token.x, token.y, itemTexture ?? (snack ? FX_TEXTURES.pretzel : FX_TEXTURES.token)).setDepth(presentationDepth('actor', token.y - 1));
-        this.tokenSprites.set(token.id, sprite);
-      }
-      const age = state.tick - token.droppedTick;
-      if (token.kind === 'item') {
-        const hop = age < 20 ? Math.sin((age / 20) * Math.PI) * 22 : 0;
-        const bob = Math.sin((state.tick + token.x) / 12) * 2;
-        const pulse = token.rare ? 1 + 0.08 * Math.sin(state.tick / 5) : 1;
-        sprite.setPosition(Math.round(token.x), Math.round(token.y - 12 - hop + bob)).setScale((token.rare ? 1.25 : 1) * pulse);
-        this.contactShadow(`token:${token.id}`, token.x, token.y, 0.5);
-        this.openingConcourse?.addLight({ x: token.x, y: token.y - 10, radius: token.rare ? 64 : 40, color: token.rare ? 0xffd84a : 0x6aff8a, intensity: token.rare ? 1 : 0.7 });
-        continue;
-      }
-      if (snack) {
-        // A pretzel sits still and glows warm; it pulses when the janitor is hurt.
-        const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 18 : 0;
-        const hurt = state.room.combat.player.health < runMaxHealth(state);
-        const pulse = hurt ? 1 + 0.12 * Math.sin(state.tick / 6) : 1;
-        sprite.setPosition(Math.round(token.x), Math.round(token.y - 8 - hop)).setScale(2 * pulse);
-        this.contactShadow(`token:${token.id}`, token.x, token.y, 0.45);
-        this.openingConcourse?.addLight({ x: token.x, y: token.y - 8, radius: hurt ? 50 : 34, color: 0xffa040, intensity: hurt ? 0.9 : 0.55 });
-        continue;
-      }
-      // A short pop out of the body, then a lazy spin and bob on the floor.
-      const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 14 : 0;
-      const spin = Math.abs(Math.cos((state.tick + token.x) / 9));
-      sprite.setPosition(Math.round(token.x), Math.round(token.y - 6 - hop - Math.sin(state.tick / 11) * 1.5))
-        .setScale(Math.max(0.2, spin) * 1.6, 1.6);
-      this.contactShadow(`token:${token.id}`, token.x, token.y, 0.35);
-      this.openingConcourse?.addLight({ x: token.x, y: token.y - 6, radius: 30, color: 0xffd84a, intensity: 0.65 });
-    }
-    for (const [id, sprite] of this.tokenSprites) {
-      if (!live.has(id)) {
-        sprite.destroy();
-        this.tokenSprites.delete(id);
-      }
-    }
-  }
-
   private pruneShadows(): void {
     for (const [id, shadow] of this.shadows) {
       if (!this.usedShadows.has(id)) {
@@ -2490,8 +2468,7 @@ export class MvpRunView {
     this.dashHint = null;
     for (const shadow of this.shadows.values()) shadow.destroy();
     this.shadows.clear();
-    for (const sprite of this.tokenSprites.values()) sprite.destroy();
-    this.tokenSprites.clear();
+    this.loot.destroy();
     for (const icon of this.offerIcons.values()) icon.destroy();
     this.offerIcons.clear();
     this.feedback.destroy();
@@ -2515,6 +2492,7 @@ export class MvpRunView {
   }
 
   public resetForRun(): void {
+    this.loot.reset();
     this.timeWarp = null;
     this.heldTicks = 0;
     this.feedback.resetRoom('');

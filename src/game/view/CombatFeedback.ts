@@ -16,7 +16,8 @@ import { usableTextureKey } from '../presentation/assetFallback';
 import { presentationDepth } from '../presentation/depth';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { PointLight } from '../presentation/lighting/LightingLayer';
-import { ACTOR_DIRECTION_ORDER, directionForVector } from './ActorSpriteView';
+import { ACTOR_DIRECTION_ORDER, directionForVector, type ActorDirection } from './ActorSpriteView';
+import { MannequinImpactView, StaticImpactView, exactReactionTexture, mannequinHurtFrame, staticHurtFrame, MANNEQUIN_HURT_TICKS, STATIC_HURT_TICKS, type EnemyHurtFrame } from './EnemyReactionView';
 import { flashAllowed, gameSettings, shakeScale, washScale } from '../settings/settings';
 import { isBossKind } from '../../sim/combat/boss';
 import {
@@ -49,7 +50,7 @@ type Burst = {
   readonly angle: number;
 };
 type Reaction = { born: number; dirX: number; dirY: number; heavy: boolean };
-type Corpse = { image: Phaser.GameObjects.Image; born: number; frames: number; frameSize: number; row: number; scale: number; feetY: number };
+type Corpse = { image: Phaser.GameObjects.Image; born: number; frames: number; frameSize: number; row: number; scale: number; feetY: number; material: boolean };
 
 const MAX_DECALS = 70;
 const FLOAT_TICKS = 46;
@@ -129,6 +130,10 @@ export class CombatFeedback {
   private readonly corpses: Corpse[] = [];
   private readonly decals: Phaser.GameObjects.Image[] = [];
   private readonly reactions = new Map<string, Reaction>();
+  private readonly hurts = new Map<string, { born: number; direction: ActorDirection; kind: 'mannequin' | 'static' }>();
+  private readonly plastic: MannequinImpactView;
+  private readonly crt: StaticImpactView;
+  private facingFor: (id: string) => ActorDirection = () => 'south';
   private readonly flash: Phaser.GameObjects.Rectangle;
   private readonly vignette: Phaser.GameObjects.Image;
   private vignetteUntil = 0;
@@ -144,6 +149,8 @@ export class CombatFeedback {
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
+    this.plastic = new MannequinImpactView(scene);
+    this.crt = new StaticImpactView(scene);
     this.flash = scene.add
       .rectangle(480, 300, 960, 600, 0xff1a2a, 0)
       .setScrollFactor(0)
@@ -178,7 +185,9 @@ export class CombatFeedback {
     player: { x: number; y: number; invulnerableTicks: number; health: number },
     paused: boolean,
     projectiles: readonly ProjectileState[] = [],
+    facingFor: (id: string) => ActorDirection = () => 'south',
   ): void {
+    this.facingFor = facingFor;
     if (scope !== this.scope || tick < this.lastTick) {
       this.resetRoom(scope);
       this.snapshot(enemies, projectiles);
@@ -189,6 +198,16 @@ export class CombatFeedback {
     }
     this.landed = [];
     if (!paused && tick !== this.lastTick) {
+      // A pooled id with a new kind is a fresh actor, not a hit or attack release.
+      for (const enemy of enemies) {
+        const id = String(enemy.id), previous = this.tracked.get(id);
+        if (previous && previous.kind !== enemy.kind) {
+          this.tracked.delete(id);
+          this.attacks.delete(id);
+          this.hurts.delete(`enemy:${id}`);
+          this.reactions.delete(`enemy:${id}`);
+        }
+      }
       const beats: HitStopBeat[] = [];
       const { hits, deaths } = diffEnemyHealth(this.tracked, enemies);
       for (const hit of hits) beats.push(this.onHit(hit, player, tick));
@@ -252,6 +271,7 @@ export class CombatFeedback {
 
   /** The drawing pose for an actor that was just struck (or rest). */
   public poseFor(id: string, tick: number): SpritePose {
+    if (this.hurtFor(id, tick)) return REST_POSE;
     const reaction = this.reactions.get(id);
     if (!reaction) return REST_POSE;
     const age = tick - reaction.born;
@@ -260,6 +280,15 @@ export class CombatFeedback {
       return REST_POSE;
     }
     return hitReaction(age, reaction.dirX, reaction.dirY, reaction.heavy);
+  }
+
+  /** A visual flinch only; attack telegraphs retain priority over the hurt strip. */
+  public hurtFor(id: string, tick: number, attacking = false): EnemyHurtFrame | null {
+    const hurt = this.hurts.get(id);
+    if (!hurt) return null;
+    const age = tick - hurt.born;
+    if (age < 0 || age >= (hurt.kind === 'static' ? STATIC_HURT_TICKS : MANNEQUIN_HURT_TICKS)) { this.hurts.delete(id); return null; }
+    return attacking ? null : (hurt.kind === 'static' ? staticHurtFrame : mannequinHurtFrame)(this.scene.textures, age, hurt.direction);
   }
 
   private snapshot(enemies: readonly EnemyState[], projectiles: readonly ProjectileState[]): void {
@@ -284,19 +313,31 @@ export class CombatFeedback {
     const dirY = hit.y - player.y;
     const length = Math.hypot(dirX, dirY) || 1;
     this.reactions.set(`enemy:${hit.id}`, { born: tick, dirX, dirY, heavy });
+    if (hit.kind === 'mannequin' || hit.kind === 'static') {
+      const id = `enemy:${hit.id}`;
+      this.hurts.set(id, { born: tick, direction: this.facingFor(id), kind: hit.kind });
+    }
     // The impact lands on the side of the body facing the janitor.
     const ix = hit.x - (dirX / length) * 10;
     const iy = hit.y - 16 - (dirY / length) * 6;
     const label = ensurePixelLabel(this.scene, heavy ? `${hit.amount}!` : `${hit.amount}`, heavy ? '#ffd84a' : '#ffffff', 3, '#3a0010');
     const image = this.scene.add.image(hit.x + (this.random() - 0.5) * 14, hit.y - 44, label.key).setDepth(presentationDepth('prompt', 10));
     this.floaters.push({ image, born: tick, vx: (dirX / length) * 0.9 + (this.random() - 0.5) * 0.5, vy: -1.5, life: FLOAT_TICKS, pop: heavy ? 2.2 : 1.7 });
-    const blood = spillColor(hit.kind);
-    this.bursts.push({ kind: 'star', x: ix, y: iy, born: tick, life: heavy ? 9 : 7, radius: heavy ? 34 : 24, color: blood, angle: this.random() * Math.PI });
-    this.bursts.push({ kind: 'ring', x: ix, y: iy, born: tick, life: 12, radius: heavy ? 46 : 32, color: 0xffffff, angle: 0 });
-    this.addDecal(hit.x + (dirX / length) * 14, hit.y + (dirY / length) * 8, this.random() < 0.5 ? DECAL_TEXTURE_KEYS.bloodDrops : DECAL_TEXTURE_KEYS.bloodSplash, 1.7 + this.random() * 0.7, hit.kind);
-    // Spray carries on through the enemy, away from the swing.
-    for (let i = 0; i < (heavy ? 16 : 10); i += 1) this.spark(ix, iy, tick, blood, dirX / length, dirY / length);
-    this.pendingLights.push({ x: ix, y: iy, radius: heavy ? 120 : 90, color: 0xfff0d8, intensity: 1 });
+    if (hit.kind === 'mannequin') {
+      // HP differences identify a hit, not its source. Material chips stay body-centred.
+      this.plastic.spawn(hit.x, hit.y - 24, tick);
+    } else if (hit.kind === 'static') {
+      // Keep casing/glass debris centred on the CRT, independent of hit source.
+      this.crt.spawn(hit.x, hit.y - 43, tick);
+    } else {
+      const blood = spillColor(hit.kind);
+      this.bursts.push({ kind: 'star', x: ix, y: iy, born: tick, life: heavy ? 9 : 7, radius: heavy ? 34 : 24, color: blood, angle: this.random() * Math.PI });
+      this.bursts.push({ kind: 'ring', x: ix, y: iy, born: tick, life: 12, radius: heavy ? 46 : 32, color: 0xffffff, angle: 0 });
+      this.addDecal(hit.x + (dirX / length) * 14, hit.y + (dirY / length) * 8, this.random() < 0.5 ? DECAL_TEXTURE_KEYS.bloodDrops : DECAL_TEXTURE_KEYS.bloodSplash, 1.7 + this.random() * 0.7, hit.kind);
+      // Spray carries on through the enemy, away from the swing.
+      for (let i = 0; i < (heavy ? 16 : 10); i += 1) this.spark(ix, iy, tick, blood, dirX / length, dirY / length);
+      this.pendingLights.push({ x: ix, y: iy, radius: heavy ? 120 : 90, color: 0xfff0d8, intensity: 1 });
+    }
     this.shake(heavy ? 110 : 70, heavy ? 0.006 : 0.0035);
     return { kind: 'hit', heavy };
   }
@@ -304,17 +345,23 @@ export class CombatFeedback {
   private onDeath(death: Tracked & { id: string }, player: { x: number; y: number }, tick: number): HitStopBeat {
     const boss = isBossKind(death.kind);
     const blood = spillColor(death.kind);
-    this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : death.kind === 'mannequin' ? DECAL_TEXTURE_KEYS.glass : DECAL_TEXTURE_KEYS.bloodPool, boss ? 3.6 : 2.6, death.kind);
-    this.addDecal(death.x + 14, death.y + 8, DECAL_TEXTURE_KEYS.bloodDrag, 2, death.kind);
-    this.addDecal(death.x - 18, death.y - 4, DECAL_TEXTURE_KEYS.bloodSplash, 1.8, death.kind);
-    for (let i = 0; i < (boss ? 60 : 28); i += 1) this.spark(death.x, death.y - 14, tick, blood);
-    for (let i = 0; i < 8; i += 1) this.spark(death.x, death.y - 14, tick, 0xffffff);
-    this.bursts.push({ kind: 'splat', x: death.x, y: death.y - 16, born: tick, life: 14, radius: boss ? 110 : 56, color: blood, angle: this.random() * Math.PI });
-    this.bursts.push({ kind: 'shockwave', x: death.x, y: death.y, born: tick, life: boss ? 34 : 18, radius: boss ? 260 : 90, color: 0xffffff, angle: 0 });
-    this.pendingLights.push({ x: death.x, y: death.y, radius: boss ? 320 : 150, color: 0xff6a4a, intensity: 1 });
-    const word = boss ? 'CLOSING TIME!' : KILL_WORDS[Math.floor(this.random() * KILL_WORDS.length)]!;
+    if (death.kind === 'mannequin') this.plastic.spawn(death.x, death.y - 18, tick, true);
+    else if (death.kind === 'static') this.crt.spawn(death.x, death.y - 43, tick, true);
+    else {
+      this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : DECAL_TEXTURE_KEYS.bloodPool, boss ? 3.6 : 2.6, death.kind);
+      this.addDecal(death.x + 14, death.y + 8, DECAL_TEXTURE_KEYS.bloodDrag, 2, death.kind);
+      this.addDecal(death.x - 18, death.y - 4, DECAL_TEXTURE_KEYS.bloodSplash, 1.8, death.kind);
+      for (let i = 0; i < (boss ? 60 : 28); i += 1) this.spark(death.x, death.y - 14, tick, blood);
+      for (let i = 0; i < 8; i += 1) this.spark(death.x, death.y - 14, tick, 0xffffff);
+      this.bursts.push({ kind: 'splat', x: death.x, y: death.y - 16, born: tick, life: 14, radius: boss ? 110 : 56, color: blood, angle: this.random() * Math.PI });
+      this.bursts.push({ kind: 'shockwave', x: death.x, y: death.y, born: tick, life: boss ? 34 : 18, radius: boss ? 260 : 90, color: 0xffffff, angle: 0 });
+      this.pendingLights.push({ x: death.x, y: death.y, radius: boss ? 320 : 150, color: 0xff6a4a, intensity: 1 });
+    }
+    const word = boss ? 'CLOSING TIME!' : death.kind === 'mannequin' ? 'CRACK!' : death.kind === 'static' ? 'SHORTED!' : KILL_WORDS[Math.floor(this.random() * KILL_WORDS.length)]!;
     this.word(word, death.x, death.y - 70, tick, boss ? '#ffd84a' : '#ff5a8a', boss ? 5 : 3, boss ? 110 : FLOAT_TICKS + 10);
     this.spawnCorpse(death, player, tick);
+    this.hurts.delete(`enemy:${death.id}`);
+    this.reactions.delete(`enemy:${death.id}`);
     this.shake(boss ? 600 : 160, boss ? 0.02 : 0.008);
     if (boss) {
       this.flashUntil = tick + 30;
@@ -324,14 +371,18 @@ export class CombatFeedback {
   }
 
   /** Plays the enemy's death animation where it fell, then leaves the body a moment. */
-  private spawnCorpse(death: Tracked, player: { x: number; y: number }, tick: number): void {
+  private spawnCorpse(death: Tracked & { id: string }, player: { x: number; y: number }, tick: number): void {
     const key = usableTextureKey(this.scene.textures, deathSheet(death.kind));
     if (!key || key !== deathSheet(death.kind)) return;
+    if ((death.kind === 'mannequin' || death.kind === 'static') && !exactReactionTexture(this.scene.textures, key, 672, 768)) return;
     const source = this.scene.textures.get(key).getSourceImage() as { width: number; height: number };
     const frameSize = characterFrameSize(source.height, 8);
     const frames = Math.max(1, Math.round(source.width / frameSize));
-    // It falls facing the janitor who killed it.
-    const direction = directionForVector(player.x - death.x, player.y - death.y, 'south');
+    // Material art retains its last displayed facing; HP/removal diffs contain no hit source.
+    const material = death.kind === 'mannequin' || death.kind === 'static';
+    const direction = material
+      ? this.facingFor(`enemy:${death.id}`)
+      : directionForVector(player.x - death.x, player.y - death.y, 'south');
     const row = ACTOR_DIRECTION_ORDER.indexOf(direction);
     // Death canvases are grown copies of the 64px idle canvas, centred on it,
     // so pixel scale and the feet row come from the idle frame.
@@ -344,7 +395,7 @@ export class CombatFeedback {
     const scale = shown / idleFrame;
     const feetY = (frameSize - idleFrame) / 2 + idleFrame * 0.84;
     const image = this.scene.add.image(death.x, death.y, key).setDepth(presentationDepth('actor', death.y - 1)).setScale(scale);
-    this.corpses.push({ image, born: tick, frames, frameSize, row, scale, feetY });
+    this.corpses.push({ image, born: tick, frames, frameSize, row, scale, feetY, material });
     this.placeCorpse(this.corpses.at(-1)!, 0);
   }
 
@@ -547,10 +598,12 @@ export class CombatFeedback {
         continue;
       }
       this.placeCorpse(corpse, Math.min(corpse.frames - 1, Math.floor(age / CORPSE_FRAME_TICKS)));
-      if (age < 3 && flashAllowed(gameSettings().get())) corpse.image.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
+      if (!corpse.material && age < 3 && flashAllowed(gameSettings().get())) corpse.image.setTint(0xffffff).setTintMode(Phaser.TintModes.FILL);
       else corpse.image.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
       corpse.image.setAlpha(age < playTicks + CORPSE_HOLD_TICKS - 24 ? 1 : (playTicks + CORPSE_HOLD_TICKS - age) / 24);
     }
+    this.plastic.sync(tick);
+    this.crt.sync(tick);
     this.drawBursts(tick);
     const settings = gameSettings().get();
     const remaining = this.flashUntil - tick;
@@ -565,6 +618,9 @@ export class CombatFeedback {
     this.tracked.clear();
     this.attacks.clear();
     this.reactions.clear();
+    this.hurts.clear();
+    this.plastic.reset();
+    this.crt.reset();
     for (const floater of this.floaters) floater.image.destroy();
     for (const spark of this.sparks) spark.image.destroy();
     for (const decal of this.decals) decal.destroy();
@@ -590,5 +646,7 @@ export class CombatFeedback {
     this.flash.destroy();
     this.vignette.destroy();
     this.impacts.destroy();
+    this.plastic.destroy();
+    this.crt.destroy();
   }
 }

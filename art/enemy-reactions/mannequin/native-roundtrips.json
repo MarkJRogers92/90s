@@ -1,0 +1,19 @@
+{
+  "hurt": {
+    "forgeRoundtrip": true,
+    "asepriteRoundtrip": true,
+    "colors": 1285,
+    "rgbaSha256": "4a822fbca780217c18d7d1ebf98f913a4b016e97812d926eccb24778e7dd971c"
+  },
+  "death": {
+    "forgeRoundtrip": true,
+    "asepriteRoundtrip": true,
+    "colors": 1284,
+    "rgbaSha256": "fbf9b5eafbfc9762ad6ee862d275438a27dc3576fe8bb1b89efeee98a97ddc5f"
+  },
+  "plastic-impact": {
+    "forgeDslReplay": true,
+    "asepriteRoundtrip": true,
+    "frames": 6
+  }
+}

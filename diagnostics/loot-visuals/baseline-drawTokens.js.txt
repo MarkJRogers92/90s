@@ -1,0 +1,46 @@
+const live = new Set();
+    for (const token of state.room.tokens) {
+      live.add(token.id);
+      let sprite = this.tokenSprites.get(token.id);
+      const snack = token.kind === 'snack';
+      // Round 32: a dropped item shows as itself, bobbing in a glow (gold for a rare).
+      const itemKey = token.kind === 'item' && token.itemDefinitionId ? itemIconKey(token.itemDefinitionId) : null;
+      const itemTexture = itemKey ? usableTextureKey(this.scene.textures, itemKey) : null;
+      if (!sprite) {
+        sprite = this.scene.add.image(token.x, token.y, itemTexture ?? (snack ? FX_TEXTURES.pretzel : FX_TEXTURES.token)).setDepth(presentationDepth('actor', token.y - 1));
+        this.tokenSprites.set(token.id, sprite);
+      }
+      const age = state.tick - token.droppedTick;
+      if (token.kind === 'item') {
+        const hop = age < 20 ? Math.sin((age / 20) * Math.PI) * 22 : 0;
+        const bob = Math.sin((state.tick + token.x) / 12) * 2;
+        const pulse = token.rare ? 1 + 0.08 * Math.sin(state.tick / 5) : 1;
+        sprite.setPosition(Math.round(token.x), Math.round(token.y - 12 - hop + bob)).setScale((token.rare ? 1.25 : 1) * pulse);
+        this.contactShadow(`token:${token.id}`, token.x, token.y, 0.5);
+        this.openingConcourse?.addLight({ x: token.x, y: token.y - 10, radius: token.rare ? 64 : 40, color: token.rare ? 0xffd84a : 0x6aff8a, intensity: token.rare ? 1 : 0.7 });
+        continue;
+      }
+      if (snack) {
+        // A pretzel sits still and glows warm; it pulses when the janitor is hurt.
+        const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 18 : 0;
+        const hurt = state.room.combat.player.health < runMaxHealth(state);
+        const pulse = hurt ? 1 + 0.12 * Math.sin(state.tick / 6) : 1;
+        sprite.setPosition(Math.round(token.x), Math.round(token.y - 8 - hop)).setScale(2 * pulse);
+        this.contactShadow(`token:${token.id}`, token.x, token.y, 0.45);
+        this.openingConcourse?.addLight({ x: token.x, y: token.y - 8, radius: hurt ? 50 : 34, color: 0xffa040, intensity: hurt ? 0.9 : 0.55 });
+        continue;
+      }
+      // A short pop out of the body, then a lazy spin and bob on the floor.
+      const hop = age < 18 ? Math.sin((age / 18) * Math.PI) * 14 : 0;
+      const spin = Math.abs(Math.cos((state.tick + token.x) / 9));
+      sprite.setPosition(Math.round(token.x), Math.round(token.y - 6 - hop - Math.sin(state.tick / 11) * 1.5))
+        .setScale(Math.max(0.2, spin) * 1.6, 1.6);
+      this.contactShadow(`token:${token.id}`, token.x, token.y, 0.35);
+      this.openingConcourse?.addLight({ x: token.x, y: token.y - 6, radius: 30, color: 0xffd84a, intensity: 0.65 });
+    }
+    for (const [id, sprite] of this.tokenSprites) {
+      if (!live.has(id)) {
+        sprite.destroy();
+        this.tokenSprites.delete(id);
+      }
+    }

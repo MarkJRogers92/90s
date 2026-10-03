@@ -48,6 +48,7 @@ import { ascend, canAscend, climbToBossWing, floorOf, nextIsBossWing } from '../
 import { FINAL_FLOOR, type FloorNumber } from '../../sim/wing/floorSpecs';
 import { BenchCard, type BenchCardAction } from '../ui/BenchCard';
 import { OPEN_SETTINGS_EVENT, SETTINGS_OPENED_EVENT, settingsDialogOpen } from '../ui/SettingsPanel';
+import { RUN_MENU_OPENED_EVENT, RUN_MENU_CLOSED_EVENT, RunMenuPause, runMenuOpen, type RunMenuClosedDetail } from '../ui/RunMenu';
 import { heartbeatIntervalMs } from '../view/playerCues';
 import { GamepadReader, firstGamepad, type PadFrame } from '../input/gamepad';
 import { PlaytestRecorder, type RunRecord } from '../playtest/recorder';
@@ -136,7 +137,14 @@ export function takeMvpRunLaunch(): MvpRunLaunch | null {
   return launch;
 }
 
-class MvpRunInputAdapter {
+/** Let native controls receive their normal keyboard click, including keyup. */
+function pageControlActivation(event: KeyboardEvent): boolean {
+  return ['Space', 'Enter', 'NumpadEnter'].includes(event.code)
+    && typeof HTMLElement !== 'undefined' && event.target instanceof HTMLElement
+    && event.target.closest('button, summary, input, select, textarea, a[href]') !== null;
+}
+
+export class MvpRunInputAdapter {
   private readonly scene: Phaser.Scene;
   private readonly keys: {
     up: Phaser.Input.Keyboard.Key;
@@ -188,7 +196,7 @@ class MvpRunInputAdapter {
   public riding: () => boolean = () => false;
 
   private readonly handlePointerDown = (pointer: Phaser.Input.Pointer): void => {
-    if (this.riding()) return;
+    if (this.riding() || runMenuOpen() || settingsDialogOpen()) return;
     const benchAction = this.benchCard?.buttonAt(pointer.x, pointer.y) ?? null;
     if (benchAction !== null) {
       this.benchCard?.act(benchAction);
@@ -220,6 +228,7 @@ class MvpRunInputAdapter {
   }
 
   private readonly handleWheel = (_pointer: unknown, _objects: unknown, _dx: number, dy: number): void => {
+    if (runMenuOpen() || settingsDialogOpen()) return;
     if (dy !== 0) this.pendingCycle = dy > 0 ? 1 : -1;
   };
 
@@ -228,7 +237,7 @@ class MvpRunInputAdapter {
   };
 
   private readonly handleKeyDown = (event: KeyboardEvent): void => {
-    if (event.repeat || settingsDialogOpen() || this.riding()) {
+    if (event.repeat || settingsDialogOpen() || runMenuOpen() || this.riding() || pageControlActivation(event)) {
       return;
     }
     if (event.code === 'KeyO') {
@@ -296,7 +305,7 @@ class MvpRunInputAdapter {
   };
 
   private readonly handleKeyUp = (event: KeyboardEvent): void => {
-    if (event.code === 'Space') event.preventDefault();
+    if (event.code === 'Space' && !pageControlActivation(event)) event.preventDefault();
   };
 
   private readonly handleBlur = (): void => {
@@ -410,6 +419,21 @@ export class MvpRunScene extends Phaser.Scene {
   public static readonly KEY = 'MvpRunScene';
 
   private run: MvpRunState = createMvpRun(0);
+  private readonly menuPause = new RunMenuPause({
+    isPaused: () => this.run.paused,
+    canResume: () => this.run.status === 'playing' && this.run.preview === null && this.run.workbench === null,
+    setPaused: (paused) => this.setPaused(paused),
+    clearInput: () => {
+      this.accumulator = 0;
+      this.inputAdapter?.clearHeld();
+      clearMvpHeldActions(this.run);
+    },
+  });
+  private readonly openRunMenu = (): void => this.menuPause.open();
+  private readonly closeRunMenu = (event: Event): void => {
+    this.menuPause.close((event as CustomEvent<RunMenuClosedDetail>).detail.resume);
+    this.syncView();
+  };
   private seed = 0;
   private seedPinned = true;
   /** The date of a Daily Shift (null for a normal or continued run). */
@@ -506,7 +530,7 @@ export class MvpRunScene extends Phaser.Scene {
     this.inputAdapter = new MvpRunInputAdapter(
       this,
       () => this.setPaused(!this.run.paused),
-      () => this.setPaused(true),
+      () => { this.menuPause.retainPause(); this.setPaused(true); },
       // The M key routes through the HUD, not straight to the engine, so the
       // button label follows a keyboard toggle exactly as it follows a click.
       () => this.hud?.toggleMute(),
@@ -520,6 +544,8 @@ export class MvpRunScene extends Phaser.Scene {
     window.addEventListener('pointerdown', this.unlockAudio);
     window.addEventListener('keydown', this.unlockAudio);
     window.addEventListener(SETTINGS_OPENED_EVENT, this.pauseForSettings);
+    window.addEventListener(RUN_MENU_OPENED_EVENT, this.openRunMenu);
+    window.addEventListener(RUN_MENU_CLOSED_EVENT, this.closeRunMenu);
     ensureFxTextures(this);
     this.runView = new MvpRunView(this);
     // The whole room is always on screen, like an Isaac room: the camera is
@@ -580,6 +606,7 @@ export class MvpRunScene extends Phaser.Scene {
       };
     }
 
+    if (runMenuOpen()) this.openRunMenu();
     this.syncCheckpoint();
     this.syncView();
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, this.destroyRun, this);
@@ -593,7 +620,7 @@ export class MvpRunScene extends Phaser.Scene {
     if (!this.inputAdapter) return;
     const pad = this.gamepad.read(firstGamepad(), this.run.room.combat.player);
     this.inputAdapter.setPad(pad);
-    if (!pad.active || settingsDialogOpen()) return;
+    if (!pad.active || settingsDialogOpen() || runMenuOpen()) return;
     if (this.ride || (this.ending && !this.endingHeld)) {
       if (pad.confirm || pad.cancel || pad.pause) (this.ride ?? this.ending)?.requestSkip();
       return;
@@ -620,6 +647,11 @@ export class MvpRunScene extends Phaser.Scene {
 
   public update(_time: number, elapsedMs: number): void {
     this.pollGamepad();
+    if (runMenuOpen()) {
+      this.accumulator = 0;
+      this.syncView();
+      return;
+    }
     if (this.clockIn && this.clockIn.update(elapsedMs)) this.stopClockIn();
     // The PA waits out any cinematic, and stops talking once the shift is over.
     if (this.run.status !== 'playing') this.paTicker?.clear();
@@ -664,6 +696,7 @@ export class MvpRunScene extends Phaser.Scene {
     while (this.accumulator >= STEP_MS && steps < MAX_STEPS) {
       const frame = this.inputAdapter.readFrame();
       tickMvpRun(this.run, frame);
+      this.runView?.observeLoot(this.run);
       this.accumulator -= STEP_MS;
       steps += 1;
       if (this.run.roomIndex !== roomBefore || this.run.status !== 'playing') {
@@ -894,6 +927,7 @@ export class MvpRunScene extends Phaser.Scene {
 
   /** Opening settings mid-shift pauses it, like Esc. */
   private readonly pauseForSettings = (): void => {
+    this.menuPause.retainPause();
     if (this.run.status === 'playing' && !this.run.paused && this.run.preview === null && this.run.workbench === null) this.setPaused(true);
   };
 
@@ -1028,7 +1062,7 @@ export class MvpRunScene extends Phaser.Scene {
     // The end card waits for the kill cam to finish framing the fall.
     if (!this.killCam && !this.pinkSlip && (!this.ending || this.endingHeld)) this.shiftCard?.sync(this.run, this.seed, this.endBeatPlayed, this.dailyDate, this.run.status === 'playing' ? null : this.lastRecord);
     // A fusion preview also holds the clock; it has its own panel, not the pause card.
-    this.pauseCard?.sync(this.run.paused && this.run.status === 'playing' && this.run.preview === null && this.run.workbench === null, firstGamepad() !== null);
+    this.pauseCard?.sync(!runMenuOpen() && this.run.paused && this.run.status === 'playing' && this.run.preview === null && this.run.workbench === null, firstGamepad() !== null);
     // Derived from authoritative state each frame, so the sound layer can never
     // disagree with what the simulation actually did.
     this.audio?.syncTo(this.run);
@@ -1613,6 +1647,9 @@ export class MvpRunScene extends Phaser.Scene {
     window.removeEventListener('pointerdown', this.unlockAudio);
     window.removeEventListener('keydown', this.unlockAudio);
     window.removeEventListener(SETTINGS_OPENED_EVENT, this.pauseForSettings);
+    window.removeEventListener(RUN_MENU_OPENED_EVENT, this.openRunMenu);
+    window.removeEventListener(RUN_MENU_CLOSED_EVENT, this.closeRunMenu);
+    this.menuPause.close(false);
     this.audio?.destroy();
     this.audio = undefined;
     this.removeDebugBridge?.();

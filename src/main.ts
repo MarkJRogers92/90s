@@ -14,6 +14,7 @@ import './styles.css';
 import { PlaytestLog } from './game/playtest/log';
 import { PlaytestPanel } from './game/ui/PlaytestPanel';
 import { OPEN_SETTINGS_EVENT, SettingsPanel } from './game/ui/SettingsPanel';
+import { RunMenu } from './game/ui/RunMenu';
 import { browserBestRuns } from './game/score/score';
 import { BreakRoomPanel } from './game/ui/BreakRoomPanel';
 import { browserCareer, localDay } from './game/career/career';
@@ -54,6 +55,8 @@ const dailyRunLine = requireElement<HTMLElement>('#daily-run');
 const dailyRuleElement = requireElement<HTMLElement>('#daily-rule');
 const settingsPanel = new SettingsPanel((selector) => requireElement(selector));
 window.addEventListener(OPEN_SETTINGS_EVENT, () => settingsPanel.open());
+const runMenu = new RunMenu((selector) => requireElement(selector));
+import.meta.hot?.dispose(() => runMenu.destroy());
 new PlaytestPanel(
   new PlaytestLog((() => { try { return window.localStorage; } catch { return null; } })()),
   (selector) => requireElement(selector),
@@ -110,6 +113,7 @@ function launch(mode: RunMode): void {
   if (game) {
     return;
   }
+  runMenu.reset();
   setLaunchButtonsDisabled(true);
   continueButton.disabled = true;
   startupStatus.textContent = 'Clocking in…';
@@ -171,6 +175,7 @@ function launchRun(checkpoint: MvpCheckpoint | null, shift: ShiftSeed, daily: st
     return;
   }
   setMvpRunLaunch({ seed: shift.seed, seedPinned: shift.pinned, checkpoint, store: checkpointStore, ...(daily ? { mode: 'daily' as const, date: daily } : {}) });
+  runMenu.reset();
   setLaunchButtonsDisabled(true);
   continueButton.disabled = true;
   startupStatus.textContent = 'Clocking in…';
@@ -230,6 +235,7 @@ function launchRun(checkpoint: MvpCheckpoint | null, shift: ShiftSeed, daily: st
 }
 
 function returnToTitle(): void {
+  runMenu.reset();
   game?.destroy(true);
   game = undefined;
   if (import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true') {
