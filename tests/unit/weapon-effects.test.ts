@@ -16,15 +16,17 @@ describe('first-slice native weapon effect selection', () => {
     expect(projectileEffect(traits('hybrid__pump_soaker__nail_gun'))).toBe(WEAPON_EFFECT_ART.soaker);
     expect(projectileEffect(traits('hybrid__(hybrid__janitor_mop__foam_ball_blaster)__gel_pens'))).toBe(WEAPON_EFFECT_ART.foam);
     expect(projectileEffect(traits('hybrid__janitor_mop__(hybrid__vhs_tape__vhs_rewinder)'))).toBe(WEAPON_EFFECT_ART.vhs);
-    // A fallback shooter never takes its ingredient's authored identity.
-    expect(projectileEffect(traits('hybrid__garden_hose__pump_soaker'))).toBeNull();
+    // A fallback shooter never takes its ingredient's authored identity...
+    expect(projectileEffect(traits('hybrid__staple_gun__pump_soaker'))).toBeNull();
+    // ...and a root with its own art keeps it (the hose has its water since V3).
+    expect(projectileEffect(traits('hybrid__garden_hose__pump_soaker'))).toBe(WEAPON_EFFECT_ART.hose);
     expect(projectileEffect(traits('hybrid__gumball_launcher__pump_soaker'))).toBeNull();
   });
 
   it('never overwrites converted bubbles or unsupported weapon families', () => {
     expect(projectileEffect(traits('pump_soaker', 'drifting_bubble'))).toBeNull();
     expect(projectileEffect(traits('nail_gun', 'drifting_bubble'))).toBeNull();
-    expect(projectileEffect(traits('garden_hose'))).toBeNull();
+    expect(projectileEffect(traits('gumball_launcher'))).toBeNull();
     expect(projectileEffect(traits('unknown'))).toBeNull();
   });
 
@@ -90,7 +92,7 @@ describe('second-slice native material contracts', () => {
     expect(projectileEffect(traits(`hybrid__box_cutter__(hybrid__${id}__pump_soaker)`))).toMatchObject(expected);
     expect(projectileEffect(traits(`hybrid__${id}__pump_soaker`))).toMatchObject(expected);
     expect(projectileEffect(traits(`hybrid__pump_soaker__${id}`))).toBe(WEAPON_EFFECT_ART.soaker);
-    expect(projectileEffect(traits(`hybrid__garden_hose__${id}`))).toBeNull();
+    expect(projectileEffect(traits(`hybrid__gumball_launcher__${id}`))).toBeNull();
     expect(projectileEffect(traits(id, 'drifting_bubble'))).toBeNull();
   });
 

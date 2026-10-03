@@ -92,7 +92,8 @@ export class WeaponEffectView {
     // Reuse only a small first-frame material release. Rocket exhaust is
     // cropped before the stick/body, so firing never creates a second rocket.
     // Thrown media, foam balls and nails retain their flash-free presentation.
-    const release = art === WEAPON_EFFECT_ART.soaker ? { width: 32, tailX: 4, scale: 0.55, ticks: 3 }
+    const water = art === WEAPON_EFFECT_ART.soaker || art === WEAPON_EFFECT_ART.hose || art === WEAPON_EFFECT_ART.soda || art === WEAPON_EFFECT_ART.shower;
+    const release = water ? { width: 32, tailX: 4, scale: 0.55, ticks: 3 }
       : art === WEAPON_EFFECT_ART.confetti ? { width: 24, tailX: 4, scale: 0.4, ticks: 2 }
       : art === WEAPON_EFFECT_ART.rocket ? { width: 10, tailX: 2, scale: 0.65, ticks: 2 }
       : art === WEAPON_EFFECT_ART.extinguisher ? { width: 32, tailX: 4, scale: 0.4, ticks: 3 } : null;

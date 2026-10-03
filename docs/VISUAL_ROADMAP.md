@@ -40,7 +40,7 @@ or start something; keep items small enough for one PR.
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **Hanger done**; 16 kinds left | M per batch |
 | V2 | Authored attack sheets for wind-up enemies and bosses | open | L |
-| V3 | Native effects for the 67 remaining weapons (by family) | **thrown family done** (8); 59 left | M per family |
+| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water done** (14); 53 left | M per family |
 | V4 | Alex: dash and ranged-aim animations | open | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
@@ -140,10 +140,10 @@ before the release. Needs new art (PixelLab or Retro Diffusion): ask the
 owner. Accept: wind-up visible from the first telegraph tick in a live
 capture, and `npm run balance:reaction` unchanged (presentation only).
 
-## V3 — Native effects for the remaining weapons (59 of 67 left)
+## V3 — Native effects for the remaining weapons (53 of 67 left)
 
 The list is in `diagnostics/weapon-visuals/remaining-effect-roster.json`
-(31 melee, 28 projectile since the thrown family landed). Work by family rather than by item: one sheet each
+(31 melee, 22 projectile since the thrown and water families landed). Work by family rather than by item: one sheet each
 in `public/assets/neon/weapon-effects/`, mapped in `src/game/view/weaponEffects.ts`.
 
 | Family | Weapons (examples) | Effect |
@@ -162,8 +162,21 @@ inventory icon: balls, discs, the gnome and the puck spin and roll the way they
 travel, and the football flies point-first with a wobble. See `THROWN` in
 `src/game/view/weaponEffects.ts`, the dev fixture `?fixture=mvp-thrown`
 (slots 2-9) and `artifacts/live-qa/thrown/thrown-in-flight.png`. Fusions throw
-the shooter inside them. Next cheapest: **water** (recolour soaker-water per
-source).
+the shooter inside them.
+
+**Water: done 2026-10-03.**
+- The Super Soaker 50 and CPS keep the soaker sheet.
+- The hose, soda gun and watering can get exact four-colour palette swaps of
+  it: tap blue, cola brown with cream fizz, and a pale shower. They are built
+  by `art/weapon-effects/derived/build_water_variants.py`, which refuses to
+  run if the soaker's palette changes.
+- Water balloons lob as their own wobbling icon.
+- Muzzle releases use each weapon's own water.
+- Dev fixture `?fixture=mvp-water` (slots 2-7);
+  `artifacts/live-qa/water/water-in-flight.png`.
+
+Next cheapest: **spray** (hairspray, flea spray, ketchup, whoopee cushion),
+done the same way as palette swaps of `extinguisher-foam`.
 
 Keep the 240 fixed-seed replay
 (`diagnostics/weapon-visuals/replay.test.ts`) unchanged.
