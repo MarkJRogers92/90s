@@ -1,3 +1,4 @@
+import { openRunMenu } from './runMenu';
 import { expect, test, type Page } from '@playwright/test';
 import { CANVAS_START_MS } from './timing';
 
@@ -6,7 +7,7 @@ const CHECKPOINT_KEY = 'dead-mall:mvp-checkpoint:v1';
 async function waitForRun(page: Page): Promise<void> {
   await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
-  await expect(page.locator('#mvp-run-hud')).toBeVisible();
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
 }
 
 test('Continue hides the ended HUD during loading and resumes the living checkpoint', async ({ page }, testInfo) => {
@@ -22,6 +23,7 @@ test('Continue hides the ended HUD during loading and resumes the living checkpo
   expect(saved).not.toBeNull();
   const checkpoint = JSON.parse(saved!);
   expect(checkpoint.playerHealth).toBeGreaterThan(0);
+  await openRunMenu(page);
   await page.getByRole('button', { name: 'Return to title', exact: true }).click();
   await expect(page.locator('#start-screen')).toBeVisible();
   // Remove the death fixture without reloading away the old HUD.
@@ -41,7 +43,7 @@ test('Continue hides the ended HUD during loading and resumes the living checkpo
   try {
     await continueButton.click();
     await requested;
-    await expect(page.locator('#mvp-run-hud')).toBeHidden({ timeout: 1_000 });
+    await expect(page.locator('#mvp-run-hud')).toHaveAttribute('hidden', '', { timeout: 1_000 });
     await expect(page.locator('#mvp-run-summary')).toBeHidden();
     expect(await page.evaluate((key) => localStorage.getItem(key), CHECKPOINT_KEY)).toBe(saved);
     await page.screenshot({ path: testInfo.outputPath('continue-loading.png') });
@@ -70,6 +72,7 @@ test('a zero-health checkpoint disables Continue without deleting saved progress
   await page.goto('/?seed=73');
   await page.getByRole('button', { name: 'Night Shift', exact: true }).click();
   await waitForRun(page);
+  await openRunMenu(page);
   await page.getByRole('button', { name: 'Return to title', exact: true }).click();
   const saved = await page.evaluate((key) => {
     const checkpoint = JSON.parse(localStorage.getItem(key)!);

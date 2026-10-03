@@ -1,5 +1,140 @@
 # Status
 
+## 2026-10-03 UTC — Combined enemy, loot and viewport integration
+
+This change integrates the reviewed mannequin and Static/CRT reactions, loot
+presentation, and viewport/fullscreen/menu polish described below. Editable
+Aseprite and Forge sources are in art/enemy-reactions. Earlier unpublished
+notes describe review checkpoints. Final verification: 1,722 tests in 166 files,
+typecheck, build, and 240 unchanged gameplay traces. Live browser/fullscreen
+visual QA remains outstanding; no simulation changes are included.
+
+## 2026-10-03 UTC — Static/CRT native material reactions (cloud review, unpublished)
+
+Static now uses an authored four-frame, eight-facing hurt strip (3/3/4/4 ticks),
+a seven-frame, eight-facing death strip (4 ticks/frame), and a bounded six-frame
+casing/glass impact (2 ticks/frame). The 96 px canvas still displays at 72 px;
+the feet anchor is (48, 80.64). Hurt and death keep the last displayed facing.
+Health/removal differences do not establish an incoming attack-source direction.
+
+Localized CRT debris replaces Static blood, generic rings and full-body hit
+flash while native hurt is available. The separate death ring is suppressed.
+Blink/attack poses and exact teleport landing warnings keep priority. Reduced
+flashes retain the material art; missing/malformed art falls back safely without
+substituting an unrelated texture. Repeated hits restart the visual flinch;
+room/restart/rewind/destroy and reused renderer slots clear stale material state.
+All corpses retain the original 70-tick hold including the 24-tick fade.
+
+Verification: 1,722 tests in 166 files pass serially, including 55 new Static
+checks; the focused mannequin/Static set has 86 passes. TypeScript and the
+production build pass. All 240 fixed-seed weapon gameplay traces match baseline.
+All 96 simulation files, all five mannequin PNGs, and loot/UI implementation
+are byte-identical to the recovered combined baseline. Existing npm proxy and
+large-bundle warnings remain. Independent source review approved after the
+reused-kind feedback/ring defects were fixed and retested. Final native art
+hashes match the independently reviewed freeze. See diagnostics/static-reactions.
+
+Live browser visual QA remains unverified under the already recorded cloud
+localhost restriction. Art inspection and renderer unit checks do not replace
+that gate. No Mac/OBS access, push, merge, publication or simulation edits were
+performed. Integrate only the scoped manifest; never replace main wholesale.
+
+
+## 2026-10-03 UTC — Viewport/menu polish (cloud review, unpublished)
+
+Preserves the combined mannequin + loot baseline and the complete 960×600
+Night Shift stage. Phaser now owns centering alone, with a dynamic-height
+viewport shell, compact Menu/Fullscreen controls, and unboxed static margins.
+Narrow/coarse screens and contextual store/bench controls reserve safe,
+content-sized rails. The menu retains existing actions, pause ownership and
+accessible focus; fullscreen targets the whole app so Settings stays included.
+No world, camera/FOV, simulation, enemy, loot or artwork changes in this slice.
+
+Verification: 1,667 tests in 161 files pass serially; 39 focused UI tests pass;
+typecheck, production build and 240 unchanged weapon gameplay traces pass.
+All 96 simulation files, art and public assets match the combined baseline.
+Eight new browser cases discover successfully but have NOT been executed.
+Independent source review approved after context-rail, modal and input fixes.
+
+Live browser geometry, native fullscreen and touch QA remain outstanding.
+Cloud localhost access is already blocked; a network-free synthetic-document
+CLI render also could not launch Chromium (local socket operation denied).
+No restriction bypass, Mac access, push, merge or deployment occurred.
+The supplied before/after images are explicitly offline geometry schematics,
+not gameplay screenshots. Use scoped patches, never replace a full checkout.
+
+## 2026-10-03 UTC — Combined mannequin and loot review (cloud, unpublished)
+
+The reviewed mannequin reaction/art pass and loot presentation pass are combined
+in a separate scoped review copy against main 11b0c68c134615295b308563cda1f31a51b32b6a.
+The only overlap reconciliation was preserving both MvpRunView import additions
+and both sets of checkpoint notes. No new behavior was added during integration.
+The individually delivered patches and preview packages remain unchanged.
+
+Final combined verification: 1,628 tests in 158 files pass serially; TypeScript
+and the production build pass; all 240 fixed-seed weapon gameplay traces match
+the unchanged baseline. The suite includes the loot renderer's 720 full-state
+comparisons. All 96 src/sim files remain byte-identical to the baseline. Runtime
+asset differences are limited to the three intended mannequin reaction sheets.
+
+Apply the cumulative scoped patch, not both individual patches on top of it.
+Preserve all unrelated repository content: the portable baseline copy does not
+contain every historical document/artifact and must never replace main wholesale.
+Live browser visual QA remains outstanding under the previously recorded cloud
+localhost navigation restriction. No Mac, tunnel, push, merge or deployment was
+used for this combined verification. Existing npm proxy/bundle warnings remain.
+
+## 2026-10-03 UTC — Loot interaction presentation (cloud review, unpublished)
+
+Floor coins, pretzels and item icons now settle to stable native-friendly sizes.
+A hollow diamond marks existing rare drops; one nearby name/value label explains
+automatic pickup, full-health pretzels and a dropped weapon waiting for step-off.
+Inspection yields to combat and existing contextual interactions. Missing item
+art uses an unknown-item glyph rather than impersonating currency.
+
+A bounded receipt queue acknowledges actual collection success messages, with
+per-fixed-step observation of the existing rolling trace, duplicate protection,
+room/restart/rewind cleanup, and presentation-time expiry on frozen victories.
+No pickup eligibility, drops, prices, item values, inventory or prop rules changed.
+All 503 simulation and runtime-asset files remain byte-identical to main 11b0c68.
+
+Verification: 1,600 tests / 154 files pass serially; typecheck and build pass;
+240 fixed-seed weapon traces match the baseline; 720 complete run-state
+comparisons match with the loot renderer active. Twenty-five new tests cover
+capped traces, rapid/same-tick pickups, boss and ordinary wins, pause, cleanup,
+missing art, Shop-Vac depth, waiting snacks and reduced motion. Independent
+review approved after its lifecycle findings were fixed and retested.
+
+Offline command-recorded before/after visual proof is supplied separately.
+Live cloud-browser verification is outstanding: localhost returned
+ERR_BLOCKED_BY_CLIENT. No Mac access, runtime art generation, push, merge or
+deployment occurred. This is a scoped patch against verified main 11b0c68;
+the portable source snapshot must not replace unrelated repository artifacts.
+
+
+## 2026-10-03 UTC — Mannequin native reactions (isolated cloud review, unpublished)
+
+The mannequin now has a four-frame, eight-facing hurt strip (3/3/4/4 ticks),
+a seven-frame, eight-facing death strip (4 ticks/frame), and a six-frame
+plastic-chip impact (2 ticks/frame). Hurt and death retain the last rendered
+facing; health differences do not identify an incoming attack source. The
+96 px actor canvas still displays at 72 px with feet at (48, 80.64).
+
+Native hurt suppresses the mannequin's generic white squash, walk jitter and
+fixed eye overlays while active; attack/wind-up cues take priority. Small
+bounded plastic impacts replace mannequin stars, rings and blood decals, and
+the separate generic death ring is suppressed. Missing/malformed hurt art
+retains the existing hit pose; missing chip art uses matte pixel flecks.
+Every corpse retains the existing full hold/fade, including crowd kills.
+Other enemy feedback, hit-stop beats and shake values are preserved.
+
+Final verification: 1,603 tests in 156 files pass serially; typecheck and
+production build pass; 240 fixed-seed gameplay traces match baseline. All 96
+simulation files are byte-identical to main 11b0c68c134615295b308563cda1f31a51b32b6a.
+Live runtime visual QA remains unverified: the dedicated cloud browser
+refused the isolated local Vite URL with ERR_BLOCKED_BY_CLIENT. No Mac
+access, push, merge, deployment, or simulation changes occurred.
+
 ## 2026-10-03 UTC — Cumulative weapon presentation integration
 
 This change integrates the two reviewed weapon-effect passes below: 13 native

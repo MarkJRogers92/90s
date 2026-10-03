@@ -85,7 +85,10 @@ export class SettingsPanel {
 
   public close(): void {
     this.panel.hidden = true;
-    this.returnFocus?.focus();
+    // The in-run settings button lives in a menu that closes as settings opens.
+    const target = this.returnFocus?.closest('[hidden]')
+      ? document.getElementById('run-menu-toggle') : this.returnFocus;
+    target?.focus();
   }
 
   private render(settings: GameSettings): void {

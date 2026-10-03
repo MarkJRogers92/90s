@@ -159,16 +159,24 @@ export class ActorPresentationMemory {
     return next;
   }
 
+  /** Last displayed facing, not an inferred attack-source direction. */
+  public facingFor(id: string): ActorDirection { return this.directions.get(id) ?? 'south'; }
+
+  public presentFacing(id: string, direction: ActorDirection): void { this.directions.set(id, direction); }
+
   public reset(): void { this.directions.clear(); }
 }
 
 /** Local position deltas scoped to one room; entry teleports are never walks. */
 export class ActorMovementMemory {
   private scope: string | null = null;
+  private tick: number | null = null;
   private readonly positions = new Map<string, { x: number; y: number }>();
 
-  public beginScope(scope: string): boolean {
-    if (this.scope === scope) return false;
+  public beginScope(scope: string, tick?: number): boolean {
+    const rewind = tick !== undefined && this.tick !== null && tick < this.tick;
+    this.tick = tick ?? this.tick;
+    if (this.scope === scope && !rewind) return false;
     this.scope = scope;
     this.positions.clear();
     return true;
@@ -188,6 +196,7 @@ export class ActorMovementMemory {
 
   public reset(): void {
     this.scope = null;
+    this.tick = null;
     this.positions.clear();
   }
 }
@@ -216,6 +225,7 @@ export const MAX_ACTOR_DEATH_EFFECTS = 16;
 
 type DeathTrackedActor = {
   readonly id: string;
+  readonly kind?: ActorKind;
   readonly x: number;
   readonly y: number;
 };
@@ -239,6 +249,7 @@ export class ActorDeathEffectLifecycle {
   private effects = new Map<string, Omit<ActorDeathEffect, 'remainingTicks'>>();
 
   public sync(scope: string, tick: number, actors: readonly DeathTrackedActor[]): void {
+    // Presence includes every kind: a reused id is not a disappearance.
     const current = new Map(actors.map((actor) => [actor.id, { ...actor }]));
     if (this.scope !== scope || (this.lastTick !== null && tick < this.lastTick)) {
       this.scope = scope;
@@ -250,7 +261,9 @@ export class ActorDeathEffectLifecycle {
 
     this.expire(tick);
     for (const [id, actor] of this.previous) {
-      if (!current.has(id) && !this.effects.has(id) && this.effects.size < MAX_ACTOR_DEATH_EFFECTS) {
+      // Authored material falls own their death feedback; never add a second ring.
+      if (!current.has(id) && actor.kind !== 'mannequin' && actor.kind !== 'static'
+        && !this.effects.has(id) && this.effects.size < MAX_ACTOR_DEATH_EFFECTS) {
         this.effects.set(id, { ...actor, startedTick: tick });
       }
     }

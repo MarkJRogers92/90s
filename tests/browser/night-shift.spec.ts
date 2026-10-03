@@ -1,3 +1,4 @@
+import { openRunMenu } from './runMenu';
 import { expect, test, type Page } from '@playwright/test';
 import { worldToCanvas } from './projection';
 import { CANVAS_START_MS } from './timing';
@@ -144,7 +145,7 @@ async function launchRun(page: Page, path = '/'): Promise<void> {
 async function waitForRun(page: Page): Promise<void> {
   await expect(page.locator('canvas')).toHaveCount(1, { timeout: CANVAS_START_MS });
   await expect(page.locator('canvas')).toBeVisible({ timeout: CANVAS_START_MS });
-  await expect(page.locator('#mvp-run-hud')).toBeVisible();
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
   await page.waitForFunction(() => Boolean(window.__DEAD_MALL_DEBUG__));
   await expect.poll(() => runSnapshot(page).then((state) => state.tick)).toBeGreaterThan(0);
 }
@@ -289,6 +290,7 @@ test('Opening Concourse keeps its static scene stable and exits through real mov
   await page.keyboard.up('d');
   // Every room now owns a dressed mall view; leaving the opening replaces it.
   expect((await runSnapshot(page)).presentation?.themeId).not.toBe('opening_concourse');
+  await openRunMenu(page);
   await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(first.generation);
   const restarted = await runSnapshot(page);
@@ -340,6 +342,7 @@ test('Opening Concourse civilians evacuate monotonically from real input and res
   await page.keyboard.up('d');
   expect((await runSnapshot(page)).concourseAmbience).toMatchObject({ phase: 'empty', visibleCount: 0 });
 
+  await openRunMenu(page);
   await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(first.generation);
   expect((await runSnapshot(page)).presentation?.ambience).toMatchObject({
@@ -572,6 +575,7 @@ test('Continue run resumes the saved seed and boundary', async ({ page }) => {
   await launchRun(page, '/?seed=818');
   const launched = await runSnapshot(page);
 
+  await openRunMenu(page);
   await page.getByRole('button', { name: 'Return to title', exact: true }).click();
   await expect(page.locator('#start-screen')).toBeVisible();
   const continueButton = page.getByRole('button', { name: 'Continue run', exact: true });
@@ -600,7 +604,7 @@ test('an invalid checkpoint disables Continue run and never breaks startup', asy
   await expect(page.getByRole('button', { name: 'Continue run', exact: true })).toBeDisabled();
   await launchRun(page);
   expect((await runSnapshot(page)).status).toBe('playing');
-  await expect(page.locator('#mvp-run-hud')).toBeVisible();
+  await expect(page.locator('#mvp-run-hud')).not.toHaveAttribute('hidden');
 
   expect(errors.pageErrors).toEqual([]);
   expect(errors.consoleErrors).toEqual([]);
@@ -612,6 +616,7 @@ test('ten restarts keep one canvas, one HUD, and a clean run', async ({ page }) 
   await launchRun(page);
 
   for (let index = 0; index < 10; index += 1) {
+    await openRunMenu(page);
     await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   }
 
@@ -868,6 +873,7 @@ test('winning the boss run publishes the summary and clears the checkpoint', asy
   await expect(page.getByTestId('mvp-run-summary')).toBeVisible();
   await expect(page.locator('#mvp-run-summary')).toContainText(/WON|Shift/i);
 
+  await openRunMenu(page);
   await page.getByRole('button', { name: 'Return to title', exact: true }).click();
   await expect(page.locator('#start-screen')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Continue run', exact: true })).toBeDisabled();
@@ -922,8 +928,10 @@ test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) =>
   await expect(page.locator('#mvp-run-room')).toBeVisible();
   await expect(page.locator('#mvp-run-objective')).toBeVisible();
   await expect(page.locator('#mvp-run-nearby')).toBeVisible();
+  await openRunMenu(page);
   await page.getByText('Inspect shift details', { exact: true }).click();
   await expect(page.locator('#mvp-run-inspection')).toHaveAttribute('open', '');
+  await openRunMenu(page);
   await page.getByText('Inspect shift details', { exact: true }).click();
   await expect(page.locator('#mvp-run-inspection')).not.toHaveAttribute('open', '');
   await expect(page.getByText('Inspect shift details', { exact: true })).toBeFocused();
@@ -933,19 +941,20 @@ test('the run HUD fits 800x600 without horizontal overflow', async ({ page }) =>
   expect(errors.consoleErrors).toEqual([]);
 });
 
-test('the compact HUD is separated from the canvas and keeps the full room identity at 1440x900', async ({ page }) => {
+test('utility controls reclaim the stage height while retaining the full room identity at 1440x900', async ({ page }) => {
   const errors = collectErrors(page);
   await page.setViewportSize({ width: 1440, height: 900 });
   await launchRun(page);
 
   const canvas = await page.locator('canvas').boundingBox();
-  const hud = await page.locator('#mvp-run-hud').boundingBox();
+  const host = await page.locator('#game-host').boundingBox();
   expect(canvas).not.toBeNull();
-  expect(hud).not.toBeNull();
-  if (!canvas || !hud) {
-    return;
-  }
-  expect(hud.y + hud.height).toBeLessThanOrEqual(canvas.y);
+  expect(host).not.toBeNull();
+  if (!canvas || !host) throw new Error('Stage not ready');
+  expect(host.height).toBe(900);
+  expect(canvas.height).toBeCloseTo(900, 0);
+  expect(canvas.y).toBeCloseTo(0, 0);
+  await expect(page.locator('#run-menu-toggle')).toBeInViewport();
   const roomIdentity = await page.locator('#mvp-run-room').evaluate((room) => ({
     text: room.textContent,
     unclipped: room.scrollWidth <= room.clientWidth && room.scrollHeight <= room.clientHeight,
@@ -987,6 +996,7 @@ test('the compact HUD keeps pause and restart reachable from real input', async 
   await page.keyboard.press('Escape');
   await expect.poll(() => runSnapshot(page).then((state) => state.paused)).toBe(false);
 
+  await openRunMenu(page);
   await page.getByRole('button', { name: 'Restart run', exact: true }).click();
   await expect.poll(() => runSnapshot(page).then((state) => state.generation)).toBeGreaterThan(before.generation);
   await expect(page.locator('#mvp-run-checkpoint')).toContainText('saved');
@@ -1169,7 +1179,8 @@ test('the sound layer starts on a real gesture and can be muted', async ({ page 
   await expect.poll(() => runSnapshot(page).then((state) => state.audio?.created)).toBe(true);
   await expect.poll(() => runSnapshot(page).then((state) => state.audio?.muted)).toBe(false);
 
-  const muteButton = page.getByRole('button', { name: /SOUND:/ });
+  await openRunMenu(page);
+  const muteButton = page.locator('#mvp-toggle-sound');
   await expect(muteButton).toBeVisible();
   await expect(muteButton).toContainText('SOUND: ON');
 
@@ -1178,6 +1189,8 @@ test('the sound layer starts on a real gesture and can be muted', async ({ page 
   await expect(muteButton).toHaveAttribute('aria-pressed', 'true');
   await expect.poll(() => runSnapshot(page).then((state) => state.audio?.muted)).toBe(true);
 
+  // Close the dialog before exercising the gameplay keyboard shortcut.
+  await page.locator('#run-menu-close').click();
   // The keyboard shortcut reaches the same switch.
   await page.keyboard.press('m');
   await expect(muteButton).toContainText('SOUND: ON');

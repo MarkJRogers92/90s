@@ -215,6 +215,17 @@
             </div>
           </div>
           <div id="mvp-run-summary" class="mvp-run-summary" data-testid="mvp-run-summary" hidden></div>
+        </aside>
+        <nav class="run-toolbar" aria-label="Game controls">
+          <button id="run-menu-toggle" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="run-menu-panel">Menu</button>
+          <button id="run-fullscreen" class="secondary-action" type="button" aria-pressed="false">Fullscreen</button>
+        </nav>
+        <p id="run-fullscreen-status" class="run-fullscreen-status" role="status" aria-live="polite"></p>
+        <section id="run-menu-panel" role="dialog" aria-modal="true" aria-labelledby="run-menu-title" hidden>
+          <header class="run-menu-heading">
+            <h2 id="run-menu-title">Shift menu</h2>
+            <button id="run-menu-close" class="secondary-action" type="button">Resume</button>
+          </header>
           <p id="mvp-run-controls" class="mvp-run-controls">WASD MOVE · POINTER AIM · CLICK ATTACK · E INTERACT · F STEAL · R RECALL · ESC PAUSE</p>
           <details id="mvp-run-inspection" class="mvp-run-inspection">
             <summary>Inspect shift details</summary>
@@ -235,7 +246,7 @@
             <button id="mvp-toggle-sound" class="secondary-action" type="button" aria-pressed="false">SOUND: ON (M)</button>
             <button id="mvp-open-settings" class="secondary-action" type="button">SETTINGS (O)</button>
           </div>
-        </aside>
+        </section>
         <div id="game-host"></div>
         <section id="interaction-lab" class="interaction-lab" aria-labelledby="interaction-lab-title" hidden>
           <header class="lab-header">
