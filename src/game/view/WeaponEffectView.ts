@@ -96,7 +96,8 @@ export class WeaponEffectView {
     const release = water ? { width: 32, tailX: 4, scale: 0.55, ticks: 3 }
       : art === WEAPON_EFFECT_ART.confetti ? { width: 24, tailX: 4, scale: 0.4, ticks: 2 }
       : art === WEAPON_EFFECT_ART.rocket ? { width: 10, tailX: 2, scale: 0.65, ticks: 2 }
-      : art === WEAPON_EFFECT_ART.extinguisher ? { width: 32, tailX: 4, scale: 0.4, ticks: 3 } : null;
+      : art === WEAPON_EFFECT_ART.extinguisher || art === WEAPON_EFFECT_ART.hairspray || art === WEAPON_EFFECT_ART.flea
+        || art === WEAPON_EFFECT_ART.ketchup || art === WEAPON_EFFECT_ART.whoopee ? { width: 32, tailX: 4, scale: 0.4, ticks: 3 } : null;
     if (!pose || progress === null || progress < 0 || !art || !release || progress >= release.ticks / 16 || !this.canRenderRanged(definitionId)) {
       this.muzzle?.setVisible(false);
       return;

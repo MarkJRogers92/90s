@@ -86,6 +86,7 @@ import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
 import { hurtOutranksAttack, materialHurtKey, type EnemyHurtFrame } from './EnemyReactionView';
 import { LootView } from './LootView';
+import { ELITE_GLYPHS, eliteRingSegments, type EliteMarkTrait } from './eliteMarks';
 import { WeaponView } from './WeaponView';
 import { WeaponEffectView } from './WeaponEffectView';
 import { enemySpriteSheet } from './ActorSpriteView';
@@ -365,11 +366,12 @@ export class MvpRunView {
       if (enemy.elite) {
         // CLEARANCE: a pulsing aura and a price-tag label. Gold for the plain elite;
         // a Swift one is cyan and a Volatile one orange (round 57), so the trait reads at a glance.
-        const look = ELITE_LOOK[enemy.trait ?? 'plain'];
+        const trait = enemy.trait ?? 'plain';
+        const look = ELITE_LOOK[trait];
         const glow = 0.6 + 0.3 * Math.sin(state.tick / (enemy.trait === 'swift' ? 4 : 7) + enemy.id);
-        effects.lineStyle(3, look.color, glow).strokeEllipse(enemy.x, enemy.y + 2, 58, 22);
         this.openingConcourse?.addLight({ x: enemy.x, y: enemy.y - 20, radius: 70, color: look.color, intensity: 0.5 * glow });
-        this.eliteTag(`enemy:${enemy.id}`, enemy.x, enemy.y - 70, look.label, look.css);
+        const tagWidth = this.eliteTag(`enemy:${enemy.id}`, enemy.x, enemy.y - 70, look.label, look.css);
+        this.drawEliteMark(effects, enemy, trait, state.tick, glow, tagWidth / 2, !flashAllowed(gameSettings().get()));
       }
       const sheet = enemySpriteSheet(enemySnapshot.kind, false);
       const attackFrames = sheet ? this.sheetColumns(sheet.attack) : 0;
@@ -2018,7 +2020,8 @@ export class MvpRunView {
   private readonly eliteTags = new Map<string, Phaser.GameObjects.Image>();
   private readonly usedEliteTags = new Set<string>();
 
-  private eliteTag(id: string, x: number, y: number, text = 'CLEARANCE', css = '#ffd84a'): void {
+  /** Returns the tag's width, so the trait glyph can sit beside it. */
+  private eliteTag(id: string, x: number, y: number, text = 'CLEARANCE', css = '#ffd84a'): number {
     const label = ensurePixelLabel(this.scene, text, css, 1, '#2a1400');
     let tag = this.eliteTags.get(id);
     if (!tag) {
@@ -2026,7 +2029,39 @@ export class MvpRunView {
       this.eliteTags.set(id, tag);
     }
     this.usedEliteTags.add(id);
+    // A pooled tag follows a trait change rather than keeping its first word.
+    if (tag.texture.key !== label.key) tag.setTexture(label.key);
     tag.setVisible(true).setPosition(Math.round(x), Math.round(y));
+    return label.width;
+  }
+
+  /**
+   * The elite's floor ring and trait glyph (roadmap V10): Swift is a dashed,
+   * turning ring and a double chevron; Volatile a double ring and a lit fuse;
+   * plain Clearance one ring and a price tag. Shape carries the trait as well as colour.
+   */
+  private drawEliteMark(effects: Phaser.GameObjects.Graphics, at: { readonly x: number; readonly y: number }, trait: EliteMarkTrait, tick: number, glow: number, tagHalfWidth: number, reducedMotion = false): void {
+    const look = ELITE_LOOK[trait];
+    const ring = eliteRingSegments(trait, tick, reducedMotion);
+    const cx = at.x, cy = at.y + 2;
+    effects.lineStyle(3, look.color, glow);
+    if (ring.dashes > 0) {
+      const step = (Math.PI * 2) / ring.dashes;
+      for (let i = 0; i < ring.dashes; i += 1) {
+        const a0 = ring.offset + i * step, a1 = a0 + step * 0.55;
+        effects.lineBetween(cx + Math.cos(a0) * 29, cy + Math.sin(a0) * 11, cx + Math.cos(a1) * 29, cy + Math.sin(a1) * 11);
+      }
+    } else {
+      effects.strokeEllipse(cx, cy, 58, 22);
+      if (ring.rings > 1) effects.strokeEllipse(cx, cy, 42, 15);
+    }
+    // 7x7 glyph at 2 px a pixel, dark-outlined so it reads on lit floors, left of the tag.
+    const gx = Math.round(at.x - tagHalfWidth - 18), gy = Math.round(at.y - 70 - 7);
+    const glyph = ELITE_GLYPHS[trait];
+    effects.fillStyle(0x140a04, 0.9);
+    for (const [x, y] of glyph) effects.fillRect(gx + x * 2 + 1, gy + y * 2 + 1, 2, 2);
+    effects.fillStyle(look.color, 1);
+    for (const [x, y] of glyph) effects.fillRect(gx + x * 2, gy + y * 2, 2, 2);
   }
 
   private pruneEliteTags(): void {

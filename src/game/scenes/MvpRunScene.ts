@@ -1187,6 +1187,27 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return state;
     }
+    if (fixture === 'mvp-elites') {
+      // One dormant elite of each trait in a row (plain, Swift, Volatile), to compare their marks (roadmap V10).
+      let guard = 0;
+      while (state.wing.rooms[state.roomIndex]?.id !== 'food_court' && guard < 10) {
+        guard += 1;
+        state.room.combat.enemies = [];
+        tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(state, 'east').accepted) break;
+      }
+      const combat = state.room.combat;
+      combat.player.x = 300;
+      combat.player.y = 380;
+      const posed = combat.enemies.slice(0, 3);
+      posed.forEach((enemy, index) => {
+        const trait = ([undefined, 'swift', 'volatile'] as const)[index];
+        Object.assign(enemy, { elite: true, health: 400, x: 380 + index * 150, y: 260, dormant: true });
+        if (trait) enemy.trait = trait; else delete enemy.trait;
+      });
+      combat.enemies = posed;
+      return state;
+    }
     if (fixture === 'mvp-volatile') {
       // The first fight room with one posed Volatile elite at a single hit, 40 px east of the
       // janitor (round 57): one swing kills it, so its fuse and burst can be seen and measured.
@@ -1222,10 +1243,10 @@ export class MvpRunScene extends Phaser.Scene {
       state.room.combat.player.y = SHORTCUT_HATCH.y + 30;
       return state;
     }
-    if (fixture === 'mvp-arsenal' || fixture === 'mvp-thrown' || fixture === 'mvp-water') {
+    if (fixture === 'mvp-arsenal' || fixture === 'mvp-thrown' || fixture === 'mvp-water' || fixture === 'mvp-spray') {
       // The food court fight holding every weapon and the visible modifiers,
       // so each weapon's look and each status effect can be seen (keys 1-9).
-      // mvp-thrown and mvp-water hold those weapon families instead (roadmap V3).
+      // mvp-thrown, mvp-water and mvp-spray hold those weapon families instead (roadmap V3).
       let guard = 0;
       while (state.wing.rooms[state.roomIndex]?.id !== 'food_court' && guard < 10) {
         guard += 1;
@@ -1237,7 +1258,9 @@ export class MvpRunScene extends Phaser.Scene {
         ? ['dodgeball', 'football', 'pog_slammer', 'laserdisc', 'jawbreaker', 'squeaky_toy', 'garden_gnome', 'hockey_puck']
         : fixture === 'mvp-water'
           ? ['garden_hose', 'super_soaker_50', 'super_soaker_cps', 'soda_gun', 'watering_can', 'water_balloons']
-          : ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
+          : fixture === 'mvp-spray'
+            ? ['hairspray', 'flea_spray', 'ketchup_bottle', 'whoopee_cushion', 'fire_extinguisher']
+            : ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
       state.inventory = {
         ...state.inventory,
         inventory: [
