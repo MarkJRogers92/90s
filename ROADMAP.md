@@ -18,3 +18,7 @@ M5 in-run Bench Warrant fusion repaired so the car is a real run entity that
 fuses at the kiosk and fires the shots. The M1 combat feel, M2
 interaction-lab feel, M3 shoplifting-loop feel, M4 bench-fusion feel, and M5
 MVP-run feel gates await user playtest. M6-M10 are not started.
+
+Since M5 the game has grown through many owner-requested rounds (STATUS.md).
+The visual backlog, with a status column and per-item contracts, tests and
+acceptance, is [docs/VISUAL_ROADMAP.md](docs/VISUAL_ROADMAP.md).
