@@ -39,9 +39,9 @@ or start something; keep items small enough for one PR.
 |---|---|---|---|
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **Hanger done**; 16 kinds left | M per batch |
-| V2 | Authored attack sheets for wind-up enemies and bosses | **Spritzer, Mascot, Roofer done (PixelLab, PR #56)**; others open | L |
+| V2 | Authored attack sheets for wind-up enemies and bosses | **Spritzer, Mascot, Roofer (PR #56) and all seven bosses (PixelLab, `feat/boss-attack-sheets`) done**; Elf, Poodle, Goon, Bargain Hunter, Static open | L |
 | V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
-| V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live QA pending | M |
+| V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
 | V7 | Skylight/roof weather | open | M |
@@ -139,6 +139,8 @@ from the sim's telegraph progress, so the art must make the wind-up read
 before the release. Needs new art (PixelLab or Retro Diffusion): ask the
 owner. Accept: wind-up visible from the first telegraph tick in a live
 capture, and `npm run balance:reaction` unchanged (presentation only).
+
+**Done 2026-10-03: all seven bosses** (Manager, Owner, Developer, Santa, Glamour Queen, Mr Whiskers, Zamboni Driver), PixelLab animations of their own characters, live-checked; see the STATUS.md handoff for the size (`ACTION_FIGURE_SCALE`) and colour (`art/pixellab/recolor.py`) fixes. **Left:** Elf, Poodle, Goon, Bargain Hunter, Static — same pipeline, 92–96 px, about 2 generations per direction.
 
 **Done 2026-10-03: Spritzer, Mascot Brute, Roofer — now PixelLab animations of the original characters (see STATUS.md handoff; `art/pixellab/animate_characters.py`). The derived description below was the first pass and has been replaced.**
 - Six-frame sheets are *derived* from each walk sheet by

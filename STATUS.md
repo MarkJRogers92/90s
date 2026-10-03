@@ -1,8 +1,9 @@
 # Status
 
-## 2026-10-03 UTC — PixelLab boss attack wind-ups (V2 bosses) — IN PROGRESS (HANDOFF)
+## 2026-10-03 UTC — PixelLab boss attack wind-ups (V2 bosses) — DONE (HANDOFF)
 
-Branch `feat/boss-attack-sheets` (PR #56 merged; this is the follow-up). Presentation only.
+Branch `feat/boss-attack-sheets` (PR #56 merged; this is the follow-up). Presentation only;
+no `src/sim` change, so the balance bot cannot move. **All seven bosses are done.**
 
 **Goal:** a 6-frame PixelLab attack sheet for each boss, played over its telegraph
 (wind-up frames 0–3) and the slam/charge/barrage release (frames 4–5), exactly as the
@@ -23,7 +24,21 @@ LP Manager's sheet already does. `enemySpriteSheet` already names the keys
 (Developer/Santa barrage `lob` wind-ups) as its own throw, which would have looped the
 attack sheet while it walked (`derived-action-sheets.test.ts`, failed first).
 
-**To finish one boss** (all in `art/pixellab/animate_characters.py`):
+**Also new (code, tested first):** `ACTION_FIGURE_SCALE` in `ActorSpriteView.ts` draws an
+attack sheet smaller when PixelLab re-rendered the figure larger than its walk sheet
+(160–180 px bosses come back ~1.1–1.2x); the sprite is anchored at the feet, so they stay
+put. `collect` now warns about size or colour drift and prints the factor.
+`art/pixellab/recolor.py` fixes colours the PixelLab *character itself* has wrong (a redo
+cannot: v3 animation follows the character's rotations, not the action text).
+
+**Evidence:** unit 1,846 of 1,846 (179 files); `tsc` and `npm run build` pass; browser
+batch (night-shift:355, break-room:84, presentation-evidence) 6/6; the seven boss
+browser tests (night-shift:636, 653, 726, 753, 768, 788, 803) 7/7. Live: every boss plays
+`<prefix>-attack[0..3]` in its telegraph with 0 console errors
+(`artifacts/live-qa/bosses/`). The seven sheets add 2.3 MB. PixelLab: 416 → 114
+generations (redos included).
+
+**To add or redo a boss** (all in `art/pixellab/animate_characters.py`):
 1. `python3 art/pixellab/animate_characters.py topup <name>` until 8 directions are queued.
 2. `python3 art/pixellab/animate_characters.py collect <name>` (waits out HTTP 423), then
    look at `art/pixellab/<name>.png`; `redo <name> <direction>` for any drifted row.
@@ -34,8 +49,9 @@ attack sheet while it walked (`derived-action-sheets.test.ts`, failed first).
 5. Live: `CHROME=/opt/pw-browsers/chromium node scripts/live-capture-actions.mjs --only <kind> --out artifacts/live-qa/bosses`
    with the debug dev server on 4180; expect `<prefix>-attack[0..3]` and 0 errors.
 
-**Cost:** the 128 px Owner cost 24 generations (3 per direction); 160–180 px bosses
-likely 4–5 per direction. Balance before the bosses: 416 of 2,000.
+**Cost:** 3 generations per direction at 128 px, about 4–5 at 160–180 px.
+**Not done:** the LP Manager already had an attack sheet; the Spitter, Static, Bargain
+Hunter, Elf, Poodle and Goon still use the procedural squash (V2 non-bosses).
 
 ## 2026-10-03 UTC — PixelLab animations: Alex aim + dash, Spritzer/Mascot/Roofer attacks (HANDOFF)
 
