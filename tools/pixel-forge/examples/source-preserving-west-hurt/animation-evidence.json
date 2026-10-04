@@ -1,0 +1,172 @@
+{
+  "status": "REVIEW_ONLY",
+  "source_sha256": "4ecc5c275ecd29210dc4b68f3d7850dd33740bd51dca76dfca937cbe181a29b3",
+  "reviewed_peak_sha256": "c14567847026eb93b536e13ec2acb04647f97b404b23c8362cfbaae7c149fcfb",
+  "frames": [
+    {
+      "id": "onset",
+      "label": "impact onset",
+      "duration_ms": 50,
+      "protected": {
+        "head": {
+          "translation": [
+            2,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/head-domain.png"
+        },
+        "bag": {
+          "translation": [
+            1,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/bag-domain.png"
+        },
+        "shoes": {
+          "translation": [
+            0,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/shoes-domain.png"
+        }
+      },
+      "repair_pixels": 33,
+      "upper_degrees": -4,
+      "forearm_degrees": 1
+    },
+    {
+      "id": "peak",
+      "label": "peak",
+      "duration_ms": 50,
+      "protected": {
+        "head": {
+          "translation": [
+            5,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/head-domain.png"
+        },
+        "bag": {
+          "translation": [
+            3,
+            1
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/bag-domain.png"
+        },
+        "shoes": {
+          "translation": [
+            0,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/shoes-domain.png"
+        }
+      },
+      "repair_pixels": 95,
+      "upper_degrees": -10,
+      "forearm_degrees": 4
+    },
+    {
+      "id": "rebound",
+      "label": "restrained return",
+      "duration_ms": 67,
+      "protected": {
+        "head": {
+          "translation": [
+            2,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/head-domain.png"
+        },
+        "bag": {
+          "translation": [
+            1,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/bag-domain.png"
+        },
+        "shoes": {
+          "translation": [
+            0,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/shoes-domain.png"
+        }
+      },
+      "repair_pixels": 33,
+      "upper_degrees": -4,
+      "forearm_degrees": 1
+    },
+    {
+      "id": "settle",
+      "label": "settle",
+      "duration_ms": 67,
+      "protected": {
+        "head": {
+          "translation": [
+            0,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/head-domain.png"
+        },
+        "bag": {
+          "translation": [
+            0,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/bag-domain.png"
+        },
+        "shoes": {
+          "translation": [
+            0,
+            0
+          ],
+          "rotation_degrees": 0,
+          "scale": 1,
+          "domain": "masks/shoes-domain.png"
+        }
+      },
+      "repair_pixels": 0,
+      "upper_degrees": 0,
+      "forearm_degrees": 0
+    }
+  ],
+  "duration_ms": 234,
+  "gif_duration_ms": 240,
+  "gif_frame_durations_ms": [
+    50,
+    50,
+    70,
+    70
+  ],
+  "gif_color_accuracy": "approximate shared fixed 256-color palette, dithering disabled; strip/APNG authoritative",
+  "exact_apng_frame_durations_ms": [
+    50,
+    50,
+    67,
+    67
+  ],
+  "semantic_motion": "PENDING independent motion review",
+  "production_changes": false
+}

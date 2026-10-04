@@ -1,0 +1,73 @@
+{
+  "status": "REVIEW_ONLY",
+  "source": {
+    "path": "source.png",
+    "sha256": "4ecc5c275ecd29210dc4b68f3d7850dd33740bd51dca76dfca937cbe181a29b3"
+  },
+  "walk": {
+    "path": "walk-source.png",
+    "sha256": "7760bd56724fa1abe0dc8c7cf4e64a1a6c51056543f9146f2f1688b6f0c06b5b"
+  },
+  "source_origin": "exact crop [16,16,112,112] of attack WEST frame0 128px; no resampling",
+  "protected": {
+    "head": {
+      "mask": "masks/head-opaque.png",
+      "domain": "masks/head-domain.png",
+      "translation": [
+        5,
+        0
+      ],
+      "rotation_degrees": 0,
+      "scale": 1
+    },
+    "bag": {
+      "mask": "masks/bag-opaque.png",
+      "domain": "masks/bag-domain.png",
+      "translation": [
+        3,
+        1
+      ],
+      "rotation_degrees": 0,
+      "scale": 1
+    },
+    "shoes": {
+      "mask": "masks/shoes-opaque.png",
+      "domain": "masks/shoes-domain.png",
+      "translation": [
+        0,
+        0
+      ],
+      "rotation_degrees": 0,
+      "scale": 1
+    }
+  },
+  "body_methods": {
+    "upper": {
+      "kind": "authored_variant",
+      "of": "upper.source",
+      "method": {
+        "op": "rotate",
+        "degrees": -10,
+        "pivot": [
+          48,
+          60
+        ],
+        "algorithm": "rotsprite"
+      }
+    },
+    "forearm": {
+      "kind": "authored_variant",
+      "of": "forearm.source",
+      "method": {
+        "op": "rotate",
+        "degrees": 4,
+        "pivot": [
+          50,
+          50
+        ],
+        "algorithm": "rotsprite"
+      }
+    }
+  },
+  "important": "Source attack body is historically authored art; source means exact supplied pinned frame pixels, not a claim about original artist authorship. No old rig part images reused. Technical tests do not approve anatomy or motion."
+}
