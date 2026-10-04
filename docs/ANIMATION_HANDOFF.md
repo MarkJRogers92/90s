@@ -4,6 +4,8 @@ This is for an agent with image generation (GPT, "dot") picking up DEAD MALL's
 character animation work. It says exactly what to draw, shows animations that
 already shipped, and explains how to check and install a sheet. Read `AGENTS.md`
 first (the repo rules), then this file.
+**Newer: `docs/GPT_IMAGE_HANDOFF.md`** (2026-10-04) has the current state of the hurt strips and
+what a GPT run taught us; read it too.
 
 **Tools:** use whatever makes the best pixel art. Options include your own image
 generation, PixelLab (pixellab.ai), and **Pixel Forge**, which authored the game's

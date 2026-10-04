@@ -18,6 +18,9 @@ no push without the owner's say-so). Presentation only; no `src/sim` change.
   a distance, or a fixture that holds the hunter in `pursue`, would show it. Kiting with the bot
   died before a swing landed. The unit tests cover the flinch path against the real PNG.
 
+**GPT handoff:** `docs/GPT_IMAGE_HANDOFF.md` has the state, what was and was not verified, the queue and
+the generation traps, written for an agent with GPT image generation.
+
 **Next:** the Spitter's and the bosses' derived hurt strips (`docs/PIXELLAB_HANDOFF.md` §2). To
 generate with GPT again: `bash tools/pixel-forge/scripts/cloud-gpt-setup.sh setup`, then `login` (the
 owner enters the code, unless they stored a login as the environment secret
