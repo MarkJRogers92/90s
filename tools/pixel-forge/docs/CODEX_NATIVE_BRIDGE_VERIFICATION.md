@@ -15,8 +15,8 @@ image-generation availability. Codex's internal retry behavior is unverified.
 
 ## Aggregate checks
 
-- Native bridge: 53 focused tests passed.
-- Full Forge suite with native Aseprite checks: 636 passed, zero skips.
+- Native bridge and exact-plan compatibility: 89 focused tests passed.
+- Full Forge suite with native Aseprite checks: 672 passed, zero skips.
 - All five native round trips remained pixel-exact with timings verified.
   The `recipe-v3-base` fixture retained only its intended ground-contact failure.
 - Game regression: 1,849 tests passed across 179 files.
@@ -29,7 +29,10 @@ The focused suite covers lifecycle and identity matching, duplicate/foreign
 results, multiple images, malformed protocol objects, auth and model changes,
 approval-policy checks, rejection of unrelated tools, bounded PNG/reference
 handling, concurrent serialization, input-write deadlines, process-group cleanup,
-MCP error flags, and durable unknown-completion handling.
+MCP error flags, and durable unknown-completion handling. The exact-plan
+matrix accepts only `plus`, `pro`, and `prolite`, rejects all other official
+plan identifiers and malformed/unknown values, and confirms that managed
+configuration is still rejected before the worker starts.
 
 ## Reproduction
 
@@ -37,7 +40,7 @@ Use Forge's existing dependency environment. No live image provider is called
 by these tests:
 
 ```sh
-python -m pytest -q tests/test_codex_native.py
+python -m pytest -q tests/test_codex_native.py tests/test_codex_native_plans.py
 ASEPRITE_PATH=/path/to/aseprite python -m pytest -q tests
 ASEPRITE_PATH=/path/to/aseprite FORGE_PYTHON=/path/to/python bash run_native_check.sh
 ```
