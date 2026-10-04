@@ -297,6 +297,8 @@ export type MvpRunDebugSnapshot = {
     phase: string;
     /** Present only on the Loss Prevention Manager. */
     bossPhase: 1 | 2 | 3 | undefined;
+    /** Ticks left in an active charge or hop (0 when none), so captures can see the lunge itself. */
+    chargeTicks: number;
   }>;
   carried: import('../sim/run/types').MvpRunState['carried'];
   inventory: import('../sim/run/types').MvpRunState['inventory'];
@@ -420,6 +422,7 @@ export function installMvpRunDebugBridge(
             health: enemy.health,
             phase: enemy.phase,
             bossPhase: enemy.bossPhase,
+            chargeTicks: enemy.chargeTicks ?? 0,
           })),
           carried: structuredClone(state.carried),
           inventory: structuredClone(state.inventory),

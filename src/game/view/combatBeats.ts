@@ -325,6 +325,8 @@ export const ATTACK_RELEASE_TICKS = 14;
  */
 /** Where a charge or lob telegraph snaps from anticipation to its release frames. */
 export const WINDUP_RELEASE_AT = 0.85;
+/** During an active charge the release frames alternate this often (a stride). */
+export const CHARGE_STRIDE_TICKS = 4;
 
 export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], frames: number, tick: number): number | null {
   if (frames < 2 || enemy.health <= 0) return null;
@@ -346,6 +348,10 @@ export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], fr
     if (lunge.progress < WINDUP_RELEASE_AT) return Math.min(windupFrames - 1, Math.floor((lunge.progress / WINDUP_RELEASE_AT) * windupFrames));
     return Math.min(frames - 1, windupFrames + Math.floor(((lunge.progress - WINDUP_RELEASE_AT) / (1 - WINDUP_RELEASE_AT)) * release));
   }
+  // The charge itself (Bargain Hunter, Mascot, Poodle, boss charges) runs after the warning
+  // as `pursue` with chargeTicks left: keep the release pose, stepping between its frames,
+  // rather than dropping back to the walk sheet mid-lunge.
+  if ((enemy.chargeTicks ?? 0) > 0) return windupFrames + (Math.floor(tick / CHARGE_STRIDE_TICKS) % release);
   if (enemy.phase !== 'recover') return null;
   const recoverTicks = enemy.kind === 'spitter'
     ? SPITTER_RECOVER_TICKS
