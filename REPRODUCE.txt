@@ -1,0 +1,55 @@
+REPRODUCE THE FROZEN WORKFLOW
+
+Run from an extracted copy. No setup command below installs packages or calls an artist/provider. The commands use the checked export only. The archive omits environments, registries, project libraries, credentials, paid-provider configuration and unrelated art.
+
+DEPENDENCIES
+An already-provisioned Python 3.12 environment was used. workflow/forge-source/requirements.txt is the unchanged broad dependency declaration. requirements-tested.txt records the unchanged tested versions: Pillow 12.3.0, NumPy 2.4.6, MCP 2.2.0, Pydantic 2.13.5, pytest 9.1.1 and AnyIO 4.15.1. The core image checker needs Pillow and NumPy; the complete CLI/suite uses the other declared packages.
+Aseprite 1.3.18.6-x64 was used for real native round trips. Set ASEPRITE_PATH to your existing licensed executable. The binary and its dependencies are deliberately not redistributed. Without Aseprite you can inspect assets and run PNG-only export; native tests may skip and native verification is then not reproduced.
+The optional historical authoring scripts also require SciPy for leg morphology and a DejaVu Sans font at their declared system path. These are not needed for the frozen checked export. The runtime diagnostic needs an existing Node.js installation. No generation service or API key is needed for the commands below.
+
+1. VERIFY THE FROZEN FILES
+From the package root on a system with sha256sum:
+  sha256sum -c SHA256SUMS.txt
+On macOS, the equivalent is:
+  shasum -a 256 -c SHA256SUMS.txt
+
+2. RUN THE UNCHANGED TEST SUITE
+The unchanged forge.sh launcher and one isolation test expect workflow/forge-source/.venv/bin/python. Do not mistake this harness path assumption for a missing shipped dependency. Point .venv at an already-provisioned environment (POSIX example; replace the placeholder with your own environment):
+  cd workflow/forge-source
+  ln -s /absolute/path/to/existing/python-environment .venv
+  export ASEPRITE_PATH=/absolute/path/to/existing/aseprite
+  .venv/bin/python -m pytest -q tests
+Do not run ln if .venv already exists. You can instead use an existing environment already located at that path. No virtual environment is in the ZIP. Changing the harness to use the current interpreter is a possible small portability improvement, not a change made in this freeze.
+
+3. REPRODUCE A CHECKED NATIVE REVIEW EXPORT
+From workflow/forge-source, with the same environment and ASEPRITE_PATH:
+  bash ./forge.sh animation-export ../examples/west-refined-review/manifest.json --out ../../reproduced-west-review --review --document ../../frozen-asset/Bargain_Hunter_West_Refined_REVIEW_ONLY.aseprite
+The destination must not exist and its basename must be ASCII. Use a fresh name for every run. This preserves exact frame/native bytes; generated report paths can differ because the destination and local source paths differ.
+Some ZIP extractors do not preserve the executable flag, so the command above invokes the unchanged launcher through bash. If your extractor preserves permissions, ./forge.sh is equivalent.
+Equivalent direct interpreter entry point:
+  .venv/bin/python -m forge animation-export ../examples/west-refined-review/manifest.json --out ../../reproduced-west-review --review --document ../../frozen-asset/Bargain_Hunter_West_Refined_REVIEW_ONLY.aseprite
+Omit --document for PNG-only export when Aseprite is unavailable. That does not reproduce native layer/timing verification.
+
+4. VERIFY FAILURE BEHAVIOR
+The existing tests exercise integrity failures, unsafe input types, size budgets, source races, native mismatches, failed review versus final behavior and legacy multi-frame blocking. Historical actual command evidence is in evidence/original/. The prior bad manifest is workflow/examples/west-review/previous-manifest.json. Its review export must be explicitly review_only_failed_checks. A final export must fail rather than create a final directory.
+A passing technical manifest also cannot become final without a separate exact-manifest manual review record. Required JSON fields: manifest_sha256, reviewer and accepted_findings (the exact sorted manual_review_required list). Do not fabricate this record or mistake it for user approval.
+
+5. OPTIONAL RUNTIME DIAGNOSTIC
+From the package root:
+  node authoring/review/check-charge-selection.mjs
+This evaluates the included pinned attackFrameFor body with shopper inputs and writes authoring/delivery/charge-selection-evidence.json. It does not run the game, confirm renderer fallback live or test world-root motion. Run only in a working copy if preserving every frozen evidence byte is important.
+
+ART AND AUTHORING MAP
+Current authoring root: authoring/art/west-identity-refinement/combined/.
+Its native document and checked-export native are byte-identical. Under combined/: west-0.png through west-5.png, masks, layers, merge-evidence.json, native-roundtrip.json and previews. The native durations are 142/142/142/141/133/133 ms (833 ms total).
+The exact delivered six-frame GIF is 840 ms total because of GIF timing quantization/authoring; the same-scale APNG is 833.333 ms. The configured-scale GIF is 830 ms; its APNG is 833.333 ms. Do not derive authoritative phase timing from the GIF. Configured movement study uses 76/96 renderer scale, 34 warning ticks, 16 charge ticks and 144-pixel root travel; it is illustrative and not a live game capture.
+The authoring chain is preserved at its original relative layout: west-identity-proof -> west-identity-refinement/body-head and charge-legs -> combined. The final merge script is combined/merge_refinement.py; native assembly is combined/build_combined_native.lua. The body-head and charge-legs directories contain source-derived variant maps, masks, donors and their own build scripts. Historical west-feet and west row PNG inputs are included for those recipes.
+These historical scripts author into their own directories. Run them only in a working copy. Some metadata records original cloud provenance paths; they are evidence, not portable file-open instructions. Replace the historical prefix ending bargain-hunter-pilot-20261003/ with authoring/ when locating a reference. The current executable manifests in workflow/examples use relative paths and are self-contained.
+Some original Python modules include generic built-in cross-platform executable discovery paths. No user's Mac files, actual personal Mac paths, environment secrets or Aseprite binary are included.
+
+LIMITS AND CLAIMS
+The checked export enforces manifest/input hashes, declared identity/contact masks, palette and alpha, margins, snapshot integrity, native pixel equality and publication safety. Annotation labels are not anatomical proof. Roots are unverified, charge is excluded from stance checks, and all seven non-WEST facings remain unapproved. Stronger authoring quality and honest human review remain needed.
+The full source implementation is unchanged. Personal path-bearing configuration and old general workflow docs were omitted; this document is the portable animation-specific runbook. Generic image-generation and service commands remain in source for completeness, but they are outside this handoff's reproduction procedure and may call external providers if invoked.
+
+RIGHTS
+This freeze is supplied to its owner for continued work. No license file was present in the Forge source export; do not infer an open-source license or permission to relicense the code or character art. Third-party dependencies retain their own licenses. Researching open-source components does not make this entire bundle open source.

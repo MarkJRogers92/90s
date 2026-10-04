@@ -1,0 +1,500 @@
+{
+  "schema_version": 1,
+  "facing": "WEST",
+  "canvas": [
+    128,
+    128
+  ],
+  "references": {
+    "source-sheet": {
+      "path": "source-sheet.png",
+      "sha256": "a1df4442c53c3852273122bae8a3e824fef2fd1f7808bb8542b5522b615dfa34"
+    },
+    "source-crop": {
+      "path": "source-crop.png",
+      "sha256": "7760bd56724fa1abe0dc8c7cf4e64a1a6c51056543f9146f2f1688b6f0c06b5b"
+    },
+    "head-domain": {
+      "path": "head-domain.png",
+      "sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320"
+    },
+    "shoe-source": {
+      "path": "shoe-source.png",
+      "sha256": "b260999d64ce139b6692c1bde8f2f2843bf6819512e3fae634de58274a55d363"
+    },
+    "shoe-domain": {
+      "path": "shoe-domain.png",
+      "sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699"
+    },
+    "hand-patch-0": {
+      "path": "hand-patch-0.png",
+      "sha256": "fe2238f4cebc3c35b10920d9c9852244612c46a3c24cccc6376ab0afe3dadf64"
+    },
+    "grip-patch-0": {
+      "path": "grip-patch-0.png",
+      "sha256": "0723f21d587e8b47fe5b392603e5321326e90c6e0c5b43c0a9b13947b20a781b"
+    },
+    "shoe-contact-0": {
+      "path": "shoe-contact-0.png",
+      "sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25"
+    },
+    "hand-patch-1": {
+      "path": "hand-patch-1.png",
+      "sha256": "b7a3bae5620f90c7b66952697ace96e4fa2a6bda25c9e328c0bc2ab63adecded"
+    },
+    "grip-patch-1": {
+      "path": "grip-patch-1.png",
+      "sha256": "632f7ca50c142caf593fbdac0dae8d435f60302c0dd2cefbe459154e5315ab31"
+    },
+    "shoe-contact-1": {
+      "path": "shoe-contact-1.png",
+      "sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25"
+    },
+    "hand-patch-2": {
+      "path": "hand-patch-2.png",
+      "sha256": "00b10621699f1efb2e4636c6541f94e3516c9b4f590d77fa7c3e1438a0405e2f"
+    },
+    "grip-patch-2": {
+      "path": "grip-patch-2.png",
+      "sha256": "466ae4fcce8a8380270c57146a132d78a206788769335a68be583b939718124c"
+    },
+    "shoe-contact-2": {
+      "path": "shoe-contact-2.png",
+      "sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25"
+    },
+    "hand-patch-3": {
+      "path": "hand-patch-3.png",
+      "sha256": "0af2a470208bf89ef47060ae112cf4d720c0284b3028b8c5c19fb251d57ee8b5"
+    },
+    "grip-patch-3": {
+      "path": "grip-patch-3.png",
+      "sha256": "1138951550391d06d4ce5d297afc9ffa55cf6614a3763e690fd6c67319ab38ad"
+    },
+    "shoe-contact-3": {
+      "path": "shoe-contact-3.png",
+      "sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25"
+    },
+    "hand-patch-4": {
+      "path": "hand-patch-4.png",
+      "sha256": "39a52e099fc3be31513238063061292c1df15cddfbaef960a277a801847663af"
+    },
+    "grip-patch-4": {
+      "path": "grip-patch-4.png",
+      "sha256": "339920c3202a574bd951113ec2fcea008ed0ef6ee811442a3bc1c26f3fd0f25e"
+    },
+    "hand-patch-5": {
+      "path": "hand-patch-5.png",
+      "sha256": "2514b9f07f1539eee39ff00776be28543fb92f4b2832f3c97e83bd69413e6e68"
+    },
+    "grip-patch-5": {
+      "path": "grip-patch-5.png",
+      "sha256": "058200bbc8762a96b400419abb2a400bf4c2dfe06f37bbc0377fbc3122bb37c9"
+    }
+  },
+  "palette_sources": [
+    "source-sheet"
+  ],
+  "edge_margin": [
+    1,
+    1,
+    1,
+    1
+  ],
+  "frames": [
+    {
+      "id": "0",
+      "image": {
+        "path": "west-0.png",
+        "sha256": "e2065b0e6d25f9929f6d167e6e02da54c66c8e1813fa67b3876bdc7979b4fa7c"
+      },
+      "phase": "windup",
+      "anchors": {
+        "anatomical_left_shoulder": [
+          68,
+          55
+        ],
+        "anatomical_left_elbow": [
+          68,
+          66
+        ],
+        "anatomical_left_wrist": [
+          66,
+          77
+        ],
+        "anatomical_left_hand_center": [
+          67,
+          80
+        ],
+        "bag_grip": [
+          66,
+          84
+        ],
+        "sole": [
+          58,
+          111
+        ]
+      },
+      "masks": {
+        "hand-patch": "hand-patch-0",
+        "grip-patch": "grip-patch-0",
+        "shoe-contact": "shoe-contact-0"
+      },
+      "identity_locks": [
+        {
+          "name": "original-head-domain",
+          "source": "source-crop",
+          "mask": "head-domain",
+          "offset": [
+            16,
+            16
+          ]
+        },
+        {
+          "name": "planted-shoe-region",
+          "source": "shoe-source",
+          "mask": "shoe-domain",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "1",
+      "image": {
+        "path": "west-1.png",
+        "sha256": "eb4534917ff6773ba35609b4e6b0940682a4913c73556353d81e3b15a6acaa54"
+      },
+      "phase": "windup",
+      "anchors": {
+        "anatomical_left_shoulder": [
+          67,
+          55
+        ],
+        "anatomical_left_elbow": [
+          76,
+          62
+        ],
+        "anatomical_left_wrist": [
+          81,
+          68
+        ],
+        "anatomical_left_hand_center": [
+          84,
+          71
+        ],
+        "bag_grip": [
+          85,
+          73
+        ],
+        "sole": [
+          58,
+          111
+        ]
+      },
+      "masks": {
+        "hand-patch": "hand-patch-1",
+        "grip-patch": "grip-patch-1",
+        "shoe-contact": "shoe-contact-1"
+      },
+      "identity_locks": [
+        {
+          "name": "original-head-domain",
+          "source": "source-crop",
+          "mask": "head-domain",
+          "offset": [
+            11,
+            22
+          ]
+        },
+        {
+          "name": "planted-shoe-region",
+          "source": "shoe-source",
+          "mask": "shoe-domain",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "image": {
+        "path": "west-2.png",
+        "sha256": "6219942302694d5a9c1516d7d16244d5fd3936727114536596a502973215f88d"
+      },
+      "phase": "windup",
+      "anchors": {
+        "anatomical_left_shoulder": [
+          60,
+          63
+        ],
+        "anatomical_left_elbow": [
+          70,
+          67
+        ],
+        "anatomical_left_wrist": [
+          80,
+          71
+        ],
+        "anatomical_left_hand_center": [
+          84,
+          73
+        ],
+        "bag_grip": [
+          87,
+          76
+        ],
+        "sole": [
+          58,
+          111
+        ]
+      },
+      "masks": {
+        "hand-patch": "hand-patch-2",
+        "grip-patch": "grip-patch-2",
+        "shoe-contact": "shoe-contact-2"
+      },
+      "identity_locks": [
+        {
+          "name": "original-head-domain",
+          "source": "source-crop",
+          "mask": "head-domain",
+          "offset": [
+            -2,
+            35
+          ]
+        },
+        {
+          "name": "planted-shoe-region",
+          "source": "shoe-source",
+          "mask": "shoe-domain",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "image": {
+        "path": "west-3.png",
+        "sha256": "fb72c68d206fba335358e6b5efd5621f01ac93763b33d0611edf29838e6a0f54"
+      },
+      "phase": "windup",
+      "anchors": {
+        "anatomical_left_shoulder": [
+          55,
+          74
+        ],
+        "anatomical_left_elbow": [
+          64,
+          69
+        ],
+        "anatomical_left_wrist": [
+          73,
+          64
+        ],
+        "anatomical_left_hand_center": [
+          77,
+          63
+        ],
+        "bag_grip": [
+          81,
+          60
+        ],
+        "sole": [
+          58,
+          111
+        ]
+      },
+      "masks": {
+        "hand-patch": "hand-patch-3",
+        "grip-patch": "grip-patch-3",
+        "shoe-contact": "shoe-contact-3"
+      },
+      "identity_locks": [
+        {
+          "name": "original-head-domain",
+          "source": "source-crop",
+          "mask": "head-domain",
+          "offset": [
+            -2,
+            49
+          ]
+        },
+        {
+          "name": "planted-shoe-region",
+          "source": "shoe-source",
+          "mask": "shoe-domain",
+          "offset": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4",
+      "image": {
+        "path": "west-4.png",
+        "sha256": "724ecb46f1f7c252c407fa1c7f6e6b44741a091b538eb159c271c01cc386bcb7"
+      },
+      "phase": "charge",
+      "anchors": {
+        "anatomical_left_shoulder": [
+          53,
+          70
+        ],
+        "anatomical_left_elbow": [
+          63,
+          69
+        ],
+        "anatomical_left_wrist": [
+          76,
+          69
+        ],
+        "anatomical_left_hand_center": [
+          78,
+          70
+        ],
+        "bag_grip": [
+          83,
+          70
+        ]
+      },
+      "masks": {
+        "hand-patch": "hand-patch-4",
+        "grip-patch": "grip-patch-4"
+      },
+      "identity_locks": [
+        {
+          "name": "original-head-domain",
+          "source": "source-crop",
+          "mask": "head-domain",
+          "offset": [
+            -8,
+            47
+          ]
+        }
+      ]
+    },
+    {
+      "id": "5",
+      "image": {
+        "path": "west-5.png",
+        "sha256": "2dd9d396d0488a80680d28dfe823721c88cef0a4e08567590477cbc6c2a3a840"
+      },
+      "phase": "charge",
+      "anchors": {
+        "anatomical_left_shoulder": [
+          49,
+          72
+        ],
+        "anatomical_left_elbow": [
+          60,
+          71
+        ],
+        "anatomical_left_wrist": [
+          73,
+          71
+        ],
+        "anatomical_left_hand_center": [
+          76,
+          72
+        ],
+        "bag_grip": [
+          80,
+          72
+        ]
+      },
+      "masks": {
+        "hand-patch": "hand-patch-5",
+        "grip-patch": "grip-patch-5"
+      },
+      "identity_locks": [
+        {
+          "name": "original-head-domain",
+          "source": "source-crop",
+          "mask": "head-domain",
+          "offset": [
+            -12,
+            47
+          ]
+        }
+      ]
+    }
+  ],
+  "limbs": [
+    {
+      "name": "manually-annotated-left-arm",
+      "chain": [
+        "anatomical_left_shoulder",
+        "anatomical_left_elbow",
+        "anatomical_left_wrist"
+      ],
+      "segment_ranges": [
+        [
+          8.041594578792296,
+          16.041594578792296
+        ],
+        [
+          7.6619037896906015,
+          15.661903789690601
+        ]
+      ],
+      "frames": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  ],
+  "attachments": [
+    {
+      "name": "bag",
+      "declared_owner": "near-side anatomical left, visual annotation only",
+      "hand_anchor": "anatomical_left_hand_center",
+      "grip_anchor": "bag_grip",
+      "hand_mask": "hand-patch",
+      "object_mask": "grip-patch",
+      "max_gap_px": 6,
+      "frames": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ]
+    }
+  ],
+  "stance_intervals": [
+    {
+      "name": "local-windup-shoes",
+      "frames": [
+        "0",
+        "1",
+        "2",
+        "3"
+      ],
+      "anchor": "sole",
+      "contact_mask": "shoe-contact",
+      "max_drift_px": 0
+    }
+  ],
+  "notes": [
+    "Original authoritative art metadata SHA256 50173b1b192cd29f1cd63ce706e6b5a351d25937891c199e811005cd8458d064",
+    "Anatomical anchors supplied by art worker, approximate \u00b12px. Segment ranges derive from source lengths with \u00b14px tolerance for two uncertain endpoints; not validated anatomical limits.",
+    "Hand/grip masks are explicit 5x5 opaque pixel patches around manual landmarks, not machine-recognized parts or independent ownership evidence.",
+    "Root offsets deliberately omitted because game root motion is unverified. Local stance contact is checked; charge frames excluded.",
+    "Source head mask protects selected exact opaque pixels and top/front transparent border only; neck/shoulder remains editable.",
+    "Combined shoe contact mask derives from opaque pixels inside the original fixed shoe domain. Its bottommost row measures near-foot contact; exact shoe RGBA lock separately covers both feet."
+  ]
+}

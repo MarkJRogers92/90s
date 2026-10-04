@@ -1,0 +1,24 @@
+PIXEL FORGE IMPROVEMENT HANDOFF
+Frozen 4 October 2026 UTC
+
+Give Claude this ZIP. Paste CLAUDE_BRIEF.txt as the request. Claude already knows Pixel Forge: the task is to improve Pixel Forge itself, using this exact Bargain Hunter WEST animation as the regression and visual-quality benchmark.
+
+The frozen asset remains REVIEW_ONLY. It is the latest six-pose WEST proof, with source-derived head tilts, refined denim and distinct charge steps. It is not a new asset generation, production approval, eight-facing approval, or game integration.
+
+OPEN FIRST
+1. CLAUDE_BRIEF.txt — focused improvement request and acceptance criteria.
+2. frozen-asset/Bargain_Hunter_West_Motion_Preview.gif — exact delivered preview.
+3. frozen-asset/Bargain_Hunter_West_Refinement_Comparison.png — same-scale before/after.
+4. frozen-asset/Bargain_Hunter_West_Refined_REVIEW_ONLY.aseprite — exact editable native document.
+5. REPRODUCE.txt — existing dependencies, tests and checked export commands.
+
+MAP
+frozen-asset/ — exact delivered art and original checked export, including six original-color PNGs, strip, pinned inputs, report and native file.
+workflow/forge-source/ — exact current Forge implementation and all nine test files; no environment, credentials, service state or personal project configuration.
+workflow/examples/ — relative-path refined-WEST manifest and prior good/bad regression examples.
+authoring/ — source character, source-derived variants, donor maps, component layers, masks, recipes, native documents and relevant historical WEST proof inputs. Historical files are references, not alternative current finals.
+evidence/ — original proof reports, independent review and fresh packaging verification.
+SNAPSHOT_PROVENANCE.json — exact copy origins and hashes.
+SHA256SUMS.txt — checksums for every shipped file except itself.
+
+Only use a working copy for improvements. Preserve this freeze unchanged. This package does not transmit anything to Claude, publish, install tools, call PixelLab, buy services, or change the game.

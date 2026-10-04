@@ -1,0 +1,77 @@
+{
+ "frames": [
+  {
+   "frame": "0",
+   "head": "source",
+   "head_offset": [
+    16,
+    16
+   ],
+   "bag_pixels": 213,
+   "hand_pixels": 25
+  },
+  {
+   "frame": "1",
+   "head": "source",
+   "head_offset": [
+    11,
+    22
+   ],
+   "bag_pixels": 219,
+   "hand_pixels": 24
+  },
+  {
+   "frame": "2",
+   "head": "tilt08",
+   "head_offset": [
+    -2,
+    35
+   ],
+   "bag_pixels": 216,
+   "hand_pixels": 24
+  },
+  {
+   "frame": "3",
+   "head": "tilt14",
+   "head_offset": [
+    -2,
+    49
+   ],
+   "bag_pixels": 244,
+   "hand_pixels": 25
+  },
+  {
+   "frame": "4",
+   "head": "tilt10",
+   "head_offset": [
+    -8,
+    47
+   ],
+   "bag_pixels": 240,
+   "hand_pixels": 25
+  },
+  {
+   "frame": "5",
+   "head": "tilt10",
+   "head_offset": [
+    -12,
+    47
+   ],
+   "bag_pixels": 242,
+   "hand_pixels": 25
+  }
+ ],
+ "bag_grip_moved": [
+  {
+   "frame": "1",
+   "from": [
+    85,
+    73
+   ],
+   "to": [
+    85,
+    74
+   ]
+  }
+ ]
+}

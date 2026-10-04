@@ -1,0 +1,1220 @@
+{
+  "workflow": "forge animation-export",
+  "status": "review_only",
+  "approved": false,
+  "approval_note": "This tool does not grant user approval or infer anatomical correctness.",
+  "manifest_sha256": "3927710c5de66925f993f1d033837063672ca0205c1f7131a2083012d02356ff",
+  "checks": {
+    "schema_version": 1,
+    "technical_status": "pass",
+    "semantic_anatomy": "unverified",
+    "all_constraints_verified": false,
+    "checks": [
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [51, 30, 74, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/anatomical_left_shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [68, 55] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/anatomical_left_elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [68, 66] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/anatomical_left_wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [66, 77] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [67, 80] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [66, 84] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [58, 111] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:0/original-head-domain",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/221 selected RGBA pixels differ after integer translation [16, 16]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:0/planted-shoe-region",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:0/hand-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:0/grip-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:0/shoe-contact",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:0/manually-annotated-left-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.000px; allowed [8.041594578792296, 16.041594578792296]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:0/manually-annotated-left-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.180px; allowed [7.6619037896906015, 15.661903789690601]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:0/bag/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand-patch mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:0/bag/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated grip-patch mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:0/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 4.123px; maximum 6"
+      },
+      {
+        "code": "BAG_OWNER_UNVERIFIED",
+        "scope": "frame:0/bag",
+        "status": "unverified",
+        "evidence": "annotation only",
+        "detail": "Declared owner 'near-side anatomical left, visual annotation only' is not anatomical evidence. Mask/anchor support and proximity do not prove ownership."
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [50, 36, 103, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/anatomical_left_shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [67, 55] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/anatomical_left_elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [76, 62] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/anatomical_left_wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [81, 68] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [84, 71] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [85, 73] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [58, 111] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:1/original-head-domain",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/221 selected RGBA pixels differ after integer translation [11, 22]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:1/planted-shoe-region",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:1/hand-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:1/grip-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:1/shoe-contact",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:1/manually-annotated-left-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.402px; allowed [8.041594578792296, 16.041594578792296]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:1/manually-annotated-left-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 7.810px; allowed [7.6619037896906015, 15.661903789690601]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:1/bag/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand-patch mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:1/bag/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated grip-patch mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:1/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 2.236px; maximum 6"
+      },
+      {
+        "code": "BAG_OWNER_UNVERIFIED",
+        "scope": "frame:1/bag",
+        "status": "unverified",
+        "evidence": "annotation only",
+        "detail": "Declared owner 'near-side anatomical left, visual annotation only' is not anatomical evidence. Mask/anchor support and proximity do not prove ownership."
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [35, 49, 101, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/anatomical_left_shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [60, 63] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/anatomical_left_elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [70, 67] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/anatomical_left_wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [80, 71] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [84, 73] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [87, 76] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [58, 111] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:2/authored-8deg-head-variant",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/188 selected RGBA pixels differ after integer translation [-2, 35]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:2/planted-shoe-region",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:2/hand-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:2/grip-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:2/shoe-contact",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:2/manually-annotated-left-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.770px; allowed [8.041594578792296, 16.041594578792296]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:2/manually-annotated-left-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.770px; allowed [7.6619037896906015, 15.661903789690601]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:2/bag/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand-patch mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:2/bag/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated grip-patch mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:2/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 4.243px; maximum 6"
+      },
+      {
+        "code": "BAG_OWNER_UNVERIFIED",
+        "scope": "frame:2/bag",
+        "status": "unverified",
+        "evidence": "annotation only",
+        "detail": "Declared owner 'near-side anatomical left, visual annotation only' is not anatomical evidence. Mask/anchor support and proximity do not prove ownership."
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [34, 47, 99, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/anatomical_left_shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [55, 74] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/anatomical_left_elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [64, 69] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/anatomical_left_wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [73, 64] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [77, 63] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [81, 60] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [58, 111] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:3/authored-14deg-head-variant",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/188 selected RGBA pixels differ after integer translation [-2, 49]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:3/planted-shoe-region",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:3/hand-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:3/grip-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:3/shoe-contact",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:3/manually-annotated-left-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.296px; allowed [8.041594578792296, 16.041594578792296]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:3/manually-annotated-left-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.296px; allowed [7.6619037896906015, 15.661903789690601]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:3/bag/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand-patch mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:3/bag/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated grip-patch mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:3/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 5.000px; maximum 6"
+      },
+      {
+        "code": "BAG_OWNER_UNVERIFIED",
+        "scope": "frame:3/bag",
+        "status": "unverified",
+        "evidence": "annotation only",
+        "detail": "Declared owner 'near-side anatomical left, visual annotation only' is not anatomical evidence. Mask/anchor support and proximity do not prove ownership."
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [29, 60, 100, 111]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/anatomical_left_shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [53, 70] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/anatomical_left_elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [63, 69] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/anatomical_left_wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [76, 69] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [78, 70] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [83, 70] has an opaque pixel"
+      },
+      {
+        "code": "NOT_CHECKED",
+        "scope": "frame:4/stance",
+        "status": "unverified",
+        "evidence": "missing or intentionally excluded annotation",
+        "detail": "No stance constraint covers this frame (phase charge)."
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:4/authored-10deg-head-variant",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/187 selected RGBA pixels differ after integer translation [-8, 47]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:4/hand-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:4/grip-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:4/manually-annotated-left-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.050px; allowed [8.041594578792296, 16.041594578792296]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:4/manually-annotated-left-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 13.000px; allowed [7.6619037896906015, 15.661903789690601]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:4/bag/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand-patch mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:4/bag/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated grip-patch mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:4/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 5.000px; maximum 6"
+      },
+      {
+        "code": "BAG_OWNER_UNVERIFIED",
+        "scope": "frame:4/bag",
+        "status": "unverified",
+        "evidence": "annotation only",
+        "detail": "Declared owner 'near-side anatomical left, visual annotation only' is not anatomical evidence. Mask/anchor support and proximity do not prove ownership."
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [25, 59, 100, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/anatomical_left_shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [49, 72] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/anatomical_left_elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [60, 71] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/anatomical_left_wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [73, 71] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [76, 72] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [80, 72] has an opaque pixel"
+      },
+      {
+        "code": "NOT_CHECKED",
+        "scope": "frame:5/stance",
+        "status": "unverified",
+        "evidence": "missing or intentionally excluded annotation",
+        "detail": "No stance constraint covers this frame (phase charge)."
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:5/authored-10deg-head-variant",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/187 selected RGBA pixels differ after integer translation [-12, 47]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:5/hand-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:5/grip-patch",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:5/manually-annotated-left-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.045px; allowed [8.041594578792296, 16.041594578792296]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:5/manually-annotated-left-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 13.000px; allowed [7.6619037896906015, 15.661903789690601]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:5/bag/anatomical_left_hand_center",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand-patch mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:5/bag/bag_grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated grip-patch mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:5/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 4.000px; maximum 6"
+      },
+      {
+        "code": "BAG_OWNER_UNVERIFIED",
+        "scope": "frame:5/bag",
+        "status": "unverified",
+        "evidence": "annotation only",
+        "detail": "Declared owner 'near-side anatomical left, visual annotation only' is not anatomical evidence. Mask/anchor support and proximity do not prove ownership."
+      },
+      {
+        "code": "STANCE_PHASE_CONFLICT",
+        "scope": "stance:local-windup-shoes",
+        "status": "pass",
+        "evidence": "annotation",
+        "detail": "only explicitly annotated stance/windup frames may be stationary-contact compared"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:local-windup-shoes/0",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:local-windup-shoes/1",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:local-windup-shoes/2",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:local-windup-shoes/3",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "LOCAL_CONTACT_DRIFT",
+        "scope": "stance:local-windup-shoes",
+        "status": "pass",
+        "evidence": "pixels+annotated masks",
+        "detail": "local sole min/mean/max drift 0.000px; limit 0px. World contact remains unverified."
+      },
+      {
+        "code": "ROOT_MOTION_UNVERIFIED",
+        "scope": "stance:local-windup-shoes",
+        "status": "unverified",
+        "evidence": "annotation missing",
+        "detail": "World root offset is missing; no zero offset is assumed and no world drift verdict is issued."
+      }
+    ],
+    "inputs": [
+      {
+        "path": "source-sheet.png",
+        "expected_sha256": "a1df4442c53c3852273122bae8a3e824fef2fd1f7808bb8542b5522b615dfa34",
+        "actual_sha256": "a1df4442c53c3852273122bae8a3e824fef2fd1f7808bb8542b5522b615dfa34",
+        "size_bytes": 157220
+      },
+      {
+        "path": "west-0.png",
+        "expected_sha256": "6855a6bc887f0af5a20e2e0214decf2dfeb7b86b9627f5d979b4ea646368b035",
+        "actual_sha256": "6855a6bc887f0af5a20e2e0214decf2dfeb7b86b9627f5d979b4ea646368b035",
+        "size_bytes": 3559
+      },
+      {
+        "path": "source-crop.png",
+        "expected_sha256": "7760bd56724fa1abe0dc8c7cf4e64a1a6c51056543f9146f2f1688b6f0c06b5b",
+        "actual_sha256": "7760bd56724fa1abe0dc8c7cf4e64a1a6c51056543f9146f2f1688b6f0c06b5b",
+        "size_bytes": 3046
+      },
+      {
+        "path": "head-domain.png",
+        "expected_sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320",
+        "actual_sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320",
+        "size_bytes": 182
+      },
+      {
+        "path": "shoe-source.png",
+        "expected_sha256": "b260999d64ce139b6692c1bde8f2f2843bf6819512e3fae634de58274a55d363",
+        "actual_sha256": "b260999d64ce139b6692c1bde8f2f2843bf6819512e3fae634de58274a55d363",
+        "size_bytes": 3889
+      },
+      {
+        "path": "shoe-domain.png",
+        "expected_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "actual_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "size_bytes": 114
+      },
+      {
+        "path": "hand-patch-0.png",
+        "expected_sha256": "fe2238f4cebc3c35b10920d9c9852244612c46a3c24cccc6376ab0afe3dadf64",
+        "actual_sha256": "fe2238f4cebc3c35b10920d9c9852244612c46a3c24cccc6376ab0afe3dadf64",
+        "size_bytes": 113
+      },
+      {
+        "path": "grip-patch-0.png",
+        "expected_sha256": "0723f21d587e8b47fe5b392603e5321326e90c6e0c5b43c0a9b13947b20a781b",
+        "actual_sha256": "0723f21d587e8b47fe5b392603e5321326e90c6e0c5b43c0a9b13947b20a781b",
+        "size_bytes": 113
+      },
+      {
+        "path": "shoe-contact-0.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "west-1.png",
+        "expected_sha256": "2d91165e94f301754ee88af20b38130f0ef6f175c11dac9a1525a00012c7cf49",
+        "actual_sha256": "2d91165e94f301754ee88af20b38130f0ef6f175c11dac9a1525a00012c7cf49",
+        "size_bytes": 5176
+      },
+      {
+        "path": "hand-patch-1.png",
+        "expected_sha256": "b7a3bae5620f90c7b66952697ace96e4fa2a6bda25c9e328c0bc2ab63adecded",
+        "actual_sha256": "b7a3bae5620f90c7b66952697ace96e4fa2a6bda25c9e328c0bc2ab63adecded",
+        "size_bytes": 119
+      },
+      {
+        "path": "grip-patch-1.png",
+        "expected_sha256": "632f7ca50c142caf593fbdac0dae8d435f60302c0dd2cefbe459154e5315ab31",
+        "actual_sha256": "632f7ca50c142caf593fbdac0dae8d435f60302c0dd2cefbe459154e5315ab31",
+        "size_bytes": 118
+      },
+      {
+        "path": "shoe-contact-1.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "west-2.png",
+        "expected_sha256": "e0af696f13a2852b59c0af5779a22640ef1f9b338a4c862af9f32384e44705bd",
+        "actual_sha256": "e0af696f13a2852b59c0af5779a22640ef1f9b338a4c862af9f32384e44705bd",
+        "size_bytes": 5147
+      },
+      {
+        "path": "head-variant-08.png",
+        "expected_sha256": "6044ccbfc7ba164ee974de5f1d829404a0642e3d9b270d1753f296f7e8916b99",
+        "actual_sha256": "6044ccbfc7ba164ee974de5f1d829404a0642e3d9b270d1753f296f7e8916b99",
+        "size_bytes": 768
+      },
+      {
+        "path": "head-variant-mask-08.png",
+        "expected_sha256": "998398ac93a55ba69ecb4f3fca50834f54331f5e940511426a50caac361bebc6",
+        "actual_sha256": "998398ac93a55ba69ecb4f3fca50834f54331f5e940511426a50caac361bebc6",
+        "size_bytes": 171
+      },
+      {
+        "path": "hand-patch-2.png",
+        "expected_sha256": "00b10621699f1efb2e4636c6541f94e3516c9b4f590d77fa7c3e1438a0405e2f",
+        "actual_sha256": "00b10621699f1efb2e4636c6541f94e3516c9b4f590d77fa7c3e1438a0405e2f",
+        "size_bytes": 116
+      },
+      {
+        "path": "grip-patch-2.png",
+        "expected_sha256": "466ae4fcce8a8380270c57146a132d78a206788769335a68be583b939718124c",
+        "actual_sha256": "466ae4fcce8a8380270c57146a132d78a206788769335a68be583b939718124c",
+        "size_bytes": 115
+      },
+      {
+        "path": "shoe-contact-2.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "west-3.png",
+        "expected_sha256": "dd3fd10ef4ca1d8327abe9e2fbaeca58d5c430cb5be16e917985d9eadb91b25e",
+        "actual_sha256": "dd3fd10ef4ca1d8327abe9e2fbaeca58d5c430cb5be16e917985d9eadb91b25e",
+        "size_bytes": 4468
+      },
+      {
+        "path": "head-variant-14.png",
+        "expected_sha256": "f56382fc839e13ea52a6cb06531ff664a1b3758ba8d6018326d72a96885633c0",
+        "actual_sha256": "f56382fc839e13ea52a6cb06531ff664a1b3758ba8d6018326d72a96885633c0",
+        "size_bytes": 742
+      },
+      {
+        "path": "head-variant-mask-14.png",
+        "expected_sha256": "25441203ae5e326e65171093487bfcb8686de920864985fd74a2632cc20f08f2",
+        "actual_sha256": "25441203ae5e326e65171093487bfcb8686de920864985fd74a2632cc20f08f2",
+        "size_bytes": 177
+      },
+      {
+        "path": "hand-patch-3.png",
+        "expected_sha256": "0af2a470208bf89ef47060ae112cf4d720c0284b3028b8c5c19fb251d57ee8b5",
+        "actual_sha256": "0af2a470208bf89ef47060ae112cf4d720c0284b3028b8c5c19fb251d57ee8b5",
+        "size_bytes": 112
+      },
+      {
+        "path": "grip-patch-3.png",
+        "expected_sha256": "1138951550391d06d4ce5d297afc9ffa55cf6614a3763e690fd6c67319ab38ad",
+        "actual_sha256": "1138951550391d06d4ce5d297afc9ffa55cf6614a3763e690fd6c67319ab38ad",
+        "size_bytes": 114
+      },
+      {
+        "path": "shoe-contact-3.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "west-4.png",
+        "expected_sha256": "cb2b26122f54b6c709ab48e169cd87bd25d7e7295446a3e9f70bda74099316e7",
+        "actual_sha256": "cb2b26122f54b6c709ab48e169cd87bd25d7e7295446a3e9f70bda74099316e7",
+        "size_bytes": 4026
+      },
+      {
+        "path": "head-variant-10.png",
+        "expected_sha256": "55ad3dacdf29e77fb061311571c88265d0ecaba308e4f4187e4caac2743c721b",
+        "actual_sha256": "55ad3dacdf29e77fb061311571c88265d0ecaba308e4f4187e4caac2743c721b",
+        "size_bytes": 737
+      },
+      {
+        "path": "head-variant-mask-10.png",
+        "expected_sha256": "83cf29dc55db7eab2a8655f129c41181349651da94b8d1cfa31e0c289922b103",
+        "actual_sha256": "83cf29dc55db7eab2a8655f129c41181349651da94b8d1cfa31e0c289922b103",
+        "size_bytes": 178
+      },
+      {
+        "path": "hand-patch-4.png",
+        "expected_sha256": "39a52e099fc3be31513238063061292c1df15cddfbaef960a277a801847663af",
+        "actual_sha256": "39a52e099fc3be31513238063061292c1df15cddfbaef960a277a801847663af",
+        "size_bytes": 114
+      },
+      {
+        "path": "grip-patch-4.png",
+        "expected_sha256": "339920c3202a574bd951113ec2fcea008ed0ef6ee811442a3bc1c26f3fd0f25e",
+        "actual_sha256": "339920c3202a574bd951113ec2fcea008ed0ef6ee811442a3bc1c26f3fd0f25e",
+        "size_bytes": 122
+      },
+      {
+        "path": "west-5.png",
+        "expected_sha256": "34e59c6d6846ea047ec3d84f04b0f1bd9a243b9545963fdbdfd41b25ead60187",
+        "actual_sha256": "34e59c6d6846ea047ec3d84f04b0f1bd9a243b9545963fdbdfd41b25ead60187",
+        "size_bytes": 4149
+      },
+      {
+        "path": "hand-patch-5.png",
+        "expected_sha256": "2514b9f07f1539eee39ff00776be28543fb92f4b2832f3c97e83bd69413e6e68",
+        "actual_sha256": "2514b9f07f1539eee39ff00776be28543fb92f4b2832f3c97e83bd69413e6e68",
+        "size_bytes": 114
+      },
+      {
+        "path": "grip-patch-5.png",
+        "expected_sha256": "058200bbc8762a96b400419abb2a400bf4c2dfe06f37bbc0377fbc3122bb37c9",
+        "actual_sha256": "058200bbc8762a96b400419abb2a400bf4c2dfe06f37bbc0377fbc3122bb37c9",
+        "size_bytes": 123
+      }
+    ],
+    "resource_usage": {
+      "cached_reference_pixels": 761856,
+      "contact_summaries": 4
+    },
+    "coverage": {
+      "identity": true,
+      "limbs": true,
+      "attachments": true,
+      "stance": true
+    },
+    "forge_direct_compatibility": [
+      {
+        "frame": "0",
+        "rgba_color_count": 357,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "1",
+        "rgba_color_count": 508,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "2",
+        "rgba_color_count": 499,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "3",
+        "rgba_color_count": 452,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "4",
+        "rgba_color_count": 324,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "5",
+        "rgba_color_count": 334,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      }
+    ],
+    "frame_coverage": {
+      "0": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "1": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "2": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "3": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "4": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": false
+      },
+      "5": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": false
+      }
+    },
+    "limitations": [
+      "Anatomical labels, owner labels and mask selection are manual annotations, not machine-recognized anatomy.",
+      "Opaque pixels support coordinates only; reach checks do not prove connected or plausible limbs.",
+      "Contact drift uses annotated world root offsets; it does not verify game-engine root motion.",
+      "Edge margin is a possible clipping risk, not proof that unseen pixels were cropped.",
+      "Identity locks protect selected pixels only; they do not prove the entire character matches."
+    ],
+    "facing": "WEST"
+  },
+  "manual_review_required": [
+    "BAG_OWNER_UNVERIFIED:frame:0/bag",
+    "BAG_OWNER_UNVERIFIED:frame:1/bag",
+    "BAG_OWNER_UNVERIFIED:frame:2/bag",
+    "BAG_OWNER_UNVERIFIED:frame:3/bag",
+    "BAG_OWNER_UNVERIFIED:frame:4/bag",
+    "BAG_OWNER_UNVERIFIED:frame:5/bag",
+    "NOT_CHECKED:frame:4/stance",
+    "NOT_CHECKED:frame:5/stance",
+    "ROOT_MOTION_UNVERIFIED:stance:local-windup-shoes",
+    "SEMANTIC_ANATOMY:manual_visual_review"
+  ],
+  "manual_review_record_supplied": false,
+  "native_document": null,
+  "frames": [
+    {
+      "id": "0",
+      "file": "frame-000.REVIEW_ONLY.png"
+    },
+    {
+      "id": "1",
+      "file": "frame-001.REVIEW_ONLY.png"
+    },
+    {
+      "id": "2",
+      "file": "frame-002.REVIEW_ONLY.png"
+    },
+    {
+      "id": "3",
+      "file": "frame-003.REVIEW_ONLY.png"
+    },
+    {
+      "id": "4",
+      "file": "frame-004.REVIEW_ONLY.png"
+    },
+    {
+      "id": "5",
+      "file": "frame-005.REVIEW_ONLY.png"
+    }
+  ],
+  "sheet": "animation.REVIEW_ONLY.png",
+  "outputs": {
+    "frame-000.REVIEW_ONLY.png": "6855a6bc887f0af5a20e2e0214decf2dfeb7b86b9627f5d979b4ea646368b035",
+    "frame-001.REVIEW_ONLY.png": "2d91165e94f301754ee88af20b38130f0ef6f175c11dac9a1525a00012c7cf49",
+    "frame-002.REVIEW_ONLY.png": "e0af696f13a2852b59c0af5779a22640ef1f9b338a4c862af9f32384e44705bd",
+    "frame-003.REVIEW_ONLY.png": "dd3fd10ef4ca1d8327abe9e2fbaeca58d5c430cb5be16e917985d9eadb91b25e",
+    "frame-004.REVIEW_ONLY.png": "cb2b26122f54b6c709ab48e169cd87bd25d7e7295446a3e9f70bda74099316e7",
+    "frame-005.REVIEW_ONLY.png": "34e59c6d6846ea047ec3d84f04b0f1bd9a243b9545963fdbdfd41b25ead60187",
+    "animation.REVIEW_ONLY.png": "1678275e678a647068cd2a8fcb69185aa765e7cf73c2a2fe7218b79e59ab6ade"
+  }
+}

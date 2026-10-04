@@ -1,0 +1,1590 @@
+{
+  "workflow": "forge animation-export",
+  "status": "review_only",
+  "approved": false,
+  "approval_note": "This tool does not grant user approval or infer anatomical correctness.",
+  "manifest_sha256": "e53312572b470af3b24ec00ace3b5cc42df2d428322566b5cfbbb30fb6e19ac3",
+  "checks": {
+    "schema_version": 1,
+    "technical_status": "pass",
+    "semantic_anatomy": "unverified",
+    "all_constraints_verified": false,
+    "checks": [
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [51, 30, 74, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [67, 80] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/shoes.sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [52, 111] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [66, 84] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/body.shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [68, 55] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/body.elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [68, 66] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:0/hand.wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [66, 77] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:0/authored:body.pose0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/626 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:0/authored:hand.pose0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/25 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:0/source:head.source",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/221 selected RGBA pixels differ after integer translation [16, 16]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:0/authored:shoes.planted",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:0/authored:bag.pose0",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/213 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:0/hand",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:0/shoes",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:0/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:0/near-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.000px; allowed [7.0, 15.0]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:0/near-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.180px; allowed [7.180339887498949, 15.180339887498949]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:0/bag/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:0/bag/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated bag mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:0/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 4.123px; maximum 6"
+      },
+      {
+        "code": "ATTACHMENT_TOUCH",
+        "scope": "frame:0/bag",
+        "status": "pass",
+        "evidence": "pixels+masks",
+        "detail": "8 bag pixels touch or overlap the hand pixels (8-neighbourhood)"
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [50, 36, 103, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [84, 71] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/shoes.sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [52, 111] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [85, 74] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/body.shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [67, 55] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/body.elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [76, 62] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:1/hand.wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [81, 68] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:1/authored:body.pose1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/1003 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:1/authored:hand.pose1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/24 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:1/source:head.source",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/221 selected RGBA pixels differ after integer translation [11, 22]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:1/authored:shoes.planted",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:1/authored:bag.pose1",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/219 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:1/hand",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:1/shoes",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:1/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:1/near-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.402px; allowed [7.0, 15.0]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:1/near-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 7.810px; allowed [7.180339887498949, 15.180339887498949]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:1/bag/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:1/bag/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated bag mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:1/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 3.162px; maximum 6"
+      },
+      {
+        "code": "ATTACHMENT_TOUCH",
+        "scope": "frame:1/bag",
+        "status": "pass",
+        "evidence": "pixels+masks",
+        "detail": "8 bag pixels touch or overlap the hand pixels (8-neighbourhood)"
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [35, 49, 101, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [84, 73] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/shoes.sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [52, 111] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [87, 76] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/body.shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [60, 63] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/body.elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [70, 67] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:2/hand.wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [80, 71] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:2/authored:body.pose2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/1001 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:2/authored:hand.pose2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/24 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:2/authored-variant:head.tilt08",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/188 selected RGBA pixels differ after integer translation [-2, 35]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:2/authored:shoes.planted",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:2/authored:bag.pose2",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/216 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:2/hand",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:2/shoes",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:2/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:2/near-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.770px; allowed [7.0, 15.0]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:2/near-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.770px; allowed [7.180339887498949, 15.180339887498949]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:2/bag/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:2/bag/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated bag mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:2/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 4.243px; maximum 6"
+      },
+      {
+        "code": "ATTACHMENT_TOUCH",
+        "scope": "frame:2/bag",
+        "status": "pass",
+        "evidence": "pixels+masks",
+        "detail": "7 bag pixels touch or overlap the hand pixels (8-neighbourhood)"
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [34, 47, 99, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [77, 63] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/shoes.sole",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [52, 111] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [81, 60] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/body.shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [55, 74] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/body.elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [64, 69] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:3/hand.wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [73, 64] has an opaque pixel"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:3/authored:body.pose3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/804 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:3/authored:hand.pose3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/25 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:3/authored-variant:head.tilt14",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/188 selected RGBA pixels differ after integer translation [-2, 49]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:3/authored:shoes.planted",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:3/authored:bag.pose3",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/244 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:3/hand",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:3/shoes",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:3/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:3/near-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.296px; allowed [7.0, 15.0]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:3/near-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.296px; allowed [7.180339887498949, 15.180339887498949]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:3/bag/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:3/bag/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated bag mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:3/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 5.000px; maximum 6"
+      },
+      {
+        "code": "ATTACHMENT_TOUCH",
+        "scope": "frame:3/bag",
+        "status": "pass",
+        "evidence": "pixels+masks",
+        "detail": "6 bag pixels touch or overlap the hand pixels (8-neighbourhood)"
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [29, 60, 100, 111]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [78, 70] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [83, 70] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/body.shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [53, 70] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/body.elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [63, 69] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:4/hand.wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [76, 69] has an opaque pixel"
+      },
+      {
+        "code": "NOT_CHECKED",
+        "scope": "frame:4/stance",
+        "status": "unverified",
+        "evidence": "missing or intentionally excluded annotation",
+        "detail": "No stance constraint covers this frame (phase charge)."
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:4/authored:body.pose4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/1120 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:4/authored:hand.pose4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/25 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:4/authored-variant:head.tilt10",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/187 selected RGBA pixels differ after integer translation [-8, 47]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:4/authored:bag.pose4",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/240 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:4/hand",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:4/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:4/near-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 10.050px; allowed [7.0, 15.0]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:4/near-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 13.000px; allowed [7.180339887498949, 15.180339887498949]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:4/bag/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:4/bag/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated bag mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:4/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 5.000px; maximum 6"
+      },
+      {
+        "code": "ATTACHMENT_TOUCH",
+        "scope": "frame:4/bag",
+        "status": "pass",
+        "evidence": "pixels+masks",
+        "detail": "8 bag pixels touch or overlap the hand pixels (8-neighbourhood)"
+      },
+      {
+        "code": "NON_BINARY_ALPHA",
+        "scope": "frame:5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "alpha values: [0, 255]"
+      },
+      {
+        "code": "PALETTE_VIOLATION",
+        "scope": "frame:5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0 visible RGBA colors outside source palette"
+      },
+      {
+        "code": "EDGE_MARGIN",
+        "scope": "frame:5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "bbox [25, 59, 100, 112]; margins [1, 1, 1, 1]; a violation means possible clipping"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [76, 72] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [80, 72] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/body.shoulder",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [49, 72] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/body.elbow",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [60, 71] has an opaque pixel"
+      },
+      {
+        "code": "ANCHOR_UNSUPPORTED",
+        "scope": "frame:5/hand.wrist",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "annotated anchor [73, 71] has an opaque pixel"
+      },
+      {
+        "code": "NOT_CHECKED",
+        "scope": "frame:5/stance",
+        "status": "unverified",
+        "evidence": "missing or intentionally excluded annotation",
+        "detail": "No stance constraint covers this frame (phase charge)."
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:5/authored:body.pose5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/1181 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:5/authored:hand.pose5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/25 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:5/authored-variant:head.tilt10",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/187 selected RGBA pixels differ after integer translation [-12, 47]"
+      },
+      {
+        "code": "IDENTITY_CHANGED",
+        "scope": "frame:5/authored:bag.pose5",
+        "status": "pass",
+        "evidence": "pixels",
+        "detail": "0/242 selected RGBA pixels differ after integer translation [0, 0]"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:5/hand",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "PART_MASK_UNSUPPORTED",
+        "scope": "frame:5/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "0 annotated part pixels lie on transparent pixels"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:5/near-arm/0",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 11.045px; allowed [7.0, 15.0]"
+      },
+      {
+        "code": "LIMB_REACH",
+        "scope": "frame:5/near-arm/1",
+        "status": "pass",
+        "evidence": "annotation+pixel-supported anchors",
+        "detail": "annotated segment length 13.000px; allowed [7.180339887498949, 15.180339887498949]"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:5/bag/hand.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated hand mask: True"
+      },
+      {
+        "code": "ANCHOR_PART_MISMATCH",
+        "scope": "frame:5/bag/bag.grip",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "anchor belongs to annotated bag mask: True"
+      },
+      {
+        "code": "GRIP_DISTANCE",
+        "scope": "frame:5/bag",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "hand-to-grip anchor distance 4.000px; maximum 6"
+      },
+      {
+        "code": "ATTACHMENT_TOUCH",
+        "scope": "frame:5/bag",
+        "status": "pass",
+        "evidence": "pixels+masks",
+        "detail": "8 bag pixels touch or overlap the hand pixels (8-neighbourhood)"
+      },
+      {
+        "code": "PROP_OWNER_RIG_LABEL",
+        "scope": "rig:bag",
+        "status": "unverified",
+        "evidence": "rig annotation",
+        "detail": "Owner 'near-side anatomical left hand (rig label)' comes from one rig label applied structurally to every frame. The label itself is not anatomical evidence."
+      },
+      {
+        "code": "STANCE_PHASE_CONFLICT",
+        "scope": "stance:planted-shoes-0",
+        "status": "pass",
+        "evidence": "annotation",
+        "detail": "only frames annotated windup may be stationary-contact compared in this interval"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:planted-shoes-0/0",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:planted-shoes-0/1",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:planted-shoes-0/2",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "CONTACT_ANCHOR_MISMATCH",
+        "scope": "stance:planted-shoes-0/3",
+        "status": "pass",
+        "evidence": "pixels+annotation",
+        "detail": "contact anchor must lie on the bottommost opaque pixels of the annotated contact mask"
+      },
+      {
+        "code": "CONTACT_DRIFT",
+        "scope": "stance:planted-shoes-0",
+        "status": "pass",
+        "evidence": "pixels+annotated masks/root motion",
+        "detail": "world sole min/mean/max [[(52, 111), (58.166666666666664, 111), (65, 111)], [(52, 111), (58.166666666666664, 111), (65, 111)], [(52, 111), (58.166666666666664, 111), (65, 111)], [(52, 111), (58.166666666666664, 111), (65, 111)]]; max displacement from first contact 0.000px; limit 0px"
+      }
+    ],
+    "inputs": [
+      {
+        "path": "inputs/sheet-walk.png",
+        "expected_sha256": "855b5750453424f52374039f713535bb00071902df9549665ca4021c9a9f4302",
+        "actual_sha256": "855b5750453424f52374039f713535bb00071902df9549665ca4021c9a9f4302",
+        "size_bytes": 176820
+      },
+      {
+        "path": "frame-000.png",
+        "expected_sha256": "6855a6bc887f0af5a20e2e0214decf2dfeb7b86b9627f5d979b4ea646368b035",
+        "actual_sha256": "6855a6bc887f0af5a20e2e0214decf2dfeb7b86b9627f5d979b4ea646368b035",
+        "size_bytes": 3559
+      },
+      {
+        "path": "inputs/part-body-pose0.png",
+        "expected_sha256": "014bf6eaed49937de5ae6caec47565394cbacfa2bc3ab74aeb2bab6d15ee105e",
+        "actual_sha256": "014bf6eaed49937de5ae6caec47565394cbacfa2bc3ab74aeb2bab6d15ee105e",
+        "size_bytes": 2150
+      },
+      {
+        "path": "masks/0-body-lock.png",
+        "expected_sha256": "fcb9422c24d0cfca1ea59ecb6c3f6a137279bf9d6d8e914b4acde9e4a381fb46",
+        "actual_sha256": "fcb9422c24d0cfca1ea59ecb6c3f6a137279bf9d6d8e914b4acde9e4a381fb46",
+        "size_bytes": 295
+      },
+      {
+        "path": "inputs/part-hand-pose0.png",
+        "expected_sha256": "026b6a23414bc65c8b35dc7fcf189feabc206557fe5617cce0a918fa5697ecc6",
+        "actual_sha256": "026b6a23414bc65c8b35dc7fcf189feabc206557fe5617cce0a918fa5697ecc6",
+        "size_bytes": 269
+      },
+      {
+        "path": "masks/0-hand-lock.png",
+        "expected_sha256": "fe2238f4cebc3c35b10920d9c9852244612c46a3c24cccc6376ab0afe3dadf64",
+        "actual_sha256": "fe2238f4cebc3c35b10920d9c9852244612c46a3c24cccc6376ab0afe3dadf64",
+        "size_bytes": 113
+      },
+      {
+        "path": "inputs/part-head-source.png",
+        "expected_sha256": "12e650c30b5e0d8c3e71a7ab5e29d2eb2c27e6557b06cef2b6262583fa63e717",
+        "actual_sha256": "12e650c30b5e0d8c3e71a7ab5e29d2eb2c27e6557b06cef2b6262583fa63e717",
+        "size_bytes": 749
+      },
+      {
+        "path": "masks/0-head-lock.png",
+        "expected_sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320",
+        "actual_sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320",
+        "size_bytes": 182
+      },
+      {
+        "path": "inputs/part-shoes-planted.png",
+        "expected_sha256": "53f90f118bd8e24e7e535a65b216d99c5210b032194e73e9fa37a3522152ca8c",
+        "actual_sha256": "53f90f118bd8e24e7e535a65b216d99c5210b032194e73e9fa37a3522152ca8c",
+        "size_bytes": 626
+      },
+      {
+        "path": "masks/0-shoes-lock.png",
+        "expected_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "actual_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "size_bytes": 114
+      },
+      {
+        "path": "inputs/part-bag-pose0.png",
+        "expected_sha256": "be534442fb4755f3987cec9ab42c322d8267e4127c464e1419a77f6d9ba305cf",
+        "actual_sha256": "be534442fb4755f3987cec9ab42c322d8267e4127c464e1419a77f6d9ba305cf",
+        "size_bytes": 788
+      },
+      {
+        "path": "masks/0-bag-lock.png",
+        "expected_sha256": "e7d2e06ad5db5c0707a5315374ee4ad4c6eb569d4542a8fd09b99c0544d146d5",
+        "actual_sha256": "e7d2e06ad5db5c0707a5315374ee4ad4c6eb569d4542a8fd09b99c0544d146d5",
+        "size_bytes": 163
+      },
+      {
+        "path": "masks/0-hand.png",
+        "expected_sha256": "fe2238f4cebc3c35b10920d9c9852244612c46a3c24cccc6376ab0afe3dadf64",
+        "actual_sha256": "fe2238f4cebc3c35b10920d9c9852244612c46a3c24cccc6376ab0afe3dadf64",
+        "size_bytes": 113
+      },
+      {
+        "path": "masks/0-shoes.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "masks/0-bag.png",
+        "expected_sha256": "e7d2e06ad5db5c0707a5315374ee4ad4c6eb569d4542a8fd09b99c0544d146d5",
+        "actual_sha256": "e7d2e06ad5db5c0707a5315374ee4ad4c6eb569d4542a8fd09b99c0544d146d5",
+        "size_bytes": 163
+      },
+      {
+        "path": "frame-001.png",
+        "expected_sha256": "2d91165e94f301754ee88af20b38130f0ef6f175c11dac9a1525a00012c7cf49",
+        "actual_sha256": "2d91165e94f301754ee88af20b38130f0ef6f175c11dac9a1525a00012c7cf49",
+        "size_bytes": 5176
+      },
+      {
+        "path": "inputs/part-body-pose1.png",
+        "expected_sha256": "b00d8a67d33c1ebd9db30210e022914f9a478c90fcb31c89c1ce96ab1be8583a",
+        "actual_sha256": "b00d8a67d33c1ebd9db30210e022914f9a478c90fcb31c89c1ce96ab1be8583a",
+        "size_bytes": 3632
+      },
+      {
+        "path": "masks/1-body-lock.png",
+        "expected_sha256": "f7f30ad97414e2728f50078702193e713e09f61dbcde3ebd54c478f7e7808845",
+        "actual_sha256": "f7f30ad97414e2728f50078702193e713e09f61dbcde3ebd54c478f7e7808845",
+        "size_bytes": 422
+      },
+      {
+        "path": "inputs/part-hand-pose1.png",
+        "expected_sha256": "0844e558f7c01ae50a3b799083aa89a61eb433917d8817ad3bbe54ba2595cb4b",
+        "actual_sha256": "0844e558f7c01ae50a3b799083aa89a61eb433917d8817ad3bbe54ba2595cb4b",
+        "size_bytes": 298
+      },
+      {
+        "path": "masks/1-hand-lock.png",
+        "expected_sha256": "b7a3bae5620f90c7b66952697ace96e4fa2a6bda25c9e328c0bc2ab63adecded",
+        "actual_sha256": "b7a3bae5620f90c7b66952697ace96e4fa2a6bda25c9e328c0bc2ab63adecded",
+        "size_bytes": 119
+      },
+      {
+        "path": "masks/1-head-lock.png",
+        "expected_sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320",
+        "actual_sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320",
+        "size_bytes": 182
+      },
+      {
+        "path": "masks/1-shoes-lock.png",
+        "expected_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "actual_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "size_bytes": 114
+      },
+      {
+        "path": "inputs/part-bag-pose1.png",
+        "expected_sha256": "2646fc3b1c499b14ddb5b7a346869bae8738f9110ce940f3a256fc470759cb24",
+        "actual_sha256": "2646fc3b1c499b14ddb5b7a346869bae8738f9110ce940f3a256fc470759cb24",
+        "size_bytes": 925
+      },
+      {
+        "path": "masks/1-bag-lock.png",
+        "expected_sha256": "cb346b1869ed74a03b62ebf0b6a5703f74d329fcc4120187fec832e42651cff1",
+        "actual_sha256": "cb346b1869ed74a03b62ebf0b6a5703f74d329fcc4120187fec832e42651cff1",
+        "size_bytes": 221
+      },
+      {
+        "path": "masks/1-hand.png",
+        "expected_sha256": "b7a3bae5620f90c7b66952697ace96e4fa2a6bda25c9e328c0bc2ab63adecded",
+        "actual_sha256": "b7a3bae5620f90c7b66952697ace96e4fa2a6bda25c9e328c0bc2ab63adecded",
+        "size_bytes": 119
+      },
+      {
+        "path": "masks/1-shoes.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "masks/1-bag.png",
+        "expected_sha256": "cb346b1869ed74a03b62ebf0b6a5703f74d329fcc4120187fec832e42651cff1",
+        "actual_sha256": "cb346b1869ed74a03b62ebf0b6a5703f74d329fcc4120187fec832e42651cff1",
+        "size_bytes": 221
+      },
+      {
+        "path": "frame-002.png",
+        "expected_sha256": "e0af696f13a2852b59c0af5779a22640ef1f9b338a4c862af9f32384e44705bd",
+        "actual_sha256": "e0af696f13a2852b59c0af5779a22640ef1f9b338a4c862af9f32384e44705bd",
+        "size_bytes": 5147
+      },
+      {
+        "path": "inputs/part-body-pose2.png",
+        "expected_sha256": "13b2111b5b20bcf884f52b63f6631fe27011b4327cd75f4637bc4061871b4657",
+        "actual_sha256": "13b2111b5b20bcf884f52b63f6631fe27011b4327cd75f4637bc4061871b4657",
+        "size_bytes": 3602
+      },
+      {
+        "path": "masks/2-body-lock.png",
+        "expected_sha256": "1f52e3fa5774de3d8cb0ae1b5d370cad57f13ae630b99dac1cd7cfb6a651184d",
+        "actual_sha256": "1f52e3fa5774de3d8cb0ae1b5d370cad57f13ae630b99dac1cd7cfb6a651184d",
+        "size_bytes": 409
+      },
+      {
+        "path": "inputs/part-hand-pose2.png",
+        "expected_sha256": "79a9124b5522391bf6434417238e90c72a0ac2099ddedd389f4a9c6fb1a60363",
+        "actual_sha256": "79a9124b5522391bf6434417238e90c72a0ac2099ddedd389f4a9c6fb1a60363",
+        "size_bytes": 286
+      },
+      {
+        "path": "masks/2-hand-lock.png",
+        "expected_sha256": "00b10621699f1efb2e4636c6541f94e3516c9b4f590d77fa7c3e1438a0405e2f",
+        "actual_sha256": "00b10621699f1efb2e4636c6541f94e3516c9b4f590d77fa7c3e1438a0405e2f",
+        "size_bytes": 116
+      },
+      {
+        "path": "inputs/part-head-tilt08.png",
+        "expected_sha256": "6044ccbfc7ba164ee974de5f1d829404a0642e3d9b270d1753f296f7e8916b99",
+        "actual_sha256": "6044ccbfc7ba164ee974de5f1d829404a0642e3d9b270d1753f296f7e8916b99",
+        "size_bytes": 768
+      },
+      {
+        "path": "masks/2-head-lock.png",
+        "expected_sha256": "998398ac93a55ba69ecb4f3fca50834f54331f5e940511426a50caac361bebc6",
+        "actual_sha256": "998398ac93a55ba69ecb4f3fca50834f54331f5e940511426a50caac361bebc6",
+        "size_bytes": 171
+      },
+      {
+        "path": "masks/2-shoes-lock.png",
+        "expected_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "actual_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "size_bytes": 114
+      },
+      {
+        "path": "inputs/part-bag-pose2.png",
+        "expected_sha256": "4d0df2c600b24ac8040f00f124856815256541652292a81d1cbd0390c837dc57",
+        "actual_sha256": "4d0df2c600b24ac8040f00f124856815256541652292a81d1cbd0390c837dc57",
+        "size_bytes": 914
+      },
+      {
+        "path": "masks/2-bag-lock.png",
+        "expected_sha256": "e7e205bd08b1699be20c39d2929914d74e99c7b8cacc2f6e8e3abb5094154690",
+        "actual_sha256": "e7e205bd08b1699be20c39d2929914d74e99c7b8cacc2f6e8e3abb5094154690",
+        "size_bytes": 205
+      },
+      {
+        "path": "masks/2-hand.png",
+        "expected_sha256": "00b10621699f1efb2e4636c6541f94e3516c9b4f590d77fa7c3e1438a0405e2f",
+        "actual_sha256": "00b10621699f1efb2e4636c6541f94e3516c9b4f590d77fa7c3e1438a0405e2f",
+        "size_bytes": 116
+      },
+      {
+        "path": "masks/2-shoes.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "masks/2-bag.png",
+        "expected_sha256": "e7e205bd08b1699be20c39d2929914d74e99c7b8cacc2f6e8e3abb5094154690",
+        "actual_sha256": "e7e205bd08b1699be20c39d2929914d74e99c7b8cacc2f6e8e3abb5094154690",
+        "size_bytes": 205
+      },
+      {
+        "path": "frame-003.png",
+        "expected_sha256": "dd3fd10ef4ca1d8327abe9e2fbaeca58d5c430cb5be16e917985d9eadb91b25e",
+        "actual_sha256": "dd3fd10ef4ca1d8327abe9e2fbaeca58d5c430cb5be16e917985d9eadb91b25e",
+        "size_bytes": 4468
+      },
+      {
+        "path": "inputs/part-body-pose3.png",
+        "expected_sha256": "f8739c35de524ff8d9d6ef43ad12327c1448c95e382ffa3a5869e09d1ae507a1",
+        "actual_sha256": "f8739c35de524ff8d9d6ef43ad12327c1448c95e382ffa3a5869e09d1ae507a1",
+        "size_bytes": 2886
+      },
+      {
+        "path": "masks/3-body-lock.png",
+        "expected_sha256": "24f046f501ef1f277661baf7df9cdfc47b68454e520941cae3badb3f9b0cfa28",
+        "actual_sha256": "24f046f501ef1f277661baf7df9cdfc47b68454e520941cae3badb3f9b0cfa28",
+        "size_bytes": 369
+      },
+      {
+        "path": "inputs/part-hand-pose3.png",
+        "expected_sha256": "b4e6b82e1579d0c9a5120ec8bf0bf231f3332619b23a85c0e275a95f2983f324",
+        "actual_sha256": "b4e6b82e1579d0c9a5120ec8bf0bf231f3332619b23a85c0e275a95f2983f324",
+        "size_bytes": 282
+      },
+      {
+        "path": "masks/3-hand-lock.png",
+        "expected_sha256": "0af2a470208bf89ef47060ae112cf4d720c0284b3028b8c5c19fb251d57ee8b5",
+        "actual_sha256": "0af2a470208bf89ef47060ae112cf4d720c0284b3028b8c5c19fb251d57ee8b5",
+        "size_bytes": 112
+      },
+      {
+        "path": "inputs/part-head-tilt14.png",
+        "expected_sha256": "f56382fc839e13ea52a6cb06531ff664a1b3758ba8d6018326d72a96885633c0",
+        "actual_sha256": "f56382fc839e13ea52a6cb06531ff664a1b3758ba8d6018326d72a96885633c0",
+        "size_bytes": 742
+      },
+      {
+        "path": "masks/3-head-lock.png",
+        "expected_sha256": "25441203ae5e326e65171093487bfcb8686de920864985fd74a2632cc20f08f2",
+        "actual_sha256": "25441203ae5e326e65171093487bfcb8686de920864985fd74a2632cc20f08f2",
+        "size_bytes": 177
+      },
+      {
+        "path": "masks/3-shoes-lock.png",
+        "expected_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "actual_sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699",
+        "size_bytes": 114
+      },
+      {
+        "path": "inputs/part-bag-pose3.png",
+        "expected_sha256": "51591c091fa2fd14fc756fb0dee6815af689c5ce391b34910963c25424844954",
+        "actual_sha256": "51591c091fa2fd14fc756fb0dee6815af689c5ce391b34910963c25424844954",
+        "size_bytes": 983
+      },
+      {
+        "path": "masks/3-bag-lock.png",
+        "expected_sha256": "cf17fa1442b49635d6788114001fc4eb63b6ede249ef8f944597600769d87b2e",
+        "actual_sha256": "cf17fa1442b49635d6788114001fc4eb63b6ede249ef8f944597600769d87b2e",
+        "size_bytes": 226
+      },
+      {
+        "path": "masks/3-hand.png",
+        "expected_sha256": "0af2a470208bf89ef47060ae112cf4d720c0284b3028b8c5c19fb251d57ee8b5",
+        "actual_sha256": "0af2a470208bf89ef47060ae112cf4d720c0284b3028b8c5c19fb251d57ee8b5",
+        "size_bytes": 112
+      },
+      {
+        "path": "masks/3-shoes.png",
+        "expected_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "actual_sha256": "b23e298a07abd3215ffc1d84719ac2712de72a16e8b82fcd6798f5725801ad25",
+        "size_bytes": 142
+      },
+      {
+        "path": "masks/3-bag.png",
+        "expected_sha256": "cf17fa1442b49635d6788114001fc4eb63b6ede249ef8f944597600769d87b2e",
+        "actual_sha256": "cf17fa1442b49635d6788114001fc4eb63b6ede249ef8f944597600769d87b2e",
+        "size_bytes": 226
+      },
+      {
+        "path": "frame-004.png",
+        "expected_sha256": "cb2b26122f54b6c709ab48e169cd87bd25d7e7295446a3e9f70bda74099316e7",
+        "actual_sha256": "cb2b26122f54b6c709ab48e169cd87bd25d7e7295446a3e9f70bda74099316e7",
+        "size_bytes": 4026
+      },
+      {
+        "path": "inputs/part-body-pose4.png",
+        "expected_sha256": "663d22d0f859e3af39bf2dc8248b909fa76493b68a909adcc1b28b81b5e40535",
+        "actual_sha256": "663d22d0f859e3af39bf2dc8248b909fa76493b68a909adcc1b28b81b5e40535",
+        "size_bytes": 2911
+      },
+      {
+        "path": "masks/4-body-lock.png",
+        "expected_sha256": "8ad0cc7f37bd422e3947ad3f14b703b51adb4e0ec42227ab1603016b534a3ad7",
+        "actual_sha256": "8ad0cc7f37bd422e3947ad3f14b703b51adb4e0ec42227ab1603016b534a3ad7",
+        "size_bytes": 449
+      },
+      {
+        "path": "inputs/part-hand-pose4.png",
+        "expected_sha256": "b44f1b058280e2de51e2771866a923324cf977cc29745d02c19b1e8ef8d45d18",
+        "actual_sha256": "b44f1b058280e2de51e2771866a923324cf977cc29745d02c19b1e8ef8d45d18",
+        "size_bytes": 280
+      },
+      {
+        "path": "masks/4-hand-lock.png",
+        "expected_sha256": "39a52e099fc3be31513238063061292c1df15cddfbaef960a277a801847663af",
+        "actual_sha256": "39a52e099fc3be31513238063061292c1df15cddfbaef960a277a801847663af",
+        "size_bytes": 114
+      },
+      {
+        "path": "inputs/part-head-tilt10.png",
+        "expected_sha256": "55ad3dacdf29e77fb061311571c88265d0ecaba308e4f4187e4caac2743c721b",
+        "actual_sha256": "55ad3dacdf29e77fb061311571c88265d0ecaba308e4f4187e4caac2743c721b",
+        "size_bytes": 737
+      },
+      {
+        "path": "masks/4-head-lock.png",
+        "expected_sha256": "83cf29dc55db7eab2a8655f129c41181349651da94b8d1cfa31e0c289922b103",
+        "actual_sha256": "83cf29dc55db7eab2a8655f129c41181349651da94b8d1cfa31e0c289922b103",
+        "size_bytes": 178
+      },
+      {
+        "path": "inputs/part-bag-pose4.png",
+        "expected_sha256": "0f6403ecc07694572a1e93cfa331efc170784de9dd147ba3962c4030ad164987",
+        "actual_sha256": "0f6403ecc07694572a1e93cfa331efc170784de9dd147ba3962c4030ad164987",
+        "size_bytes": 924
+      },
+      {
+        "path": "masks/4-bag-lock.png",
+        "expected_sha256": "0012f8f2765c3e39edbba473c1b25dcdfcbbbf293b5d729245347bd986fa7963",
+        "actual_sha256": "0012f8f2765c3e39edbba473c1b25dcdfcbbbf293b5d729245347bd986fa7963",
+        "size_bytes": 204
+      },
+      {
+        "path": "masks/4-hand.png",
+        "expected_sha256": "39a52e099fc3be31513238063061292c1df15cddfbaef960a277a801847663af",
+        "actual_sha256": "39a52e099fc3be31513238063061292c1df15cddfbaef960a277a801847663af",
+        "size_bytes": 114
+      },
+      {
+        "path": "masks/4-bag.png",
+        "expected_sha256": "0012f8f2765c3e39edbba473c1b25dcdfcbbbf293b5d729245347bd986fa7963",
+        "actual_sha256": "0012f8f2765c3e39edbba473c1b25dcdfcbbbf293b5d729245347bd986fa7963",
+        "size_bytes": 204
+      },
+      {
+        "path": "frame-005.png",
+        "expected_sha256": "34e59c6d6846ea047ec3d84f04b0f1bd9a243b9545963fdbdfd41b25ead60187",
+        "actual_sha256": "34e59c6d6846ea047ec3d84f04b0f1bd9a243b9545963fdbdfd41b25ead60187",
+        "size_bytes": 4149
+      },
+      {
+        "path": "inputs/part-body-pose5.png",
+        "expected_sha256": "ac59400b38005cad71571aa343e9f1bc9c7c6f3e70014757cf45e53642e27deb",
+        "actual_sha256": "ac59400b38005cad71571aa343e9f1bc9c7c6f3e70014757cf45e53642e27deb",
+        "size_bytes": 3046
+      },
+      {
+        "path": "masks/5-body-lock.png",
+        "expected_sha256": "34c290213efe027b0ca4722c9c9b6dff8177b566ab13f697aef7265effafbccc",
+        "actual_sha256": "34c290213efe027b0ca4722c9c9b6dff8177b566ab13f697aef7265effafbccc",
+        "size_bytes": 471
+      },
+      {
+        "path": "inputs/part-hand-pose5.png",
+        "expected_sha256": "4bdbaa0f8424bd8d0ae372966fe48d2b1357dd86593451098faa9fc8cf287e75",
+        "actual_sha256": "4bdbaa0f8424bd8d0ae372966fe48d2b1357dd86593451098faa9fc8cf287e75",
+        "size_bytes": 266
+      },
+      {
+        "path": "masks/5-hand-lock.png",
+        "expected_sha256": "2514b9f07f1539eee39ff00776be28543fb92f4b2832f3c97e83bd69413e6e68",
+        "actual_sha256": "2514b9f07f1539eee39ff00776be28543fb92f4b2832f3c97e83bd69413e6e68",
+        "size_bytes": 114
+      },
+      {
+        "path": "masks/5-head-lock.png",
+        "expected_sha256": "83cf29dc55db7eab2a8655f129c41181349651da94b8d1cfa31e0c289922b103",
+        "actual_sha256": "83cf29dc55db7eab2a8655f129c41181349651da94b8d1cfa31e0c289922b103",
+        "size_bytes": 178
+      },
+      {
+        "path": "inputs/part-bag-pose5.png",
+        "expected_sha256": "53475b53fd7c37e3deff7f226a8ac82508a633e02241a0aed810027ab125896e",
+        "actual_sha256": "53475b53fd7c37e3deff7f226a8ac82508a633e02241a0aed810027ab125896e",
+        "size_bytes": 995
+      },
+      {
+        "path": "masks/5-bag-lock.png",
+        "expected_sha256": "278c65ad4e338befabab803b3a5cb596628b1f831122dc86627c05f6ee1cbce7",
+        "actual_sha256": "278c65ad4e338befabab803b3a5cb596628b1f831122dc86627c05f6ee1cbce7",
+        "size_bytes": 216
+      },
+      {
+        "path": "masks/5-hand.png",
+        "expected_sha256": "2514b9f07f1539eee39ff00776be28543fb92f4b2832f3c97e83bd69413e6e68",
+        "actual_sha256": "2514b9f07f1539eee39ff00776be28543fb92f4b2832f3c97e83bd69413e6e68",
+        "size_bytes": 114
+      },
+      {
+        "path": "masks/5-bag.png",
+        "expected_sha256": "278c65ad4e338befabab803b3a5cb596628b1f831122dc86627c05f6ee1cbce7",
+        "actual_sha256": "278c65ad4e338befabab803b3a5cb596628b1f831122dc86627c05f6ee1cbce7",
+        "size_bytes": 216
+      }
+    ],
+    "resource_usage": {
+      "cached_reference_pixels": 1155072,
+      "contact_summaries": 4
+    },
+    "coverage": {
+      "identity": true,
+      "limbs": true,
+      "attachments": true,
+      "stance": true
+    },
+    "forge_direct_compatibility": [
+      {
+        "frame": "0",
+        "rgba_color_count": 357,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "1",
+        "rgba_color_count": 508,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "2",
+        "rgba_color_count": 499,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "3",
+        "rgba_color_count": 452,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "4",
+        "rgba_color_count": 324,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      },
+      {
+        "frame": "5",
+        "rgba_color_count": 334,
+        "within_512px_and_64_color_limits": false,
+        "note": "Compatibility measurement only; this adapter does not ingest, quantize or edit Forge assets."
+      }
+    ],
+    "frame_coverage": {
+      "0": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "1": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "2": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "3": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": true
+      },
+      "4": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": false
+      },
+      "5": {
+        "identity": true,
+        "limbs": true,
+        "attachments": true,
+        "stance": false
+      }
+    },
+    "limitations": [
+      "Anatomical labels, owner labels and mask selection are manual annotations, not machine-recognized anatomy.",
+      "Opaque pixels support coordinates only; reach checks do not prove connected or plausible limbs.",
+      "Contact drift uses annotated world root offsets; it does not verify game-engine root motion.",
+      "Edge margin is a possible clipping risk, not proof that unseen pixels were cropped.",
+      "Identity locks protect selected pixels only; they do not prove the entire character matches."
+    ],
+    "facing": "WEST",
+    "rig_provenance": {
+      "rig_sha256": "294883dc6ed69591e4c1cc2ab9f78e9009c33f0468b0f78ab359564f4dff39e8",
+      "recipe_sha256": "2be81ff388c57b05650b036afd73477603a67a6d9c2f1717ab07d18e6059021f"
+    }
+  },
+  "manual_review_required": [
+    "NOT_CHECKED:frame:4/stance",
+    "NOT_CHECKED:frame:5/stance",
+    "PROP_OWNER_RIG_LABEL:rig:bag",
+    "SEMANTIC_ANATOMY:manual_visual_review"
+  ],
+  "manual_review_record_supplied": false,
+  "native_document": null,
+  "frames": [
+    {
+      "id": "0",
+      "file": "frame-000.REVIEW_ONLY.png"
+    },
+    {
+      "id": "1",
+      "file": "frame-001.REVIEW_ONLY.png"
+    },
+    {
+      "id": "2",
+      "file": "frame-002.REVIEW_ONLY.png"
+    },
+    {
+      "id": "3",
+      "file": "frame-003.REVIEW_ONLY.png"
+    },
+    {
+      "id": "4",
+      "file": "frame-004.REVIEW_ONLY.png"
+    },
+    {
+      "id": "5",
+      "file": "frame-005.REVIEW_ONLY.png"
+    }
+  ],
+  "sheet": "animation.REVIEW_ONLY.png",
+  "outputs": {
+    "frame-000.REVIEW_ONLY.png": "6855a6bc887f0af5a20e2e0214decf2dfeb7b86b9627f5d979b4ea646368b035",
+    "frame-001.REVIEW_ONLY.png": "2d91165e94f301754ee88af20b38130f0ef6f175c11dac9a1525a00012c7cf49",
+    "frame-002.REVIEW_ONLY.png": "e0af696f13a2852b59c0af5779a22640ef1f9b338a4c862af9f32384e44705bd",
+    "frame-003.REVIEW_ONLY.png": "dd3fd10ef4ca1d8327abe9e2fbaeca58d5c430cb5be16e917985d9eadb91b25e",
+    "frame-004.REVIEW_ONLY.png": "cb2b26122f54b6c709ab48e169cd87bd25d7e7295446a3e9f70bda74099316e7",
+    "frame-005.REVIEW_ONLY.png": "34e59c6d6846ea047ec3d84f04b0f1bd9a243b9545963fdbdfd41b25ead60187",
+    "animation.REVIEW_ONLY.png": "1678275e678a647068cd2a8fcb69185aa765e7cf73c2a2fe7218b79e59ab6ade"
+  }
+}

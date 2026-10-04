@@ -1,0 +1,2 @@
+REVIEW ONLY: NOT APPROVED. Pixel checks may fail.
+Read export-report.json. Anatomy, annotation coverage and root motion limitations remain explicit.

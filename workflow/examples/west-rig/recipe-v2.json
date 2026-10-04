@@ -1,0 +1,127 @@
+{
+ "schema": "forge-pose/1",
+ "rig": {
+  "path": "rig-v2.json",
+  "sha256": "08a728a61a7220be0db88efc8c32d1f79028d3fddc6c8b75fbfe2744e3fcedf5"
+ },
+ "frames": [
+  {
+   "id": "0",
+   "phase": "windup",
+   "duration_ms": 142,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "body": "pose0",
+    "head": "source",
+    "hand": "pose0",
+    "bag": "pose0",
+    "shoes": "planted"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "1",
+   "phase": "windup",
+   "duration_ms": 142,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "body": "pose1",
+    "head": "source",
+    "hand": "pose1",
+    "bag": "pose1",
+    "shoes": "planted"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "2",
+   "phase": "windup",
+   "duration_ms": 142,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "body": "pose2",
+    "head": "tilt08",
+    "hand": "pose2",
+    "bag": "pose2",
+    "shoes": "planted"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "3",
+   "phase": "windup",
+   "duration_ms": 141,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "body": "pose3",
+    "head": "tilt14",
+    "hand": "pose3",
+    "bag": "pose3",
+    "shoes": "planted"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "4",
+   "phase": "charge",
+   "duration_ms": 133,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "body": "pose4",
+    "head": "tilt10",
+    "hand": "pose4",
+    "bag": "pose4-lag06"
+   },
+   "hidden": [
+    "shoes"
+   ],
+   "planted": []
+  },
+  {
+   "id": "5",
+   "phase": "charge",
+   "duration_ms": 133,
+   "root": [
+    -91,
+    0
+   ],
+   "pose": {
+    "body": "pose5",
+    "head": "tilt14",
+    "hand": "pose5",
+    "bag": "pose5-lag16"
+   },
+   "hidden": [
+    "shoes"
+   ],
+   "planted": []
+  }
+ ]
+}
