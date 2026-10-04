@@ -1,0 +1,32 @@
+{
+  "prompt": "Edit this existing small game sprite into ONE peak-recoil hurt pose. The edit target is the exact WEST-facing Bargain Hunter already used in the game. Keep its head, face, hair, costume, proportions, bag and pixel density exactly as drawn. Make ONLY a modest backward recoil: upper body leans about10degrees toward screen-right, face and nose stay pointing LEFT in strict side profile, knees bend slightly, both shoes planted. The narrow head and tiny face must remain the source sprite's exact size relative to body. The hand holding the tan bag stays anatomical-left/near-camera. The small free arm may recoil just slightly without turning the torso. This is a precise pose edit, not a redesigned or illustrated character. Reference images are nearest-neighbor enlarged original sprite crops, each visible square represents one native source pixel.",
+  "style": "Pixel-for-pixel source-art style: lean 82-pixel-tall figure fitting a96x96 game cell, roughly11px head height, narrow jacket and legs. Existing muted navy/slate blue clusters, red trim, pale shoes, tan bag. Preserve same sparse flat color clusters and hard dark outline; use no new facial features, anatomy, lighting or detailed shading. Transparent backdrop. Output a SINGLE pose mockup only now; later associated sheet is4frames impact/recoil/rebound/settle in one WEST row.",
+  "start_png": "reference-west-attack.png",
+  "references": [
+    "reference-west-walk.png",
+    "reference-west-attack.png"
+  ],
+  "frame_size": 96,
+  "frames": 4,
+  "facings": [
+    "west"
+  ],
+  "durations_ms": [
+    50,
+    50,
+    67,
+    67
+  ],
+  "pivot": [
+    48,
+    95
+  ],
+  "constraints": [
+    "Change the pose only. Keep exact source character head shape, face, proportions and pixel-art style.",
+    "All frames retain strict west left side profile. Never turn head or torso toward camera.",
+    "Keep the tan shopping bag in anatomical-left near hand throughout, no mirror or hand swap.",
+    "Both shoes stay on the same baseline; do not add ground shadow,effects,text or a background."
+  ],
+  "max_followups": 1,
+  "revision": "shopper-west-hurt-source-crop-20261004-v2"
+}

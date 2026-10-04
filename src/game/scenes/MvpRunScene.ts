@@ -9,6 +9,7 @@
  * movement, economy, and state transitions stay in `src/sim`.
  */
 import { wingEventFor } from '../../sim/run/wingEvents';
+import { createHunterHurtRun } from '../playtest/hunterHurtFixture';
 import { ITEM_CATALOG } from '../../sim/items/catalog';
 import { HERO_FUSIONS } from '../../sim/fusion/heroes';
 import { SECRET_MACHINE, enterSecretRoom, secretFor } from '../../sim/run/secretRoom';
@@ -1101,6 +1102,7 @@ export class MvpRunScene extends Phaser.Scene {
       return state;
     }
     const fixture = new URLSearchParams(window.location.search).get('fixture');
+    if (fixture === 'mvp-hunter-hurt') return createHunterHurtRun(state.seed);
     if (fixture === 'mvp-prop-test') return createPropTestRun(state.seed);
     // Every fixture below was authored on a floor's boss wing; a new shift now
     // opens on the first wing (round 45), so fixtures start from the boss wing.
