@@ -90,6 +90,9 @@ ANIMATIONS = [
     ('mascot-hurt', '2370b80c-ac64-49c3-8b07-f225c9e23de7', 4,
      'keeps its foam mascot suit and big head exactly as they are; gets hit hard, the big head jolts back and the arms fling up, staggers back a step, then recovers to standing',
      'public/assets/neon/enemies/mascot-hurt.png'),
+    ('roofer-hurt', 'd6eb1ca9-7b67-4f9e-909c-18eac03de22f', 4,
+     'keeps its work clothes, tool belt and tar bucket exactly as they are; gets hit hard, flinches back with head snapping back and arms flung up, staggers back a step, then recovers to standing',
+     'public/assets/neon/enemies/roofer-hurt.png'),
 ]
 
 

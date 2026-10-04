@@ -262,5 +262,18 @@
       "east": "3576700d-d895-46b5-8018-aca9a2867e25",
       "south-east": "e38a26d9-2789-4df2-80b9-aa94231500e0"
     }
+  },
+  "roofer-hurt": {
+    "group": "eff55f27-ee2a-4c56-8252-721023e10522",
+    "jobs": {
+      "south": "ccc05e9d-cd19-4f5f-af81-fb61aabc09dd",
+      "south-west": "193067c3-9225-42dc-bc03-3fba6b7f5aac",
+      "west": "cae61819-444c-477c-a4d9-9d0e0da6053e",
+      "north-west": "44bde580-d341-4c1f-b45e-436c28f9d7e1",
+      "north": "81fefc3b-9bf8-40b7-99aa-fa25c09ec254",
+      "north-east": "f6ed5552-faee-40da-8f39-27bd416715af",
+      "east": "1bf5d4be-8d05-498a-ad26-cfed0284a90c",
+      "south-east": "34fc9ad8-563f-4778-bfa1-fe811f917529"
+    }
   }
 }
