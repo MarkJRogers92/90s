@@ -145,5 +145,18 @@
       "east": "3da4d25b-ce9f-4762-9a22-2a1c5e883b45",
       "south-east": "9466a2ce-71de-492a-9cf1-7edbb122f6fe"
     }
+  },
+  "poodle-attack": {
+    "group": "855c7077-e781-4c29-8baa-1afd808d09ba",
+    "jobs": {
+      "south": "7d7f502b-8264-4138-aff9-194b92b612a6",
+      "south-west": "20e5e1b5-7880-4b85-8812-ccb0cd3a6758",
+      "west": "ad2f1ee6-7d3b-42a5-a2f6-76407b2895e4",
+      "north-west": "529362f7-a2a2-40d0-8405-650e0ad55815",
+      "north": "a208f29c-94df-4c91-9a0c-7c3aea23a8ae",
+      "north-east": "6480bb70-3be7-426f-a990-59f4c213aa6b",
+      "east": "9a19e25d-6017-4284-ac26-4f01e768b8e0",
+      "south-east": "3307ef56-1caa-4a75-b568-f4b6b2e425a3"
+    }
   }
 }

@@ -60,6 +60,16 @@ ANIMATIONS = [
     ('zamboni-attack', '721b6f96-ab96-4a61-89a6-d73daf6b294b', 6,
      'holding the same long straight wooden-handled ice scraper pole with a flat steel blade on the end that he always carries, no other tools or effects; big wind-up: raises the long scraper pole high overhead with both hands, rising up tall, then smashes it down hard onto the floor in front of him, leaning far forward',
      'public/assets/neon/enemies/zamboni-attack.png'),
+    # District monsters (92 px). The game already looks for these keys.
+    ('poodle-attack', '2ea97b6f-6dba-456c-ad71-5ad4b6528780', 6,
+     'keeps its pink matted fur and rhinestone collar exactly as it is; crouches low with hackles up and snarls, haunches bunched, then springs forward in a fast low lunge, body stretched out',
+     'public/assets/neon/enemies/poodle-attack.png'),
+    ('elf-attack', 'd0c9c0ba-7a72-43c5-8f23-514bf5f6854e', 6,
+     'keeps its green felt tunic, pointy green hat with bell and red striped stockings exactly as they are; crouches deep, then springs up into the air with knees tucked, then lands hard in a stomp',
+     'public/assets/neon/enemies/elf-attack.png'),
+    ('goon-attack', '82aa6f6f-d930-4dc4-bb77-cf54300ae902', 6,
+     'keeps its teal jersey, helmet with cage visor and padded shoulders exactly as they are; winds a hockey stick back high over the shoulder with both hands, then swings it through low in a hard slap shot',
+     'public/assets/neon/enemies/goon-attack.png'),
 ]
 
 
