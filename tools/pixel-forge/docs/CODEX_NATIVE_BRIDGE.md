@@ -212,3 +212,32 @@ what the bridge supports. Result: the Bargain Hunter hurt strip,
   turns cut off after about 10 seconds by interrupts. Codex image turns count against plan
   limits faster than ordinary turns.
 
+### Next-session quick start (cloud)
+
+What persists between cloud sessions, and what does not:
+
+- **Persists:** the environment's allowed domains (keep `auth.openai.com` and `chatgpt.com`), the
+  repo (this script, the docs, the converted art), and anything in the environment's *Setup script*.
+- **Does not persist:** the ChatGPT sign-in, the Codex CLI, the Forge venv, any job under
+  `/tmp` or `$HOME`. The sign-in is deliberately not saved: a stored copy of Codex's auth file goes
+  stale when the token refreshes, and the bridge requires a fresh owner sign-in for its worker.
+
+`tools/pixel-forge/scripts/cloud-gpt-setup.sh` rebuilds everything else in one command:
+
+```sh
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh setup   # isolated venv + Codex CLI + host check
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh login   # prints the link and one-time code
+# the owner opens the link, enters the code, approves; then:
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh status
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh models  # pick the orchestrator (gpt-6.1-sol was used)
+```
+
+To have step 1 ready at session start, set the cloud environment's **Setup script** (the cloud
+environment menu in the session's title bar, then Edit) to run
+`bash tools/pixel-forge/scripts/cloud-gpt-setup.sh setup` from the repo root. Leave `login` manual:
+only the owner can approve it.
+
+`setup` prints the exact `begin` and `run` commands. Then follow the field notes above: spell the
+character out in the job prompt, never interrupt a `run`, plan for the sheet to need conversion
+(`art/enemy-reactions/shopper-hurt/convert_gpt_hurt.py` is a worked example).
+
