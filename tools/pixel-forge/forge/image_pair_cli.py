@@ -48,4 +48,10 @@ def main(argv=None):
         args['backend']=OpenAIImagesBackend(client,model=model,revision=revision,enabled=True)
     for field in ('spec','receipt'):
         if args[field]:args[field]=json.loads(read_bounded(args[field],512*1024))
+    if args['action']=='run':
+        from .image_provider import ImageProviderError
+        try:result=action(**args)
+        except ImageProviderError as error:
+            print(json.dumps(error.result(),indent=2));return 1
+        print(json.dumps(result,indent=2));return 0
     print(json.dumps(action(**args),indent=2));return 0

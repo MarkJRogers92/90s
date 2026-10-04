@@ -195,7 +195,15 @@ class OpenAIImagesBackend:
                 payload["image"] = refs
             try:
                 response = client.images.edit(**payload) if refs else client.images.generate(**payload)
-            except Exception:
+            except Exception as error:
+                # A client may report a definite refusal (an HTTP 4xx: the request never ran and
+                # was not charged). Only its status and a validated error code are surfaced.
+                if getattr(error, "completion", None) == "not_started":
+                    status, code = getattr(error, "status", None), getattr(error, "code", None)
+                    detail = (f"HTTP {status}" if type(status) is int else "a refusal") + (
+                        f" {code}" if isinstance(code, str) and re.fullmatch(r"[A-Za-z0-9_.-]{1,64}", code) else "")
+                    raise ImageProviderError("PROVIDER_REJECTED", f"Images API rejected the request ({detail}); nothing was generated",
+                                             completion="not_started") from None
                 raise ImageProviderError("PROVIDER_CALL_FAILED", "Images API call failed; completion is unknown; do not automatically retry",
                                          completion="unknown") from None
         return self._decode_response(response)
