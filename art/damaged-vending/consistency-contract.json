@@ -1,0 +1,106 @@
+{
+  "frame_size": 96,
+  "frames": 4,
+  "facings": [
+    "south-east"
+  ],
+  "durations_ms": [
+    280,
+    90,
+    90,
+    340
+  ],
+  "pivot": [
+    48,
+    89
+  ],
+  "consistency": {
+    "version": 1,
+    "appearance_references": {
+      "south-east": 0
+    },
+    "palette_references": [
+      1
+    ],
+    "identity": "Exact approved damaged vending body outside the explicit light mask.",
+    "proportions": "Fixed 44x81 visible footprint and common baseline; only sign and internal sparks change.",
+    "poses": [
+      "Weak light",
+      "Nearly dark",
+      "Light and source-preserved spark",
+      "Weak light hold"
+    ],
+    "frame_checks": {
+      "south-east": [
+        {
+          "height_range": [
+            81,
+            81
+          ],
+          "baseline_y": 89,
+          "identity_locks": [
+            {
+              "source_reference": 0,
+              "mask_reference": 2,
+              "offset": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "height_range": [
+            81,
+            81
+          ],
+          "baseline_y": 89,
+          "identity_locks": [
+            {
+              "source_reference": 0,
+              "mask_reference": 2,
+              "offset": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "height_range": [
+            81,
+            81
+          ],
+          "baseline_y": 89,
+          "identity_locks": [
+            {
+              "source_reference": 0,
+              "mask_reference": 2,
+              "offset": [
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "height_range": [
+            81,
+            81
+          ],
+          "baseline_y": 89,
+          "identity_locks": [
+            {
+              "source_reference": 0,
+              "mask_reference": 2,
+              "offset": [
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
