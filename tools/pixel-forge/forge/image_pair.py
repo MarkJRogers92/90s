@@ -27,7 +27,7 @@ from forge_accel.runner import _json_write, _lock
 VERSION = 'gpt-image-pair-v1'
 FACINGS = ('south', 'south-west', 'west', 'north-west', 'north', 'north-east', 'east', 'south-east')
 FIELDS = {'prompt','style','references','start_png','frame_size','frames','facings',
-          'durations_ms','pivot','constraints','max_followups','revision','alpha_threshold'}
+          'durations_ms','pivot','constraints','max_followups','revision','alpha_threshold','consistency'}
 
 
 def capabilities():
@@ -82,6 +82,9 @@ def _validate(spec):
     if s['alpha_threshold'] is not None:integer(s['alpha_threshold'],'alpha_threshold',1,255)
     dimensions((s['frame_size']*s['frames'],s['frame_size']*len(s['facings'])))
     sources=[('reference',_png(x)) for x in refs]
+    if 'consistency' in s:
+        from . import image_consistency
+        s['consistency']=image_consistency.validate(s['consistency'],s,[data for _,data in sources])
     if start: sources.insert(0,('edit_target',_png(start)))
     if sum(len(data) for _,data in sources)>64*1024*1024:raise ValueError('reference aggregate byte limit exceeded')
     return s,sources
@@ -103,7 +106,7 @@ def _read(path,key):
         if state['sources']!=expected_sources:raise ValueError('source roles/paths')
         for source,item in zip(expected_sources,state['inputs']['sources']):
             if state['integrity'].get(source['path'])!=item['sha256']:raise ValueError('missing source integrity')
-        for artifact in list(state['artifacts'].values())+[h['raw'] for h in state['history']]:
+        for artifact in list(state['artifacts'].values())+list(state.get('previews',{}).values())+[h['raw'] for h in state['history']]:
             rel=str(Path(artifact['path']).relative_to(path))
             if state['integrity'].get(rel)!=artifact['sha256']:raise ValueError('missing result integrity')
         for name,expected in state['integrity'].items():
@@ -176,6 +179,33 @@ def _original_refs(path,state):
     return [str(path/x['path']) for x in state['sources']]
 
 
+def _reference_paths(path,state):
+    return [str(path/x['path']) for x in state['sources'] if x['role']=='reference']
+
+
+def _reference_bytes(path,state):
+    return [read_bounded(p,MAX_FILE_BYTES) for p in _reference_paths(path,state)]
+
+
+def _mockup_review(state):
+    artifact=state['artifacts'].get('mockup_review')
+    if not artifact:return None
+    return json.loads(read_bounded(artifact['path'],16*1024))
+
+
+def _consistency_result(path,state,output,report,stage,prefix):
+    if 'consistency' not in state['inputs']['spec']:return
+    from . import image_consistency
+    state['previews']={}
+    if output is None:return
+    spec=state['inputs']['spec'];references=_reference_bytes(path,state)
+    if stage=='sheet':
+        check=image_consistency.check_native(output,spec,references)
+        report['consistency']=check;report['errors'].extend(check['errors'])
+    for role,(name,data) in image_consistency.preview_files(output,spec,references,stage).items():
+        state['previews'][role]=_write_artifact(path,state,prefix+'/review/'+name,data)
+
+
 def _request(path,state,stage,*,feedback=None,previous=None,protection=None):
     s=state['inputs']['spec'];refs=_original_refs(path,state)
     if stage=='mockup':
@@ -189,6 +219,7 @@ def _request(path,state,stage,*,feedback=None,previous=None,protection=None):
         mockup=state['artifacts'].get('mockup')
         if not mockup:raise ValueError('a validated mockup is required before its associated sheet')
         refs.append(mockup['path']);target=previous
+        if not target and 'consistency' in s:target=state['artifacts']['seed']['path']
         if target:refs.insert(0,target)
         w=s['frame_size']*s['frames'];h=s['frame_size']*len(s['facings'])
         purpose=(f'Create the sprite sheet associated with the initial mockup reference. Exact canvas {w}x{h} pixels, '
@@ -207,6 +238,11 @@ def _request(path,state,stage,*,feedback=None,previous=None,protection=None):
     if protection:refs.append(protection['mask'])
     if feedback:prompt+='\nTargeted follow-up: '+feedback+'\nChange only what is requested; preserve all other identity and style requirements.'
     if protection:prompt+='\nLocked-pixel contract applies. The white edit-mask pixels may change; all black pixels must remain exactly unchanged.'
+    if 'consistency' in s:
+        from .image_consistency import prompt_contract
+        prompt+=prompt_contract(s,_reference_paths(path,state),refs)
+        if stage=='sheet' and not previous:
+            prompt+='\nInput image 1 is the seed-filled native motion canvas. Edit its fixed slots into the ordered poses; do not redesign the repeated character.'
     request={'ticket':uuid.uuid4().hex,'stage':stage,'operation':'edit' if target else 'generate',
             'prompt':prompt,'referenced_image_paths':refs,'transparent_background':True,
             'feedback':feedback,'protection':protection,
@@ -229,6 +265,10 @@ def _public(path,state,*,cached=False):
             'followups_used':state['followups_used'],'history':deepcopy(state['history']),
             'automatic_retry':False,'provider_attempt':deepcopy(state.get('dispatch_capabilities'))}
     if state.get('next'):result['next']=deepcopy(state['next'])
+    if 'consistency' in state['inputs']['spec']:
+        result['mockup_review']=_mockup_review(state)
+        result['previews']=deepcopy(state.get('previews',{}))
+        result['consistency']=deepcopy(state['inputs']['spec']['consistency'])
     return result
 
 
@@ -245,6 +285,10 @@ def begin(root,spec):
         for i,(role,data) in enumerate(sources):
             name=f'sources/{i:02d}-{role}.png';_write_artifact(path,state,name,data)
             state['sources'].append({'path':name,'role':role})
+        if 'consistency' in s:
+            from .image_consistency import seed_sheet,png_bytes
+            state['artifacts']['seed']=_write_artifact(path,state,'sources/seed-sheet.png',
+                png_bytes(seed_sheet(s,[data for role,data in sources if role=='reference'])))
         state['next']=_request(path,state,'mockup')
         _json_write(path/'job.json',state)
         return _public(path,state)
@@ -258,13 +302,48 @@ def status(root,key):
 def dispatch(root,key,*,capabilities):
     if not isinstance(capabilities,dict) or not (capabilities.get('native_image_tool') is True or capabilities.get('configured_api_adapter') is True or capabilities.get('configured_provider') is True):
         raise ValueError('explicit image provider capability required; no provider selected or invoked')
+    reference_limit=capabilities.get('max_reference_images')
+    if reference_limit is not None:integer(reference_limit,'max_reference_images',1,64)
     root,path=_paths(root,key)
     with _lock(root/'.locks'/f'{key}.lock',30):
         state=_read(path,key)
         if state['state']!='pending':raise RuntimeError(f'job is {state["state"]}; request not reissued')
+        if reference_limit is not None and len(state['next']['referenced_image_paths'])>reference_limit:
+            raise ValueError(f'caller reference image limit is {reference_limit}; request has '
+                f'{len(state["next"]["referenced_image_paths"])}; request remains pending')
+        if 'consistency' in state['inputs']['spec'] and state['next']['stage']=='sheet':
+            from .image_consistency import validate_review
+            review=_mockup_review(state)
+            if not review:raise ValueError('a current passing native-size mockup review is required')
+            validate_review(review,state['artifacts']['mockup']['sha256'])
+            if any(value!='pass' for value in review['findings'].values()):
+                raise ValueError('mockup review has failed or uncertain findings')
+            state['next']['mockup_review_sha256']=state['artifacts']['mockup_review']['sha256']
+            state['next']['request_fingerprint']=_request_fingerprint(state['next'])
         state['state']='in_flight';state['dispatch_capabilities']=deepcopy(capabilities)
         _json_write(path/'job.json',state)
         return deepcopy(state['next'])
+
+
+def review_mockup(root,key,record):
+    """Record a caller's visual review of exact pixels; never assert owner approval."""
+    from .image_consistency import validate_review
+    root,path=_paths(root,key)
+    with _lock(root/'.locks'/f'{key}.lock',30):
+        state=_read(path,key)
+        if 'consistency' not in state['inputs']['spec']:raise ValueError('mockup review requires a consistency job')
+        if state['state']=='in_flight':raise ValueError('cannot change mockup review while a request is in_flight')
+        latest=next((h for h in reversed(state['history']) if h['stage']=='mockup'),None)
+        if (not latest or not latest['validation']['accepted'] or
+                (state.get('next') and state['next']['stage']=='mockup')):
+            raise ValueError('a mechanically accepted current mockup is required for review')
+        record=validate_review(record,state['artifacts']['mockup']['sha256'])
+        if record==_mockup_review(state):return _public(path,state,cached=True)
+        count=state.get('review_count',0);integer(count,'review count',0,31)
+        state['artifacts']['mockup_review']=_write_artifact(path,state,f'reviews/{count:03d}-mockup.json',
+            json.dumps(record,sort_keys=True,indent=2,ensure_ascii=False).encode())
+        state['review_count']=count+1;_json_write(path/'job.json',state)
+        return _public(path,state)
 
 
 def _receipt(receipt):
@@ -298,6 +377,12 @@ def _validate_sheet(raw,spec):
             if not np.any(cell):empty.append([row,col])
     if empty:report['errors'].append('empty_cells')
     report.update(size=list(output.size),empty_cells=empty,binary_alpha=bool(np.isin(alpha,[0,255]).all()))
+    if 'consistency' in spec:
+        report['derivation']={'source_size':list(raw.size),'target_size':list(target),
+            'method':'identity' if raw.size==target else 'integer-block-mode-reduction',
+            'alpha_threshold':spec['alpha_threshold'],
+            'pixel_exact':raw.size==target and np.array_equal(np.array(raw),np.array(output)),
+            'warning':'Any reduction or alpha threshold can discard detail; raw bytes are retained.'}
     return output,report
 
 
@@ -311,7 +396,8 @@ def accept(root,key,ticket,image_path,receipt):
         data=_png(image_path);raw=decode_rgba(data);stage=request['stage'];index=len(state['history'])
         prefix=f'results/{index:03d}-{stage}'
         raw_art=_write_artifact(path,state,prefix+'/raw.png',data)
-        _write_artifact(path,state,prefix+'/request.json',json.dumps(request,sort_keys=True,indent=2).encode())
+        _write_artifact(path,state,prefix+'/request.json',json.dumps(request,sort_keys=True,indent=2,
+            ensure_ascii='consistency' not in state['inputs']['spec']).encode())
         _write_artifact(path,state,prefix+'/receipt.json',json.dumps(receipt,sort_keys=True,indent=2).encode())
         if stage=='sheet':output,report=_validate_sheet(raw,state['inputs']['spec'])
         else:
@@ -325,6 +411,7 @@ def accept(root,key,ticket,image_path,receipt):
                 check=check_revision(source,output,mask,max_changed_pixels=protection['max_changed_pixels'])
                 report['protection']=check;report['errors'].extend(check['errors'])
             except ValueError as exc:report['errors'].append('protection_dimensions_or_contract_invalid')
+        _consistency_result(path,state,output,report,stage,prefix)
         report['accepted']=not report['errors'];report['review_status']='REVIEW_ONLY'
         _write_artifact(path,state,prefix+'/validation.json',json.dumps(report,sort_keys=True,indent=2).encode())
         entry={'stage':stage,'ticket':ticket,'request_fingerprint':request['request_fingerprint'],
@@ -338,6 +425,7 @@ def accept(root,key,ticket,image_path,receipt):
             state['artifacts'][stage]=_write_artifact(path,state,prefix+'/accepted.png',buf.getvalue())
             if stage=='mockup':
                 state['artifacts'].pop('sheet',None)
+                state['artifacts'].pop('mockup_review',None)
                 state['state']='pending';state['next']=_request(path,state,'sheet')
             else:state['state']='review_ready'
         _json_write(path/'job.json',state)
@@ -370,6 +458,9 @@ def revise(root,key,stage,feedback,*,edit_mask=None,max_changed_pixels=None):
             protection={'source':accepted['path'],'mask':saved['path'],'max_changed_pixels':max_changed_pixels}
             prior=accepted['path']
         elif max_changed_pixels is not None:raise ValueError('pixel budget requires an explicit edit mask')
+        if stage=='mockup' and 'consistency' in state['inputs']['spec']:
+            state['artifacts'].pop('mockup_review',None)
+            state['artifacts'].pop('sheet',None)
         state['next']=_request(path,state,stage,feedback=feedback,previous=prior,protection=protection)
         state['followups_used']+=1;state['state']='pending';_json_write(path/'job.json',state)
         return _public(path,state)
@@ -438,11 +529,13 @@ def normalize_sheet(root,key):
             mask=Image.open(BytesIO(read_bounded(protection['mask'],MAX_FILE_BYTES)));mask.load()
             check=check_revision(source,output,mask,max_changed_pixels=protection['max_changed_pixels'])
             report['protection']=check;report['errors'].extend(check['errors'])
-        report.update(accepted=not report['errors'],review_status='REVIEW_ONLY')
         prefix=f'results/{len(state["history"]):03d}-sheet'
+        _consistency_result(path,state,output,report,'sheet',prefix)
+        report.update(accepted=not report['errors'],review_status='REVIEW_ONLY')
         buf=BytesIO();output.save(buf,format='PNG')
         derived=_write_artifact(path,state,prefix+'/normalized.png',buf.getvalue())
-        _write_artifact(path,state,prefix+'/request.json',json.dumps(request,sort_keys=True,indent=2).encode())
+        _write_artifact(path,state,prefix+'/request.json',json.dumps(request,sort_keys=True,indent=2,
+            ensure_ascii='consistency' not in state['inputs']['spec']).encode())
         _write_artifact(path,state,prefix+'/validation.json',json.dumps(report,sort_keys=True,indent=2).encode())
         entry={'stage':'sheet','ticket':source_entry['ticket'],'request_fingerprint':source_entry['request_fingerprint'],
                'raw':deepcopy(source_entry['raw']),'receipt':deepcopy(source_entry['receipt']),

@@ -1,0 +1,29 @@
+{
+  "status": "REVIEW_ONLY",
+  "files": {
+    "README.md": "a77837eb50130dfe5d613e8bc235bca643b6111a1471c892ad553af6c08983ee",
+    "animation-evidence.json": "9a15b23b16fc9f51c32d19ce1e176cd374a194ba13f830adda6d9baa4ea74270",
+    "artifact-provenance.json": "e2224cf433c6b81993fb885ed3e9242b46dd94bd8b56869b367c698220395e4b",
+    "build_animation.py": "82dc571116e7061ea4bee483895ceb5aff3b22bdd149e183603e31d563d17c7c",
+    "build_recoil.py": "17c6561a7defebb337645896da1048fdef0830b4a7aa69c2e32d71c6104fa680",
+    "frames/frame-000.png": "466cb4faab08eee8fd2f11db1bbd2599dd52a5e915d51aa91ba94a005ddbd1be",
+    "frames/frame-001.png": "c14567847026eb93b536e13ec2acb04647f97b404b23c8362cfbaae7c149fcfb",
+    "frames/frame-002.png": "466cb4faab08eee8fd2f11db1bbd2599dd52a5e915d51aa91ba94a005ddbd1be",
+    "frames/frame-003.png": "4ecc5c275ecd29210dc4b68f3d7850dd33740bd51dca76dfca937cbe181a29b3",
+    "masks/bag-domain.png": "bc8d862f007890f1bcace35c7df8c78efd89df6ca5c540499103a79ce0d6b96e",
+    "masks/bag-opaque.png": "f686d8cf4635d0d35d686bf47890549d64c72d8e019c62a0370d6b167b4b453d",
+    "masks/head-domain.png": "71e7ae03a514cee975dd63187c7f868fe3b82beae8bbf56b9bbd9496be5ae46a",
+    "masks/head-opaque.png": "5f124e0da0b3eaa24788d03b12de823766b57ffd6076b34e1b3a279034229f84",
+    "masks/shoes-domain.png": "0c6b0981d7826262252367f4a7af09e23f40f0bfccfeb77b4bb91e968e054f54",
+    "masks/shoes-opaque.png": "2ba28beb44687aff973bf1e5a483f8bcbb7f103aaedd761a8cfefe6f8ba2e1e6",
+    "patches/onset-source-pixel-copies.json": "cd90135caa68159e8d77a0cdd1960c072677cc1da70967403e37d72f61175b15",
+    "patches/rebound-source-pixel-copies.json": "cd90135caa68159e8d77a0cdd1960c072677cc1da70967403e37d72f61175b15",
+    "patches/source-pixel-copies.json": "f1e3f744adfb83e97be47c06eb8aba2eaa6a6544251d84102134abb4631a0fcf",
+    "preview-exact.png": "f1275afd193a28878fa4a5991465ee1efde39872ba8b4200d124406b436e9864",
+    "preview-gif-approx.gif": "5ef87f68880794c6a17ab052d6f929c279c6f174406235a20768ac5049d23e73",
+    "preview-slow-inspection.gif": "059487811cfc951369e95e4473fbe99bce33c6ae6d99fce033c6a131ceeab0d4",
+    "source.png": "4ecc5c275ecd29210dc4b68f3d7850dd33740bd51dca76dfca937cbe181a29b3",
+    "strip.png": "4ae36b0b2f2517b922d2aee64d187ae15b66b1b54441ff04d48d10235ad55487",
+    "walk-source.png": "7760bd56724fa1abe0dc8c7cf4e64a1a6c51056543f9146f2f1688b6f0c06b5b"
+  }
+}

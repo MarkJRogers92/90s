@@ -323,7 +323,7 @@ def test_real_mcp_stdio_runs_native_fixture_and_exposes_only_pair_tool(tmp_path)
             args=['-c',"from forge import codex_native as n; n._SYSTEM_CONFIGS=(); raise SystemExit(n.main())",'serve','--executable',str(exe),
                   '--work-root',str(tmp_path/'workers'),'--codex-home',str(home),
                   '--model','explicit-codex-model','--revision','mcp-fixture-v1','--enable-native'])
-        async with stdio_client(params) as streams, ClientSession(*streams,read_timeout_seconds=15) as client:
+        async with stdio_client(params,errlog=sys.__stderr__) as streams, ClientSession(*streams,read_timeout_seconds=15) as client:
             await client.initialize()
             assert {tool.name for tool in (await client.list_tools()).tools}=={'forge_image_pair'}
             async def call(action,**kwargs):

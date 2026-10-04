@@ -411,17 +411,20 @@ def serve(backend):
     @server.tool(description='Private native Codex mockup and sprite-sheet jobs. '
         'begin creates a pending job; run executes exactly one native image request; '
         'status reads it; revise requests a bounded correction. Inspect the mockup before '
-        'running the sheet. No API fallback or automatic retry. All output remains REVIEW_ONLY.')
+        'running the sheet; consistency jobs require review-mockup with a hash-bound review_record. '
+        'No API fallback or automatic retry. All output remains REVIEW_ONLY.')
     def forge_image_pair(action: str, root: str, spec: dict | None = None, key: str | None = None,
                          ticket: str | None = None, image_path: str | None = None,
                          receipt: dict | None = None, native_image_tool: bool = False,
                          stage: str | None = None, feedback: str | None = None,
-                         edit_mask: str | None = None, max_changed_pixels: int | None = None):
+                         edit_mask: str | None = None, max_changed_pixels: int | None = None,
+                         review_record: dict | None = None, max_reference_images: int | None = None):
         try:
             result = pair_action(action, root, spec=spec, key=key, ticket=ticket,
                 image_path=image_path, receipt=receipt, native_image_tool=native_image_tool,
                 stage=stage, feedback=feedback, edit_mask=edit_mask,
-                max_changed_pixels=max_changed_pixels, backend=backend)
+                max_changed_pixels=max_changed_pixels, backend=backend, review_record=review_record,
+                max_reference_images=max_reference_images)
             return types.CallToolResult(content=[types.TextContent(type='text', text=json.dumps(result))],
                                         structured_content=result)
         except ImageProviderError as error:

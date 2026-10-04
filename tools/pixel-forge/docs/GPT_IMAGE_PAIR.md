@@ -60,6 +60,13 @@ image model your account can use. `--revision` labels your model/config for prov
 
 ## Job specification
 
+For frozen same-facing appearance, palette/pose roles, a required hash-bound mockup
+review, native checks and automatic comparisons/playback, add the optional
+[consistency contract](IMAGE_CONSISTENCY.md). Existing specs are unchanged.
+For an existing character requiring exact source parts, the companion
+[source-pixel rig/patch workflow](SOURCE_PIXEL_WORKFLOW.md) records protected
+domains and derived poses without generating a redesigned character.
+
 Example for the DEAD MALL format; use actual readable local PNG paths:
 
 ```json
