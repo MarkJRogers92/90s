@@ -25,6 +25,7 @@ async function crop(p, box, x, y, file, half = 90) {
 }
 const TARGETS = [
   ['fixture=mvp-floor-three-brute&seed=1', 'mascot'], ['fixture=mvp-floor-two-hunter&seed=1', 'shopper'], ['fixture=mvp-floor-four-roofer&seed=1', 'roofer'], ['fixture=mvp-district&floor=2&seed=1', 'spritzer'],
+  ['fixture=mvp-district&floor=1&seed=1', 'elf'], ['fixture=mvp-district&floor=3&seed=1', 'poodle'], ['fixture=mvp-district&floor=4&seed=1', 'goon'],
   // Bosses: the floor fights, and each district's mini-boss in its Lockdown room.
   ['fixture=mvp-floor-two-boss&seed=1', 'manager'], ['fixture=mvp-floor-three-boss&seed=1', 'owner'], ['fixture=mvp-floor-four-boss&seed=1', 'developer'],
   ['fixture=mvp-district&floor=1&room=security_office&seed=1', 'santa'], ['fixture=mvp-district&floor=2&room=security_office&seed=1', 'glamour_queen'],
