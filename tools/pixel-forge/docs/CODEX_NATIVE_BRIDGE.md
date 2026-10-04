@@ -40,9 +40,13 @@ keys are used by this code.
 ## Required private worker setup
 
 Use a trusted local Codex installation on a clean, unmanaged personal host.
-This first version accepts personal Plus/Pro accounts only. Managed accounts,
-custom providers, custom MCP servers/hooks, and configuration inheritance are
-not supported. Known configuration paths are rejected by metadata without
+This version accepts only the exact personal-plan identifiers `plus`, `pro`, and
+`prolite`. The latter is the personal Pro 100 variant in the official
+[Codex 0.160 subscription labels](https://github.com/openai/codex/blob/a956835d020762cb2b570053af06f643a11c0ecc/codex-rs/tui/src/subscription.rs#L12-L29).
+Other identifiers, including `promax` and `self_serve_business_prolite`, remain
+rejected; no prefix or fuzzy matching is used. Managed accounts, custom
+providers, custom MCP servers/hooks, and configuration inheritance are not
+supported. Known configuration paths are rejected by metadata without
 reading or changing their contents. Codex's own `skills/.system` is allowed;
 custom skills and plugin directories are rejected.
 

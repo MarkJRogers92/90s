@@ -250,7 +250,7 @@ class CodexNativeBackend:
                     account = worker.rpc('account/read', {'refreshToken': False}).get('account')
                     if not isinstance(account, dict) or account.get('type') != 'chatgpt':
                         raise _error('CHATGPT_LOGIN_REQUIRED', 'Sign in to Codex with ChatGPT on this host before using native images')
-                    if account.get('planType') not in ('plus', 'pro'):
+                    if account.get('planType') not in ('plus', 'pro', 'prolite'):
                         raise _error('UNSUPPORTED_NATIVE_ACCOUNT', 'This private adapter currently supports personal Plus/Pro accounts only')
                     yield worker, run
                 finally:
