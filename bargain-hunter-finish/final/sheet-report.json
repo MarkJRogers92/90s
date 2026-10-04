@@ -1,0 +1,263 @@
+{
+ "rows": {
+  "S": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 2442
+  },
+  "SW": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 2795
+  },
+  "W": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 1888
+  },
+  "NW": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 2711
+  },
+  "N": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 2495
+  },
+  "NE": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 2737
+  },
+  "E": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 1978
+  },
+  "SE": {
+   "feet_changed_px_vs_f0": [
+    0,
+    0,
+    0
+   ],
+   "lowest_row": [
+    111,
+    111,
+    111,
+    111,
+    111,
+    111
+   ],
+   "tiny_islands": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+   ],
+   "binary_alpha": true,
+   "colours_outside_source_palette": 0,
+   "charge_pair_changed_px": 2665
+  }
+ },
+ "provenance": {
+  "S0": "pilot",
+  "S1": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "S2": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "S3": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "S4": "pilot",
+  "S5": "pilot",
+  "SW0": "pilot",
+  "SW1": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "SW2": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "SW3": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "SW4": "pilot",
+  "SW5": "pilot",
+  "W0": "rig v3 (recipe-v3.json)",
+  "W1": "rig v3 (recipe-v3.json)",
+  "W2": "rig v3 (recipe-v3.json)",
+  "W3": "rig v3 (recipe-v3.json)",
+  "W4": "rig v3 (recipe-v3.json)",
+  "W5": "rig v3 (recipe-v3.json)",
+  "NW0": "pilot",
+  "NW1": "pilot + near-arm bag pulled in (-11,-3), as the frame-3 repair | shoes re-planted",
+  "NW2": "pilot + near-arm bag pulled in (-11,-3), as the frame-3 repair | shoes re-planted",
+  "NW3": "approved NW frame-3 repair (reference) | shoes re-planted",
+  "NW4": "pilot + near-arm bag pulled in (-11,-3), as the frame-3 repair",
+  "NW5": "pilot + near-arm bag pulled in (-11,-3), as the frame-3 repair",
+  "N0": "pilot",
+  "N1": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "N2": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "N3": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "N4": "pilot",
+  "N5": "pilot",
+  "NE0": "pilot",
+  "NE1": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "NE2": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "NE3": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "NE4": "pilot",
+  "NE5": "pilot",
+  "E0": "pilot",
+  "E1": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "E2": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "E3": "pilot + planted shoes (frame 0 copied) | shoes re-planted",
+  "E4": "pilot",
+  "E5": "pilot",
+  "SE0": "pilot",
+  "SE1": "pilot + bag moved to far (anatomical-left) hand, behind body; near hand empty | shoes re-planted",
+  "SE2": "pilot + bag moved to far (anatomical-left) hand, behind body; near hand empty | shoes re-planted",
+  "SE3": "pilot + bag moved to far (anatomical-left) hand, behind body; near hand empty | shoes re-planted",
+  "SE4": "pilot + trailing bag arm moved behind torso, outline sealed",
+  "SE5": "pilot + trailing bag arm moved behind torso, outline sealed"
+ },
+ "sha256": "ba2fb320393b7ce1bdc7fc889f8d47b2d1ba08ad55166ea1f9d409d6bd45fff5"
+}

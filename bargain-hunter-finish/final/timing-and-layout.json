@@ -1,0 +1,31 @@
+{
+ "rows": [
+  "south",
+  "south-west",
+  "west",
+  "north-west",
+  "north",
+  "north-east",
+  "east",
+  "south-east"
+ ],
+ "columns": "frames 0-5: 0-3 wind-up (planted), 4-5 charge release pair",
+ "cell": [
+  128,
+  128
+ ],
+ "sheet": [
+  768,
+  1024
+ ],
+ "durations_ms": [
+  142,
+  142,
+  142,
+  141,
+  133,
+  133
+ ],
+ "figure_scale": "96 px source cells padded by 16 px; not enlarged",
+ "floor_row": 111
+}
