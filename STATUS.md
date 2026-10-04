@@ -1,5 +1,35 @@
 # Status
 
+## 2026-10-04 UTC — District monster attack sheets + banked hurt strips (PixelLab)
+
+Branch `feat/district-attacks`. Presentation only; no `src/sim` change, no balance change.
+
+**Shipped.** `poodle-attack.png`, `elf-attack.png` and `goon-attack.png` (6 frames × 8 facings,
+PixelLab v3 from the game's own characters) are registered as `neon:enemy:<kind>-attack`, so
+the attack wind-ups (roadmap V2) are now complete for every enemy that has one.
+- **Goon:** it fires from its telegraph straight back into `pursue` with the shot cadence
+  reloaded, so `attackFrameFor` never reached its release frames. It now plays them for 14
+  ticks after the puck leaves.
+
+**Banked, not wired:** hurt strips (V1) for the Walker, Elf, Spritzer, Poodle, Goon and Mascot,
+in `art/pixellab/*-hurt.png`.
+- Some have effects painted into frames, which need erasing (listed in the handoff).
+- Each still needs the V1 code.
+
+**Handoff:** `docs/PIXELLAB_HANDOFF.md` lists what is left, the commands, the measured costs
+and the gotchas. 32 PixelLab generations are left.
+
+**Evidence:**
+- The registration test failed first, then passed.
+- The Goon release test (`combat-beats.test.ts`) failed first, then passed.
+- Unit 1,850 of 1,850; `tsc` passes.
+- Live (`artifacts/live-qa/district-attacks/`, 0 console errors in each):
+  - Poodle: `poodle-attack[0..5]`, with release frames 4–5 during the dash.
+  - Elf: `elf-attack[0..5]`, with frames 2–5 in the air.
+  - Goon: wind-up 0–3, then follow-through 4–5.
+- `scripts/live-capture-actions.mjs` now covers the elf (floor 1, `back_hall`), poodle and goon,
+  and records frames after the telegraph.
+
 ## 2026-10-04 UTC — Bargain Hunter shoulder-charge sheet (review-candidate art; owner asked to merge)
 
 Branch `feat/bargain-hunter-attack`. Presentation only; no `src/sim` change.
