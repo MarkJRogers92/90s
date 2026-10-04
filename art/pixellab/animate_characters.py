@@ -70,6 +70,23 @@ ANIMATIONS = [
     ('goon-attack', '82aa6f6f-d930-4dc4-bb77-cf54300ae902', 6,
      'keeps its teal jersey, helmet with cage visor and padded shoulders exactly as they are; winds a hockey stick back high over the shoulder with both hands, then swings it through low in a hard slap shot',
      'public/assets/neon/enemies/goon-attack.png'),
+    # V1 hurt reactions (4 frames: struck, recoil, stagger, recover). Banked art: each
+    # still needs its EnemyReactionView wiring (docs/VISUAL_ROADMAP.md V1) before publishing.
+    ('walker-hurt', '287ef491-a0c0-4326-a4f6-2b5fd114f5db', 4,
+     'keeps its tracksuit and sneakers exactly as they are; gets hit hard in the chest, flinches back with head snapping back and arms flung up, staggers, then recovers to standing',
+     'public/assets/neon/enemies/walker-hurt.png'),
+    ('elf-hurt', 'd0c9c0ba-7a72-43c5-8f23-514bf5f6854e', 4,
+     'keeps its green felt tunic, pointy green hat with bell and red striped stockings exactly as they are; gets hit hard, flinches back with head snapping back and arms flung up, staggers, then recovers to standing',
+     'public/assets/neon/enemies/elf-hurt.png'),
+    ('spritzer-hurt', 'cd520aac-8bba-4d2f-a244-96fe2c7af2a5', 4,
+     'keeps its outfit, hair and perfume bottle exactly as they are; gets hit hard, flinches back with head snapping back, staggers, then recovers to standing',
+     'public/assets/neon/enemies/spritzer-hurt.png'),
+    ('poodle-hurt', '2ea97b6f-6dba-456c-ad71-5ad4b6528780', 4,
+     'keeps its pink matted fur and rhinestone collar exactly as it is; gets hit hard, yelps and recoils backwards with head jerked up, staggers, then recovers to standing on all fours',
+     'public/assets/neon/enemies/poodle-hurt.png'),
+    ('goon-hurt', '82aa6f6f-d930-4dc4-bb77-cf54300ae902', 4,
+     'keeps its teal jersey, helmet with cage visor and padded shoulders exactly as they are; gets hit hard, flinches back with head snapping back, staggers on its skates, then recovers to standing',
+     'public/assets/neon/enemies/goon-hurt.png'),
 ]
 
 

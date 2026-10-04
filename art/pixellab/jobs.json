@@ -184,5 +184,30 @@
       "east": "1cb8e287-8315-4979-bdd7-0621f16afd11",
       "south-east": "06362a66-888a-45bb-b6a5-7770c30ea56a"
     }
+  },
+  "walker-hurt": {
+    "group": "522c943f-bdb9-4653-864a-9531efc716aa",
+    "jobs": {
+      "south": "bf1b46b2-098c-4697-bccb-54ab5c121e70",
+      "south-west": "7c161f3b-f20a-48a8-930d-5f73d91b38ed",
+      "west": "5098f4a1-b1aa-443a-af49-6e275fdbeafe",
+      "north-west": "78c4daf1-fdd3-44b0-b7ac-0a3996c3cd2e",
+      "north": "5735b326-d60b-4deb-b452-7631dce3ece2",
+      "north-east": "caa0c41a-f135-40fb-b3fa-6f91e818cc4b",
+      "east": "afa11211-5e12-4e77-a815-4975f6f49e88",
+      "south-east": "a9c4bb25-bf0b-4b0a-a425-4aaeafd221a3"
+    }
+  },
+  "elf-hurt": {
+    "group": "c2837e5f-618e-493c-b95d-92e6774d6eaa",
+    "jobs": {
+      "south": "b742aff2-4739-4316-8503-4f4a2e6891c0",
+      "south-west": "51c5e077-6527-493d-a645-db189a75a27a",
+      "west": "b32326a6-e265-4b51-af84-79b07d375397",
+      "north-west": "0c7f2778-a737-4864-8685-14c14babb2e2",
+      "north": "87e4e164-8834-4e38-a8e9-44ba103da14c",
+      "north-east": "f4d1b857-214f-4952-b4db-75057933760c",
+      "east": "026ddb3a-be3f-4352-b963-fa0136d68cea"
+    }
   }
 }
