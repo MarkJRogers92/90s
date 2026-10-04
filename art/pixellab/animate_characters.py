@@ -87,6 +87,9 @@ ANIMATIONS = [
     ('goon-hurt', '82aa6f6f-d930-4dc4-bb77-cf54300ae902', 4,
      'keeps its teal jersey, helmet with cage visor and padded shoulders exactly as they are; gets hit hard, flinches back with head snapping back, staggers on its skates, then recovers to standing',
      'public/assets/neon/enemies/goon-hurt.png'),
+    ('mascot-hurt', '2370b80c-ac64-49c3-8b07-f225c9e23de7', 4,
+     'keeps its foam mascot suit and big head exactly as they are; gets hit hard, the big head jolts back and the arms fling up, staggers back a step, then recovers to standing',
+     'public/assets/neon/enemies/mascot-hurt.png'),
 ]
 
 

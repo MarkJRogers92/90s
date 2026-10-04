@@ -249,5 +249,18 @@
       "east": "049fec69-677a-4d07-a333-34b0abd7fa73",
       "south-east": "837014e2-631d-4823-aa66-141ec30c30ab"
     }
+  },
+  "mascot-hurt": {
+    "group": "a93db5cf-1cf9-4664-8e2d-ab8e6b2d190f",
+    "jobs": {
+      "south": "0b79e163-8297-42f3-bde8-d9f9c592d0f2",
+      "south-west": "a0a3064a-683a-44fb-94b4-68ba1964fd3c",
+      "west": "b30fb676-00ba-449a-95e2-99f77c074ea9",
+      "north-west": "54b9d3fb-8a6a-4d7f-9f5f-a3af0ba6a7e5",
+      "north": "02efa723-47be-4388-9e9c-6ca65885235b",
+      "north-east": "6e16f34a-2915-4c9a-af50-5fcde75a8c0e",
+      "east": "3576700d-d895-46b5-8018-aca9a2867e25",
+      "south-east": "e38a26d9-2789-4df2-80b9-aa94231500e0"
+    }
   }
 }
