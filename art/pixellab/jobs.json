@@ -230,7 +230,11 @@
       "south": "b201a132-d842-4121-a984-106f295fff00",
       "south-west": "48876307-0b30-419c-a9de-cb85c70471f3",
       "west": "5b494565-9b31-4d57-b7dc-be99a77ae857",
-      "north-west": "71e83cff-f904-49b0-9675-896642980804"
+      "north-west": "71e83cff-f904-49b0-9675-896642980804",
+      "north": "03cb9728-fb67-4bba-9c07-de72653d08cc",
+      "north-east": "123ee105-b5f3-4c83-b770-10079ed186d7",
+      "east": "e3b53170-987e-4340-8dbe-674b77514697",
+      "south-east": "02a4d456-dfda-46b5-b003-ef58159afefb"
     }
   },
   "goon-hurt": {
@@ -239,7 +243,11 @@
       "south": "68b8d533-c44a-4d5f-8326-c2c56262f610",
       "south-west": "80822e68-71b8-4d4b-b399-7b5588241660",
       "west": "a4b6e4b1-0553-404c-9ca7-2ebeb360ecdc",
-      "north-west": "1a48f1c2-2b15-4b7e-a7d3-cce324485250"
+      "north-west": "1a48f1c2-2b15-4b7e-a7d3-cce324485250",
+      "north": "802e4505-7a64-42b2-81c1-758cb0216210",
+      "north-east": "06790ca9-4f4d-46b6-9ce1-f785d4a943cb",
+      "east": "049fec69-677a-4d07-a333-34b0abd7fa73",
+      "south-east": "837014e2-631d-4823-aa66-141ec30c30ab"
     }
   }
 }
