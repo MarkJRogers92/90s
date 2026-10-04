@@ -5,11 +5,14 @@
 #   bash tools/pixel-forge/scripts/cloud-gpt-setup.sh login    # start the ChatGPT device sign-in
 #   bash tools/pixel-forge/scripts/cloud-gpt-setup.sh status   # what is installed, reachable, signed in
 #   bash tools/pixel-forge/scripts/cloud-gpt-setup.sh models   # Codex models this account offers
+#   bash tools/pixel-forge/scripts/cloud-gpt-setup.sh restore  # write a stored login secret to CODEX_HOME
 #
-# What it does NOT do: store, copy or print a login. The sign-in is the owner's, done fresh in each
-# new container (a stored token copy goes stale when it refreshes, and tools/pixel-forge/docs/
-# CODEX_NATIVE_BRIDGE.md says not to import one). `login` only prints the link and one-time code;
-# the owner enters the code in their own browser.
+# The ChatGPT sign-in: by default it is NOT saved. Each new container needs a fresh `login` (the
+# owner enters a one-time code in their own browser). The owner may instead choose to keep a login
+# as the cloud environment secret PIXEL_FORGE_CODEX_AUTH_B64 (the base64 of a Codex auth.json
+# made on their own computer; see the quick start in docs/CODEX_NATIVE_BRIDGE.md). `restore`
+# then writes it to $CODEX_HOME/auth.json (mode 600) without printing it. This script never
+# prints a token and never writes one into the repo. Treat that secret like a password.
 #
 # Needs the cloud environment's allowed domains to include auth.openai.com and chatgpt.com.
 # Field notes and the full job workflow: tools/pixel-forge/docs/CODEX_NATIVE_BRIDGE.md.
@@ -23,6 +26,7 @@ VENV="$TOOLS/venv"
 CODEX="$TOOLS/codex/node_modules/.bin/codex"
 LOG="$TOOLS/codex-login.log"
 HOSTS=(auth.openai.com chatgpt.com)
+AUTH_VAR="PIXEL_FORGE_CODEX_AUTH_B64"
 
 say() { printf '%s\n' "$*"; }
 
@@ -61,10 +65,31 @@ check_hosts() {
 
 signed_in() { "$CODEX" login status >/dev/null 2>&1; }
 
+cmd_restore() {
+  local file="$CODEX_HOME/auth.json"
+  if [ -f "$file" ]; then say "login file already present in $CODEX_HOME"; return 0; fi
+  if [ -z "${!AUTH_VAR:-}" ]; then say "no stored login ($AUTH_VAR is not set)"; return 1; fi
+  setup_codex >/dev/null
+  mkdir -p "$CODEX_HOME"
+  if ! (umask 077; printf '%s' "${!AUTH_VAR}" | base64 -d >"$file") 2>/dev/null; then
+    rm -f "$file"; say "$AUTH_VAR is not valid base64"; return 1
+  fi
+  chmod 600 "$file"
+  if ! python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))["tokens"]["refresh_token"]' "$file" 2>/dev/null; then
+    rm -f "$file"; say "$AUTH_VAR is not a Codex auth.json (no ChatGPT tokens in it)"; return 1
+  fi
+  if signed_in; then
+    say "restored the stored ChatGPT login (not printed). If the first image turn reports an auth error, it has expired: sign in again with 'login'."
+  else
+    rm -f "$file"; say "the stored login was not accepted by Codex. Sign in again with: bash $0 login"; return 1
+  fi
+}
+
 cmd_setup() {
   setup_venv
   setup_codex
   check_hosts || true
+  if ! signed_in && [ -n "${!AUTH_VAR:-}" ]; then cmd_restore || true; fi
   if signed_in; then say "codex login: signed in with ChatGPT"; else say "codex login: not signed in. Run: bash $0 login"; fi
   cat <<EOF
 
@@ -80,6 +105,7 @@ EOF
 
 cmd_login() {
   setup_codex >/dev/null
+  if ! signed_in && [ -n "${!AUTH_VAR:-}" ]; then cmd_restore || true; fi
   if signed_in; then say "already signed in with ChatGPT (run 'codex logout' with CODEX_HOME=$CODEX_HOME to remove it)"; return 0; fi
   check_hosts || { say "fix the blocked host(s) first"; return 1; }
   mkdir -p "$TOOLS" "$CODEX_HOME"
@@ -99,6 +125,7 @@ cmd_status() {
   [ -x "$CODEX" ] && say "codex: $("$CODEX" --version 2>&1 | head -1)" || say "codex: not installed (run setup)"
   check_hosts || true
   if [ -x "$CODEX" ] && signed_in; then say "codex login: signed in with ChatGPT"; else say "codex login: not signed in"; fi
+  if [ -n "${!AUTH_VAR:-}" ]; then say "stored login: $AUTH_VAR is set (value not shown)"; else say "stored login: $AUTH_VAR is not set"; fi
 }
 
 cmd_models() {
@@ -117,5 +144,6 @@ case "${1:-setup}" in
   login) cmd_login ;;
   status) cmd_status ;;
   models) cmd_models ;;
-  *) say "usage: $0 [setup|login|status|models]"; exit 2 ;;
+  restore) cmd_restore ;;
+  *) say "usage: $0 [setup|login|status|models|restore]"; exit 2 ;;
 esac

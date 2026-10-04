@@ -218,9 +218,10 @@ What persists between cloud sessions, and what does not:
 
 - **Persists:** the environment's allowed domains (keep `auth.openai.com` and `chatgpt.com`), the
   repo (this script, the docs, the converted art), and anything in the environment's *Setup script*.
-- **Does not persist:** the ChatGPT sign-in, the Codex CLI, the Forge venv, any job under
-  `/tmp` or `$HOME`. The sign-in is deliberately not saved: a stored copy of Codex's auth file goes
-  stale when the token refreshes, and the bridge requires a fresh owner sign-in for its worker.
+- **Does not persist:** the Codex CLI, the Forge venv, any job under `/tmp` or `$HOME`, and, by
+  default, the ChatGPT sign-in. The bridge asks for a fresh owner sign-in per worker, and a stored
+  copy of Codex's auth file can go stale when the token refreshes. The owner can choose to keep a
+  login anyway: see [Keeping the login](#keeping-the-login-owner-exception).
 
 `tools/pixel-forge/scripts/cloud-gpt-setup.sh` rebuilds everything else in one command:
 
@@ -240,4 +241,36 @@ only the owner can approve it.
 `setup` prints the exact `begin` and `run` commands. Then follow the field notes above: spell the
 character out in the job prompt, never interrupt a `run`, plan for the sheet to need conversion
 (`art/enemy-reactions/shopper-hurt/convert_gpt_hurt.py` is a worked example).
+
+### Keeping the login (owner exception)
+
+On 2026-10-04 the owner said it is fine to save the login. That is an exception to the guidance
+above ("do not copy authentication files"), made knowingly by the account owner; keep it narrow.
+The login is stored as a **cloud environment secret**, never in the repo and never pasted into a
+chat. `cloud-gpt-setup.sh restore` (run by `setup` and `login`) writes it to
+`$CODEX_HOME/auth.json` with mode 600, checks it looks like a Codex login, and prints nothing.
+
+Set it up once, on your own computer:
+
+1. Make a **dedicated** login (not your everyday Codex one):
+   `CODEX_HOME="$(mktemp -d)" codex login`, then sign in with ChatGPT. (No Codex installed?
+   `npx @openai/codex login` with the same `CODEX_HOME`.)
+2. Encode it on one line: `base64 < "$CODEX_HOME/auth.json" | tr -d '\n'`, and copy the output.
+3. In the cloud environment settings (the menu in the session title bar, then Edit), add an
+   environment variable (under API credentials if that section is offered) named
+   **`PIXEL_FORGE_CODEX_AUTH_B64`** with that value.
+4. A new session now gets the login from `setup` or `login`; `status` shows whether the variable
+   is set, never its value.
+
+Limits and care:
+
+- **It can go stale.** Codex refreshes its tokens inside the session and cannot save the new ones
+  back to the secret. If OpenAI rotates refresh tokens, the stored copy stops working after a
+  refresh. `restore` only checks that the file parses and looks like a login; the first image
+  turn is the real test. On an auth error, run `login` for a fresh sign-in, or repeat steps 1 to 3.
+- **It is an account credential.** Anyone who can read or edit the environment, or run commands in
+  a session of it (including Claude), can use it. To revoke it, sign the device out in your ChatGPT
+  account's security settings. Remove the variable to stop restoring it.
+- **Never commit it.** `auth.json` lives under `$CODEX_HOME`, outside the repo, and the script
+  never writes it anywhere else.
 

@@ -20,7 +20,8 @@ no push without the owner's say-so). Presentation only; no `src/sim` change.
 
 **Next:** the Spitter's and the bosses' derived hurt strips (`docs/PIXELLAB_HANDOFF.md` §2). To
 generate with GPT again: `bash tools/pixel-forge/scripts/cloud-gpt-setup.sh setup`, then `login` (the
-owner enters the code; the sign-in is not saved between sessions), then follow the field notes and quick
+owner enters the code, unless they stored a login as the environment secret
+`PIXEL_FORGE_CODEX_AUTH_B64`, which `setup` restores; see "Keeping the login"), then follow the field notes and quick
 start in `tools/pixel-forge/docs/CODEX_NATIVE_BRIDGE.md`. A job allows 3 follow-ups. Keep
 `auth.openai.com` and `chatgpt.com` in the cloud environment's allowed domains.
 
