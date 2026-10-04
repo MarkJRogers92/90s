@@ -1,0 +1,674 @@
+{
+ "schema": "forge-rig/1",
+ "character": "bargain-hunter",
+ "facing": "WEST",
+ "canvas": [
+  128,
+  128
+ ],
+ "asymmetric": true,
+ "sheets": {
+  "walk": {
+   "path": "parts/source-sheet.png",
+   "sha256": "a1df4442c53c3852273122bae8a3e824fef2fd1f7808bb8542b5522b615dfa34"
+  }
+ },
+ "root_slot": "body",
+ "origin": [
+  0,
+  0
+ ],
+ "slots": {
+  "body": {
+   "z": 10,
+   "variants": {
+    "pose0": {
+     "image": {
+      "path": "parts/body-pose0.png",
+      "sha256": "014bf6eaed49937de5ae6caec47565394cbacfa2bc3ab74aeb2bab6d15ee105e"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "neck": [
+       63,
+       45
+      ],
+      "shoulder": [
+       68,
+       55
+      ],
+      "elbow": [
+       68,
+       66
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen refined-WEST frame 0 body (everything but head, hand, bag and planted shoes)."
+     }
+    },
+    "pose1": {
+     "image": {
+      "path": "parts/body-pose1.png",
+      "sha256": "b00d8a67d33c1ebd9db30210e022914f9a478c90fcb31c89c1ce96ab1be8583a"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "neck": [
+       58,
+       51
+      ],
+      "shoulder": [
+       67,
+       55
+      ],
+      "elbow": [
+       76,
+       62
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen refined-WEST frame 1 body (everything but head, hand, bag and planted shoes)."
+     }
+    },
+    "pose2": {
+     "image": {
+      "path": "parts/body-pose2.png",
+      "sha256": "13b2111b5b20bcf884f52b63f6631fe27011b4327cd75f4637bc4061871b4657"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "neck": [
+       45,
+       64
+      ],
+      "shoulder": [
+       60,
+       63
+      ],
+      "elbow": [
+       70,
+       67
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen refined-WEST frame 2 body (everything but head, hand, bag and planted shoes)."
+     }
+    },
+    "pose3": {
+     "image": {
+      "path": "parts/body-pose3.png",
+      "sha256": "f8739c35de524ff8d9d6ef43ad12327c1448c95e382ffa3a5869e09d1ae507a1"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "neck": [
+       45,
+       78
+      ],
+      "shoulder": [
+       55,
+       74
+      ],
+      "elbow": [
+       64,
+       69
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen refined-WEST frame 3 body (everything but head, hand, bag and planted shoes)."
+     }
+    },
+    "pose4": {
+     "image": {
+      "path": "parts/body-pose4.png",
+      "sha256": "663d22d0f859e3af39bf2dc8248b909fa76493b68a909adcc1b28b81b5e40535"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "neck": [
+       39,
+       76
+      ],
+      "shoulder": [
+       53,
+       70
+      ],
+      "elbow": [
+       63,
+       69
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen refined-WEST frame 4 body (everything but head, hand, bag and planted shoes)."
+     }
+    },
+    "pose5": {
+     "image": {
+      "path": "parts/body-pose5.png",
+      "sha256": "ac59400b38005cad71571aa343e9f1bc9c7c6f3e70014757cf45e53642e27deb"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "neck": [
+       35,
+       76
+      ],
+      "shoulder": [
+       49,
+       72
+      ],
+      "elbow": [
+       60,
+       71
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen refined-WEST frame 5 body (everything but head, hand, bag and planted shoes)."
+     }
+    }
+   },
+   "rest": "pose0"
+  },
+  "shoes": {
+   "z": 20,
+   "contact": true,
+   "attach": {
+    "parent": "body",
+    "parent_joint": "mount",
+    "joint": "mount"
+   },
+   "variants": {
+    "planted": {
+     "image": {
+      "path": "parts/shoes-planted.png",
+      "sha256": "53f90f118bd8e24e7e535a65b216d99c5210b032194e73e9fa37a3522152ca8c"
+     },
+     "domain": {
+      "path": "parts/shoes-domain.png",
+      "sha256": "73bc75296f05bb030850a77b6a9619da1fcc42d8a09cba85ee2af18588ec0699"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen planted shoe/cuff region (shoe-source within shoe-domain); exact in frames 0-3."
+     }
+    }
+   }
+  },
+  "head": {
+   "z": 30,
+   "attach": {
+    "parent": "body",
+    "parent_joint": "neck",
+    "joint": "neck"
+   },
+   "variants": {
+    "source": {
+     "image": {
+      "path": "parts/head-source.png",
+      "sha256": "12e650c30b5e0d8c3e71a7ab5e29d2eb2c27e6557b06cef2b6262583fa63e717"
+     },
+     "domain": {
+      "path": "parts/head-domain.png",
+      "sha256": "be55af813ebf7fb02c225c8c541be2d53558dee113e0a1faf81acb102a3e3320"
+     },
+     "joints": {
+      "neck": [
+       47,
+       29
+      ]
+     },
+     "provenance": {
+      "kind": "source",
+      "sheet": "walk",
+      "at": [
+       0,
+       192
+      ]
+     }
+    },
+    "tilt08": {
+     "image": {
+      "path": "parts/head-tilt08.png",
+      "sha256": "6044ccbfc7ba164ee974de5f1d829404a0642e3d9b270d1753f296f7e8916b99"
+     },
+     "joints": {
+      "neck": [
+       47,
+       29
+      ]
+     },
+     "provenance": {
+      "kind": "authored_variant",
+      "of": "head.source",
+      "method": {
+       "op": "rotate",
+       "degrees": 8,
+       "pivot": [
+        47,
+        29
+       ],
+       "algorithm": "nearest"
+      }
+     }
+    },
+    "tilt10": {
+     "image": {
+      "path": "parts/head-tilt10.png",
+      "sha256": "55ad3dacdf29e77fb061311571c88265d0ecaba308e4f4187e4caac2743c721b"
+     },
+     "joints": {
+      "neck": [
+       47,
+       29
+      ]
+     },
+     "provenance": {
+      "kind": "authored_variant",
+      "of": "head.source",
+      "method": {
+       "op": "rotate",
+       "degrees": 10,
+       "pivot": [
+        47,
+        29
+       ],
+       "algorithm": "nearest"
+      }
+     }
+    },
+    "tilt14": {
+     "image": {
+      "path": "parts/head-tilt14.png",
+      "sha256": "f56382fc839e13ea52a6cb06531ff664a1b3758ba8d6018326d72a96885633c0"
+     },
+     "joints": {
+      "neck": [
+       47,
+       29
+      ]
+     },
+     "provenance": {
+      "kind": "authored_variant",
+      "of": "head.source",
+      "method": {
+       "op": "rotate",
+       "degrees": 14,
+       "pivot": [
+        47,
+        29
+       ],
+       "algorithm": "nearest"
+      }
+     }
+    }
+   }
+  },
+  "hand": {
+   "z": 40,
+   "labels": {
+    "side": "anatomical_left",
+    "role": "hand"
+   },
+   "attach": {
+    "parent": "body",
+    "parent_joint": "mount",
+    "joint": "mount"
+   },
+   "variants": {
+    "pose0": {
+     "image": {
+      "path": "parts/hand-pose0.png",
+      "sha256": "026b6a23414bc65c8b35dc7fcf189feabc206557fe5617cce0a918fa5697ecc6"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "grip": [
+       67,
+       80
+      ],
+      "wrist": [
+       66,
+       77
+      ],
+      "hang": [
+       67,
+       80
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 0 near (anatomical-left) hand, from hand-patch-0."
+     }
+    },
+    "pose1": {
+     "image": {
+      "path": "parts/hand-pose1.png",
+      "sha256": "0844e558f7c01ae50a3b799083aa89a61eb433917d8817ad3bbe54ba2595cb4b"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "grip": [
+       84,
+       71
+      ],
+      "wrist": [
+       81,
+       68
+      ],
+      "hang": [
+       84,
+       71
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 1 near (anatomical-left) hand, from hand-patch-1."
+     }
+    },
+    "pose2": {
+     "image": {
+      "path": "parts/hand-pose2.png",
+      "sha256": "79a9124b5522391bf6434417238e90c72a0ac2099ddedd389f4a9c6fb1a60363"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "grip": [
+       84,
+       73
+      ],
+      "wrist": [
+       80,
+       71
+      ],
+      "hang": [
+       84,
+       73
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 2 near (anatomical-left) hand, from hand-patch-2."
+     }
+    },
+    "pose3": {
+     "image": {
+      "path": "parts/hand-pose3.png",
+      "sha256": "b4e6b82e1579d0c9a5120ec8bf0bf231f3332619b23a85c0e275a95f2983f324"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "grip": [
+       77,
+       63
+      ],
+      "wrist": [
+       73,
+       64
+      ],
+      "hang": [
+       77,
+       63
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 3 near (anatomical-left) hand, from hand-patch-3."
+     }
+    },
+    "pose4": {
+     "image": {
+      "path": "parts/hand-pose4.png",
+      "sha256": "b44f1b058280e2de51e2771866a923324cf977cc29745d02c19b1e8ef8d45d18"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "grip": [
+       78,
+       70
+      ],
+      "wrist": [
+       76,
+       69
+      ],
+      "hang": [
+       78,
+       70
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 4 near (anatomical-left) hand, from hand-patch-4."
+     }
+    },
+    "pose5": {
+     "image": {
+      "path": "parts/hand-pose5.png",
+      "sha256": "4bdbaa0f8424bd8d0ae372966fe48d2b1357dd86593451098faa9fc8cf287e75"
+     },
+     "joints": {
+      "mount": [
+       0,
+       0
+      ],
+      "grip": [
+       76,
+       72
+      ],
+      "wrist": [
+       73,
+       71
+      ],
+      "hang": [
+       76,
+       72
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 5 near (anatomical-left) hand, from hand-patch-5."
+     }
+    }
+   },
+   "rest": "pose0"
+  },
+  "bag": {
+   "z": 35,
+   "prop_of": "hand",
+   "labels": {
+    "owner": "near-side anatomical left hand (rig label)"
+   },
+   "attach": {
+    "parent": "hand",
+    "parent_joint": "hang",
+    "joint": "hang"
+   },
+   "variants": {
+    "pose0": {
+     "image": {
+      "path": "parts/bag-pose0.png",
+      "sha256": "be534442fb4755f3987cec9ab42c322d8267e4127c464e1419a77f6d9ba305cf"
+     },
+     "joints": {
+      "hang": [
+       67,
+       80
+      ],
+      "grip": [
+       66,
+       84
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 0 bag: tan pixels connected to grip-patch-0 plus their outline."
+     }
+    },
+    "pose1": {
+     "image": {
+      "path": "parts/bag-pose1.png",
+      "sha256": "2646fc3b1c499b14ddb5b7a346869bae8738f9110ce940f3a256fc470759cb24"
+     },
+     "joints": {
+      "hang": [
+       84,
+       71
+      ],
+      "grip": [
+       85,
+       74
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 1 bag: tan pixels connected to grip-patch-1 plus their outline."
+     }
+    },
+    "pose2": {
+     "image": {
+      "path": "parts/bag-pose2.png",
+      "sha256": "4d0df2c600b24ac8040f00f124856815256541652292a81d1cbd0390c837dc57"
+     },
+     "joints": {
+      "hang": [
+       84,
+       73
+      ],
+      "grip": [
+       87,
+       76
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 2 bag: tan pixels connected to grip-patch-2 plus their outline."
+     }
+    },
+    "pose3": {
+     "image": {
+      "path": "parts/bag-pose3.png",
+      "sha256": "51591c091fa2fd14fc756fb0dee6815af689c5ce391b34910963c25424844954"
+     },
+     "joints": {
+      "hang": [
+       77,
+       63
+      ],
+      "grip": [
+       81,
+       60
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 3 bag: tan pixels connected to grip-patch-3 plus their outline."
+     }
+    },
+    "pose4": {
+     "image": {
+      "path": "parts/bag-pose4.png",
+      "sha256": "0f6403ecc07694572a1e93cfa331efc170784de9dd147ba3962c4030ad164987"
+     },
+     "joints": {
+      "hang": [
+       78,
+       70
+      ],
+      "grip": [
+       83,
+       70
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 4 bag: tan pixels connected to grip-patch-4 plus their outline."
+     }
+    },
+    "pose5": {
+     "image": {
+      "path": "parts/bag-pose5.png",
+      "sha256": "53475b53fd7c37e3deff7f226a8ac82508a633e02241a0aed810027ab125896e"
+     },
+     "joints": {
+      "hang": [
+       76,
+       72
+      ],
+      "grip": [
+       80,
+       72
+      ]
+     },
+     "provenance": {
+      "kind": "authored",
+      "note": "Frozen frame 5 bag: tan pixels connected to grip-patch-5 plus their outline."
+     }
+    }
+   },
+   "rest": "pose0"
+  }
+ },
+ "attachment_max_gap_px": 6,
+ "contact_tolerance_px": 0,
+ "edge_margin": [
+  1,
+  1,
+  1,
+  1
+ ],
+ "limbs": [
+  {
+   "name": "near-arm",
+   "chain": [
+    "body.shoulder",
+    "body.elbow",
+    "hand.wrist"
+   ],
+   "tolerance_px": 4
+  }
+ ]
+}

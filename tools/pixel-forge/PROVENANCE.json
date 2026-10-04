@@ -1,0 +1,676 @@
+{
+  "repository": "MarkJRogers92/90s",
+  "source_branch": "pixel-forge-rig",
+  "source_commit": "e8ec6ee555711375b134d4c2bffad9ecf47ab0e2",
+  "game_base_commit": "4168761ed1b071f466e20e7cde7e8d028c7d618e",
+  "prior_local_export_commit": "3b1f796ca9ee895127f023b156c01e96007a3c6b",
+  "integration": "Scoped tools/pixel-forge directory; original snapshot history is not merged over the game",
+  "source_files": [
+    {
+      "path": ".gitignore",
+      "source_path": "workflow/forge-source/.gitignore",
+      "source_git_blob": "a230a78aea291ec7c0c35eefbc89b3898612a118"
+    },
+    {
+      "path": "RIG_GUIDE.md",
+      "source_path": "workflow/forge-source/RIG_GUIDE.md",
+      "source_git_blob": "e49e5d300064dbd19c7f5aef38f5fd0a2e1c75e6"
+    },
+    {
+      "path": "examples/west-refined-review/frozen.aseprite",
+      "source_path": "frozen-asset/Bargain_Hunter_West_Refined_REVIEW_ONLY.aseprite",
+      "source_git_blob": "34eb771e08a7a57aff165177c25bb0721ace7921"
+    },
+    {
+      "path": "examples/west-refined-review/grip-patch-0.png",
+      "source_path": "workflow/examples/west-refined-review/grip-patch-0.png",
+      "source_git_blob": "882aeb01b8fc5eced7d913fdebb3ce2ddac6b476"
+    },
+    {
+      "path": "examples/west-refined-review/grip-patch-1.png",
+      "source_path": "workflow/examples/west-refined-review/grip-patch-1.png",
+      "source_git_blob": "2a5aa5a4460440f56611eb6cc67e412e3e4be343"
+    },
+    {
+      "path": "examples/west-refined-review/grip-patch-2.png",
+      "source_path": "workflow/examples/west-refined-review/grip-patch-2.png",
+      "source_git_blob": "b6b73243978373f759ceded078de8bf672a1ca3d"
+    },
+    {
+      "path": "examples/west-refined-review/grip-patch-3.png",
+      "source_path": "workflow/examples/west-refined-review/grip-patch-3.png",
+      "source_git_blob": "d5a43e040212dbb672438000b78cc0b00aa1fc91"
+    },
+    {
+      "path": "examples/west-refined-review/grip-patch-4.png",
+      "source_path": "workflow/examples/west-refined-review/grip-patch-4.png",
+      "source_git_blob": "82a66ae71b39000c3593c4b08d8a6ff91be9967c"
+    },
+    {
+      "path": "examples/west-refined-review/grip-patch-5.png",
+      "source_path": "workflow/examples/west-refined-review/grip-patch-5.png",
+      "source_git_blob": "066e816a3007fe14cee26c4fbbe924bba168d641"
+    },
+    {
+      "path": "examples/west-refined-review/hand-patch-0.png",
+      "source_path": "workflow/examples/west-refined-review/hand-patch-0.png",
+      "source_git_blob": "9ff942ed59f8b373a0891cf726dabff2d1f959aa"
+    },
+    {
+      "path": "examples/west-refined-review/hand-patch-1.png",
+      "source_path": "workflow/examples/west-refined-review/hand-patch-1.png",
+      "source_git_blob": "01b844758c4a54387702c357848a5429c557f348"
+    },
+    {
+      "path": "examples/west-refined-review/hand-patch-2.png",
+      "source_path": "workflow/examples/west-refined-review/hand-patch-2.png",
+      "source_git_blob": "e9111e86865cf117a0982f423beefe474f420a93"
+    },
+    {
+      "path": "examples/west-refined-review/hand-patch-3.png",
+      "source_path": "workflow/examples/west-refined-review/hand-patch-3.png",
+      "source_git_blob": "7b77c2cf5fcc1d55955d8d15718c1b5bcf024ae6"
+    },
+    {
+      "path": "examples/west-refined-review/hand-patch-4.png",
+      "source_path": "workflow/examples/west-refined-review/hand-patch-4.png",
+      "source_git_blob": "a34e8901232a1113b168fa162799bce13d53840d"
+    },
+    {
+      "path": "examples/west-refined-review/hand-patch-5.png",
+      "source_path": "workflow/examples/west-refined-review/hand-patch-5.png",
+      "source_git_blob": "f6834ef578c0d3d9b1887a3554a1fd93ec80c71f"
+    },
+    {
+      "path": "examples/west-refined-review/head-domain.png",
+      "source_path": "workflow/examples/west-refined-review/head-domain.png",
+      "source_git_blob": "08b33046f828b45ef8a0a318a73f8d5edf29e83c"
+    },
+    {
+      "path": "examples/west-refined-review/head-variant-08.png",
+      "source_path": "workflow/examples/west-refined-review/head-variant-08.png",
+      "source_git_blob": "ee92dc517203399d1f345a1e90e9a1a9609842fa"
+    },
+    {
+      "path": "examples/west-refined-review/head-variant-10.png",
+      "source_path": "workflow/examples/west-refined-review/head-variant-10.png",
+      "source_git_blob": "37c9a48f2a6010e75a7dacdbf9960e3bda56ab57"
+    },
+    {
+      "path": "examples/west-refined-review/head-variant-14.png",
+      "source_path": "workflow/examples/west-refined-review/head-variant-14.png",
+      "source_git_blob": "a8ef79c8f7f4cd52a8c876967ffb1b2b6f3ca8b2"
+    },
+    {
+      "path": "examples/west-refined-review/head-variant-mask-08.png",
+      "source_path": "workflow/examples/west-refined-review/head-variant-mask-08.png",
+      "source_git_blob": "b920f9e310c1a2b70f5cb1fcdd996c43a0524e35"
+    },
+    {
+      "path": "examples/west-refined-review/head-variant-mask-10.png",
+      "source_path": "workflow/examples/west-refined-review/head-variant-mask-10.png",
+      "source_git_blob": "720094ae68ebc7dbaef558c1621c68f780c93067"
+    },
+    {
+      "path": "examples/west-refined-review/head-variant-mask-14.png",
+      "source_path": "workflow/examples/west-refined-review/head-variant-mask-14.png",
+      "source_git_blob": "86da0b633f1e0c54414438eb697acc91b3714661"
+    },
+    {
+      "path": "examples/west-refined-review/manifest.json",
+      "source_path": "workflow/examples/west-refined-review/manifest.json",
+      "source_git_blob": "fb2608516dd05b57e2aef1af186d3f7ddca71b3f"
+    },
+    {
+      "path": "examples/west-refined-review/shoe-contact-0.png",
+      "source_path": "workflow/examples/west-refined-review/shoe-contact-0.png",
+      "source_git_blob": "e34ce383b7ac79ab986d28e55efb294aceeeba89"
+    },
+    {
+      "path": "examples/west-refined-review/shoe-contact-1.png",
+      "source_path": "workflow/examples/west-refined-review/shoe-contact-1.png",
+      "source_git_blob": "e34ce383b7ac79ab986d28e55efb294aceeeba89"
+    },
+    {
+      "path": "examples/west-refined-review/shoe-contact-2.png",
+      "source_path": "workflow/examples/west-refined-review/shoe-contact-2.png",
+      "source_git_blob": "e34ce383b7ac79ab986d28e55efb294aceeeba89"
+    },
+    {
+      "path": "examples/west-refined-review/shoe-contact-3.png",
+      "source_path": "workflow/examples/west-refined-review/shoe-contact-3.png",
+      "source_git_blob": "e34ce383b7ac79ab986d28e55efb294aceeeba89"
+    },
+    {
+      "path": "examples/west-refined-review/shoe-domain.png",
+      "source_path": "workflow/examples/west-refined-review/shoe-domain.png",
+      "source_git_blob": "8d73979f5507d5060d6085ae534700572d1df457"
+    },
+    {
+      "path": "examples/west-refined-review/shoe-source.png",
+      "source_path": "workflow/examples/west-refined-review/shoe-source.png",
+      "source_git_blob": "81313a759aae7945aab774c3c1c365498cc0b2c7"
+    },
+    {
+      "path": "examples/west-refined-review/source-crop.png",
+      "source_path": "workflow/examples/west-refined-review/source-crop.png",
+      "source_git_blob": "f002f33449a7876bfccb9176a7ab5d0a1f7c88b3"
+    },
+    {
+      "path": "examples/west-refined-review/source-sheet.png",
+      "source_path": "workflow/examples/west-refined-review/source-sheet.png",
+      "source_git_blob": "c0b63a15ed6944fbde81c24f8de0545ea180f5b3"
+    },
+    {
+      "path": "examples/west-refined-review/west-0.png",
+      "source_path": "workflow/examples/west-refined-review/west-0.png",
+      "source_git_blob": "3e3d53cea2f80391a1baa7b33d5229293f52d6dd"
+    },
+    {
+      "path": "examples/west-refined-review/west-1.png",
+      "source_path": "workflow/examples/west-refined-review/west-1.png",
+      "source_git_blob": "9a198b7167fb65e8cc810dd4de8295c289a7c6d1"
+    },
+    {
+      "path": "examples/west-refined-review/west-2.png",
+      "source_path": "workflow/examples/west-refined-review/west-2.png",
+      "source_git_blob": "f6b551bc69989361dee26e5263325128655eec16"
+    },
+    {
+      "path": "examples/west-refined-review/west-3.png",
+      "source_path": "workflow/examples/west-refined-review/west-3.png",
+      "source_git_blob": "6f8dec6dd7a3b8f7185ff70d6d48ea3fbc7f4528"
+    },
+    {
+      "path": "examples/west-refined-review/west-4.png",
+      "source_path": "workflow/examples/west-refined-review/west-4.png",
+      "source_git_blob": "dce3b4d2eb048a5ae1def9354288dc33b3350beb"
+    },
+    {
+      "path": "examples/west-refined-review/west-5.png",
+      "source_path": "workflow/examples/west-refined-review/west-5.png",
+      "source_git_blob": "5a79c1baadf7254093d86215461a0f7167ff9f9f"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose0.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose0.png",
+      "source_git_blob": "b05df0ad3f46a22ee2dcc90c983fd34f3aa5f1c9"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose1.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose1.png",
+      "source_git_blob": "cc860bdcf222e5b48110817cadd63ca137d2b546"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose2.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose2.png",
+      "source_git_blob": "e5599e0445de159f5c9044d0756634a255b296fb"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose3.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose3.png",
+      "source_git_blob": "4b9762923d141f7d977706728e44ce46cf0c5261"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose4-lag06.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose4-lag06.png",
+      "source_git_blob": "f20b151c6f77d953fe9f43f141deee114485c18c"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose4-swing06.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose4-swing06.png",
+      "source_git_blob": "82d15fdd2af79738ca2c6dba1ef868e0f417a449"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose4.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose4.png",
+      "source_git_blob": "c7120dba896e53fddb17210064bdf3cfd0a8f2d7"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose5-lag16.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose5-lag16.png",
+      "source_git_blob": "41447d51c502bf0ef2acb8c112ba1097730ddcf7"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose5-swing16.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose5-swing16.png",
+      "source_git_blob": "e95edc8b578460aee4d5b5ffb37013333951d639"
+    },
+    {
+      "path": "examples/west-rig/parts/bag-pose5.png",
+      "source_path": "workflow/examples/west-rig/parts/bag-pose5.png",
+      "source_git_blob": "8b19b1f2e03b19c4a77ec40c556df7f2cae23f20"
+    },
+    {
+      "path": "examples/west-rig/parts/body-pose0.png",
+      "source_path": "workflow/examples/west-rig/parts/body-pose0.png",
+      "source_git_blob": "1bcae02a6cc1653b4ebf6748d1c5ad4d4f289870"
+    },
+    {
+      "path": "examples/west-rig/parts/body-pose1.png",
+      "source_path": "workflow/examples/west-rig/parts/body-pose1.png",
+      "source_git_blob": "335d50c1070d55a95af940399cb35f4a2b6d1208"
+    },
+    {
+      "path": "examples/west-rig/parts/body-pose2.png",
+      "source_path": "workflow/examples/west-rig/parts/body-pose2.png",
+      "source_git_blob": "0a03929bed0a0210a0f892c51a30200418542637"
+    },
+    {
+      "path": "examples/west-rig/parts/body-pose3.png",
+      "source_path": "workflow/examples/west-rig/parts/body-pose3.png",
+      "source_git_blob": "b54819036084d4c3a29ab43fc94e19c75db4c5ef"
+    },
+    {
+      "path": "examples/west-rig/parts/body-pose4.png",
+      "source_path": "workflow/examples/west-rig/parts/body-pose4.png",
+      "source_git_blob": "bf980880d472f916e42f51cdd4c5f76f3f2410a2"
+    },
+    {
+      "path": "examples/west-rig/parts/body-pose5.png",
+      "source_path": "workflow/examples/west-rig/parts/body-pose5.png",
+      "source_git_blob": "28359cdecb8682b076360ac7b4fead4cef3df9a1"
+    },
+    {
+      "path": "examples/west-rig/parts/hand-pose0.png",
+      "source_path": "workflow/examples/west-rig/parts/hand-pose0.png",
+      "source_git_blob": "af5645b0ed5bf05a02cf8043ba1f5552c353d409"
+    },
+    {
+      "path": "examples/west-rig/parts/hand-pose1.png",
+      "source_path": "workflow/examples/west-rig/parts/hand-pose1.png",
+      "source_git_blob": "3ccc54f7e9999bb574a312ef591b9e78e54ce20e"
+    },
+    {
+      "path": "examples/west-rig/parts/hand-pose2.png",
+      "source_path": "workflow/examples/west-rig/parts/hand-pose2.png",
+      "source_git_blob": "c6aa12cb754f367bb782d4393042fdf193ab78e3"
+    },
+    {
+      "path": "examples/west-rig/parts/hand-pose3.png",
+      "source_path": "workflow/examples/west-rig/parts/hand-pose3.png",
+      "source_git_blob": "b468d9c64236526b5c36997ab6c39db37082a6ba"
+    },
+    {
+      "path": "examples/west-rig/parts/hand-pose4.png",
+      "source_path": "workflow/examples/west-rig/parts/hand-pose4.png",
+      "source_git_blob": "43de0e0c25ece5a441044f7464c3ac3ae78c7f34"
+    },
+    {
+      "path": "examples/west-rig/parts/hand-pose5.png",
+      "source_path": "workflow/examples/west-rig/parts/hand-pose5.png",
+      "source_git_blob": "29e500d029ca9091d3b9f4724bd856153b949da4"
+    },
+    {
+      "path": "examples/west-rig/parts/head-domain.png",
+      "source_path": "workflow/examples/west-rig/parts/head-domain.png",
+      "source_git_blob": "08b33046f828b45ef8a0a318a73f8d5edf29e83c"
+    },
+    {
+      "path": "examples/west-rig/parts/head-source.png",
+      "source_path": "workflow/examples/west-rig/parts/head-source.png",
+      "source_git_blob": "827e80cc839fce39509775d9187aba6688a9b59f"
+    },
+    {
+      "path": "examples/west-rig/parts/head-tilt08.png",
+      "source_path": "workflow/examples/west-rig/parts/head-tilt08.png",
+      "source_git_blob": "ee92dc517203399d1f345a1e90e9a1a9609842fa"
+    },
+    {
+      "path": "examples/west-rig/parts/head-tilt10.png",
+      "source_path": "workflow/examples/west-rig/parts/head-tilt10.png",
+      "source_git_blob": "37c9a48f2a6010e75a7dacdbf9960e3bda56ab57"
+    },
+    {
+      "path": "examples/west-rig/parts/head-tilt14.png",
+      "source_path": "workflow/examples/west-rig/parts/head-tilt14.png",
+      "source_git_blob": "a8ef79c8f7f4cd52a8c876967ffb1b2b6f3ca8b2"
+    },
+    {
+      "path": "examples/west-rig/parts/legs-pose0.png",
+      "source_path": "workflow/examples/west-rig/parts/legs-pose0.png",
+      "source_git_blob": "f621fd08916b2df27fb8e96a2413749862bd653e"
+    },
+    {
+      "path": "examples/west-rig/parts/legs-pose1.png",
+      "source_path": "workflow/examples/west-rig/parts/legs-pose1.png",
+      "source_git_blob": "3477ea11bf8337290a148391aba9245081ca5856"
+    },
+    {
+      "path": "examples/west-rig/parts/legs-pose2.png",
+      "source_path": "workflow/examples/west-rig/parts/legs-pose2.png",
+      "source_git_blob": "974882b8ccd2e5d23990062de956a3da4cdc275c"
+    },
+    {
+      "path": "examples/west-rig/parts/legs-pose3.png",
+      "source_path": "workflow/examples/west-rig/parts/legs-pose3.png",
+      "source_git_blob": "d49dbca954dd85ac7f34541f8d853ccdc2ddffa2"
+    },
+    {
+      "path": "examples/west-rig/parts/legs-pose4.png",
+      "source_path": "workflow/examples/west-rig/parts/legs-pose4.png",
+      "source_git_blob": "37e64745779489a9ce1bb311119bc29a0f89dfe7"
+    },
+    {
+      "path": "examples/west-rig/parts/legs-pose5.png",
+      "source_path": "workflow/examples/west-rig/parts/legs-pose5.png",
+      "source_git_blob": "25d08ff984abc15405102726ae9d0dde223a7bfb"
+    },
+    {
+      "path": "examples/west-rig/parts/shoes-domain.png",
+      "source_path": "workflow/examples/west-rig/parts/shoes-domain.png",
+      "source_git_blob": "8d73979f5507d5060d6085ae534700572d1df457"
+    },
+    {
+      "path": "examples/west-rig/parts/shoes-planted.png",
+      "source_path": "workflow/examples/west-rig/parts/shoes-planted.png",
+      "source_git_blob": "6a14d71a374bf937541a2b995dc3b3b727bf0ffc"
+    },
+    {
+      "path": "examples/west-rig/parts/source-sheet.png",
+      "source_path": "workflow/examples/west-rig/parts/source-sheet.png",
+      "source_git_blob": "c0b63a15ed6944fbde81c24f8de0545ea180f5b3"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose0.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose0.png",
+      "source_git_blob": "b5701da7e86610d9310c93466ef81aee95eaac78"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose1.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose1.png",
+      "source_git_blob": "73bfad342e37f225d261d01c0a4d5bab5ccec5a3"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose2.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose2.png",
+      "source_git_blob": "2a02145e93687a5ae1c710d2c7bcf24a36e180b3"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose3.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose3.png",
+      "source_git_blob": "8c20b109cf332bae56d07ea44f6b01cfd6fb056f"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose4-leanp4.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose4-leanp4.png",
+      "source_git_blob": "16a96a6606cf93d330d48e8a72eacf5fdca21215"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose4.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose4.png",
+      "source_git_blob": "ef13e6dc3876fc6bd1e3eeeed3b14257d93b52b0"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose5-leanm3.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose5-leanm3.png",
+      "source_git_blob": "38d4fca8578403a536742ba74b0242b33aa655fa"
+    },
+    {
+      "path": "examples/west-rig/parts/upper-pose5.png",
+      "source_path": "workflow/examples/west-rig/parts/upper-pose5.png",
+      "source_git_blob": "0cc5f852521841c5789337633022befbb0b8ddd7"
+    },
+    {
+      "path": "examples/west-rig/recipe-v2.json",
+      "source_path": "workflow/examples/west-rig/recipe-v2.json",
+      "source_git_blob": "2ad645d293c11a0655a4c9908dd2789d9bae626e"
+    },
+    {
+      "path": "examples/west-rig/recipe-v3-base.json",
+      "source_path": "workflow/examples/west-rig/recipe-v3-base.json",
+      "source_git_blob": "ff9b582ba6f58afcaf3de05270a3c317009e6e50"
+    },
+    {
+      "path": "examples/west-rig/recipe-v3.json",
+      "source_path": "workflow/examples/west-rig/recipe-v3.json",
+      "source_git_blob": "5d2b85255212ae32ad2cf4b1922711e5d49b8600"
+    },
+    {
+      "path": "examples/west-rig/recipe.json",
+      "source_path": "workflow/examples/west-rig/recipe.json",
+      "source_git_blob": "dbe69bdd9639b0b51bd4e237fb0aa5b38009a27a"
+    },
+    {
+      "path": "examples/west-rig/rig-v2.json",
+      "source_path": "workflow/examples/west-rig/rig-v2.json",
+      "source_git_blob": "fe6f7956e86cd25a27049558d0c237ba22227aa6"
+    },
+    {
+      "path": "examples/west-rig/rig-v3.json",
+      "source_path": "workflow/examples/west-rig/rig-v3.json",
+      "source_git_blob": "3e536890e943bc9b0ac1b1bbf790595ea0c5f72b"
+    },
+    {
+      "path": "examples/west-rig/rig.json",
+      "source_path": "workflow/examples/west-rig/rig.json",
+      "source_git_blob": "7547c7d695d5990bfee1cab83af84cb7f463f963"
+    },
+    {
+      "path": "fixtures/direct-crate-v1.json",
+      "source_path": "workflow/forge-source/fixtures/direct-crate-v1.json",
+      "source_git_blob": "2b490514576368eeeaa478e2020ea5dfd94e17bb"
+    },
+    {
+      "path": "forge/__init__.py",
+      "source_path": "workflow/forge-source/forge/__init__.py",
+      "source_git_blob": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "forge/__main__.py",
+      "source_path": "workflow/forge-source/forge/__main__.py",
+      "source_git_blob": "0006ffd70810165fc150566a38fae47d39557a8b"
+    },
+    {
+      "path": "forge/animation_checks.py",
+      "source_path": "workflow/forge-source/forge/animation_checks.py",
+      "source_git_blob": "21b8b27809ed0e8d3601b7746874cce17c854044"
+    },
+    {
+      "path": "forge/animation_export.py",
+      "source_path": "workflow/forge-source/forge/animation_export.py",
+      "source_git_blob": "5a04aaed21fc7c2ee837348236a8e9389a805a21"
+    },
+    {
+      "path": "forge/artist.py",
+      "source_path": "workflow/forge-source/forge/artist.py",
+      "source_git_blob": "b1e0b6675bd2b85842eb5ef394a62344ceeca085"
+    },
+    {
+      "path": "forge/artist_guide.md",
+      "source_path": "workflow/forge-source/forge/artist_guide.md",
+      "source_git_blob": "478d8767039c92a133882c2d477c5a572fd42484"
+    },
+    {
+      "path": "forge/aseprite.py",
+      "source_path": "workflow/forge-source/forge/aseprite.py",
+      "source_git_blob": "58f139fac0bf922eafa9da6e4f627439b4d44134"
+    },
+    {
+      "path": "forge/authoring_mcp.py",
+      "source_path": "workflow/forge-source/forge/authoring_mcp.py",
+      "source_git_blob": "16ee3bfe99d140cadfb8c1ed1bac2dd7bafb66df"
+    },
+    {
+      "path": "forge/authoring_render.py",
+      "source_path": "workflow/forge-source/forge/authoring_render.py",
+      "source_git_blob": "0df4570a1be8dcc0f4b0e297648fca3817a36bbd"
+    },
+    {
+      "path": "forge/authoring_schema.py",
+      "source_path": "workflow/forge-source/forge/authoring_schema.py",
+      "source_git_blob": "328bf1acc16d11197971c08326085bef593f37b3"
+    },
+    {
+      "path": "forge/authoring_store.py",
+      "source_path": "workflow/forge-source/forge/authoring_store.py",
+      "source_git_blob": "0e53e81677b31f8fcb77ae0a54b2b0a67e73f237"
+    },
+    {
+      "path": "forge/authoring_worker.py",
+      "source_path": "workflow/forge-source/forge/authoring_worker.py",
+      "source_git_blob": "1f96d2ca6c20e2fca6f89063fefdba60244229a9"
+    },
+    {
+      "path": "forge/bounded_io.py",
+      "source_path": "workflow/forge-source/forge/bounded_io.py",
+      "source_git_blob": "f4f59231fcc7e2645b3af54fcbfadf7bab809012"
+    },
+    {
+      "path": "forge/cleanup.py",
+      "source_path": "workflow/forge-source/forge/cleanup.py",
+      "source_git_blob": "ea2d756a91fb18f2a842dee69c8ad79e4137ef56"
+    },
+    {
+      "path": "forge/cli.py",
+      "source_path": "workflow/forge-source/forge/cli.py",
+      "source_git_blob": "98c8b783e373bccd99da747a6fd0c9d7868f4daa"
+    },
+    {
+      "path": "forge/dsl.py",
+      "source_path": "workflow/forge-source/forge/dsl.py",
+      "source_git_blob": "bb554481b7c29ee0f95f2deb7dc47aa355e4f2ce"
+    },
+    {
+      "path": "forge/editors.py",
+      "source_path": "workflow/forge-source/forge/editors.py",
+      "source_git_blob": "6453db4cb2f6af44bc678fe4dcff8700371a85c7"
+    },
+    {
+      "path": "forge/library.py",
+      "source_path": "workflow/forge-source/forge/library.py",
+      "source_git_blob": "56ac34b6eb5b806980ef3133c2134b7804c282c9"
+    },
+    {
+      "path": "forge/lint.py",
+      "source_path": "workflow/forge-source/forge/lint.py",
+      "source_git_blob": "f4ea564606d3b9156e10c3ba4abd3c384ce56642"
+    },
+    {
+      "path": "forge/mcp_server.py",
+      "source_path": "workflow/forge-source/forge/mcp_server.py",
+      "source_git_blob": "554f8e5666c64f6b9cddc44d783c967672745d84"
+    },
+    {
+      "path": "forge/polish.py",
+      "source_path": "workflow/forge-source/forge/polish.py",
+      "source_git_blob": "93d6715503ddbe6700f604793d9f26fe072e3809"
+    },
+    {
+      "path": "forge/profiles.py",
+      "source_path": "workflow/forge-source/forge/profiles.py",
+      "source_git_blob": "c66ef00e72e52e9377a610cee628770b1d40a8e2"
+    },
+    {
+      "path": "forge/projects.py",
+      "source_path": "workflow/forge-source/forge/projects.py",
+      "source_git_blob": "28920a5c026ef18dd254b3901a2348e81621ed58"
+    },
+    {
+      "path": "forge/qa.py",
+      "source_path": "workflow/forge-source/forge/qa.py",
+      "source_git_blob": "616c919f9d419cb8fe05a42a392dd659f3b82d6c"
+    },
+    {
+      "path": "forge/readonly_mcp.py",
+      "source_path": "workflow/forge-source/forge/readonly_mcp.py",
+      "source_git_blob": "8eb8574c0532db2d96ca3915abde829789784dcd"
+    },
+    {
+      "path": "forge/rig.py",
+      "source_path": "workflow/forge-source/forge/rig.py",
+      "source_git_blob": "0e2b560a2cf07ba318683369877973e540af5b7c"
+    },
+    {
+      "path": "forge/routes.py",
+      "source_path": "workflow/forge-source/forge/routes.py",
+      "source_git_blob": "07baceb2a6a4d9c5faefd207abe54cdf1bdf8f80"
+    },
+    {
+      "path": "forge/server.py",
+      "source_path": "workflow/forge-source/forge/server.py",
+      "source_git_blob": "4b03885c791cf73247bcc8886ee8791cd5dae8c8"
+    },
+    {
+      "path": "forge/sprite.py",
+      "source_path": "workflow/forge-source/forge/sprite.py",
+      "source_git_blob": "bc5ca32a27ee7ac65f38421a7725b8b0e7164869"
+    },
+    {
+      "path": "forge.sh",
+      "source_path": "workflow/forge-source/forge.sh",
+      "source_git_blob": "733f80102831380ea5cdfdc3421e25d485653173"
+    },
+    {
+      "path": "requirements-tested.txt",
+      "source_path": "workflow/forge-source/requirements-tested.txt",
+      "source_git_blob": "f89475341486f0a12427d1820ff2be9e2fdb46f2"
+    },
+    {
+      "path": "requirements.txt",
+      "source_path": "workflow/forge-source/requirements.txt",
+      "source_git_blob": "01cc4ea819f22a10a5a9c64b3337a181000e3ffa"
+    },
+    {
+      "path": "run_native_check.sh",
+      "source_path": "run_native_check.sh",
+      "source_git_blob": "53e1b63a2f16c5358a4b52fd94b8f8f235df4391"
+    },
+    {
+      "path": "tests/test_animation_checks.py",
+      "source_path": "workflow/forge-source/tests/test_animation_checks.py",
+      "source_git_blob": "3f3b811b56058df67624238af39fb01901bc6bab"
+    },
+    {
+      "path": "tests/test_animation_export.py",
+      "source_path": "workflow/forge-source/tests/test_animation_export.py",
+      "source_git_blob": "04f635e0668c3553870fd30c096875f5b42b1b0b"
+    },
+    {
+      "path": "tests/test_authoring.py",
+      "source_path": "workflow/forge-source/tests/test_authoring.py",
+      "source_git_blob": "d0305558fef54cdff3ed8e95c5cfaecab2849c75"
+    },
+    {
+      "path": "tests/test_authoring_mcp.py",
+      "source_path": "workflow/forge-source/tests/test_authoring_mcp.py",
+      "source_git_blob": "3a97a9922fc9465b05379ac8041a53ced7ee3958"
+    },
+    {
+      "path": "tests/test_authoring_protocol.py",
+      "source_path": "workflow/forge-source/tests/test_authoring_protocol.py",
+      "source_git_blob": "5433ca606785d526911725d1d66f56715458b2ef"
+    },
+    {
+      "path": "tests/test_conversion.py",
+      "source_path": "workflow/forge-source/tests/test_conversion.py",
+      "source_git_blob": "18f811acbc59540e2e4bf22ccc6986a3de789fde"
+    },
+    {
+      "path": "tests/test_engine.py",
+      "source_path": "workflow/forge-source/tests/test_engine.py",
+      "source_git_blob": "c310667825827253c8c2c29ff3fb87ee923b6ae9"
+    },
+    {
+      "path": "tests/test_merge.py",
+      "source_path": "workflow/forge-source/tests/test_merge.py",
+      "source_git_blob": "e7a45fb2d50dae97ee0ef2758085c07d02a30275"
+    },
+    {
+      "path": "tests/test_readonly_mcp.py",
+      "source_path": "workflow/forge-source/tests/test_readonly_mcp.py",
+      "source_git_blob": "f0fe06ac7687517a67b7b5be6a86e9aeaa276133"
+    },
+    {
+      "path": "tests/test_rig.py",
+      "source_path": "workflow/forge-source/tests/test_rig.py",
+      "source_git_blob": "ffaeacf259a2d1c98c5307322c245142b4c8670a"
+    }
+  ],
+  "integration_changes": [
+    "Flattened tool source into this directory and examples into examples/",
+    "Repaired native-check runner to reject unexpected failures and validate expected negative fixture explicitly",
+    "Added runner regression tests, integration documentation, and verified-source provenance",
+    "Excluded historical build/import scripts, an unused derived PNG, private handoff reports, environments, dependencies, generated outputs, and executable binaries"
+  ]
+}

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+.pytest_cache/
+native-check-*/
+review-*/
+library/
+profiles/
+projects.json
+.env

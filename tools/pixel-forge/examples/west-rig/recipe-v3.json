@@ -1,0 +1,145 @@
+{
+ "schema": "forge-pose/1",
+ "rig": {
+  "path": "rig-v3.json",
+  "sha256": "c2a4c02146febf1caacc5eae0bd2767b74d07af3f7ea0fd85263d017a9d17d7e"
+ },
+ "frames": [
+  {
+   "id": "0",
+   "phase": "windup",
+   "duration_ms": 142,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "head": "source",
+    "hand": "pose0",
+    "bag": "pose0",
+    "shoes": "planted",
+    "upper": "pose0",
+    "legs": "pose0"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "1",
+   "phase": "windup",
+   "duration_ms": 142,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "head": "source",
+    "hand": "pose1",
+    "bag": "pose1",
+    "shoes": "planted",
+    "upper": "pose1",
+    "legs": "pose1"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "2",
+   "phase": "windup",
+   "duration_ms": 142,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "head": "tilt08",
+    "hand": "pose2",
+    "bag": "pose2",
+    "shoes": "planted",
+    "upper": "pose2",
+    "legs": "pose2"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "3",
+   "phase": "windup",
+   "duration_ms": 141,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "head": "tilt14",
+    "hand": "pose3",
+    "bag": "pose3",
+    "shoes": "planted",
+    "upper": "pose3",
+    "legs": "pose3"
+   },
+   "hidden": [],
+   "planted": [
+    "shoes"
+   ]
+  },
+  {
+   "id": "4",
+   "phase": "charge",
+   "duration_ms": 133,
+   "root": [
+    0,
+    0
+   ],
+   "pose": {
+    "head": "tilt10",
+    "hand": "pose4",
+    "bag": "pose4-swing06",
+    "upper": "pose4-leanp4",
+    "legs": {
+     "variant": "pose4",
+     "nudge": [
+      0,
+      1
+     ]
+    }
+   },
+   "hidden": [
+    "shoes"
+   ],
+   "planted": [],
+   "grounded": [
+    "legs"
+   ]
+  },
+  {
+   "id": "5",
+   "phase": "charge",
+   "duration_ms": 133,
+   "root": [
+    -91,
+    0
+   ],
+   "pose": {
+    "head": "tilt14",
+    "hand": "pose5",
+    "bag": "pose5-swing16",
+    "upper": "pose5-leanm3",
+    "legs": "pose5"
+   },
+   "hidden": [
+    "shoes"
+   ],
+   "planted": [],
+   "grounded": [
+    "legs"
+   ]
+  }
+ ]
+}
