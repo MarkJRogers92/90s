@@ -23,7 +23,7 @@ import { STATIC_BURST_RADIUS, STATIC_TELEGRAPH_TICKS } from '../../sim/combat/st
 import { SHOPPER_CHARGE_TICKS, SHOPPER_TELEGRAPH_TICKS } from '../../sim/combat/shopper';
 import { MASCOT_CHARGE_SPEED_PER_TICK, MASCOT_CHARGE_TICKS, MASCOT_TELEGRAPH_TICKS } from '../../sim/combat/mascot';
 import { ROOFER_LOB_TICKS, TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
-import { ELF_CROUCH_TICKS, ELF_HOP_TICKS, ELF_STOMP_RADIUS, GOON_WINDUP_TICKS, POODLE_CROUCH_TICKS, POODLE_DASH_SPEED, POODLE_DASH_TICKS, SPRITZ_WINDUP_TICKS } from '../../sim/combat/districtEnemies';
+import { ELF_CROUCH_TICKS, ELF_HOP_TICKS, ELF_STOMP_RADIUS, GOON_SHOT_CADENCE, GOON_WINDUP_TICKS, POODLE_CROUCH_TICKS, POODLE_DASH_SPEED, POODLE_DASH_TICKS, SPRITZ_WINDUP_TICKS } from '../../sim/combat/districtEnemies';
 import { PERFUME_CLOUD_RADIUS } from '../../sim/combat/perfume';
 import { DASH_TICKS } from '../../sim/combat/dash';
 import type { ActorDirection } from './ActorSpriteView';
@@ -352,6 +352,13 @@ export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], fr
   // as `pursue` with chargeTicks left: keep the release pose, stepping between its frames,
   // rather than dropping back to the walk sheet mid-lunge.
   if ((enemy.chargeTicks ?? 0) > 0) return windupFrames + (Math.floor(tick / CHARGE_STRIDE_TICKS) % release);
+  // The hockey goon fires from its telegraph straight back into `pursue` with the shot
+  // cadence reloaded, so its follow-through counts from that reload instead.
+  if (enemy.kind === 'goon' && enemy.phase === 'pursue') {
+    const since = GOON_SHOT_CADENCE - enemy.cooldownTicks;
+    if (since < 0 || since >= ATTACK_RELEASE_TICKS) return null;
+    return Math.min(frames - 1, windupFrames + Math.floor((since / ATTACK_RELEASE_TICKS) * release));
+  }
   if (enemy.phase !== 'recover') return null;
   const recoverTicks = enemy.kind === 'spitter'
     ? SPITTER_RECOVER_TICKS

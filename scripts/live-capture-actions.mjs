@@ -25,6 +25,7 @@ async function crop(p, box, x, y, file, half = 90) {
 }
 const TARGETS = [
   ['fixture=mvp-floor-three-brute&seed=1', 'mascot'], ['fixture=mvp-floor-two-hunter&seed=1', 'shopper'], ['fixture=mvp-floor-four-roofer&seed=1', 'roofer'], ['fixture=mvp-district&floor=2&seed=1', 'spritzer'],
+  ['fixture=mvp-district&floor=1&room=back_hall&seed=1', 'elf'], ['fixture=mvp-district&floor=3&seed=1', 'poodle'], ['fixture=mvp-district&floor=4&seed=1', 'goon'],
   // Bosses: the floor fights, and each district's mini-boss in its Lockdown room.
   ['fixture=mvp-floor-two-boss&seed=1', 'manager'], ['fixture=mvp-floor-three-boss&seed=1', 'owner'], ['fixture=mvp-floor-four-boss&seed=1', 'developer'],
   ['fixture=mvp-district&floor=1&room=security_office&seed=1', 'santa'], ['fixture=mvp-district&floor=2&room=security_office&seed=1', 'glamour_queen'],
@@ -38,8 +39,10 @@ for (const [query, kind] of TARGETS.filter(([, k]) => !only || only.includes(k))
   for (let i = 0; i < 500; i++) {
     const s = await snap(p); if (s.status !== 'playing') break;
     const ev = s.actorPresentation?.enemies ?? [];
-    for (const e of s.enemies) if (e.kind === kind && (e.phase === 'telegraph' || (e.chargeTicks ?? 0) > 0)) {
+    for (const e of s.enemies) if (e.kind === kind) {
       const x = ev.find((v) => v.id === `enemy:${e.id}`); if (!x) continue;
+      // Telegraph frames go in `frames`; anything after it (a charge, a follow-through) in `charge`.
+      if (e.phase !== 'telegraph' && (e.chargeTicks ?? 0) <= 0 && !x.textureKey.includes('attack')) continue;
       (e.phase === 'telegraph' ? seen : charging).add(`${x.textureKey.split(':').pop()}[${x.frame.column}]`);
       if (shots < 3 && x.textureKey.includes('attack') && x.frame.column >= shots * 2) { await crop(p, box, e.x, e.y - (big ? 70 : 40), `${kind}-${shots}.png`, big ? 130 : 90); shots += 1; }
     }

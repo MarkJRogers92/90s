@@ -81,17 +81,12 @@ release frames.
 The walk and idle sheets are in `public/assets/neon/enemies/`. Every character's
 walk frame is 92 px, except the Bargain Hunter's, which is 96 px.
 
-### Job A: attack wind-ups (highest value; the code is already wired)
+### Job A: attack wind-ups: **done** (2026-10-04)
 
-The game already looks for these files. Each one only needs drawing, checking
-and registering (section 4).
-
-| File to make | Character | Frames | The action (what the game does) |
-|---|---|---|---|
-| `shopper-attack.png` | Bargain Hunter (walk 96 px) | 6 | **Charge.** Plants feet, hunches, swings the shopping bag back, glares (frames 0–3). Then barrels forward shoulder-first (frames 4–5). Telegraph 34 ticks (about 0.6 s). |
-| `poodle-attack.png` | Rabid Poodle (92) | 6 | **Charge.** A short crouch: hackles up, haunches down, snarling (0–3). Then springs forward in a dash (4–5). Telegraph only 16 ticks, so the crouch must read at a glance. |
-| `elf-attack.png` | Animatronic Elf (92) | 6 | **Leap and stomp.** Crouches, then springs into the air, tucks, and lands with a stomp. 0–3: crouch to spring; 4: airborne; 5: landing stomp. The game moves the sprite, so draw it in place. |
-| `goon-attack.png` | Hockey Goon (92) | 6 | **Slap shot.** Winds the hockey stick back high over the shoulder (0–3), then swings through and fires the puck (4–5). Telegraph 30 ticks. After installing it, check in game that frames 4–5 show; `attackFrameFor` in `src/game/view/combatBeats.ts` may need a recover branch for the Goon. |
+All four are drawn, registered and live-checked: `shopper-attack.png` (Bargain Hunter, PR #59)
+and `poodle-attack.png`, `elf-attack.png` and `goon-attack.png` (PixelLab, `feat/district-attacks`).
+The Goon got its release branch in `attackFrameFor`. For PixelLab work that is still open, see
+`docs/PIXELLAB_HANDOFF.md`.
 
 Optional: `static-attack.png` (the Static's teleport "blink"). The game does not
 map blink wind-ups to frames yet, so it needs a small code change in
@@ -108,6 +103,8 @@ so on), plus a little code. Follow the step-by-step recipe in
 
 In order: Bargain Hunter (`shopper-hurt.png`), Mall Walker (`walker-hurt.png`),
 Mascot, Roofer, Elf, Spritzer, Poodle, Goon, then the bosses (shorter flinches).
+PixelLab hurt strips for some of these are banked in `art/pixellab/`; see
+`docs/PIXELLAB_HANDOFF.md` before drawing one from scratch.
 
 ## 4. How to check and install a sheet
 

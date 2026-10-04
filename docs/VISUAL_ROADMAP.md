@@ -38,8 +38,8 @@ or start something; keep items small enough for one PR.
 | ID | Item | Status | Size |
 |---|---|---|---|
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
-| V1 | Native hurt reactions for the remaining enemies | **Hanger done**; 16 kinds left | M per batch |
-| V2 | Authored attack sheets for wind-up enemies and bosses | **Spritzer, Mascot, Roofer (PR #56) and all seven bosses (PixelLab, `feat/boss-attack-sheets`) done**; Elf, Poodle, Goon, Bargain Hunter, Static open | L |
+| V1 | Native hurt reactions for the remaining enemies | **Hanger done**; art banked for Walker, Elf, Spritzer, Poodle, Goon, Mascot (`docs/PIXELLAB_HANDOFF.md`); 16 kinds left to wire | M per batch |
+| V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy (Bargain Hunter PR #59; Elf, Poodle, Goon `feat/district-attacks`); Static needs code first | L |
 | V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
 | V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |

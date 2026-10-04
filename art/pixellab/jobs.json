@@ -145,5 +145,122 @@
       "east": "3da4d25b-ce9f-4762-9a22-2a1c5e883b45",
       "south-east": "9466a2ce-71de-492a-9cf1-7edbb122f6fe"
     }
+  },
+  "poodle-attack": {
+    "group": "855c7077-e781-4c29-8baa-1afd808d09ba",
+    "jobs": {
+      "south": "7d7f502b-8264-4138-aff9-194b92b612a6",
+      "south-west": "20e5e1b5-7880-4b85-8812-ccb0cd3a6758",
+      "west": "ad2f1ee6-7d3b-42a5-a2f6-76407b2895e4",
+      "north-west": "529362f7-a2a2-40d0-8405-650e0ad55815",
+      "north": "a208f29c-94df-4c91-9a0c-7c3aea23a8ae",
+      "north-east": "6480bb70-3be7-426f-a990-59f4c213aa6b",
+      "east": "9a19e25d-6017-4284-ac26-4f01e768b8e0",
+      "south-east": "3307ef56-1caa-4a75-b568-f4b6b2e425a3"
+    }
+  },
+  "elf-attack": {
+    "group": "c8045894-e0cb-45d7-b780-1f4d247d578b",
+    "jobs": {
+      "south": "d49430b9-3439-45d0-84e5-6ce82c483dbe",
+      "south-west": "126d9edf-d04a-4ab2-afb7-e0e2c66f6bc2",
+      "west": "1613f0ce-293b-4b7e-880c-61bc5fe39287",
+      "north-west": "fc27519f-bade-4c0b-abf8-ef24dc32518e",
+      "north": "a99d7e3c-df38-4360-8fe1-b4d1cd634de9",
+      "north-east": "55fbd31a-9c86-4464-a76f-d537a95d7cbe",
+      "east": "7e5aecea-f079-450b-8376-c2bc71b8f5a2",
+      "south-east": "e21467f3-1d7f-456b-a38e-692a4a9d9e30"
+    }
+  },
+  "goon-attack": {
+    "group": "8acf9c43-4605-43e1-b671-4af680b2a8c4",
+    "jobs": {
+      "south": "eed6e9ce-5b04-46e4-94d6-78b390f0c410",
+      "south-west": "cadcad29-7646-4801-b13d-56d66cbd7413",
+      "west": "9b86110d-2d7f-4c72-804e-affb236e7cd7",
+      "north-west": "cea9274e-42c1-4115-a487-eafe4bb79c3d",
+      "north": "9d845cc2-f5a0-4542-8405-c33a2ee2f558",
+      "north-east": "7ad56f88-2417-4bb3-abbe-ce16b10d6951",
+      "east": "1cb8e287-8315-4979-bdd7-0621f16afd11",
+      "south-east": "06362a66-888a-45bb-b6a5-7770c30ea56a"
+    }
+  },
+  "walker-hurt": {
+    "group": "522c943f-bdb9-4653-864a-9531efc716aa",
+    "jobs": {
+      "south": "bf1b46b2-098c-4697-bccb-54ab5c121e70",
+      "south-west": "7c161f3b-f20a-48a8-930d-5f73d91b38ed",
+      "west": "5098f4a1-b1aa-443a-af49-6e275fdbeafe",
+      "north-west": "78c4daf1-fdd3-44b0-b7ac-0a3996c3cd2e",
+      "north": "5735b326-d60b-4deb-b452-7631dce3ece2",
+      "north-east": "caa0c41a-f135-40fb-b3fa-6f91e818cc4b",
+      "east": "afa11211-5e12-4e77-a815-4975f6f49e88",
+      "south-east": "a9c4bb25-bf0b-4b0a-a425-4aaeafd221a3"
+    }
+  },
+  "elf-hurt": {
+    "group": "c2837e5f-618e-493c-b95d-92e6774d6eaa",
+    "jobs": {
+      "south": "b742aff2-4739-4316-8503-4f4a2e6891c0",
+      "south-west": "51c5e077-6527-493d-a645-db189a75a27a",
+      "west": "b32326a6-e265-4b51-af84-79b07d375397",
+      "north-west": "0c7f2778-a737-4864-8685-14c14babb2e2",
+      "north": "87e4e164-8834-4e38-a8e9-44ba103da14c",
+      "north-east": "f4d1b857-214f-4952-b4db-75057933760c",
+      "east": "026ddb3a-be3f-4352-b963-fa0136d68cea",
+      "south-east": "837e176c-f56b-4c8e-93c4-ee445bed7936"
+    }
+  },
+  "spritzer-hurt": {
+    "group": "406b8619-b796-4795-8ec1-1d4dbded2a70",
+    "jobs": {
+      "south": "5fcfafc2-7b17-48b6-aa1b-44824a0184ab",
+      "south-west": "1bf54e28-ad13-4f58-ac88-10c58e15770b",
+      "west": "6ff5b227-d885-4256-ac4e-a42a0342f6e6",
+      "north-west": "5212035f-0b39-4244-bbfc-d7419e79c402",
+      "north": "7c91f6bb-55b1-4676-bad6-a96179967662",
+      "north-east": "44fbf6da-418a-49c4-8cec-db9d2267fb74",
+      "east": "11baa45d-b8dd-47dd-80d8-6b09607028d3",
+      "south-east": "8a6fc387-07ef-465f-b233-70337a8a5239"
+    }
+  },
+  "poodle-hurt": {
+    "group": "027e7fa1-dfa7-4882-83c6-d106f5fdc233",
+    "jobs": {
+      "south": "b201a132-d842-4121-a984-106f295fff00",
+      "south-west": "48876307-0b30-419c-a9de-cb85c70471f3",
+      "west": "5b494565-9b31-4d57-b7dc-be99a77ae857",
+      "north-west": "71e83cff-f904-49b0-9675-896642980804",
+      "north": "03cb9728-fb67-4bba-9c07-de72653d08cc",
+      "north-east": "123ee105-b5f3-4c83-b770-10079ed186d7",
+      "east": "e3b53170-987e-4340-8dbe-674b77514697",
+      "south-east": "02a4d456-dfda-46b5-b003-ef58159afefb"
+    }
+  },
+  "goon-hurt": {
+    "group": "4d731f3b-ae13-4c86-b4b0-575a5a22baf7",
+    "jobs": {
+      "south": "68b8d533-c44a-4d5f-8326-c2c56262f610",
+      "south-west": "80822e68-71b8-4d4b-b399-7b5588241660",
+      "west": "a4b6e4b1-0553-404c-9ca7-2ebeb360ecdc",
+      "north-west": "1a48f1c2-2b15-4b7e-a7d3-cce324485250",
+      "north": "802e4505-7a64-42b2-81c1-758cb0216210",
+      "north-east": "06790ca9-4f4d-46b6-9ce1-f785d4a943cb",
+      "east": "049fec69-677a-4d07-a333-34b0abd7fa73",
+      "south-east": "837014e2-631d-4823-aa66-141ec30c30ab"
+    }
+  },
+  "mascot-hurt": {
+    "group": "a93db5cf-1cf9-4664-8e2d-ab8e6b2d190f",
+    "jobs": {
+      "south": "0b79e163-8297-42f3-bde8-d9f9c592d0f2",
+      "south-west": "a0a3064a-683a-44fb-94b4-68ba1964fd3c",
+      "west": "b30fb676-00ba-449a-95e2-99f77c074ea9",
+      "north-west": "54b9d3fb-8a6a-4d7f-9f5f-a3af0ba6a7e5",
+      "north": "02efa723-47be-4388-9e9c-6ca65885235b",
+      "north-east": "6e16f34a-2915-4c9a-af50-5fcde75a8c0e",
+      "east": "3576700d-d895-46b5-8018-aca9a2867e25",
+      "south-east": "e38a26d9-2789-4df2-80b9-aa94231500e0"
+    }
   }
 }
