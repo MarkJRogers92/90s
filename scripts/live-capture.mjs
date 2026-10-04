@@ -32,6 +32,18 @@ await page.waitForFunction(() => !window.__DEAD_MALL_DEBUG__.snapshot().cinemati
 await page.keyboard.press('Enter').catch(() => {});
 await page.waitForTimeout(wait);
 const snap = () => page.evaluate(() => window.__DEAD_MALL_DEBUG__.snapshot());
+// An in-page sampler on every animation frame: a boss flinch lasts 7 ticks, shorter than one
+// round trip of the polling below, so record every native hurt frame the renderer reports.
+await page.evaluate(() => {
+  window.__HURT_SEEN__ = new Set();
+  const tick = () => {
+    for (const actor of window.__DEAD_MALL_DEBUG__?.snapshot().actorPresentation?.enemies ?? []) {
+      if (actor.textureKey.includes('-hurt')) window.__HURT_SEEN__.add(`${actor.textureKey.split(':').pop()}[${actor.frame.column}]`);
+    }
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+});
 let state = await snap();
 await page.screenshot({ path: `${out}-room.png` });
 console.log(JSON.stringify({ room: state.roomId, tick: state.tick, enemies: (state.enemies ?? []).map((e) => `${e.kind}@${Math.round(e.x)},${Math.round(e.y)}:${e.health}`) }));
@@ -71,7 +83,7 @@ if (attack) {
           const seen = [];
           let framed = false;
           for (let f = 0; f < 40; f += 1) {
-            const actors = await page.evaluate(() => window.__DEAD_MALL_DEBUG__.snapshot().actorPresentation?.hangers ?? []);
+            const actors = await page.evaluate(() => window.__DEAD_MALL_DEBUG__.snapshot().actorPresentation?.enemies ?? []);
             const mine = actors.find((a) => a.id === `enemy:${hit.id}`);
             if (mine) seen.push(`${mine.textureKey.split(':').pop()}[${mine.frame.column}]`);
             if (!framed && mine?.textureKey.includes('hurt')) {
@@ -94,5 +106,6 @@ if (attack) {
   }
   console.log(JSON.stringify({ hitShots: shots }));
 }
+console.log(JSON.stringify({ hurtFramesSeen: await page.evaluate(() => [...(window.__HURT_SEEN__ ?? [])].sort()) }));
 console.log(JSON.stringify({ errors }));
 await browser.close();

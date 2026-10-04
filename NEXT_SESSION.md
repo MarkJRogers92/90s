@@ -1,5 +1,45 @@
 # Next session
 
+## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
+
+Branch `feat/hurt-reactions`. Presentation only; no `src/sim` change, no balance change.
+
+**What changed.** Every enemy kind now flinches in its own 4-frame hurt strip and chips its own
+material instead of blood.
+- **Hurt strips:**
+  - PixelLab (8 facings): the Walker, Elf, Spritzer, Poodle, Goon, Mascot and Roofer. The
+    Roofer was new this round and cost 16; 16 generations are left.
+  - Derived from the walk art: the Bargain Hunter, the Spitter (from its idle) and all eight
+    bosses. Bosses flinch over 2/2/2/1 ticks.
+- **Impact strips:** each kind has a 6 × 48 px strip in its own material: sweat, coupons, foam,
+  tar, goo, glitter, mist, fur, ice, paper, tinsel and so on.
+- **Build:** `art/enemy-reactions/materials/build_material_reactions.py` builds all 34 PNGs. It
+  erases the effects PixelLab painted in: the Walker's north-row burst (re-posed from frame 0),
+  the Spritzer's sparks, swirl and falling bottles, and the Mascot's spark.
+- **Code:**
+  - `EnemyReactionView.ts` holds one `NATIVE` table. Scale and feet are computed the way
+    `syncActorSprite` computes them.
+  - `CombatFeedback` makes one impact view per material, on its first hit.
+  - A flinch interrupts the attack pose only for the contact biters (Hanger, Walker), and for a
+    boss in its follow-through. A boss's slam, volley and charge telegraphs, and every other
+    wind-up, keep priority (`flinchOutranksAttack`, tested). Deaths are unchanged.
+- **`scripts/live-capture.mjs --attack`** now records any enemy's frames, not only the Hanger's.
+  An in-page sampler reports every hurt frame drawn (`hurtFramesSeen`), because a boss's 7-tick
+  flinch is shorter than one polling round trip.
+
+**Evidence:**
+- `tests/unit/material-reactions.test.ts` covers 17 kinds × 4 checks against the real PNGs. It
+  failed first (69 failures), then passed.
+- Two older tests expected a Spitter hit to bleed. They now assert the V1 contract: no blood,
+  and a flash when the art is missing.
+- Unit 1,920 of 1,920; `tsc` passes.
+- **Live** (`artifacts/live-qa/hurt/`, 0 console errors on every page):
+  - **Hurt frames drawn after a real hit:** Mascot, Roofer, Elf, Poodle, Spitter, Spritzer and
+    Zamboni (`zamboni-hurt[0]`, `[2]`).
+  - **Wind-up kept priority:** the Manager's single hit landed during its wind-up.
+  - **No hit landed:** the capture bot landed none on the Walker, Bargain Hunter or Goon. These
+    kinds run the same code path, and the unit tests cover them against their real PNGs.
+
 ## 2026-10-04 UTC — District monster attack sheets + banked hurt strips (PixelLab)
 
 Branch `feat/district-attacks`. Presentation only; no `src/sim` change, no balance change.

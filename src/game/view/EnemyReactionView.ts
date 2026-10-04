@@ -1,15 +1,20 @@
-/** Renderer-only material hurt/impact contracts (mannequin, CRT Static, Hanger); never changes combat state. */
+/** Renderer-only material hurt/impact contracts (every enemy kind, roadmap V1); never changes combat state. */
 import type Phaser from 'phaser';
 import { ENEMY_TEXTURE_KEYS } from '../presentation/assets';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { presentationDepth } from '../presentation/depth';
-import { ACTOR_DIRECTION_ORDER, type ActorDirection, type SpriteSpec } from './ActorSpriteView';
+import { ACTOR_DIRECTION_ORDER, enemySpriteSheet, type ActorDirection, type SpriteSpec } from './ActorSpriteView';
+import type { EnemyKind } from '../../sim/model';
+import { isBossKind } from '../../sim/combat/boss';
 
 export const MANNEQUIN_HURT_FRAME_TICKS = [3, 3, 4, 4] as const;
 export const MANNEQUIN_HURT_TICKS = 14;
 export const STATIC_HURT_FRAME_TICKS = [3, 3, 4, 4] as const;
 export const STATIC_HURT_TICKS = 14;
 export const HANGER_HURT_FRAME_TICKS = [3, 3, 4, 4] as const;
+/** Every other enemy flinches like the Hanger; bosses flinch shorter (roadmap V1). */
+export const NATIVE_HURT_FRAME_TICKS = [3, 3, 4, 4] as const;
+export const BOSS_HURT_FRAME_TICKS = [2, 2, 2, 1] as const;
 export const MAX_MANNEQUIN_IMPACTS = 24;
 export const MAX_STATIC_IMPACTS = 24;
 const IMPACT_FRAME_SIZE = 48;
@@ -17,7 +22,8 @@ const IMPACT_FRAMES = 6;
 const IMPACT_FRAME_TICKS = 2;
 const IMPACT_TICKS = IMPACT_FRAMES * IMPACT_FRAME_TICKS;
 
-export type MaterialKind = 'mannequin' | 'static' | 'hanger';
+type NativeKind = Exclude<EnemyKind, 'mannequin' | 'static' | 'hanger'>;
+export type MaterialKind = 'mannequin' | 'static' | 'hanger' | NativeKind;
 type MaterialReaction = {
   readonly hurtKey: string;
   readonly impactKey: string;
@@ -28,25 +34,80 @@ type MaterialReaction = {
   readonly feetY: number;
   /** Matte fallback flecks when the impact strip is missing. */
   readonly flecks: readonly [number, number];
+  /** How far above the feet a hit's impact strip is centred. */
+  readonly impactLift: number;
 };
+
+/**
+ * Roadmap V1 (art/enemy-reactions/materials): hurt frame (the walk canvas, grown evenly for a
+ * PixelLab strip), idle frame, and the impact's fallback flecks in the enemy's own material.
+ * Scale and feet follow syncActorSprite: displaySize / idle, and 84% of the idle frame.
+ */
+const NATIVE: Readonly<Record<NativeKind, { readonly frame: number; readonly idle: number; readonly flecks: readonly [number, number]; readonly boss?: true }>> = {
+  walker: { frame: 100, idle: 92, flecks: [0x90d0f0, 0xd8f0ff] },        // sweat
+  shopper: { frame: 96, idle: 96, flecks: [0xd8c890, 0xf4f0e0] },        // coupons
+  mascot: { frame: 132, idle: 96, flecks: [0xf0c070, 0xfff4d8] },        // foam stuffing
+  roofer: { frame: 152, idle: 136, flecks: [0x302830, 0x706878] },       // tar
+  spitter: { frame: 64, idle: 64, flecks: [0x9aff6a, 0xc8ffa0] },        // goo
+  elf: { frame: 108, idle: 92, flecks: [0xf0c030, 0xfff090] },           // glitter
+  spritzer: { frame: 104, idle: 92, flecks: [0xe090e0, 0xffd8f8] },      // perfume mist
+  poodle: { frame: 92, idle: 92, flecks: [0xf090b0, 0xffc8e0] },         // fur
+  goon: { frame: 104, idle: 92, flecks: [0xa8e8f0, 0xf0ffff] },          // ice
+  lp_manager: { frame: 64, idle: 64, flecks: [0xc0c8d8, 0xf4f0e0], boss: true },
+  manager: { frame: 96, idle: 96, flecks: [0xd0d0c8, 0xf8f8f0], boss: true },
+  owner: { frame: 128, idle: 128, flecks: [0x90c880, 0xe8f8d8], boss: true },
+  developer: { frame: 180, idle: 180, flecks: [0x7098e0, 0xd8e8ff], boss: true },
+  santa: { frame: 160, idle: 160, flecks: [0xf03030, 0xffffff], boss: true },
+  glamour_queen: { frame: 160, idle: 160, flecks: [0xf080c8, 0xffe0f4], boss: true },
+  whiskers: { frame: 160, idle: 160, flecks: [0xe09850, 0xf8e0c0], boss: true },
+  zamboni: { frame: 160, idle: 160, flecks: [0xa8e8f0, 0xf0ffff], boss: true },
+};
+
+function nativeReaction(kind: NativeKind): MaterialReaction {
+  const { frame, idle, flecks, boss } = NATIVE[kind];
+  const prefix = kind.replace('_', '-'), displaySize = enemySpriteSheet(kind, false)!.displaySize;
+  return {
+    hurtKey: `neon:enemy:${prefix}-hurt`, impactKey: `neon:enemy:${prefix}-impact`,
+    frameTicks: boss ? BOSS_HURT_FRAME_TICKS : NATIVE_HURT_FRAME_TICKS,
+    frameSize: frame, scale: displaySize / idle, feetY: (frame - idle) / 2 + idle * 0.84,
+    flecks, impactLift: Math.round(displaySize * 0.36),
+  };
+}
 const MATERIAL_REACTIONS: Readonly<Record<MaterialKind, MaterialReaction>> = {
-  mannequin: { hurtKey: ENEMY_TEXTURE_KEYS.mannequinHurt, impactKey: ENEMY_TEXTURE_KEYS.mannequinPlasticImpact, frameTicks: MANNEQUIN_HURT_FRAME_TICKS, frameSize: 96, scale: .75, feetY: 80.64, flecks: [0xd5c8b3, 0xede4d2] },
-  static: { hurtKey: ENEMY_TEXTURE_KEYS.staticHurt, impactKey: ENEMY_TEXTURE_KEYS.staticCrtImpact, frameTicks: STATIC_HURT_FRAME_TICKS, frameSize: 96, scale: .75, feetY: 80.64, flecks: [0x817763, 0x6aa2a8] },
+  mannequin: { hurtKey: ENEMY_TEXTURE_KEYS.mannequinHurt, impactKey: ENEMY_TEXTURE_KEYS.mannequinPlasticImpact, frameTicks: MANNEQUIN_HURT_FRAME_TICKS, frameSize: 96, scale: .75, feetY: 80.64, flecks: [0xd5c8b3, 0xede4d2], impactLift: 24 },
+  static: { hurtKey: ENEMY_TEXTURE_KEYS.staticHurt, impactKey: ENEMY_TEXTURE_KEYS.staticCrtImpact, frameTicks: STATIC_HURT_FRAME_TICKS, frameSize: 96, scale: .75, feetY: 80.64, flecks: [0x817763, 0x6aa2a8], impactLift: 43 },
   // Derived from hanger-walk.png (92 px canvas, 64 px idle at scale 1): art/enemy-reactions/hanger.
-  hanger: { hurtKey: ENEMY_TEXTURE_KEYS.hangerHurt, impactKey: ENEMY_TEXTURE_KEYS.hangerShellImpact, frameTicks: HANGER_HURT_FRAME_TICKS, frameSize: 92, scale: 1, feetY: 67.76, flecks: [0x6a96b8, 0x9cc4e0] },
+  hanger: { hurtKey: ENEMY_TEXTURE_KEYS.hangerHurt, impactKey: ENEMY_TEXTURE_KEYS.hangerShellImpact, frameTicks: HANGER_HURT_FRAME_TICKS, frameSize: 92, scale: 1, feetY: 67.76, flecks: [0x6a96b8, 0x9cc4e0], impactLift: 22 },
+  ...Object.fromEntries((Object.keys(NATIVE) as NativeKind[]).map((kind) => [kind, nativeReaction(kind)])) as Record<NativeKind, MaterialReaction>,
 };
 
 export function isMaterialKind(kind: string): kind is MaterialKind {
   return Object.hasOwn(MATERIAL_REACTIONS, kind);
 }
 /**
- * Whether a hit flinch may interrupt this kind's attack pose. Only the Hanger:
- * it bites on contact with no timed wind-up, so its attack sheet is a proximity
- * loop, and its reach ring (drawn separately) still warns. Telegraphed attacks
- * (the Static's blink, the Mannequin's lunge) always keep priority.
+ * Whether a hit flinch may interrupt this kind's attack pose. Only the contact
+ * biters: the Hanger (its attack sheet is a proximity loop, and its reach ring,
+ * drawn separately, still warns) and the Mall Walker (no wind-up at all).
+ * Telegraphed attacks (every wind-up, charge and lob) always keep priority.
  */
 export function hurtOutranksAttack(kind: string): boolean {
-  return kind === 'hanger';
+  return kind === 'hanger' || kind === 'walker';
+}
+/**
+ * Whether this hit's flinch draws over the enemy's attack pose right now. Besides the
+ * contact biters, a boss flinches over its follow-through (the release frames after a
+ * slam, or walking on under its own tar buckets): that is when the janitor gets hits in,
+ * and a boss's 7-tick flinch would otherwise never show. Its slam, volley and charge
+ * telegraphs, and the charge itself, always keep priority.
+ */
+export function flinchOutranksAttack(enemy: { readonly kind: string; readonly chargeTicks?: number }, windups: readonly { readonly kind: string }[]): boolean {
+  if (hurtOutranksAttack(enemy.kind)) return true;
+  if (!isBossKind(enemy.kind as EnemyKind)) return false;
+  return (enemy.chargeTicks ?? 0) <= 0 && !windups.some((windup) => windup.kind !== 'lob' && windup.kind !== 'reach');
+}
+/** How far above the feet this kind's impact strip is centred. */
+export function materialImpactLift(kind: MaterialKind): number {
+  return MATERIAL_REACTIONS[kind].impactLift;
 }
 export function materialHurtTicks(kind: MaterialKind): number {
   return MATERIAL_REACTIONS[kind].frameTicks.reduce((sum, ticks) => sum + ticks, 0);
@@ -92,7 +153,7 @@ export function materialHurtFrame(textures: Phaser.Textures.TextureManager, kind
 type MaterialImpact = { readonly born: number; readonly x: number; readonly y: number; readonly scale: number; readonly image: Phaser.GameObjects.Image | null };
 
 /** Small opaque chips. Native strip when present, a few matte pixel flecks otherwise. */
-class MaterialImpactView {
+export class MaterialImpactView {
   private readonly effects: MaterialImpact[] = [];
   private readonly graphics: Phaser.GameObjects.Graphics;
   public constructor(private readonly scene: Phaser.Scene, private readonly material: MaterialKind) {

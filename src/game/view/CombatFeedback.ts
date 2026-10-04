@@ -17,7 +17,7 @@ import { presentationDepth } from '../presentation/depth';
 import { FX_TEXTURES, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
 import type { PointLight } from '../presentation/lighting/LightingLayer';
 import { ACTOR_DIRECTION_ORDER, directionForVector, type ActorDirection } from './ActorSpriteView';
-import { HangerImpactView, MannequinImpactView, StaticImpactView, exactReactionTexture, isMaterialKind, materialHurtFrame, materialHurtTicks, type EnemyHurtFrame, type MaterialKind } from './EnemyReactionView';
+import { MaterialImpactView, exactReactionTexture, isMaterialKind, materialHurtFrame, materialHurtTicks, materialImpactLift, type EnemyHurtFrame, type MaterialKind } from './EnemyReactionView';
 import { flashAllowed, gameSettings, shakeScale, washScale } from '../settings/settings';
 import { isBossKind } from '../../sim/combat/boss';
 import {
@@ -131,9 +131,8 @@ export class CombatFeedback {
   private readonly decals: Phaser.GameObjects.Image[] = [];
   private readonly reactions = new Map<string, Reaction>();
   private readonly hurts = new Map<string, { born: number; direction: ActorDirection; kind: MaterialKind }>();
-  private readonly plastic: MannequinImpactView;
-  private readonly crt: StaticImpactView;
-  private readonly shell: HangerImpactView;
+  /** One impact view per material, made on its first hit (roadmap V1). */
+  private readonly materialImpacts = new Map<MaterialKind, MaterialImpactView>();
   private facingFor: (id: string) => ActorDirection = () => 'south';
   private readonly flash: Phaser.GameObjects.Rectangle;
   private readonly vignette: Phaser.GameObjects.Image;
@@ -150,9 +149,6 @@ export class CombatFeedback {
 
   public constructor(scene: Phaser.Scene) {
     this.scene = scene;
-    this.plastic = new MannequinImpactView(scene);
-    this.crt = new StaticImpactView(scene);
-    this.shell = new HangerImpactView(scene);
     this.flash = scene.add
       .rectangle(480, 300, 960, 600, 0xff1a2a, 0)
       .setScrollFactor(0)
@@ -293,6 +289,12 @@ export class CombatFeedback {
     return attacking ? null : materialHurtFrame(this.scene.textures, hurt.kind, age, hurt.direction);
   }
 
+  private impactView(kind: MaterialKind): MaterialImpactView {
+    let view = this.materialImpacts.get(kind);
+    if (!view) { view = new MaterialImpactView(this.scene, kind); this.materialImpacts.set(kind, view); }
+    return view;
+  }
+
   private snapshot(enemies: readonly EnemyState[], projectiles: readonly ProjectileState[]): void {
     this.tracked = new Map(enemies.map((enemy) => [String(enemy.id), { health: enemy.health, x: enemy.x, y: enemy.y, kind: enemy.kind }]));
     this.attacks = trackAttacks(enemies);
@@ -325,15 +327,10 @@ export class CombatFeedback {
     const label = ensurePixelLabel(this.scene, heavy ? `${hit.amount}!` : `${hit.amount}`, heavy ? '#ffd84a' : '#ffffff', 3, '#3a0010');
     const image = this.scene.add.image(hit.x + (this.random() - 0.5) * 14, hit.y - 44, label.key).setDepth(presentationDepth('prompt', 10));
     this.floaters.push({ image, born: tick, vx: (dirX / length) * 0.9 + (this.random() - 0.5) * 0.5, vy: -1.5, life: FLOAT_TICKS, pop: heavy ? 2.2 : 1.7 });
-    if (hit.kind === 'mannequin') {
-      // HP differences identify a hit, not its source. Material chips stay body-centred.
-      this.plastic.spawn(hit.x, hit.y - 24, tick);
-    } else if (hit.kind === 'static') {
-      // Keep casing/glass debris centred on the CRT, independent of hit source.
-      this.crt.spawn(hit.x, hit.y - 43, tick);
-    } else if (hit.kind === 'hanger') {
-      // Chitin chips off the shell; the spider has no blood to spill.
-      this.shell.spawn(hit.x, hit.y - 22, tick);
+    if (isMaterialKind(hit.kind)) {
+      // Every enemy chips its own material (plastic, CRT glass, chitin, sweat, tar, ice...),
+      // centred on the body: HP differences identify a hit, not its source.
+      this.impactView(hit.kind).spawn(hit.x, hit.y - materialImpactLift(hit.kind), tick);
     } else {
       const blood = spillColor(hit.kind);
       this.bursts.push({ kind: 'star', x: ix, y: iy, born: tick, life: heavy ? 9 : 7, radius: heavy ? 34 : 24, color: blood, angle: this.random() * Math.PI });
@@ -350,8 +347,8 @@ export class CombatFeedback {
   private onDeath(death: Tracked & { id: string }, player: { x: number; y: number }, tick: number): HitStopBeat {
     const boss = isBossKind(death.kind);
     const blood = spillColor(death.kind);
-    if (death.kind === 'mannequin') this.plastic.spawn(death.x, death.y - 18, tick, true);
-    else if (death.kind === 'static') this.crt.spawn(death.x, death.y - 43, tick, true);
+    if (death.kind === 'mannequin') this.impactView('mannequin').spawn(death.x, death.y - 18, tick, true);
+    else if (death.kind === 'static') this.impactView('static').spawn(death.x, death.y - 43, tick, true);
     else {
       this.addDecal(death.x, death.y + 4, death.kind === 'spitter' ? DECAL_TEXTURE_KEYS.residue : DECAL_TEXTURE_KEYS.bloodPool, boss ? 3.6 : 2.6, death.kind);
       this.addDecal(death.x + 14, death.y + 8, DECAL_TEXTURE_KEYS.bloodDrag, 2, death.kind);
@@ -607,9 +604,7 @@ export class CombatFeedback {
       else corpse.image.clearTint().setTintMode(Phaser.TintModes.MULTIPLY);
       corpse.image.setAlpha(age < playTicks + CORPSE_HOLD_TICKS - 24 ? 1 : (playTicks + CORPSE_HOLD_TICKS - age) / 24);
     }
-    this.plastic.sync(tick);
-    this.crt.sync(tick);
-    this.shell.sync(tick);
+    for (const view of this.materialImpacts.values()) view.sync(tick);
     this.drawBursts(tick);
     const settings = gameSettings().get();
     const remaining = this.flashUntil - tick;
@@ -625,9 +620,7 @@ export class CombatFeedback {
     this.attacks.clear();
     this.reactions.clear();
     this.hurts.clear();
-    this.plastic.reset();
-    this.crt.reset();
-    this.shell.reset();
+    for (const view of this.materialImpacts.values()) view.reset();
     for (const floater of this.floaters) floater.image.destroy();
     for (const spark of this.sparks) spark.image.destroy();
     for (const decal of this.decals) decal.destroy();
@@ -653,8 +646,7 @@ export class CombatFeedback {
     this.flash.destroy();
     this.vignette.destroy();
     this.impacts.destroy();
-    this.plastic.destroy();
-    this.crt.destroy();
-    this.shell.destroy();
+    for (const view of this.materialImpacts.values()) view.destroy();
+    this.materialImpacts.clear();
   }
 }
