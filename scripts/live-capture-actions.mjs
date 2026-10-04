@@ -39,8 +39,10 @@ for (const [query, kind] of TARGETS.filter(([, k]) => !only || only.includes(k))
   for (let i = 0; i < 500; i++) {
     const s = await snap(p); if (s.status !== 'playing') break;
     const ev = s.actorPresentation?.enemies ?? [];
-    for (const e of s.enemies) if (e.kind === kind && (e.phase === 'telegraph' || (e.chargeTicks ?? 0) > 0)) {
+    for (const e of s.enemies) if (e.kind === kind) {
       const x = ev.find((v) => v.id === `enemy:${e.id}`); if (!x) continue;
+      // Telegraph frames go in `frames`; anything after it (a charge, a follow-through) in `charge`.
+      if (e.phase !== 'telegraph' && (e.chargeTicks ?? 0) <= 0 && !x.textureKey.includes('attack')) continue;
       (e.phase === 'telegraph' ? seen : charging).add(`${x.textureKey.split(':').pop()}[${x.frame.column}]`);
       if (shots < 3 && x.textureKey.includes('attack') && x.frame.column >= shots * 2) { await crop(p, box, e.x, e.y - (big ? 70 : 40), `${kind}-${shots}.png`, big ? 130 : 90); shots += 1; }
     }
