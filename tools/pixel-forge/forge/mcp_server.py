@@ -189,7 +189,7 @@ IMAGE_PAIR_BACKEND = None
     "Generate a matched initial mockup and sprite sheet through a durable job. "
     "begin returns a pending request; dispatch claims exactly one native-tool call; "
     "the caller must really invoke its image tool, then accept its PNG with the ticket and receipt. "
-    "run executes one request only when the server owner explicitly configured an API adapter. "
+    "run executes one request only when the server owner explicitly configured a provider adapter. "
     "status is read-only; revise requests a bounded targeted follow-up retaining references. "
     "normalize explicitly creates a lossy nearest-neighbor game-size derivative of a rejected uniform-grid sheet. "
     "Format checks never approve anatomy, style or production publication. No automatic retry or fallback."))

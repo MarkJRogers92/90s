@@ -10,7 +10,10 @@ def action(action,root,*,spec=None,key=None,ticket=None,image_path=None,receipt=
            max_changed_pixels=None,backend=None):
     if action=='capabilities':
         result=image_pair.capabilities()
-        if backend is not None:result['api_adapter']=backend.capability()
+        if backend is not None:
+            result['provider_adapter']=backend.capability()
+            if result['provider_adapter'].get('provider')=='openai-images-api':
+                result['api_adapter']=result['provider_adapter']
         return result
     if action=='begin':return image_pair.begin(root,spec)
     if action=='status':return image_pair.status(root,key)

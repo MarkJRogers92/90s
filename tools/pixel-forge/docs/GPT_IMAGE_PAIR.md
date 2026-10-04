@@ -17,6 +17,7 @@ This is developer-side authoring only. It does not change the game runtime, regi
 ## Honest execution capabilities
 
 - **Native caller tool:** an agent that actually has GPT image generation claims the pending request, invokes its own image tool, then accepts the returned local PNG. Pixel Forge Python cannot reach into an arbitrary GPT/Claude host's tool namespace. An unfulfilled request is `pending` or `in_flight`, never a generated result.
+- **Private native Codex worker:** the opt-in [native stdio bridge](CODEX_NATIVE_BRIDGE.md) connects a same-host Claude-compatible client to a dedicated Codex worker. Its protocol/MCP transport is offline-tested; signed-in native image execution is still unverified. It requires separately authorized worker setup and is not a hosted subscription API.
 - **Configured Images API:** a server owner may inject `OpenAIImagesBackend` with an already-authorized client, an explicit model/config revision, and `enabled=True`. Then a Claude, GPT, or cloud MCP caller can use the same `run` action. No native GPT tool is assumed in Claude. This route may incur API charges and requires independently configured account/model/network access.
 - **Legacy Codex CLI:** `make --artist gpt-image` remains available where the installed CLI supports image generation and a request-owned output-file handoff. It is not used by the new native-caller job. The painter now fails closed on unsupported models, nonzero exit, missing output, symlinks, or invalid PNGs. It does not scan global image folders or silently retry another model.
 

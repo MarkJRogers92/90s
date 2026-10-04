@@ -49,3 +49,9 @@ Without Aseprite, native tests skip. A source-only test run is not native verifi
 ## Optional generated-grid recovery
 
 The pinned MIT Retro Diffusion detector is available through `python -m forge.grid_detector`. Native assets bypass it by default; generated-image analysis is opt-in and non-mutating. Optional reconstruction is explicitly lossy and blocked by protected requirements. It is not auto-inserted into the image-pair workflow. See [GRID_RECOVERY.md](docs/GRID_RECOVERY.md); optional dependencies remain separate in `requirements-grid.txt`.
+
+## Private native image worker (experimental)
+
+See [the Codex native-image bridge](docs/CODEX_NATIVE_BRIDGE.md) for an opt-in,
+same-host Claude/MCP route into paired image jobs. The stdio transport is tested
+with fixtures; a live signed-in image run is not yet verified or enabled.
