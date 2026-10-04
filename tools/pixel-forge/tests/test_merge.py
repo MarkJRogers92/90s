@@ -301,7 +301,7 @@ def test_codex_retries_a_refused_default_model_with_the_fallback(tmp_path, monke
     assert calls[-1][calls[-1].index("-m") + 1] == artist.CODEX_FALLBACK_MODEL
 
 
-def test_the_gpt_painter_retries_too_and_says_why_when_it_still_fails(tmp_path, monkeypatch):
+def test_the_gpt_painter_fails_without_hidden_retry_and_says_why(tmp_path, monkeypatch):
     import subprocess as sp
     calls = []
     monkeypatch.setattr(artist, "GENERATED_DIR", tmp_path / "generated")
@@ -309,7 +309,7 @@ def test_the_gpt_painter_retries_too_and_says_why_when_it_still_fails(tmp_path, 
                         lambda cmd, **kw: calls.append(cmd) or sp.CompletedProcess(cmd, 0, "", REFUSED))
     with pytest.raises(artist.ArtistError, match="not supported"):
         artist.paint_with_gpt_image("x", 32, 32, None, tmp_path / "work", log=lambda m: None)
-    assert len(calls) == 2 and "-m" in calls[1]
+    assert len(calls) == 1
 
 
 # ------------------------------------- combine: the best feature of each draft

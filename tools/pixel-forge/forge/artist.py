@@ -16,6 +16,7 @@ import os
 import re
 import shutil
 import subprocess
+import tempfile
 import time
 import urllib.request
 from dataclasses import dataclass, field
@@ -565,55 +566,109 @@ def _combine(req: Request, drafts: list[Step], labels: list[str], best_i: int, v
 
 
 # ------------------------------------------------------- hybrid: GPT paints
+# Compatibility only. Never inspect this shared directory to discover a request's output.
 GENERATED_DIR = Path.home() / ".codex" / "generated_images"
 
 
 def paint_with_gpt_image(prompt: str, width: int, height: int, profile: dict | None,
                          workdir: Path, log: Callable[[str], None] = print,
-                         timeout: int = 900) -> Path:
-    """Ask Codex's image tool (ChatGPT login) for a pixel-art painting; return the PNG path."""
+                         timeout: int = 900, references: list[Path] | None = None,
+                         start: Path | None = None, model: str | None = None) -> Path:
+    """Ask Codex for one image and require an exact, request-owned PNG handoff.
+
+    ``start`` is the first attached image and the edit target; subsequent images
+    are references. ``model`` selects the Codex model and is never overridden.
+    A CLI without image generation or file handoff support fails closed.
+    """
+    from PIL import Image
+
+    workdir = Path(workdir).expanduser().resolve()
     workdir.mkdir(parents=True, exist_ok=True)
+    images = ([start] if start is not None else []) + list(references or [])
+    images = [Path(p).expanduser().resolve(strict=True) for p in images]
+    for path in images:
+        try:
+            with Image.open(path) as image:
+                if image.format != "PNG":
+                    raise ValueError("not PNG")
+                image.verify()
+        except (OSError, ValueError) as exc:
+            raise ArtistError("GPT-image inputs must be valid PNG files") from exc
     style = (profile or {}).get("style", "")
     scale = max(1, round(1024 / max(width, height)))
+    operation = (
+        "Operation: edit\n"
+        "The first input image is the edit target. Edit that image rather than starting over. "
+        "Remaining input images are reference guidance only. Preserve the target's identity, "
+        "silhouette, proportions, palette, composition and protected details unless the request "
+        "explicitly changes them; never mirror asymmetric details.\n"
+        if start is not None else
+        "Operation: generate\n"
+        "Create a new image. Any attached input images are style/subject references, not edit targets.\n"
+    )
     brief = (
-        f"Use your image generation tool to create exactly one image, then stop.\n"
-        f"Subject: {prompt}\n"
+        "Use your image generation tool to create exactly one image.\n"
+        f"{operation}Subject: {prompt}\n"
         f"It is a game sprite that will be reduced to {width}x{height} pixels, so draw it as "
         f"clean, bright, readable pixel art at roughly {width}x{height} logical pixels "
         f"(each pixel shown as a {scale}x{scale} block), aspect ratio {width}:{height}.\n"
-        f"Style: late-SNES / GBA quality, strong dark outline, clear silhouette, bold light and "
-        f"shadow with a top-left light, 16-32 colours, bright light sources and screens.\n"
+        "Style: late-SNES / GBA quality, strong dark outline, clear silhouette, bold light and "
+        "shadow with a top-left light, 16-32 colours, bright light sources and screens.\n"
         f"{('Project style: ' + style) if style else ''}\n"
-        f"The whole object is visible and centred with a small margin. Background: plain flat "
-        f"solid magenta (#ff00ff) or transparent. No text, no letters, no logos, no scenery, "
-        f"no shadow on the ground.\n"
-        f"After the image is generated, do not edit, inspect or regenerate it. Reply only DONE.")
+        + ("Preserve existing text, logos, background and framing unless the request changes them.\n"
+           if start is not None else
+           "The whole object is visible and centred with a small margin. Background: plain flat "
+           "solid magenta (#ff00ff) or transparent. No text, no letters, no logos, no scenery, "
+           "no shadow on the ground.\n")
+    )
     exe = shutil.which("codex") or str(Path.home() / ".local/bin/codex")
-    started = time.time()
-    log("GPT is painting the base image…")
+    log("GPT is editing the input image…" if start is not None else "GPT is painting the base image…")
 
-    def paint(model):
-        cmd = [exe, "exec", "--skip-git-repo-check", "-s", "read-only", "--color", "never"]
-        cmd += (["-m", model] if model else []) + ["--", brief]
+    def paint(selected_model):
+        # A separate directory per attempt prevents concurrent jobs or failed
+        # attempts from satisfying this call with someone else's generated PNG.
+        request_dir = Path(tempfile.mkdtemp(prefix="gpt-image-", dir=workdir))
+        output = request_dir / "output.png"
+        handoff = (
+            "After generation, save the selected image from THIS request as a PNG at the exact "
+            "path below. Copy the image tool's returned output without altering it. Do not search "
+            "global image folders or reuse another request's result. If the tool cannot generate "
+            "or save the image, report failure; do not fabricate an output. Do not regenerate.\n"
+            f"Output PNG path: {json.dumps(str(output))}\n"
+            "Write no other files. After saving the PNG, reply only DONE."
+        )
+        cmd = [exe, "exec", "--skip-git-repo-check", "-s", "workspace-write", "--color", "never"]
+        for path in images:
+            cmd += ["-i", str(path)]
+        cmd += (["-m", selected_model] if selected_model else []) + ["--", brief + handoff]
         try:
-            return subprocess.run(cmd, cwd=workdir, capture_output=True, text=True,
+            proc = subprocess.run(cmd, cwd=request_dir, capture_output=True, text=True,
                                   timeout=timeout, stdin=subprocess.DEVNULL)
         except subprocess.TimeoutExpired:
-            raise ArtistError("GPT image generation timed out")
-    proc = paint(None)
+            raise ArtistError("GPT image generation timed out") from None
+        except OSError:
+            raise ArtistError("Could not start the Codex image-generation command") from None
+        return proc, output
+
+    proc, output = paint(model)
     said = (proc.stderr or "") + (proc.stdout or "")
+    # Treat subprocess output as untrusted review data. Never echo arbitrary
+    # stdout/stderr (which can include unrelated local context or credentials).
     if _REFUSED in said:
-        log(f"codex refused its default model; retrying with {_codex_fallback()}")
-        proc = paint(_codex_fallback())
-        said = (proc.stderr or "") + (proc.stdout or "")
-    new = [p for p in GENERATED_DIR.glob("*/*.png") if p.stat().st_mtime >= started - 2]
-    if not new:
-        errors = [line for line in said.splitlines() if "ERROR" in line or "error" in line.lower()]
-        raise ArtistError("GPT did not produce an image: " + (errors[-1][:300] if errors else
-                          "no error reported (is `codex login` done and image generation enabled?)"))
-    src = max(new, key=lambda p: p.stat().st_mtime)
-    dst = workdir / "gpt_painting.png"
-    shutil.copy(src, dst)
-    used = next((line.split(":", 1)[1].strip() for line in said.splitlines() if line.startswith("model:")), "?")
-    log(f"GPT painting ready ({src.name}, model {used})")
-    return dst
+        raise ArtistError("The requested Codex model is not supported with this ChatGPT account")
+    if proc.returncode != 0:
+        raise ArtistError(f"GPT image generation failed (Codex exit {proc.returncode}); no image accepted")
+    if (output.parent.is_symlink() or output.is_symlink() or not output.is_file()
+            or output.stat().st_nlink != 1):
+        raise ArtistError("GPT did not provide a verified request-owned PNG at the exact output path")
+    try:
+        with Image.open(output) as image:
+            if image.format != "PNG" or getattr(image, "n_frames", 1) != 1:
+                raise ValueError("not one PNG")
+            image.verify()
+        with Image.open(output) as image:
+            image.load()
+    except (OSError, ValueError) as exc:
+        raise ArtistError("GPT output is not a valid single-image PNG") from exc
+    log("GPT painting ready (verified request-owned PNG)")
+    return output

@@ -1,0 +1,5 @@
+{"frames": [
+  {"name": "windup", "file": "../west-refined-review/west-0.png", "duration_ms": 90, "state": "charge", "pivot": [64, 111]},
+  {"name": "lean", "file": "../west-refined-review/west-2.png", "duration_ms": 120, "state": "charge", "pivot": [64, 111]},
+  {"name": "release", "file": "../west-refined-review/west-5.png", "duration_ms": 100, "state": "charge", "pivot": [64, 111]}
+]}

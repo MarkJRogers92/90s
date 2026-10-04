@@ -1,0 +1,33 @@
+{
+  "defaults": {
+    "width": 64,
+    "height": 96,
+    "artist_name": "codex",
+    "model": "gpt-6.1-sol",
+    "candidates": 1,
+    "rounds": 1,
+    "polish": false,
+    "combine": false,
+    "refs": [
+      "../../../../public/assets/neon/legacy-props/claw-machine.png"
+    ]
+  },
+  "states": [
+    {
+      "state": "idle",
+      "prompt": "1990s mall claw machine, three-quarter top-down, intact cabinet"
+    },
+    {
+      "state": "damaged",
+      "prompt": "The same 1990s mall claw machine, broken glass and displaced claw",
+      "brief": {
+        "identity": [
+          "Same cabinet proportions and controls as the idle reference"
+        ],
+        "physical_cues": [
+          "Broken glass and displaced claw"
+        ]
+      }
+    }
+  ]
+}

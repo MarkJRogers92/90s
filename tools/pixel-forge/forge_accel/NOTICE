@@ -1,0 +1,16 @@
+Pixel Forge Accel 0.1.0
+
+This delivery contains original implementation code. No source code or artwork
+from sprite-gen, SpriteBrew, Pixelorama, Spritesheet-Maker, LibreSprite, Universal
+LPC, or the other researched applications is bundled or vendored.
+
+Oklab color conversion uses the formula and matrix coefficients published by
+Bjorn Ottosson, offered as public domain (and alternatively MIT):
+https://bottosson.github.io/posts/oklab/
+The NumPy implementation in forge_accel/pixels.py is original.
+
+Pillow, NumPy, pytest and setuptools are external dependencies, not included
+source code in this archive. Their own licenses apply to their distributions.
+
+The MIT license here covers this original package, not the user's separate
+Pixel Forge project, external providers, researched repositories or art assets.

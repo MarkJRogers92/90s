@@ -7,3 +7,9 @@ library/
 profiles/
 projects.json
 .env
+.env.*
+!.env.example
+/image-jobs/
+/pair.json
+
+quality-cache/
