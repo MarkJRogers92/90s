@@ -154,3 +154,75 @@ bash ./forge.sh animation-export ../../west-rig-v2/manifest.json --out ../../wes
 
 The game side is separate. In DEAD MALL, `attackFrameFor` now keeps the release frames during an
 active charge. It is on the branch `fix/charge-attack-frames` and is not merged.
+
+---
+
+## Round 2 (after GPT's native check): hardening, tooling, better art
+
+GPT's Aseprite run passed everything: 205 tests with no skips, both native exports
+pixel-exact, and 5 editable layers whose cels move independently. It also listed six review
+findings. All six are now fixed test-first, along with more tooling and a better charge.
+**Tests: 218 passed, 3 skipped here** (the native tests skip without Aseprite).
+
+### Fixes for GPT's findings
+
+1. **Derived joints:** a derived variant's declared joints must equal the recomputed joints.
+2. **Joint tracking:** a joint on the pivot never moves. Tracking stays within 1.5 px of the
+   geometry, and RotSprite tracks positions rather than Scale2x colour choices.
+3. **Exclusive outputs:** `rig-variant` and `build_native` create files exclusively (`O_EXCL` and
+   an atomic link), so they never replace a file or follow a dangling symlink.
+4. **Names:** reference names use `:` and paths use directories, so different parts can never
+   collide. Slot names starting with `_` are reserved.
+5. **Derivation loops:** a derivation may not point at itself or form a cycle.
+6. **Pinned rig and recipe:** the checked export hashes and snapshots the rig and recipe *bytes*
+   (`rig_provenance.verified_bytes`), not just their digests.
+
+### Making Forge easier to drive
+
+- **`forge rig-review RECIPE --out DIR [--baseline RENDER]`:** one step for render, checked
+  review export, previews, the native build and verify (where Aseprite exists), and a baseline
+  comparison. It writes `SUMMARY.json` and `SUMMARY.md`, builds in a staging folder, and
+  publishes atomically, so a failed run leaves nothing behind. Exit codes: 0 technical pass,
+  2 checks failed, 1 blocked.
+- **Exit codes reach the shell:** `forge/__main__.py` discarded every command's result before,
+  so `forge.sh` always exited 0.
+- **`forge.sh`:** uses `FORGE_PYTHON`, else `.venv`, else `python3`. The isolation test uses the
+  running interpreter. `run_native_check.sh` installs nothing and runs `rig-review` per recipe.
+- **Rotation cleanup:** an optional, recorded and verifiable step that drops specks smaller than
+  N px and reseals the outline with a colour from the part's own palette.
+- **Floor checks:** a new single-frame `GROUND_CONTACT` check (rig `ground_y`, recipe
+  `grounded`) verifies that feet touch the floor in frames where they aren't standing still.
+- **`workflow/forge-source/RIG_GUIDE.md`:** the authoring guide, with schemas, what each check
+  means, and common errors.
+
+### The art (`workflow/examples/west-rig/build_v3.py`)
+
+`build_v3.py` splits the imported body at the waist (y = 85) into `legs` (the root, a contact)
+and `upper`, which hangs from the hip. The head hangs from `upper.neck` and the hand from
+`upper.wrist`, so leaning the torso carries them along.
+
+- **`recipe-v3-base.json`** re-renders the six frozen frames **pixel-identically**. The floor
+  check covers every frame (no more `NOT_CHECKED` stance) and finds a real flaw in the frozen
+  benchmark: **frame 4's push-off feet float 1 px above the floor.**
+- **`recipe-v3.json`**, with no painting and 0 repair pixels:
+  - torso leans as verified RotSprite derivations about the hip: +4° on the push-off, −3° on
+    the reach;
+  - the bag swings behind the hand (6° and 16°, outline resealed, specks dropped);
+  - the frame-5 head tilt;
+  - frame 4 lowered 1 px so the toe touches the floor.
+- **Result:** technical **pass**, and only **2** findings need a person (the bag-owner rig label
+  and anatomy), down from **10** for the frozen manifest.
+- **Evidence** (`evidence-rig/`):
+  - `frozen-vs-v3.png`;
+  - `v3-in-place-2x.gif`;
+  - `v3-ground-relative-2x.gif`;
+  - `v3-strip-1x.png`;
+  - `v3-SUMMARY.md`;
+  - `v3-base-SUMMARY.md`, which shows the frozen float.
+
+**Honest limits.** The upper bodies of frames 4 and 5 now differ, and the feet are grounded, but
+the visible change at game size is still moderate. Trouser shading and new limb drawing are not
+addressed, because those need painting. The right next step is drawn art: GPT's image
+generation, or a person, registered as `authored` variants in the rig, so it is still pinned,
+checked and layered. `recipe-v3-base` intentionally exits 2 in `run_native_check.sh`, because it
+is the frozen art, float included.

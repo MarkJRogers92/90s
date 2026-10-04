@@ -525,3 +525,65 @@ def test_grounded_must_name_contact_slots_and_not_airborne_frames(project):
     edit(project, "recipe.json", lambda r: r["frames"][0].__setitem__("grounded", ["bag"]))
     with pytest.raises(rig.RigError, match="contact"):
         render(project)
+
+
+def test_command_line_exit_codes_reach_the_shell(project, tmp_path):
+    import subprocess, sys
+    root = Path(__file__).resolve().parents[1]
+    blocked = subprocess.run([sys.executable, "-m", "forge", "rig-render", str(tmp_path / "missing.json"), "--out", str(tmp_path / "o")],
+                             cwd=root, capture_output=True, text=True)
+    assert blocked.returncode == 1 and "blocked" in blocked.stdout
+    ok = subprocess.run([sys.executable, "-m", "forge", "rig-render", str(project / "recipe.json"), "--out", str(tmp_path / "ok")],
+                        cwd=root, capture_output=True, text=True)
+    assert ok.returncode == 0
+
+
+def test_a_failed_review_leaves_nothing_behind(project):
+    from forge import cli
+    edit(project, "recipe.json", lambda r: r["frames"][0]["pose"].__setitem__("head", "missing"))
+    assert cli.main(["rig-review", str(project / "recipe.json"), "--out", str(project / "review")]) == 1
+    assert not (project / "review").exists()
+
+
+def boxed():
+    """A filled box with a dark 1 px outline and a thin dark handle line: rotation breaks both."""
+    a = np.zeros((20, 20, 4), np.uint8)
+    a[5:15, 5:15] = (0, 0, 0, 255)
+    a[6:14, 6:14] = (200, 150, 100, 255)
+    a[2:5, 9] = (0, 0, 0, 255)
+    return a
+
+
+def test_cleanup_drops_orphans_and_seals_the_outline_deterministically():
+    method = {"op": "rotate", "degrees": 16, "pivot": [10, 10], "algorithm": "rotsprite",
+              "cleanup": {"min_component_px": 3, "outline": [0, 0, 0, 255]}}
+    clean, _ = rig.derive(boxed(), {}, method)
+    opaque = clean[:, :, 3] == 255
+    seen, sizes = np.zeros_like(opaque), []
+    for y, x in zip(*np.where(opaque)):                             # 8-connected flood fill, no SciPy needed
+        if seen[y, x]:
+            continue
+        stack, size = [(y, x)], 0
+        seen[y, x] = True
+        while stack:
+            cy, cx = stack.pop(); size += 1
+            for ny in (cy - 1, cy, cy + 1):
+                for nx in (cx - 1, cx, cx + 1):
+                    if 0 <= ny < 20 and 0 <= nx < 20 and opaque[ny, nx] and not seen[ny, nx]:
+                        seen[ny, nx] = True; stack.append((ny, nx))
+        sizes.append(size)
+    assert min(sizes) >= 3                                          # no specks
+    fill = (clean[:, :, 3] == 255) & np.any(clean[:, :, :3] != 0, axis=2)
+    clear = clean[:, :, 3] == 0
+    touching = np.zeros_like(fill)
+    touching[1:] |= clear[:-1]; touching[:-1] |= clear[1:]; touching[:, 1:] |= clear[:, :-1]; touching[:, :-1] |= clear[:, 1:]
+    assert not (fill & touching).any()                             # every fill pixel is sealed by the outline
+    assert {tuple(c) for c in clean.reshape(-1, 4) if c[3]} <= {(0, 0, 0, 255), (200, 150, 100, 255)}
+    again, _ = rig.derive(boxed(), {}, method)
+    assert np.array_equal(clean, again)
+
+
+def test_cleanup_outline_must_come_from_the_part_palette():
+    method = {"op": "rotate", "degrees": 16, "pivot": [10, 10], "cleanup": {"outline": [1, 2, 3, 255]}}
+    with pytest.raises(rig.RigError, match="palette"):
+        rig.derive(boxed(), {}, method)

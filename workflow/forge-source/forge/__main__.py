@@ -12,4 +12,5 @@ elif len(sys.argv) > 1 and sys.argv[1] == "mcp-authoring":
     sys.exit(0)
 else:
     from .cli import main
-main()
+# Propagate command results: agents and scripts rely on the exit status.
+sys.exit(main())

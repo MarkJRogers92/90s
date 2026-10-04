@@ -291,6 +291,57 @@ def _rotate(a, degrees, pivot, algorithm, track=False):
     return np.ascontiguousarray(turned[4::8, 4::8])
 
 
+def _components(opaque):
+    """8-connected components of a boolean mask, as lists of (y, x)."""
+    seen = np.zeros_like(opaque)
+    parts = []
+    h, w = opaque.shape
+    for y, x in zip(*np.where(opaque)):
+        if seen[y, x]:
+            continue
+        stack, part = [(int(y), int(x))], []
+        seen[y, x] = True
+        while stack:
+            cy, cx = stack.pop()
+            part.append((cy, cx))
+            for ny in (cy - 1, cy, cy + 1):
+                for nx in (cx - 1, cx, cx + 1):
+                    if 0 <= ny < h and 0 <= nx < w and opaque[ny, nx] and not seen[ny, nx]:
+                        seen[ny, nx] = True
+                        stack.append((ny, nx))
+        parts.append(part)
+    return parts
+
+
+def _cleanup(out, source, cleanup):
+    """Optional, deterministic tidy-up after a rotation (part of the recorded method, so verifiable):
+    drop specks smaller than min_component_px, then seal the outline with a colour from the part."""
+    if cleanup is None:
+        return out
+    need(isinstance(cleanup, dict) and set(cleanup) <= {"min_component_px", "outline"}, "cleanup takes min_component_px and outline")
+    out = out.copy()
+    smallest = cleanup.get("min_component_px")
+    if smallest is not None:
+        need(type(smallest) is int and 1 <= smallest <= 64, "min_component_px must be 1-64")
+        for part in _components(out[:, :, 3] == 255):
+            if len(part) < smallest:
+                for y, x in part:
+                    out[y, x] = 0
+    outline = cleanup.get("outline")
+    if outline is not None:
+        need(isinstance(outline, list) and len(outline) == 4 and all(type(v) is int and 0 <= v <= 255 for v in outline) and outline[3] == 255,
+             "outline must be an opaque [r, g, b, 255] colour")
+        palette = {tuple(c) for c in source.reshape(-1, 4) if c[3] == 255}
+        need(tuple(outline) in palette, "outline colour must come from the part's own palette")
+        ink = np.all(out == np.array(outline, np.uint8), axis=2)
+        fill = (out[:, :, 3] == 255) & ~ink
+        clear = out[:, :, 3] == 0
+        reach = np.zeros_like(fill)
+        reach[1:] |= fill[:-1]; reach[:-1] |= fill[1:]; reach[:, 1:] |= fill[:, :-1]; reach[:, :-1] |= fill[:, 1:]
+        out[clear & reach] = np.array(outline, np.uint8)
+    return out
+
+
 def derive(image, joints, method):
     """Deterministically derive a variant (and where its joints go) from a source image.
 
@@ -307,7 +358,7 @@ def derive(image, joints, method):
     need(algorithm in ("nearest", "rotsprite"), "algorithm must be nearest or rotsprite")
     image = np.ascontiguousarray(image, dtype=np.uint8)
     h, w = image.shape[:2]
-    out = _rotate(image, degrees, pivot, algorithm)
+    out = _cleanup(_rotate(image, degrees, pivot, algorithm), image, method.get("cleanup"))
     index = np.arange(1, h * w + 1, dtype=np.uint32)
     index_image = np.zeros((h, w, 4), np.uint8)
     index_image[:, :, 0] = (index & 255).reshape(h, w); index_image[:, :, 1] = ((index >> 8) & 255).reshape(h, w)
@@ -687,10 +738,28 @@ def review(recipe_path, out_dir, baseline=None):
     (only where Aseprite exists) and an optional same-scale comparison with a baseline render.
     Writes SUMMARY.json and SUMMARY.md. Nothing here approves anything."""
     from . import animation_export, aseprite
-    out = Path(out_dir).expanduser().absolute()
-    if out.exists() or out.is_symlink():
-        raise FileExistsError(f"{out} exists; never overwriting")
-    out.mkdir(parents=True)
+    final = Path(out_dir).expanduser().absolute()
+    if final.exists() or final.is_symlink():
+        raise FileExistsError(f"{final} exists; never overwriting")
+    final.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix=".forge-review-", dir=final.parent) as tmp:
+        out = Path(tmp) / "review"           # built here, published only when complete
+        out.mkdir()
+        summary = _review_into(recipe_path, out, baseline, animation_export, aseprite)
+        _rewrite_paths(out, str(out), str(final))
+        with directory(Path(tmp)) as source_dir, directory(final.parent.resolve()) as target_dir:
+            publish_exclusive(source_dir, "review", target_dir, final.name)
+    return json.loads((final / "SUMMARY.json").read_text())
+
+
+def _rewrite_paths(out, staged, final):
+    """The summary names files where they will live after publication, not in staging."""
+    for name in ("SUMMARY.json", "SUMMARY.md"):
+        path = out / name
+        path.write_text(path.read_text().replace(staged, final))
+
+
+def _review_into(recipe_path, out, baseline, animation_export, aseprite):
     summary = {"workflow": "forge rig-review", "recipe": str(Path(recipe_path).resolve()), "approved": False}
     summary["render"] = render_recipe(recipe_path, out / "render")
     report = animation_export.export_animation(out / "render" / "manifest.json", out / "export", review=True)
@@ -765,13 +834,26 @@ def variant_cli(argv=None):
     parser.add_argument("--rotate", type=float, required=True)
     parser.add_argument("--pivot", required=True, help="x,y pivot in the source image")
     parser.add_argument("--algorithm", choices=("nearest", "rotsprite"), default="nearest")
+    parser.add_argument("--min-component", type=int, help="drop specks smaller than this many pixels")
+    parser.add_argument("--outline", help="seal the outline with this r,g,b colour (must be in the part)")
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
     out = Path(args.out)
     with Image.open(args.image) as im:
         source = np.array(im.convert("RGBA"))
     method = {"op": "rotate", "degrees": args.rotate, "pivot": [int(v) for v in args.pivot.split(",")], "algorithm": args.algorithm}
-    image, joints = derive(source, json.loads(args.joints), method)
+    cleanup = {}
+    if args.min_component:
+        cleanup["min_component_px"] = args.min_component
+    if args.outline:
+        cleanup["outline"] = [int(v) for v in args.outline.split(",")] + [255]
+    if cleanup:
+        method["cleanup"] = cleanup
+    try:
+        image, joints = derive(source, json.loads(args.joints), method)
+    except RigError as error:
+        print(json.dumps({"status": "blocked", "error": str(error)}))
+        return 1
     buffer = io.BytesIO()
     Image.fromarray(image).save(buffer, format="PNG")
     try:
