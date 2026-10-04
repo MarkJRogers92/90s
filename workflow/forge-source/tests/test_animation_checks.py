@@ -345,7 +345,9 @@ def test_attachment_touch_requires_hand_and_object_pixels_to_meet(case):
 def test_rig_owner_label_is_one_unverified_rig_finding_not_a_verdict(case):
     root, m = case
     m['attachments'][0]['owner_source'] = 'rig'
-    m['rig_provenance'] = {'rig_sha256': 'a' * 64, 'recipe_sha256': 'b' * 64}
+    (root / 'rig.json').write_text('{"schema": "forge-rig/1"}'); (root / 'recipe.json').write_text('{"schema": "forge-pose/1"}')
+    rig_ref, recipe_ref = ref(root / 'rig.json'), ref(root / 'recipe.json')
+    m['rig_provenance'] = {'rig_sha256': rig_ref['sha256'], 'recipe_sha256': recipe_ref['sha256'], 'rig': rig_ref, 'recipe': recipe_ref}
     r = run(case)
     owner = [c for c in r['checks'] if c['code'] in ('BAG_OWNER_UNVERIFIED', 'PROP_OWNER_RIG_LABEL')]
     assert [c['code'] for c in owner] == ['PROP_OWNER_RIG_LABEL']
@@ -356,4 +358,10 @@ def test_rig_owner_label_is_one_unverified_rig_finding_not_a_verdict(case):
 def test_rig_owner_without_pinned_rig_provenance_fails_closed(case):
     root, m = case
     m['attachments'][0]['owner_source'] = 'rig'
+    assert 'INVALID_MANIFEST' in failures(run(case))
+
+
+def test_rig_provenance_digests_without_the_pinned_files_fail_closed(case):
+    root, m = case
+    m['rig_provenance'] = {'rig_sha256': 'a' * 64, 'recipe_sha256': 'b' * 64}
     assert 'INVALID_MANIFEST' in failures(run(case))

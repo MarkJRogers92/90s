@@ -112,6 +112,27 @@ def check_manifest(manifest: dict, base_dir: str | Path) -> dict:
         cached_by_digest = {}
         input_seen = set()
 
+        def read_pinned(reference):
+            """Bytes of a pinned file beneath the manifest directory, recorded as an input."""
+            require(isinstance(reference, dict), "file reference must be an object")
+            raw = reference["path"]
+            expected = reference["sha256"]
+            require(isinstance(raw, str) and 0 < len(raw) <= 4096, "invalid reference path")
+            rel = Path(raw)
+            require(not rel.is_absolute() and ".." not in rel.parts, "reference path must stay beneath manifest directory", "UNSAFE_PATH")
+            target = (root / rel).resolve(strict=True)
+            require(target.is_relative_to(root) and target.is_file(), "reference escapes manifest directory", "UNSAFE_PATH")
+            require(isinstance(expected, str) and re.fullmatch(r"[0-9a-f]{64}", expected) is not None,
+                    "sha256 must be 64 lowercase hexadecimal characters")
+            require(target.stat().st_size <= MAX_FILE_BYTES, "input exceeds 16 MiB limit", "INPUT_LIMIT")
+            data = read_bounded(target, MAX_FILE_BYTES)
+            digest = hashlib.sha256(data).hexdigest()
+            if (raw, expected) not in input_seen:
+                report["inputs"].append({"path": raw, "expected_sha256": expected, "actual_sha256": digest, "size_bytes": len(data)})
+                input_seen.add((raw, expected))
+            require(digest == expected, f"SHA-256 mismatch: {raw}", "HASH_MISMATCH")
+            return data
+
         def load(reference, retain=False):
             nonlocal cached_pixels
             require(isinstance(reference, dict), "file reference must be an object")
@@ -205,7 +226,14 @@ def check_manifest(manifest: dict, base_dir: str | Path) -> dict:
             require(isinstance(rig_provenance, dict) and all(
                 isinstance(rig_provenance.get(k), str) and re.fullmatch(r"[0-9a-f]{64}", rig_provenance[k]) is not None
                 for k in ("rig_sha256", "recipe_sha256")), "rig_provenance needs rig_sha256 and recipe_sha256")
-            report["rig_provenance"] = {k: rig_provenance[k] for k in ("rig_sha256", "recipe_sha256")}
+            # The rig and recipe themselves must travel with the manifest: their bytes are hashed
+            # (and snapshotted by the export), not just their claimed digests checked for syntax.
+            for key in ("rig", "recipe"):
+                pinned = rig_provenance.get(key)
+                require(isinstance(pinned, dict) and pinned.get("sha256") == rig_provenance[f"{key}_sha256"],
+                        f"rig_provenance.{key} must pin the same bytes as {key}_sha256")
+                read_pinned(pinned)
+            report["rig_provenance"] = {**{k: rig_provenance[k] for k in ("rig_sha256", "recipe_sha256")}, "verified_bytes": True}
         for attachment in attachments:
             source = attachment.get("owner_source", "annotation")
             require(source in ("annotation", "rig"), "owner_source must be annotation or rig")

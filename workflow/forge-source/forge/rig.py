@@ -21,6 +21,7 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 import re
 import tempfile
 from pathlib import Path
@@ -145,6 +146,7 @@ class Rig:
         self.slots, self.variants = {}, {}
         for slot, spec in slots.items():
             _name(slot, "slot name")
+            need(not slot.startswith("_"), f"slot name {slot!r} may not start with '_' (reserved)")
             need(isinstance(spec, dict) and type(spec.get("z")) is int, f"slot {slot} needs an integer z")
             attach = spec.get("attach")
             if slot == self.root:
@@ -157,17 +159,7 @@ class Rig:
             self.slots[slot] = spec
             for name, variant in variants.items():
                 self.variants[(slot, _name(name, "variant name"))] = self._variant(slot, name, variant)
-        for (slot, name), variant in self.variants.items():
-            provenance = variant["provenance"]
-            if variant["kind"] != "authored_variant":
-                continue
-            base_slot, base_name = provenance["of"].split(".")
-            base = self.variants.get((base_slot, base_name))
-            need(base is not None and base_slot == slot, f"{slot}.{name}: 'of' must name another variant of the same slot")
-            expected, joints = derive(base["image"], {k: list(v) for k, v in base["joints"].items()}, provenance["method"])
-            need(expected.shape == variant["image"].shape and np.array_equal(expected, variant["image"]),
-                 f"{slot}.{name} does not match its recorded derivation from {provenance['of']}")
-            variant["derivation_verified"] = True
+        self._verify_derivations()
         self.order = self._attach_order()
         for slot, spec in self.slots.items():
             if "prop_of" in spec:
@@ -188,6 +180,28 @@ class Rig:
             tolerance = limb.get("tolerance_px", 2)
             need(type(tolerance) in (int, float) and 0 <= tolerance <= 64, "tolerance_px must be 0-64")
             self.limbs.append({"name": _name(limb.get("name"), "limb name"), "chain": chain, "tolerance": tolerance})
+
+    def _verify_derivations(self):
+        """Recompute every derived variant from its base, bases first; refuse self-reference and cycles."""
+        derived = {key: tuple(v["provenance"]["of"].split(".")) for key, v in self.variants.items() if v["kind"] == "authored_variant"}
+        for (slot, name), (base_slot, base_name) in derived.items():
+            need((base_slot, base_name) != (slot, name), f"{slot}.{name}: a variant cannot derive from itself")
+            need(base_slot == slot and (base_slot, base_name) in self.variants, f"{slot}.{name}: 'of' must name another variant of the same slot")
+        done, order = set(), []
+        while len(done) < len(derived):
+            ready = [k for k, base in derived.items() if k not in done and (base not in derived or base in done)]
+            need(ready, "derived variants form a cycle: " + ", ".join(f"{s}.{n}" for s, n in sorted(set(derived) - done)))
+            for key in sorted(ready):
+                done.add(key); order.append(key)
+        for slot, name in order:
+            variant = self.variants[(slot, name)]
+            base = self.variants[derived[(slot, name)]]
+            expected, joints = derive(base["image"], {k: list(v) for k, v in base["joints"].items()}, variant["provenance"]["method"])
+            need(expected.shape == variant["image"].shape and np.array_equal(expected, variant["image"]),
+                 f"{slot}.{name} does not match its recorded derivation from {slot}.{derived[(slot, name)][1]}")
+            declared = {k: list(v) for k, v in variant["joints"].items()}
+            need(declared == joints, f"{slot}.{name}: declared joints {declared} differ from the recomputed joints {joints}")
+            variant["derivation_verified"] = True
 
     def rest_variant(self, slot):
         rest = self.slots[slot].get("rest", next(iter(self.slots[slot]["variants"])))
@@ -263,12 +277,15 @@ def _scale2x(a):
     return out.view(np.uint8).reshape(out.shape[0], out.shape[1], 4)
 
 
-def _rotate(a, degrees, pivot, algorithm):
+def _rotate(a, degrees, pivot, algorithm, track=False):
     if algorithm == "nearest":
         return np.array(Image.fromarray(a).rotate(degrees, resample=Image.NEAREST, center=tuple(pivot)))
     # RotSprite (Xenowhirl's public algorithm): Scale2x three times, rotate at 8x, sample block centres.
+    # When tracking positions, upscale by plain repetition so each 8x8 block keeps its source index.
     up = a
-    for _ in range(3):
+    if track:
+        up = np.repeat(np.repeat(a, 8, axis=0), 8, axis=1)
+    for _ in range(0 if track else 3):
         up = _scale2x(up)
     turned = np.array(Image.fromarray(up).rotate(degrees, resample=Image.NEAREST, center=(pivot[0] * 8, pivot[1] * 8)))
     return np.ascontiguousarray(turned[4::8, 4::8])
@@ -295,18 +312,23 @@ def derive(image, joints, method):
     index_image = np.zeros((h, w, 4), np.uint8)
     index_image[:, :, 0] = (index & 255).reshape(h, w); index_image[:, :, 1] = ((index >> 8) & 255).reshape(h, w)
     index_image[:, :, 2] = ((index >> 16) & 255).reshape(h, w); index_image[:, :, 3] = 255
-    moved = _rotate(index_image, degrees, pivot, algorithm).astype(np.uint32)
+    moved = _rotate(index_image, degrees, pivot, algorithm, track=True).astype(np.uint32)
     came_from = np.where(moved[:, :, 3] == 255, moved[:, :, 0] | (moved[:, :, 1] << 8) | (moved[:, :, 2] << 16), 0)
     theta = np.radians(degrees)
     new_joints = {}
     for name, (jx, jy) in joints.items():
+        if [jx, jy] == list(pivot):
+            new_joints[name] = [jx, jy]           # the rotation's fixed point never moves
+            continue
         dx, dy = jx + 0.5 - pivot[0], jy + 0.5 - pivot[1]
         fx = pivot[0] + dx * np.cos(theta) + dy * np.sin(theta)
         fy = pivot[1] - dx * np.sin(theta) + dy * np.cos(theta)
+        # Geometric position tracking: for RotSprite the index image is upscaled without Scale2x's
+        # colour decisions, so a hit means "this output pixel sampled inside the joint's source pixel".
         hits = np.argwhere(came_from == (jy * w + jx + 1)) if 0 <= jx < w and 0 <= jy < h else np.empty((0, 2))
-        if len(hits):
-            y, x = min(hits.tolist(), key=lambda p: (p[1] + 0.5 - fx) ** 2 + (p[0] + 0.5 - fy) ** 2)
-            new_joints[name] = [int(x), int(y)]
+        best = min(hits.tolist(), key=lambda p: (p[1] + 0.5 - fx) ** 2 + (p[0] + 0.5 - fy) ** 2) if len(hits) else None
+        if best is not None and abs(best[1] + 0.5 - fx) <= 1.5 and abs(best[0] + 0.5 - fy) <= 1.5:
+            new_joints[name] = [int(best[1]), int(best[0])]
         else:
             new_joints[name] = [int(np.floor(fx)), int(np.floor(fy))]
     return out, new_joints
@@ -431,10 +453,12 @@ def render_recipe(recipe_path, out_dir):
             return {"path": rel, "sha256": hashlib.sha256(buffer.getvalue()).hexdigest()}
 
         references, manifest_frames, prov_frames = {}, [], []
+        # Reference names use ':' and paths use directories: no slot, variant or frame name can contain
+        # either, so distinct parts can never share a name or a file.
         for name, sheet in rig.sheets.items():
-            references[f"sheet-{name}"] = write(f"inputs/sheet-{name}.png", sheet)
+            references[f"sheet:{name}"] = write(f"inputs/sheets/{name}.png", sheet)
         for (slot, variant), spec in rig.variants.items():
-            references[f"part-{slot}-{variant}"] = write(f"inputs/part-{slot}-{variant}.png", spec["image"])
+            references[f"part:{slot}:{variant}"] = write(f"inputs/parts/{slot}/{variant}.png", spec["image"])
         planted_runs = {}
         repair_total, manual_coordinates = 0, 0
         rest = render_frame(rig, {"pose": {s: rig.rest_variant(s) for s in rig.slots}}, pins)[1]
@@ -471,16 +495,16 @@ def render_recipe(recipe_path, out_dir):
                     free = _to_local(owner_map == -1, place, h, w, False)
                     local |= variant["domain"] & (variant["image"][:, :, 3] == 0) & free
                 if local.any():
-                    lock_mask = write(f"masks/{fid}-{slot}-lock.png", (local * 255).astype(np.uint8), "L")
-                    references[f"lock-{fid}-{slot}"] = lock_mask
+                    lock_mask = write(f"masks/{fid}/lock/{slot}.png", (local * 255).astype(np.uint8), "L")
+                    references[f"lock:{fid}:{slot}"] = lock_mask
                     locks.append({"name": f"{KINDS[variant['kind']]}:{slot}.{place['variant']}",
-                                  "source": f"part-{slot}-{place['variant']}", "mask": f"lock-{fid}-{slot}",
+                                  "source": f"part:{slot}:{place['variant']}", "mask": f"lock:{fid}:{slot}",
                                   "offset": [place["left"], place["top"]]})
                 spec = rig.slots[slot]
                 needs_mask = spec.get("contact") or "prop_of" in spec or any(s.get("prop_of") == slot for s in rig.slots.values())
                 if needs_mask and visible[slot].any():
-                    references[f"part-mask-{fid}-{slot}"] = write(f"masks/{fid}-{slot}.png", (visible[slot] * 255).astype(np.uint8), "L")
-                    masks[slot] = f"part-mask-{fid}-{slot}"
+                    references[f"mask:{fid}:{slot}"] = write(f"masks/{fid}/part/{slot}.png", (visible[slot] * 255).astype(np.uint8), "L")
+                    masks[slot] = f"mask:{fid}:{slot}"
                     if "grip" in variant["joints"]:
                         gx, gy = variant["joints"]["grip"]
                         anchors[f"{slot}.grip"] = [place["left"] + gx, place["top"] + gy]
@@ -509,7 +533,7 @@ def render_recipe(recipe_path, out_dir):
         stances = []
         for slot, runs in planted_runs.items():
             for k, run in enumerate(r for r in runs if len(r) >= 2):
-                stances.append({"name": f"planted-{slot}-{k}", "frames": run, "anchor": f"{slot}.sole", "contact_mask": slot,
+                stances.append({"name": f"planted:{slot}:{k}", "frames": run, "anchor": f"{slot}.sole", "contact_mask": slot,
                                 "max_drift_px": rig_doc.get("contact_tolerance_px", 0),
                                 "phases": sorted({phase_of[i] for i in run})})
         attachments = []
@@ -526,13 +550,17 @@ def render_recipe(recipe_path, out_dir):
                                     "require_touch": True, "owner_source": "rig", "frames": both})
         rig_sha = recipe["rig"]["sha256"]
         recipe_sha = hashlib.sha256(recipe_bytes).hexdigest()
+        (stage / "inputs" / "rig.json").write_bytes(pins.inputs[recipe["rig"]["path"]][1])
+        (stage / "inputs" / "recipe.json").write_bytes(recipe_bytes)
         manifest = {"schema_version": 1, "facing": rig_doc.get("facing", "UNSPECIFIED"), "canvas": [rig.width, rig.height],
-                    "references": references, "palette_sources": [f"sheet-{n}" for n in rig.sheets],
+                    "references": references, "palette_sources": [f"sheet:{n}" for n in rig.sheets],
                     "edge_margin": rig.edge_margin, "frames": manifest_frames, "attachments": attachments,
                     "stance_intervals": stances,
                     "limbs": [{"name": l["name"], "chain": [f"{s}.{j}" for s, j in l["chain"]], "segment_ranges": l["ranges"],
                                "frames": l["frames"]} for l in limb_specs if l["frames"]],
-                    "rig_provenance": {"rig_sha256": rig_sha, "recipe_sha256": recipe_sha},
+                    "rig_provenance": {"rig_sha256": rig_sha, "recipe_sha256": recipe_sha,
+                                       "rig": {"path": "inputs/rig.json", "sha256": rig_sha},
+                                       "recipe": {"path": "inputs/recipe.json", "sha256": recipe_sha}},
                     "notes": ["Generated by forge rig-render: anchors, masks, locks, attachments and contacts are derived from the pinned rig and recipe.",
                               "Rig labels (anatomical side, prop owner) remain human annotations made once on the rig."]}
         (stage / "manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
@@ -586,10 +614,13 @@ def build_native(render_dir, out_doc):
     from . import aseprite
     render_dir = Path(render_dir).resolve(strict=True)
     out_doc = Path(out_doc).expanduser().absolute()
-    if out_doc.exists():
+    if out_doc.exists() or out_doc.is_symlink():
         raise FileExistsError(f"{out_doc} exists; never overwriting")
-    aseprite._run(["--script-param", f"root={render_dir}", "--script-param", f"out={out_doc}",
-                   "--script", str(render_dir / "native" / "build.lua")])
+    with tempfile.TemporaryDirectory(prefix=".forge-native-", dir=out_doc.parent) as tmp:
+        staged = Path(tmp) / "document.aseprite"
+        aseprite._run(["--script-param", f"root={render_dir}", "--script-param", f"out={staged}",
+                       "--script", str(render_dir / "native" / "build.lua")])
+        os.link(staged, out_doc)                 # atomic, and refuses any existing name (even a dangling symlink)
     return out_doc
 
 
@@ -647,15 +678,19 @@ def variant_cli(argv=None):
     parser.add_argument("--out", required=True)
     args = parser.parse_args(argv)
     out = Path(args.out)
-    if out.exists():
-        print(json.dumps({"status": "blocked", "error": f"{out} exists; never overwriting"}))
-        return 1
     with Image.open(args.image) as im:
         source = np.array(im.convert("RGBA"))
     method = {"op": "rotate", "degrees": args.rotate, "pivot": [int(v) for v in args.pivot.split(",")], "algorithm": args.algorithm}
     image, joints = derive(source, json.loads(args.joints), method)
-    Image.fromarray(image).save(out)
-    print(json.dumps({"image": {"path": out.name, "sha256": hashlib.sha256(out.read_bytes()).hexdigest()}, "joints": joints,
+    buffer = io.BytesIO()
+    Image.fromarray(image).save(buffer, format="PNG")
+    try:
+        with open(out, "xb") as handle:          # O_EXCL: never replaces a file or follows a dangling symlink
+            handle.write(buffer.getvalue())
+    except FileExistsError:
+        print(json.dumps({"status": "blocked", "error": f"{out} exists; never overwriting"}))
+        return 1
+    print(json.dumps({"image": {"path": out.name, "sha256": hashlib.sha256(buffer.getvalue()).hexdigest()}, "joints": joints,
                       "provenance": {"kind": "authored_variant", "of": args.of, "method": method}}, indent=1))
     return 0
 

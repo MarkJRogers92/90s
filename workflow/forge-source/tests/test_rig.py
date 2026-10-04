@@ -374,3 +374,113 @@ def test_clear_margins_may_hang_off_the_canvas_but_visible_pixels_may_not(projec
     edit(project, "recipe.json", lambda r: r["frames"][0]["pose"].__setitem__("head", {"variant": "rest", "nudge": [0, -5]}))
     with pytest.raises(rig.RigError, match="visible pixels leave the canvas"):
         render(project, "clipped")
+
+
+# --- Hardening (review findings 1-6) ---
+
+def add_tilt(project, joints=None, of="head.pad", name="tilt10", degrees=10):
+    head = np.asarray(Image.open(project / "head.png").convert("RGBA"))
+    padded = np.zeros((7, 8, 4), np.uint8); padded[2:5, 2:6] = head
+    png(project, "head-pad.png", padded)
+    method = {"op": "rotate", "degrees": degrees, "pivot": [3, 5]}
+    tilted, derived = rig.derive(padded, {"neck": [3, 5]}, method)
+    png(project, f"head-{name}.png", tilted)
+    def add(r):
+        r["slots"]["head"]["variants"]["pad"] = {"image": ref(project, "head-pad.png"), "joints": {"neck": [3, 5]},
+                                                 "provenance": {"kind": "authored", "note": "padded source head"}}
+        r["slots"]["head"]["variants"][name] = {"image": ref(project, f"head-{name}.png"), "joints": joints or derived,
+                                                "provenance": {"kind": "authored_variant", "of": of, "method": method}}
+    edit(project, "rig.json", add)
+    return derived
+
+
+def test_1_declared_joints_of_a_derived_variant_must_match_the_recomputation(project):
+    derived = add_tilt(project)
+    render(project)                                            # honest joints render
+    add_tilt(project, joints={"neck": [derived["neck"][0] + 2, derived["neck"][1]]})
+    with pytest.raises(rig.RigError, match="joints"):
+        render(project, "moved-joint")
+    add_tilt(project, joints={**derived, "extra": [0, 0]})
+    with pytest.raises(rig.RigError, match="joints"):
+        render(project, "extra-joint")
+
+
+def test_2_a_joint_on_the_pivot_never_moves_and_tracking_stays_near_the_geometry():
+    source = blob()
+    corners = {"pivot": [5, 5], "corner": [4, 2], "clear": [1, 1], "edge": [6, 8], "outside": [12, -3]}
+    for algorithm in ("nearest", "rotsprite"):
+        for degrees in (-30, -14, 7, 15, 45, 90):
+            _, joints = rig.derive(source, corners, {"op": "rotate", "degrees": degrees, "pivot": [5, 5], "algorithm": algorithm})
+            assert joints["pivot"] == [5, 5], (algorithm, degrees)
+            theta = np.radians(degrees)
+            for name, (x, y) in corners.items():
+                dx, dy = x + 0.5 - 5, y + 0.5 - 5
+                gx, gy = 5 + dx * np.cos(theta) + dy * np.sin(theta), 5 - dx * np.sin(theta) + dy * np.cos(theta)
+                jx, jy = joints[name]
+                assert abs(jx + 0.5 - gx) <= 1.5 and abs(jy + 0.5 - gy) <= 1.5, (algorithm, degrees, name, joints[name], (gx, gy))
+
+
+def test_3_variant_and_native_outputs_are_created_exclusively(project, tmp_path):
+    from forge import cli
+    target = tmp_path / "dangling.png"
+    target.symlink_to(tmp_path / "nowhere.png")             # a dangling symlink must not be followed or replaced
+    code = cli.main(["rig-variant", str(project / "head.png"), "--of", "head.rest", "--rotate", "5", "--pivot", "1,1", "--out", str(target)])
+    assert code == 1 and target.is_symlink() and not (tmp_path / "nowhere.png").exists()
+    fresh = tmp_path / "fresh.png"
+    assert cli.main(["rig-variant", str(project / "head.png"), "--of", "head.rest", "--rotate", "5", "--pivot", "1,1", "--out", str(fresh)]) == 0
+    assert fresh.is_file()
+    render(project)
+    doc = tmp_path / "doc.aseprite"
+    doc.symlink_to(tmp_path / "elsewhere.aseprite")
+    with pytest.raises(FileExistsError):
+        rig.build_native(project / "out", doc)
+
+
+def test_4_generated_names_cannot_collide(project):
+    def two(r):
+        bag = r["slots"]["bag"]["variants"]["rest"]
+        r["slots"]["bag"]["variants"]["x-y"] = bag
+        r["slots"]["bag-x"] = {"z": 26, "attach": {"parent": "hand", "parent_joint": "grip", "joint": "handle"},
+                               "variants": {"y": bag}}
+    edit(project, "rig.json", two)
+    edit(project, "recipe.json", lambda r: [f["hidden"].append("bag-x") if "hidden" in f else f.__setitem__("hidden", ["bag-x"]) for f in r["frames"]])
+    render(project)
+    manifest = json.loads((project / "out" / "manifest.json").read_text())
+    paths = [v["path"] for v in manifest["references"].values()]
+    assert len(paths) == len(set(paths))
+    assert any(":" in name for name in manifest["references"])          # separators no slot/variant name can contain
+    edit(project, "rig.json", lambda r: r["slots"].__setitem__("_repair", r["slots"].pop("bag-x")))
+    with pytest.raises(rig.RigError, match="slot name"):
+        render(project, "reserved")
+
+
+def test_5_derivations_cannot_point_at_themselves_or_loop(project):
+    add_tilt(project, of="head.tilt10", degrees=0)
+    with pytest.raises(rig.RigError, match="cycle|itself"):
+        render(project)
+    derived = add_tilt(project)
+    def loop(r):
+        v = r["slots"]["head"]["variants"]
+        v["pad"] = {**v["tilt10"], "provenance": {"kind": "authored_variant", "of": "head.tilt10", "method": {"op": "rotate", "degrees": 0, "pivot": [3, 5]}}}
+        v["tilt10"]["provenance"]["of"] = "head.pad"
+    edit(project, "rig.json", loop)
+    with pytest.raises(rig.RigError, match="cycle"):
+        render(project, "loop")
+
+
+def test_6_the_checked_export_verifies_and_snapshots_the_rig_and_recipe_bytes(project):
+    from forge import animation_export
+    render(project)
+    manifest = json.loads((project / "out" / "manifest.json").read_text())
+    prov = manifest["rig_provenance"]
+    for key in ("rig", "recipe"):
+        assert prov[key]["sha256"] == prov[f"{key}_sha256"]
+        assert (project / "out" / prov[key]["path"]).is_file()
+    result = animation_export.export_animation(project / "out" / "manifest.json", project / "exp", review=True)
+    assert (project / "exp" / "inputs" / prov["rig"]["path"]).is_file()
+    assert (project / "exp" / "inputs" / prov["recipe"]["path"]).is_file()
+    assert result["checks"]["rig_provenance"]["verified_bytes"] is True
+    rig_copy = project / "out" / prov["rig"]["path"]
+    rig_copy.write_bytes(rig_copy.read_bytes() + b" ")       # tampered rig copy fails closed
+    report = check(project)
+    assert any(c["code"] == "HASH_MISMATCH" for c in report["checks"])
