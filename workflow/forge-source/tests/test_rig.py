@@ -503,3 +503,25 @@ def test_rig_review_runs_the_whole_loop_and_summarises_it(project, monkeypatch):
         assert (project / "review" / rel).is_file(), rel
     assert summary["approved"] is False
     assert cli.main(["rig-review", str(project / "recipe.json"), "--out", str(project / "review")]) == 1   # never overwrites
+
+
+def test_feet_are_checked_against_the_floor_in_single_frames(project):
+    edit(project, "rig.json", lambda r: r.__setitem__("ground_y", 15))             # the shoe's bottom row at rest
+    def charge(r):
+        r["frames"][2]["planted"] = []
+        r["frames"][2]["grounded"] = ["shoe"]                                     # touching, not standing still
+    edit(project, "recipe.json", charge)
+    render(project)
+    report = check(project)
+    assert statuses(report, "GROUND_CONTACT") == ["pass", "pass", "pass"]
+    assert not any(c["code"] == "NOT_CHECKED" and "stance" in c["scope"] for c in report["checks"])
+    edit(project, "recipe.json", lambda r: r["frames"][2]["pose"].__setitem__("torso", {"variant": "rest", "nudge": [0, -1]}))
+    render(project, "floating")
+    assert statuses(check(project, "floating"), "GROUND_CONTACT") == ["pass", "pass", "fail"]
+
+
+def test_grounded_must_name_contact_slots_and_not_airborne_frames(project):
+    edit(project, "rig.json", lambda r: r.__setitem__("ground_y", 15))
+    edit(project, "recipe.json", lambda r: r["frames"][0].__setitem__("grounded", ["bag"]))
+    with pytest.raises(rig.RigError, match="contact"):
+        render(project)

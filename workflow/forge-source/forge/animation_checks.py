@@ -214,13 +214,18 @@ def check_manifest(manifest: dict, base_dir: str | Path) -> dict:
         limbs = sequence(manifest.get("limbs", []), "limbs", 64)
         attachments = sequence(manifest.get("attachments", []), "attachments", 64)
         stances = sequence(manifest.get("stance_intervals", []), "stance_intervals", 64)
-        for collection in (limbs, attachments, stances):
+        grounds = sequence(manifest.get("ground_contacts", []), "ground_contacts", 64)
+        for ground in grounds:
+            label(ground["contact_mask"], "ground contact mask")
+            require(type(ground["ground_y"]) is int and -MAX_NUMERIC_ABS <= ground["ground_y"] <= MAX_NUMERIC_ABS, "ground_y must be an integer")
+            require(type(ground.get("tolerance_px", 0)) is int and 0 <= ground.get("tolerance_px", 0) <= 64, "tolerance_px must be 0-64")
+        for collection in (limbs, attachments, stances, grounds):
             for item in collection:
                 label(item["name"], "constraint name")
                 selected = sequence(item["frames"], "constraint frames")
                 require(selected and len(set(selected)) == len(selected) and all(i in ids for i in selected),
                         "constraint frames must be unique existing IDs")
-        report["coverage"].update(limbs=bool(limbs), attachments=bool(attachments), stance=bool(stances))
+        report["coverage"].update(limbs=bool(limbs), attachments=bool(attachments), stance=bool(stances) or bool(grounds))
         rig_provenance = manifest.get("rig_provenance")
         if rig_provenance is not None:
             require(isinstance(rig_provenance, dict) and all(
@@ -286,7 +291,7 @@ def check_manifest(manifest: dict, base_dir: str | Path) -> dict:
             frame_coverage = {"identity": bool(locks),
                               "limbs": any(frame["id"] in item["frames"] for item in limbs),
                               "attachments": any(frame["id"] in item["frames"] for item in attachments),
-                              "stance": any(frame["id"] in item["frames"] for item in stances)}
+                              "stance": any(frame["id"] in item["frames"] for item in stances + grounds)}
             report["frame_coverage"][frame["id"]] = frame_coverage
             for category, covered in frame_coverage.items():
                 if not covered:
@@ -335,6 +340,7 @@ def check_manifest(manifest: dict, base_dir: str | Path) -> dict:
                                   "supported_anchors": supported_anchors}
                 report["resource_usage"]["contact_summaries"] += 1
             metadata[frame["id"]]["contacts"] = contacts
+            metadata[frame["id"]]["mask_bottom"] = {name: int(np.where(mask)[0].max()) for name, mask in parts.items()}
             for limb in limbs:
                 if frame["id"] not in limb["frames"]:
                     continue
@@ -417,6 +423,20 @@ def check_manifest(manifest: dict, base_dir: str | Path) -> dict:
                 drift = max(math.dist(p[j], world[0][j]) for p in world for j in range(3))
                 outcome("CONTACT_DRIFT", scope, drift <= tolerance,
                         f"world sole min/mean/max {world}; max displacement from first contact {drift:.3f}px; limit {tolerance}px", "pixels+annotated masks/root motion")
+        for ground in grounds:
+            tolerance = ground.get("tolerance_px", 0)
+            for frame_id in ground["frames"]:
+                f = metadata[frame_id]
+                scope = f"ground:{ground['name']}/{frame_id}"
+                require(ground["contact_mask"] in f["mask_bottom"], "ground contact mask missing from frame")
+                if f["root_offset"] is None:
+                    record("GROUND_CONTACT", scope, "unverified",
+                           "No root offset: the contact's world height cannot be compared with the floor.", "annotation missing")
+                    continue
+                world = f["mask_bottom"][ground["contact_mask"]] + f["root_offset"][1]
+                outcome("GROUND_CONTACT", scope, abs(world - ground["ground_y"]) <= tolerance,
+                        f"lowest contact pixel at world y {world}; floor y {ground['ground_y']}; tolerance {tolerance}px",
+                        "pixels+annotated masks/root motion")
         for category, covered in report["coverage"].items():
             if not covered:
                 record("NOT_CHECKED", category, "unverified", f"No {category} constraints were supplied.", "missing annotation")

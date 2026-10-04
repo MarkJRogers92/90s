@@ -459,8 +459,10 @@ def render_recipe(recipe_path, out_dir):
             references[f"sheet:{name}"] = write(f"inputs/sheets/{name}.png", sheet)
         for (slot, variant), spec in rig.variants.items():
             references[f"part:{slot}:{variant}"] = write(f"inputs/parts/{slot}/{variant}.png", spec["image"])
-        planted_runs = {}
+        planted_runs, ground_frames = {}, {}
         repair_total, manual_coordinates = 0, 0
+        ground_y = rig_doc.get("ground_y")
+        need(ground_y is None or type(ground_y) is int, "ground_y must be an integer row")
         rest = render_frame(rig, {"pose": {s: rig.rest_variant(s) for s in rig.slots}}, pins)[1]
         limb_specs = []
         for limb in rig.limbs:
@@ -478,6 +480,11 @@ def render_recipe(recipe_path, out_dir):
             need(isinstance(planted, list) and all(p in rig.slots and rig.slots[p].get("contact") for p in planted),
                  "planted must list contact slots")
             need(not planted or frame["phase"] != "airborne", "an airborne frame cannot have a planted contact")
+            grounded = frame.get("grounded", [])
+            need(isinstance(grounded, list) and all(g in rig.slots and rig.slots[g].get("contact") for g in grounded),
+                 "grounded must list contact slots")
+            need(not grounded or frame["phase"] != "airborne", "an airborne frame cannot touch the ground")
+            touching = list(dict.fromkeys(planted + grounded))
             image, placements, visible, layers, repairs, owner_map = render_frame(rig, frame, pins)
             fid = frame["id"]
             frame_ref = write(f"frame-{index:03d}.png", image)
@@ -508,6 +515,8 @@ def render_recipe(recipe_path, out_dir):
                     if "grip" in variant["joints"]:
                         gx, gy = variant["joints"]["grip"]
                         anchors[f"{slot}.grip"] = [place["left"] + gx, place["top"] + gy]
+                    if spec.get("contact") and slot in touching:
+                        ground_frames.setdefault(slot, []).append(fid)
                     if spec.get("contact"):
                         ys, xs = np.where(visible[slot])
                         bottom = int(ys.max())
@@ -528,7 +537,7 @@ def render_recipe(recipe_path, out_dir):
                                     "anchors": anchors, "masks": masks, "identity_locks": locks})
             prov_frames.append({"id": fid, "duration_ms": duration, "phase": frame["phase"], "root": list(root),
                                 "placements": {s: {**p, "kind": rig.variants[(s, p["variant"])]["kind"]} for s, p in placements.items()},
-                                "planted": planted, "repairs": repairs})
+                                "planted": planted, "grounded": grounded, "repairs": repairs})
         phase_of = {f["id"]: f["phase"] for f in manifest_frames}
         stances = []
         for slot, runs in planted_runs.items():
@@ -556,6 +565,9 @@ def render_recipe(recipe_path, out_dir):
                     "references": references, "palette_sources": [f"sheet:{n}" for n in rig.sheets],
                     "edge_margin": rig.edge_margin, "frames": manifest_frames, "attachments": attachments,
                     "stance_intervals": stances,
+                    "ground_contacts": [] if ground_y is None else [
+                        {"name": f"floor:{slot}", "frames": fids, "contact_mask": slot, "ground_y": ground_y,
+                         "tolerance_px": rig_doc.get("ground_tolerance_px", 0)} for slot, fids in ground_frames.items()],
                     "limbs": [{"name": l["name"], "chain": [f"{s}.{j}" for s, j in l["chain"]], "segment_ranges": l["ranges"],
                                "frames": l["frames"]} for l in limb_specs if l["frames"]],
                     "rig_provenance": {"rig_sha256": rig_sha, "recipe_sha256": recipe_sha,

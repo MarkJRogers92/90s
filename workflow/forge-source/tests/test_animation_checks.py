@@ -365,3 +365,23 @@ def test_rig_provenance_digests_without_the_pinned_files_fail_closed(case):
     root, m = case
     m['rig_provenance'] = {'rig_sha256': 'a' * 64, 'recipe_sha256': 'b' * 64}
     assert 'INVALID_MANIFEST' in failures(run(case))
+
+
+def test_ground_contact_checks_single_frames_against_the_floor(case):
+    root, m = case
+    m['ground_contacts'] = [{'name': 'feet', 'frames': ['2'], 'contact_mask': 'sole', 'ground_y': 12, 'tolerance_px': 0}]
+    r = run(case)
+    assert [c['status'] for c in r['checks'] if c['code'] == 'GROUND_CONTACT'] == ['pass']
+    assert not any(c['code'] == 'NOT_CHECKED' and c['scope'] == 'frame:2/stance' for c in r['checks'])
+    m['frames'][2]['root_offset'] = [0, -2]          # the character is two pixels up in the world: floating
+    assert 'GROUND_CONTACT' in failures(run(case))
+
+
+def test_ground_contact_needs_a_root_offset_and_a_valid_floor(case):
+    root, m = case
+    m['ground_contacts'] = [{'name': 'feet', 'frames': ['2'], 'contact_mask': 'sole', 'ground_y': 12, 'tolerance_px': 0}]
+    del m['frames'][2]['root_offset']
+    r = run(case)
+    assert [c['status'] for c in r['checks'] if c['code'] == 'GROUND_CONTACT'] == ['unverified']
+    m['ground_contacts'][0]['ground_y'] = 'low'
+    assert 'INVALID_MANIFEST' in failures(run(case))
