@@ -1,5 +1,35 @@
 # Test evidence
 
+## 2026-10-04 UTC — Bargain Hunter shoulder-charge sheet (review-candidate art; owner asked to merge)
+
+Branch `feat/bargain-hunter-attack`. Presentation only; no `src/sim` change.
+
+`public/assets/neon/enemies/shopper-attack.png` (768×1024: 8 facings × 6 frames at 128 px, the
+96 px walk figure padded by 16) is registered as `neon:enemy:shopper-attack`. `enemySpriteSheet`
+already named this key, so the Bargain Hunter now plays it: wind-up frames 0–3 over its 34-tick
+warning, release frames 4–5 alternating every 4 ticks during the charge (PR #59).
+
+**Art provenance** (full report: branch `pixel-forge-rig`, `bargain-hunter-finish/REVIEW.md`, which
+rebuilds the sheet byte-identically): the GPT pilot rows with the wind-up shoes planted (frame 0
+copied); WEST from Pixel Forge rig v3; NW and SE fixed so the bag stays in the anatomical-left
+hand (the pilot switched hands mid-animation). Every frame sits on floor row 111; source palette
+only; binary alpha.
+
+**Still needs a person:** the S, SW, N, NE and E arms, torso and trouser shading are unchanged pilot
+art and need a drawing pass. The SE far-arm depth and the NW near-arm reading are subtle.
+
+**Also:**
+- `art/pixellab/check_sheet.py`: the `--frames` value is no longer mistaken for a path.
+- New dev fixture `mvp-floor-two-hunter`: one Bargain Hunter in the Cinema Lobby.
+- `scripts/live-capture-actions.mjs` covers the Bargain Hunter.
+
+**Evidence:**
+- The registration test (`derived-action-sheets.test.ts`) failed first, then passed.
+- Unit 1,849 of 1,849; `tsc` passes.
+- `check_sheet.py` puts the feet height at 0 px from the walk sheet in every row.
+- Live (`artifacts/live-qa/bargain-hunter/`): the telegraph plays `shopper-attack[0..5]` and the
+  charge shows release frames (WEST row: `[2,0]`, `[2,3]`, `[2,5]`), with 0 console errors.
+
 ## 2026-10-04 UTC — Charging enemies keep their attack pose during the charge
 
 Branch `fix/charge-attack-frames`. Presentation only; no `src/sim` change.

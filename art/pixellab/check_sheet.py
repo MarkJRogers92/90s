@@ -16,7 +16,8 @@ from PIL import Image
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from animate_characters import ORDER, drift, register, walk_sheet_for  # noqa: E402
 
-args = [a for a in sys.argv[1:] if not a.startswith('--')]
+argv = sys.argv[1:]
+args = [a for i, a in enumerate(argv) if not a.startswith('--') and (i == 0 or argv[i - 1] != '--frames')]
 if len(args) != 2:
     raise SystemExit(__doc__)
 src, out = args

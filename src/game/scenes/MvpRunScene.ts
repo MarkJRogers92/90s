@@ -1417,12 +1417,12 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return top;
     }
-    if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-boss' || fixture === 'mvp-floor-two-boss-win') {
+    if (fixture === 'mvp-floor-two' || fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-hunter' || fixture === 'mvp-floor-two-boss' || fixture === 'mvp-floor-two-boss-win') {
       // Straight up the escalator, optionally on to the Cinema Lobby fight or the Mall Manager.
       state.status = 'won';
       const upstairs = climbToBossWing(state);
       if (fixture !== 'mvp-floor-two') {
-        const stop = fixture === 'mvp-floor-two-lobby' ? 'food_court' : upstairs.wing.rooms.at(-1)?.id;
+        const stop = fixture === 'mvp-floor-two-lobby' || fixture === 'mvp-floor-two-hunter' ? 'food_court' : upstairs.wing.rooms.at(-1)?.id;
         let guard = 0;
         while (upstairs.wing.rooms[upstairs.roomIndex]?.id !== stop && guard < 10) {
           guard += 1;
@@ -1430,6 +1430,14 @@ export class MvpRunScene extends Phaser.Scene {
           tickMvpRun(upstairs, { moveX: 0, moveY: 0, aimX: upstairs.room.combat.player.x, aimY: upstairs.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
           if (!enterDoorway(upstairs, 'east').accepted) break;
         }
+      }
+      if (fixture === 'mvp-floor-two-hunter') {
+        // One Bargain Hunter across the Cinema Lobby, about to line up its charge.
+        const player = upstairs.room.combat.player;
+        upstairs.room.combat.enemies = [{
+          id: 1, kind: 'shopper', x: player.x + 300, y: player.y, health: 18, radius: 16, phase: 'pursue',
+          phaseTicks: 0, cooldownTicks: 0, telegraphAimX: 0, telegraphAimY: 0,
+        }];
       }
       if (fixture === 'mvp-floor-two-boss-win') {
         // One swing from the ending: the Mall Manager at a single point of health.
