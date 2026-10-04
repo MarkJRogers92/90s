@@ -33,6 +33,7 @@ FIELDS = {'prompt','style','references','start_png','frame_size','frames','facin
 def capabilities():
     return {'native_image_tool':'caller_must_advertise',
             'openai_images_api':'requires_explicit_configured_adapter',
+            'codex_native':'requires_explicit_private_stdio_worker',
             'network_or_account_verified':False, 'automatic_fallback':False,
             'note':'Claude/cloud availability depends on its configured tools or API adapter, not its model name.'}
 
@@ -255,7 +256,7 @@ def status(root,key):
 
 
 def dispatch(root,key,*,capabilities):
-    if not isinstance(capabilities,dict) or not (capabilities.get('native_image_tool') is True or capabilities.get('configured_api_adapter') is True):
+    if not isinstance(capabilities,dict) or not (capabilities.get('native_image_tool') is True or capabilities.get('configured_api_adapter') is True or capabilities.get('configured_provider') is True):
         raise ValueError('explicit image provider capability required; no provider selected or invoked')
     root,path=_paths(root,key)
     with _lock(root/'.locks'/f'{key}.lock',30):
@@ -381,12 +382,12 @@ def run_provider(root,key,backend):
     A failure leaves the ticket in_flight. Never auto-retry ambiguous completion.
     """
     if backend is None or not callable(getattr(backend,'capability',None)):
-        raise ValueError('an explicitly configured API adapter is required')
+        raise ValueError('an explicitly configured provider adapter is required')
     capability=backend.capability()
     if capability.get('enabled') is not True or capability.get('configured') is not True:
-        raise ValueError('an enabled, configured API adapter is required')
+        raise ValueError('an enabled, configured provider adapter is required')
     identity={k:capability[k] for k in ('provider','model','revision') if k in capability}
-    request=dispatch(root,key,capabilities={'configured_api_adapter':True,**identity})
+    request=dispatch(root,key,capabilities={'configured_provider':True,**identity})
     from .image_provider import ImageProviderError
     try:
         result=backend.generate({k:request[k] for k in ('prompt','referenced_image_paths','transparent_background')})
