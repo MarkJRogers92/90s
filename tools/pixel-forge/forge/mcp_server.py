@@ -80,12 +80,18 @@ def forge_make(prompt: str, width: int | None = None, height: int | None = None,
                artist_name: str | None = None, model: str | None = None,
                start_png: str | None = None, out: str | None = None, candidates: int = 3,
                checks: list[str] | None = None, routes: list[str] | None = None,
-               open_in: str | None = None, combine: bool = True) -> list:
+               open_in: str | None = None, combine: bool = True,
+               refs: list[str] | None = None, refiner: str | None = None,
+               retouch_only: bool = False, polish: bool = True, use_references: bool = True,
+               cache_dir: str | None = None, generation_revision: str | None = None,
+               state: str = "still", brief: dict | None = None) -> list:
     from .cli import make
     log: list[str] = []
     result = make(prompt, width, height, profile, project, rounds, artist_name, model,
                   start_png, out, log=log.append, candidates=candidates, checks=checks,
-                  routes=routes, open_in=open_in, combine=combine)
+                  routes=routes, open_in=open_in, combine=combine, refs=refs, refiner=refiner,
+                  retouch_only=retouch_only, polish=polish, use_references=use_references,
+                  cache_dir=cache_dir, generation_revision=generation_revision, state=state, brief=brief)
     result["log"] = log
     return [json.dumps(result, default=str),
             _preview(Sprite.from_image(load_image(Path(result["png"]).read_bytes())))]
@@ -172,6 +178,31 @@ def forge_project_assets(project: str, contains: str | None = None, limit: int =
         files = [f for f in files if contains.lower() in f["path"].lower()]
     root = projects.get(project)["path"]
     return json.dumps({"root": root, "count": len(files), "files": files[:limit]})
+
+
+# Server owners may inject an already-authorized adapter before main().
+# No MCP caller can configure credentials, select hidden providers, or enable it.
+IMAGE_PAIR_BACKEND = None
+
+
+@server.tool(description=(
+    "Generate a matched initial mockup and sprite sheet through a durable job. "
+    "begin returns a pending request; dispatch claims exactly one native-tool call; "
+    "the caller must really invoke its image tool, then accept its PNG with the ticket and receipt. "
+    "run executes one request only when the server owner explicitly configured an API adapter. "
+    "status is read-only; revise requests a bounded targeted follow-up retaining references. "
+    "normalize explicitly creates a lossy nearest-neighbor game-size derivative of a rejected uniform-grid sheet. "
+    "Format checks never approve anatomy, style or production publication. No automatic retry or fallback."))
+def forge_image_pair(action: str, root: str, spec: dict | None = None, key: str | None = None,
+                     ticket: str | None = None, image_path: str | None = None,
+                     receipt: dict | None = None, native_image_tool: bool = False,
+                     stage: str | None = None, feedback: str | None = None,
+                     edit_mask: str | None = None, max_changed_pixels: int | None = None) -> str:
+    from .image_pair_cli import action as pair_action
+    return json.dumps(pair_action(action, root, spec=spec, key=key, ticket=ticket,
+        image_path=image_path, receipt=receipt, native_image_tool=native_image_tool,
+        stage=stage, feedback=feedback, edit_mask=edit_mask,
+        max_changed_pixels=max_changed_pixels, backend=IMAGE_PAIR_BACKEND))
 
 
 def main():

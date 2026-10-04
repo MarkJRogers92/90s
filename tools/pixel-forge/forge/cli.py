@@ -44,24 +44,50 @@ def make(prompt: str, width: int | None = None, height: int | None = None, profi
          polish: bool = True, use_references: bool = True, keep_steps: bool = False,
          retouch_only: bool = False, candidates: int = 1, checks: list[str] | None = None,
          refs: list[str] | None = None, routes: list[str] | None = None,
-         open_in: str | None = None, combine: bool = True) -> dict:
+         open_in: str | None = None, combine: bool = True,
+         cache_dir: str | Path | None = None, generation_revision: str | None = None,
+         state: str = "still", brief: dict | None = None,
+         _profile_snapshot: dict | None = None) -> dict:
     """The automatic pipeline shared by the CLI and the MCP server."""
+    if refiner is not None and (not isinstance(refiner, str) or refiner not in artist.BACKENDS):
+        raise ValueError('unknown refiner')
+    from .quality_speed import compile_requirements, make_cached
+    prompt += compile_requirements(brief)
+    if cache_dir is not None:
+        return make_cached(prompt, cache_dir=cache_dir, generation_revision=generation_revision, state=state,
+                           width=width, height=height, profile=profile, project=project, rounds=rounds,
+                           artist_name=artist_name, model=model, start=start, out=out, log=log, base=base,
+                           refiner=refiner, polish=polish, use_references=use_references, keep_steps=keep_steps,
+                           retouch_only=retouch_only, candidates=candidates, checks=checks, refs=refs,
+                           routes=routes, open_in=open_in, combine=combine)
     if project and not profile:
         profile = projects.get(project)["id"]
         if not (profiles.ROOT / f"{profile}.json").exists():
             log(f"learning style from project {project}…")
             projects.learn_style(project, profile)
-    prof = profiles.load(profile)
+    prof = _profile_snapshot if _profile_snapshot is not None else profiles.load(profile)
     size = (prof or {}).get("size") or [32, 32]
+    starting_image = None
     if base is None and start:
-        base = Sprite.from_image(load_image(Path(start).read_bytes()))
-    w = width or (base.width if base else size[0])
-    h = height or (base.height if base else size[1])
+        starting_image = load_image(Path(start).expanduser().read_bytes())
+        if artist_name != "gpt-image":
+            base = Sprite.from_image(starting_image)
+    w = width or (base.width if base else starting_image.width if starting_image else size[0])
+    h = height or (base.height if base else starting_image.height if starting_image else size[1])
+    ref_list = [Path(x).expanduser() for x in (refs or [])]
+    if use_references:
+        ref_list += [Path(x) for x in (prof or {}).get("reference_paths", [])][:max(0, 3 - len(ref_list))]
     item_id, d = library.new_dir(prompt)
     edit_prompt, retouch = prompt, False
+    backend_model = model
     if artist_name == "gpt-image":
-        # hybrid: GPT paints -> pixelize into the project palette -> Claude refines
-        painting = artist.paint_with_gpt_image(prompt, w, h, prof, d / "work", log)
+        # Keep the raw PNG edit target; indexing it before painting can discard
+        # alpha/detail or reject illustrations with more than 62 colours.
+        painting_start = Path(start).expanduser() if start and base is None else None
+        if base is not None:
+            painting_start = base.save(d / "work" / "painting_input.png")
+        painting = artist.paint_with_gpt_image(prompt, w, h, prof, d / "work", log,
+                                                references=ref_list, start=painting_start, model=model)
         base, rep = cleanup(load_image(painting.read_bytes()), CleanupOptions(
             width=w, height=h, max_colors=32, remove_background="auto",
             dark_bias=0.5, accent_share=0.2))
@@ -82,16 +108,16 @@ def make(prompt: str, width: int | None = None, height: int | None = None, profi
                            f"distinctive details (side art, marquee glow, damage), but redraw it as clean "
                            f"pixel art: solid silhouette, dark outline, organised light and shadow, no "
                            f"speckle. A complete new program is expected.")
-        artist_name, model, retouch = refiner or "cli", None, retouch_only
-    ref_list = [Path(x).expanduser() for x in (refs or [])]
-    if use_references:
-        ref_list += [Path(x) for x in (prof or {}).get("reference_paths", [])][:max(0, 3 - len(ref_list))]
+        artist_name, retouch = refiner or "cli", retouch_only
+        # --model selected the painter; the separately selected refiner uses its
+        # own default rather than receiving an incompatible painter model name.
+        backend_model = None
     # external routes (PixelLab, Retro Diffusion) paint drafts that compete in the judging
     external = route_mod.run_routes(routes or [], prompt, w, h, prof, d / "work", log) if routes else []
     req = artist.Request(edit_prompt, w, h, prof, rounds, base, ref_list,
                          polish=polish, retouch=retouch, candidates=candidates, checks=checks or [],
                          external=external, combine=combine)
-    backend = artist.make_backend(artist_name, model)
+    backend = artist.make_backend(artist_name, backend_model)
     log(f"artist: {backend.name}; saving to library/{item_id}")
     steps = artist.generate(req, backend, d / "work", log)
     final = steps[-1]
@@ -126,6 +152,12 @@ def make(prompt: str, width: int | None = None, height: int | None = None, profi
 
 def main(argv=None):
     args = sys.argv[1:] if argv is None else argv
+    if args and args[0] == "image-pair":
+        from .image_pair_cli import main as pair_main
+        return pair_main(args[1:])
+    if args and args[0] == "quality":
+        from .quality_cli import main as quality_main
+        return quality_main(args[1:])
     if args and args[0] == "animation-export":
         from .animation_export import cli
         return cli(args[1:])
@@ -153,6 +185,7 @@ def main(argv=None):
     direct.add_argument("--enable-authoring", action="store_true")
     sub.add_parser("animation-export", help="manifest-gated animation export; see animation-export --help")
     sub.add_parser("rig-render", help="render a rig + pose recipe; see rig-render --help")
+    sub.add_parser("quality", help="opt-in cache/local quality tools; see quality --help")
     sub.add_parser("guide")
     sub.add_parser("profiles")
 
@@ -161,6 +194,10 @@ def main(argv=None):
         g.add_argument("prompt")
         g.add_argument("-W", "--width", type=int); g.add_argument("-H", "--height", type=int)
         g.add_argument("--profile"); g.add_argument("--project", help="project id or folder: learn its style")
+        g.add_argument("--cache-dir", help="opt-in content-addressed reuse; requires config revision")
+        g.add_argument("--generation-revision", help="explicit external model/config version for caching")
+        g.add_argument("--state", default="still")
+        g.add_argument("--brief", help="JSON identity/silhouette/palette/protected/asymmetry/physical requirements")
         g.add_argument("--rounds", type=int, default=2)
         g.add_argument("--artist", "--backend", dest="artist", choices=ARTISTS)
         g.add_argument("--model"); g.add_argument("--start", help="existing PNG to refine")
@@ -232,7 +269,9 @@ def main(argv=None):
         dump(make(a.prompt, a.width, a.height, a.profile, a.project, a.rounds, a.artist, a.model,
                   a.start, a.out, log=lambda m: print(m, file=sys.stderr), refiner=a.refiner,
                   polish=not a.no_polish, candidates=a.candidates, checks=a.check, refs=a.ref,
-                  routes=a.route, open_in=a.open_in, combine=not a.no_combine))
+                  routes=a.route, open_in=a.open_in, combine=not a.no_combine,
+                  cache_dir=a.cache_dir, generation_revision=a.generation_revision, state=a.state,
+                  brief=json.loads(Path(a.brief).read_text()) if a.brief else None))
     elif a.cmd == "render":
         base = Sprite.from_image(load_image(Path(a.base).read_bytes())) if a.base else None
         res = dsl.render(json.loads(Path(a.program).read_text()), base)

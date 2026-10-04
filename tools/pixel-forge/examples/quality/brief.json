@@ -1,0 +1,8 @@
+{
+  "identity": ["Preserve the cabinet and prize compartment proportions from the reference"],
+  "silhouette": ["Readable at native size against a dark mall floor"],
+  "palette_style": ["Clean detailed late-SNES/GBA clusters, top-left light"],
+  "protected_details": ["Coin slot and marquee shape"],
+  "asymmetric_details": ["Controls stay on the reference side; never mirror them"],
+  "physical_cues": ["For damaged states, show broken glass and a displaced claw rather than random noise"]
+}

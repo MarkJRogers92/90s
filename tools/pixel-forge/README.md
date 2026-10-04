@@ -37,3 +37,15 @@ ASEPRITE_PATH=/path/to/aseprite "$FORGE_PYTHON" -m pytest -q tests
 ```
 
 Without Aseprite, native tests skip. A source-only test run is not native verification.
+
+## Opt-in quality and speed upgrade
+
+`make --cache-dir DIR --generation-revision CONFIG_VERSION` reuses the real generator without changing provider defaults. `forge.sh quality` exposes local preserve-first finishing, exact recolor/layer reuse, bounded repair publication, independent states, deterministic atlases and one-frame replacement. See [commands and contracts](docs/QUALITY_SPEED.md), including the reproducible local benchmark. Review bundles do not bypass the existing animation gates.
+
+## Real GPT image pair workflow
+
+`forge image-pair` / MCP `forge_image_pair` now coordinate a real initial mockup and its associated sprite sheet, with request-owned native-tool fulfillment or an explicitly configured Images API adapter. Original references persist across bounded corrections. Exact checks, optional generated-only normalization, immutable raw outputs and review-only acceptance are described in [GPT_IMAGE_PAIR.md](docs/GPT_IMAGE_PAIR.md). This is an authoring workflow; it does not enable provider access or alter shipped game assets.
+
+## Optional generated-grid recovery
+
+The pinned MIT Retro Diffusion detector is available through `python -m forge.grid_detector`. Native assets bypass it by default; generated-image analysis is opt-in and non-mutating. Optional reconstruction is explicitly lossy and blocked by protected requirements. It is not auto-inserted into the image-pair workflow. See [GRID_RECOVERY.md](docs/GRID_RECOVERY.md); optional dependencies remain separate in `requirements-grid.txt`.

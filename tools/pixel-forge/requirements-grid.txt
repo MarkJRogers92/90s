@@ -1,0 +1,4 @@
+# OPTIONAL: local grid inference only. Do not add these to the default Forge path.
+# Packages from the official Python package registry; no vendored build script.
+scipy>=1.7,<2
+opencv-python-headless>=4.5,<5

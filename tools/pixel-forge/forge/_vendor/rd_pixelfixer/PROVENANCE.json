@@ -1,0 +1,73 @@
+{
+  "repository": "https://github.com/Retro-Diffusion/pixel-art-fixer",
+  "commit": "ef376e57e1c272633ca2dbf5f29ec3fcf6596465",
+  "license": "MIT",
+  "source_directory": "python/pixelfixer",
+  "excluded": [
+    "api.py",
+    "cli.py"
+  ],
+  "local_changes": "None to vendored Python modules; package directory renamed for private namespacing. Adapter is separate.",
+  "files": [
+    {
+      "filename": "__init__.py",
+      "upstream_git_blob_sha": "b90670e6e0c5ad592974fe45379d0c4623ed6b41",
+      "sha256": "00f05d63e99b8a0c432b27619b8c0128a72a68ddce39841c7fcd918909dfb4f7"
+    },
+    {
+      "filename": "autocorr.py",
+      "upstream_git_blob_sha": "8fb4a07047348e41fca1ee64cece72f4f35989b1",
+      "sha256": "f7a06098e4a5766d533cb3a218dbc43eeb9433c0a7a7e7d099a66cfb5ad16c26"
+    },
+    {
+      "filename": "channels.py",
+      "upstream_git_blob_sha": "26910bf3ca517ea1c04fdb6fd8967eefc602c14f",
+      "sha256": "7e1b3ec61c0f3c11188253a0cab73426f8132620d7edd12eb0f26d243c7d54e2"
+    },
+    {
+      "filename": "colorspace.py",
+      "upstream_git_blob_sha": "3ce591f88747bcb158284df11a6a2d80ff6b15a2",
+      "sha256": "8baa62ee07a4e82a5c4d0ae68f39b919a538639336b553f0aed011e1242d91f8"
+    },
+    {
+      "filename": "core.py",
+      "upstream_git_blob_sha": "dd7c046745285fcf846649c3ea0af026b828def4",
+      "sha256": "853415024eee4206b378a9887eaa805bb3f7fb3c30c4518142f931d90d43b8a7"
+    },
+    {
+      "filename": "fusion.py",
+      "upstream_git_blob_sha": "7f19014a6a48541a57c025ee45a0636b8018a62e",
+      "sha256": "9d69f5ec588229728ac358634aeb82de35092033010bad191d089136088b879b"
+    },
+    {
+      "filename": "quantize.py",
+      "upstream_git_blob_sha": "0009ce751157c0e68c8bd3da29dddfc23bb60a42",
+      "sha256": "c3fc62bc0374b3e16f4bd9017a900d9a4e065e0b91a37a57d9e6304720b902aa"
+    },
+    {
+      "filename": "reconsearch.py",
+      "upstream_git_blob_sha": "351d771f2223becce8c74ed7039900d987c23754",
+      "sha256": "e48b586b523ad4a415cdccc26456840a95ec9fe632c8380daaf25c0a98d4fd41"
+    },
+    {
+      "filename": "reconstruct.py",
+      "upstream_git_blob_sha": "e9771b2ea77646e76118068863d26fb6815481db",
+      "sha256": "205c495d17ba243c7612e35cf83f3ab9587abcde8c8e6c36b0169bdef201ddd5"
+    },
+    {
+      "filename": "runlengths.py",
+      "upstream_git_blob_sha": "824466e198cf823e3a3889f212faaf81d97ca12c",
+      "sha256": "f1f44bfeb268c16d064111f1768e8fa7611ddff5898de74b39a15c4917ea21bb"
+    },
+    {
+      "filename": "selfsim.py",
+      "upstream_git_blob_sha": "8084447225808e0e5ce463c56c77c25be11eb94f",
+      "sha256": "c53ef8dd12a3762cfcac00b2a4b955d104ae8626529597852511664e52a8471a"
+    },
+    {
+      "filename": "varcontrast.py",
+      "upstream_git_blob_sha": "bde4b723658837d8e726569d607bc78dd22bb325",
+      "sha256": "fd4e9f0c815786f83fef87751ea5fcab50d417ed77f9d734ea879088c79d3697"
+    }
+  ]
+}
