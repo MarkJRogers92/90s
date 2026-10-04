@@ -158,5 +158,31 @@
       "east": "9a19e25d-6017-4284-ac26-4f01e768b8e0",
       "south-east": "3307ef56-1caa-4a75-b568-f4b6b2e425a3"
     }
+  },
+  "elf-attack": {
+    "group": "c8045894-e0cb-45d7-b780-1f4d247d578b",
+    "jobs": {
+      "south": "d49430b9-3439-45d0-84e5-6ce82c483dbe",
+      "south-west": "126d9edf-d04a-4ab2-afb7-e0e2c66f6bc2",
+      "west": "1613f0ce-293b-4b7e-880c-61bc5fe39287",
+      "north-west": "fc27519f-bade-4c0b-abf8-ef24dc32518e",
+      "north": "a99d7e3c-df38-4360-8fe1-b4d1cd634de9",
+      "north-east": "55fbd31a-9c86-4464-a76f-d537a95d7cbe",
+      "east": "7e5aecea-f079-450b-8376-c2bc71b8f5a2",
+      "south-east": "e21467f3-1d7f-456b-a38e-692a4a9d9e30"
+    }
+  },
+  "goon-attack": {
+    "group": "8acf9c43-4605-43e1-b671-4af680b2a8c4",
+    "jobs": {
+      "south": "eed6e9ce-5b04-46e4-94d6-78b390f0c410",
+      "south-west": "cadcad29-7646-4801-b13d-56d66cbd7413",
+      "west": "9b86110d-2d7f-4c72-804e-affb236e7cd7",
+      "north-west": "cea9274e-42c1-4115-a487-eafe4bb79c3d",
+      "north": "9d845cc2-f5a0-4542-8405-c33a2ee2f558",
+      "north-east": "7ad56f88-2417-4bb3-abbe-ce16b10d6951",
+      "east": "1cb8e287-8315-4979-bdd7-0621f16afd11",
+      "south-east": "06362a66-888a-45bb-b6a5-7770c30ea56a"
+    }
   }
 }
