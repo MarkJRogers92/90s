@@ -27,12 +27,25 @@ def action(action,root,*,spec=None,key=None,ticket=None,image_path=None,receipt=
 
 def main(argv=None):
     ap=argparse.ArgumentParser(prog='forge image-pair')
-    ap.add_argument('action',choices=['capabilities','begin','status','dispatch','accept','revise','normalize'])
+    ap.add_argument('action',choices=['capabilities','begin','status','dispatch','accept','revise','normalize','run'])
     ap.add_argument('--root',required=True);ap.add_argument('--key');ap.add_argument('--spec')
     ap.add_argument('--ticket');ap.add_argument('--image-path');ap.add_argument('--receipt')
     ap.add_argument('--native-image-tool',action='store_true');ap.add_argument('--stage',choices=['mockup','sheet'])
     ap.add_argument('--feedback');ap.add_argument('--edit-mask');ap.add_argument('--max-changed-pixels',type=int)
+    # `run`: one pending request through the OpenAI Images API, keyed from the environment.
+    ap.add_argument('--model',help='exact image model id (run only; no default)')
+    ap.add_argument('--revision',default='env-openai-1',help='your model/config revision label for provenance')
+    ap.add_argument('--api-key-env',default='OPENAI_API_KEY',help='environment variable holding the key (never printed)')
+    ap.add_argument('--base-url',default=None,help=argparse.SUPPRESS)
     args=vars(ap.parse_args(argv))
+    model,revision,key_env,base_url=(args.pop(k) for k in ('model','revision','api_key_env','base_url'))
+    if args['action']=='run':
+        from . import openai_http
+        from .image_provider import OpenAIImagesBackend
+        if not model:ap.error('run needs --model (an exact image model id)')
+        client=openai_http.from_environment(key_env=key_env,base_url=base_url or openai_http.DEFAULT_BASE_URL)
+        if client is None:ap.error(f'run needs an API key in ${key_env}; nothing was sent')
+        args['backend']=OpenAIImagesBackend(client,model=model,revision=revision,enabled=True)
     for field in ('spec','receipt'):
         if args[field]:args[field]=json.loads(read_bounded(args[field],512*1024))
     print(json.dumps(action(**args),indent=2));return 0
