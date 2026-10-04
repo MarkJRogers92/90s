@@ -23,6 +23,33 @@ This is developer-side authoring only. It does not change the game runtime, regi
 
 `capabilities` reports local configuration, not proof of a live provider account. Importing these modules calls no provider. There is no hidden native-to-API fallback and no automatic retry after ambiguous completion.
 
+## Claude (or any agent) in a cloud session: `image-pair run`
+
+`forge/openai_http.py` is a dependency-free client shaped like the OpenAI SDK, so the
+existing `OpenAIImagesBackend` can run from the command line with no extra install:
+
+```bash
+python -m forge image-pair begin --root ./image-jobs --spec ./pair.json
+python -m forge image-pair run   --root ./image-jobs --key KEY --model gpt-image-1   # the mockup
+# inspect results/000-mockup/accepted.png, then:
+python -m forge image-pair run   --root ./image-jobs --key KEY --model gpt-image-1   # its sheet
+```
+
+Each `run` makes **one** request for the job's next pending stage and records the provider,
+model and revision. It never retries. A failed call is marked `unknown` completion, so check
+before calling again: it may have been charged.
+
+**What the environment needs:**
+- **`OPENAI_API_KEY`** set as an environment variable. Use `--api-key-env NAME` to read a
+  different one. The key is never printed or stored in the job ledger.
+- **`api.openai.com`** allowed by the environment's network policy.
+
+HTTPS uses the standard `HTTPS_PROXY` and `SSL_CERT_FILE` settings.
+
+Without a key, `run` exits before sending anything. `--model` has no default: pass an
+image model your account can use. `--revision` labels your model/config for provenance.
+`tests/test_openai_http.py` covers the client and the CLI against a local fake server only.
+
 ## Job specification
 
 Example for the DEAD MALL format; use actual readable local PNG paths:
