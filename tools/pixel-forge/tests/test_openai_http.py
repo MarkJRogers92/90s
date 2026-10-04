@@ -21,13 +21,14 @@ def png_bytes(size=(8, 8), color=(200, 40, 40, 255)):
 class Fake(http.server.BaseHTTPRequestHandler):
     calls = []
     status = 200
+    error_body = b'{"error":{}}'
 
     def do_POST(self):
         body = self.rfile.read(int(self.headers['Content-Length']))
         type(self).calls.append({'path': self.path, 'auth': self.headers.get('Authorization'),
                                  'type': self.headers.get('Content-Type'), 'body': body})
         if type(self).status != 200:
-            self.send_response(type(self).status); self.end_headers(); self.wfile.write(b'{"error":{}}'); return
+            self.send_response(type(self).status); self.end_headers(); self.wfile.write(type(self).error_body); return
         payload = json.dumps({'data': [{'b64_json': base64.b64encode(png_bytes()).decode()}],
                               'usage': {'input_tokens': 3, 'output_tokens': 5, 'total_tokens': 8}}).encode()
         self.send_response(200)
@@ -40,7 +41,7 @@ class Fake(http.server.BaseHTTPRequestHandler):
 
 @pytest.fixture
 def server():
-    Fake.calls = []; Fake.status = 200
+    Fake.calls = []; Fake.status = 200; Fake.error_body = b'{"error":{}}'
     httpd = http.server.HTTPServer(('127.0.0.1', 0), Fake)
     thread = threading.Thread(target=httpd.serve_forever, daemon=True); thread.start()
     yield f'http://127.0.0.1:{httpd.server_address[1]}/v1'
@@ -117,3 +118,36 @@ def test_cli_run_reads_the_key_from_the_environment_and_never_prints_it(server, 
     # One call produced the mockup; the job now waits for its sheet (the next `run`).
     assert result['artifacts']['mockup']['sha256'] and result['validation']['accepted'] is True
     assert result['state'] == 'pending' and result['review_status'] == 'REVIEW_ONLY'
+
+
+def test_a_4xx_rejection_was_never_started_and_names_the_api_error_code(server):
+    # 4xx: the API refused the request (no credit, bad key or parameter), so nothing ran or was charged.
+    Fake.status = 429
+    Fake.error_body = json.dumps({'error': {'code': 'credit_balance_exhausted', 'message': 'You have no credits remaining.'}}).encode()
+    backend = OpenAIImagesBackend(openai_http.OpenAIHttpClient(api_key='sk-test', base_url=server),
+                                  model='gpt-image-1', revision='r1', enabled=True)
+    with pytest.raises(Exception) as error:
+        backend.generate({'prompt': 'x', 'referenced_image_paths': [], 'transparent_background': True})
+    assert error.value.completion == 'not_started' and error.value.code == 'PROVIDER_REJECTED'
+    assert 'HTTP 429' in str(error.value) and 'credit_balance_exhausted' in str(error.value)
+    assert 'sk-test' not in str(error.value)
+
+
+def test_cli_run_prints_a_rejection_and_leaves_the_job_pending(server, tmp_path, monkeypatch, capsys):
+    from forge import image_pair_cli
+    ref = tmp_path / 'walk.png'; ref.write_bytes(png_bytes((64, 64)))
+    spec = tmp_path / 'pair.json'
+    spec.write_text(json.dumps({'prompt': 'charge', 'style': 'match', 'references': [str(ref)], 'frame_size': 8,
+                                'frames': 1, 'facings': ['south'], 'durations_ms': [100], 'pivot': [4, 7],
+                                'max_followups': 0, 'revision': 't1'}))
+    root = tmp_path / 'jobs'
+    image_pair_cli.main(['begin', '--root', str(root), '--spec', str(spec)])
+    key = json.loads(capsys.readouterr().out)['key']
+    monkeypatch.setenv('OPENAI_API_KEY', 'sk-secret-value')
+    Fake.status = 400
+    Fake.error_body = json.dumps({'error': {'code': 'invalid_value', 'param': 'background'}}).encode()
+    assert image_pair_cli.main(['run', '--root', str(root), '--key', key, '--model', 'gpt-image-1', '--base-url', server]) == 1
+    printed = json.loads(capsys.readouterr().out)
+    assert printed['error']['completion'] == 'not_started' and 'invalid_value' in printed['error']['message']
+    image_pair_cli.main(['status', '--root', str(root), '--key', key])
+    assert json.loads(capsys.readouterr().out)['state'] == 'pending'     # free to run again

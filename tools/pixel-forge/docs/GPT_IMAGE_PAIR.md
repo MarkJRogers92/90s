@@ -36,8 +36,16 @@ python -m forge image-pair run   --root ./image-jobs --key KEY --model gpt-image
 ```
 
 Each `run` makes **one** request for the job's next pending stage and records the provider,
-model and revision. It never retries. A failed call is marked `unknown` completion, so check
-before calling again: it may have been charged.
+model and revision. It never retries.
+- **4xx refusal:** an HTTP 4xx answer (for example `credit_balance_exhausted`, a bad key or an
+  unsupported parameter) is a `PROVIDER_REJECTED` error with the API's error code. The request
+  never ran and wasn't charged, so the job stays `pending` and you can `run` it again after
+  fixing the cause.
+- **Any other failure:** a 5xx, a timeout or a dropped connection leaves the stage `in_flight`
+  with `unknown` completion. Reconcile it before calling again, because it may have been
+  charged.
+- **Billing:** API usage is billed from prepaid OpenAI API credits
+  (platform.openai.com/settings/organization/billing), not from a ChatGPT subscription.
 
 **What the environment needs:**
 - **`OPENAI_API_KEY`** set as an environment variable. Use `--api-key-env NAME` to read a
