@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { EnemyState } from '../../src/sim/model';
 import { BOSS_SLAM_REACH, BOSS_SLAM_TELEGRAPH_TICKS, BOSS_VOLLEY_TELEGRAPH_TICKS } from '../../src/sim/combat/boss';
 import { SPITTER_RECOVER_TICKS, SPITTER_TELEGRAPH_TICKS } from '../../src/sim/combat/enemies';
+import { GOON_SHOT_CADENCE } from '../../src/sim/combat/districtEnemies';
 import {
   HANGER_WARN_DISTANCE,
   HIT_STOP_MS,
@@ -141,6 +142,17 @@ describe('attack animation frames', () => {
     expect(attackFrameFor(justFired, [], 9, 0)).toBeGreaterThanOrEqual(6);
     const resting = enemy({ phase: 'recover', phaseTicks: 10 });
     expect(attackFrameFor(resting, [], 9, 0)).toBeNull();
+  });
+
+  it('plays a hockey goon slap shot release after the puck leaves, then its skating art', () => {
+    // The goon fires from its telegraph straight into `pursue`, with the shot cadence reloaded.
+    const justShot = enemy({ kind: 'goon', phase: 'pursue', cooldownTicks: GOON_SHOT_CADENCE - 1 });
+    expect(attackFrameFor(justShot, [], 6, 0)).toBeGreaterThanOrEqual(4);
+    const skating = enemy({ kind: 'goon', phase: 'pursue', cooldownTicks: GOON_SHOT_CADENCE - 20 });
+    expect(attackFrameFor(skating, [], 6, 0)).toBeNull();
+    // Arriving, it skates on half a cadence before its first shot: no release.
+    const arriving = enemy({ kind: 'goon', phase: 'pursue', cooldownTicks: GOON_SHOT_CADENCE / 2 });
+    expect(attackFrameFor(arriving, [], 6, 0)).toBeNull();
   });
 
   it('loops a hanger strike only while it is in touching range', () => {
