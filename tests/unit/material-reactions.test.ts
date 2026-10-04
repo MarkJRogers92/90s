@@ -86,3 +86,20 @@ describe('which flinches may interrupt an attack pose', () => {
     for (const kind of KINDS.filter((entry) => entry !== 'walker')) expect(hurtOutranksAttack(kind)).toBe(false);
   });
 });
+
+describe('a boss flinch yields only to a real wind-up', () => {
+  it('outranks a boss follow-through and its buckets in the air, never its telegraph or charge', async () => {
+    const { flinchOutranksAttack } = await import('../../src/game/view/EnemyReactionView');
+    const boss = { kind: 'zamboni', chargeTicks: 0 } as const;
+    // Recovering after a slam (release frames only, no wind-up): the hit shows.
+    expect(flinchOutranksAttack(boss, [])).toBe(true);
+    // The Developer walking on under its own tar buckets is not winding up.
+    expect(flinchOutranksAttack({ kind: 'developer', chargeTicks: 0 }, [{ kind: 'lob' }])).toBe(true);
+    expect(flinchOutranksAttack(boss, [{ kind: 'slam' }])).toBe(false);
+    expect(flinchOutranksAttack(boss, [{ kind: 'volley' }])).toBe(false);
+    expect(flinchOutranksAttack({ kind: 'owner', chargeTicks: 5 }, [])).toBe(false);
+    // Everyone else keeps their whole attack pose, except the contact biters.
+    expect(flinchOutranksAttack({ kind: 'mascot', chargeTicks: 0 }, [])).toBe(false);
+    expect(flinchOutranksAttack({ kind: 'walker', chargeTicks: 0 }, [])).toBe(true);
+  });
+});

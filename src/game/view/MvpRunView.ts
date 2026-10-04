@@ -84,7 +84,7 @@ import { SPAWN_IN_TICKS, dashReadiness, shouldHintDash, spawnInPose } from './pl
 import { REST_POSE, attackFrameFor, combinePoses, glow, dashPose, enemyWindups, playerBodyAction, windupPose, type PlayerBodyAction, type Windup } from './combatBeats';
 import { MallRoomView } from './MallRoomView';
 import { CombatFeedback } from './CombatFeedback';
-import { hurtOutranksAttack, materialHurtKey, type EnemyHurtFrame } from './EnemyReactionView';
+import { flinchOutranksAttack, materialHurtKey, type EnemyHurtFrame } from './EnemyReactionView';
 import { LootView } from './LootView';
 import { ELITE_GLYPHS, eliteRingSegments, type EliteMarkTrait } from './eliteMarks';
 import { WeaponView } from './WeaponView';
@@ -389,7 +389,7 @@ export class MvpRunView {
         const pulse = 0.75 + 0.25 * Math.sin(state.tick / 8 + enemy.id);
         shown = combinePoses(shown, { offsetX: 0, offsetY: 0, scaleX: 1, scaleY: 1, flash: false, tint: wet ? glow(0x2a90ff, 0.55 * pulse) : glow(0xd08a20, 0.5 * pulse) });
       }
-      const flinchFirst = hurtOutranksAttack(enemy.kind);
+      const flinchFirst = flinchOutranksAttack(enemy, windups);
       const hurt = this.feedback.hurtFor(`enemy:${enemy.id}`, fxTick, !flinchFirst && (attackColumn !== null || charge !== undefined));
       this.drawMannequinEyes(enemySnapshot, effects, hurt);
       if (!hurt && enemy.kind === 'mannequin' && enemy.phase === 'pursue') {

@@ -5,6 +5,7 @@ import { usableTextureKey } from '../presentation/assetFallback';
 import { presentationDepth } from '../presentation/depth';
 import { ACTOR_DIRECTION_ORDER, enemySpriteSheet, type ActorDirection, type SpriteSpec } from './ActorSpriteView';
 import type { EnemyKind } from '../../sim/model';
+import { isBossKind } from '../../sim/combat/boss';
 
 export const MANNEQUIN_HURT_FRAME_TICKS = [3, 3, 4, 4] as const;
 export const MANNEQUIN_HURT_TICKS = 14;
@@ -91,6 +92,18 @@ export function isMaterialKind(kind: string): kind is MaterialKind {
  */
 export function hurtOutranksAttack(kind: string): boolean {
   return kind === 'hanger' || kind === 'walker';
+}
+/**
+ * Whether this hit's flinch draws over the enemy's attack pose right now. Besides the
+ * contact biters, a boss flinches over its follow-through (the release frames after a
+ * slam, or walking on under its own tar buckets): that is when the janitor gets hits in,
+ * and a boss's 7-tick flinch would otherwise never show. Its slam, volley and charge
+ * telegraphs, and the charge itself, always keep priority.
+ */
+export function flinchOutranksAttack(enemy: { readonly kind: string; readonly chargeTicks?: number }, windups: readonly { readonly kind: string }[]): boolean {
+  if (hurtOutranksAttack(enemy.kind)) return true;
+  if (!isBossKind(enemy.kind as EnemyKind)) return false;
+  return (enemy.chargeTicks ?? 0) <= 0 && !windups.some((windup) => windup.kind !== 'lob' && windup.kind !== 'reach');
 }
 /** How far above the feet this kind's impact strip is centred. */
 export function materialImpactLift(kind: MaterialKind): number {
