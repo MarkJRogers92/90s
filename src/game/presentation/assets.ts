@@ -252,6 +252,14 @@ const neon = (key: string, file: string, frameWidth?: number, frameHeight?: numb
   requiredFor: 'actor',
 });
 
+/**
+ * Roadmap V1: the enemies with a native hurt strip (4 frames x 8 facings) and a
+ * 6 x 48 px material impact strip, keyed `neon:enemy:<prefix>-hurt` / `-impact`
+ * (art/enemy-reactions/materials). The Hanger, Mannequin and Static keep their own keys.
+ */
+export const NATIVE_REACTION_PREFIXES = ['walker', 'shopper', 'mascot', 'roofer', 'spitter', 'elf', 'spritzer', 'poodle', 'goon',
+  'lp-manager', 'manager', 'owner', 'developer', 'santa', 'glamour-queen', 'whiskers', 'zamboni'] as const;
+
 /** Everything the neon presentation loads besides the dressing kit. */
 export const NEON_ASSETS: readonly PresentationAsset[] = [
   ...Object.values(WEAPON_EFFECT_ART).map((art): PresentationAsset => ({
@@ -348,6 +356,7 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(SCENE_TEXTURE_KEYS.timeClock, 'ui/time-clock.png'),
   neon(SCENE_TEXTURE_KEYS.rcCar, 'props/rc-car.png'),
   ...Object.values(DECAL_TEXTURE_KEYS).map((key) => neon(key, `decals/${key.slice('neon:decal:'.length)}.png`)),
+  ...NATIVE_REACTION_PREFIXES.flatMap((prefix) => [neon(`neon:enemy:${prefix}-hurt`, `enemies/${prefix}-hurt.png`), neon(`neon:enemy:${prefix}-impact`, `enemies/${prefix}-impact.png`)]),
   ...Object.values(ITEM_ICON_FILES).map((file) => neon(`neon:item:${file}`, `items/${file}.png`)),
 ];
 

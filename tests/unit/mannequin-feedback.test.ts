@@ -46,11 +46,13 @@ describe('mannequin material-specific combat feedback', () => {
     sync(100, []); expect(corpse.destroyed).toBe(true);
   });
 
-  it('leaves other enemy blood, impact rings, white pose and player-facing death untouched', () => {
+  it('leaves other enemies their own hit material and flash, and the Hanger its death', () => {
     const { sync, feedback, images, marks } = setup();
     sync(0, [enemy({ kind: 'spitter' })]); sync(1, [enemy({ kind: 'spitter', health: 7 })]);
-    expect(images.some((image) => image.texture.key.includes('decal:'))).toBe(true);
-    expect(marks).toContain('strokeCircle'); expect(feedback.poseFor('enemy:1', 1).flash).toBe(true);
+    // Roadmap V1: every enemy now chips its own material (material-reactions.test.ts), so
+    // a Spitter hit lays no blood; with its hurt art absent it keeps the generic flash.
+    expect(images.filter((image) => image.texture.key.includes('decal:'))).toEqual([]);
+    expect(marks).not.toContain('strokeCircle'); expect(feedback.poseFor('enemy:1', 1).flash).toBe(true);
     // The Hanger has native hits (hanger-feedback.test.ts) but keeps its generic death.
     sync(2, [enemy({ kind: 'hanger', id: 2 })]); sync(3, []);
     const corpse = images.find((image) => image.texture.key === ENEMY_TEXTURE_KEYS.hangerDeath)!;
