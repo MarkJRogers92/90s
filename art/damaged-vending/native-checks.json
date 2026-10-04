@@ -1,0 +1,368 @@
+{
+  "consistency": {
+    "errors": [],
+    "checks": [
+      {
+        "code": "palette",
+        "scope": "south-east/0",
+        "status": "pass",
+        "detail": {
+          "off_palette_colors": 0
+        }
+      },
+      {
+        "code": "baseline",
+        "scope": "south-east/0",
+        "status": "pass",
+        "detail": {
+          "measured": 89,
+          "expected": 89
+        }
+      },
+      {
+        "code": "height",
+        "scope": "south-east/0",
+        "status": "pass",
+        "detail": {
+          "measured": 81,
+          "expected": [
+            81,
+            81
+          ]
+        }
+      },
+      {
+        "code": "identity",
+        "scope": "south-east/0/0",
+        "status": "pass",
+        "detail": {
+          "accepted": true,
+          "status": "REVIEW_ONLY",
+          "changed_pixels": 0,
+          "outside_mask_pixels": 0,
+          "changed_bbox": null,
+          "errors": [],
+          "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+          "candidate_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+          "note": "Accepted means the pixel contract passed, not that the repair looks better."
+        }
+      },
+      {
+        "code": "palette",
+        "scope": "south-east/1",
+        "status": "pass",
+        "detail": {
+          "off_palette_colors": 0
+        }
+      },
+      {
+        "code": "baseline",
+        "scope": "south-east/1",
+        "status": "pass",
+        "detail": {
+          "measured": 89,
+          "expected": 89
+        }
+      },
+      {
+        "code": "height",
+        "scope": "south-east/1",
+        "status": "pass",
+        "detail": {
+          "measured": 81,
+          "expected": [
+            81,
+            81
+          ]
+        }
+      },
+      {
+        "code": "identity",
+        "scope": "south-east/1/0",
+        "status": "pass",
+        "detail": {
+          "accepted": true,
+          "status": "REVIEW_ONLY",
+          "changed_pixels": 57,
+          "outside_mask_pixels": 0,
+          "changed_bbox": [
+            31,
+            19,
+            50,
+            28
+          ],
+          "errors": [],
+          "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+          "candidate_pixel_sha256": "1b15c850b40959a39ccf463162a47b0043a1ee3991ad2b9c10eb7e01ef09e939",
+          "note": "Accepted means the pixel contract passed, not that the repair looks better."
+        }
+      },
+      {
+        "code": "palette",
+        "scope": "south-east/2",
+        "status": "pass",
+        "detail": {
+          "off_palette_colors": 0
+        }
+      },
+      {
+        "code": "baseline",
+        "scope": "south-east/2",
+        "status": "pass",
+        "detail": {
+          "measured": 89,
+          "expected": 89
+        }
+      },
+      {
+        "code": "height",
+        "scope": "south-east/2",
+        "status": "pass",
+        "detail": {
+          "measured": 81,
+          "expected": [
+            81,
+            81
+          ]
+        }
+      },
+      {
+        "code": "identity",
+        "scope": "south-east/2/0",
+        "status": "pass",
+        "detail": {
+          "accepted": true,
+          "status": "REVIEW_ONLY",
+          "changed_pixels": 10,
+          "outside_mask_pixels": 0,
+          "changed_bbox": [
+            33,
+            20,
+            50,
+            73
+          ],
+          "errors": [],
+          "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+          "candidate_pixel_sha256": "5abeaacfdfc8114cedecefb1e3a1ca01c166504dcf6a64d9db20c2cbc68c815f",
+          "note": "Accepted means the pixel contract passed, not that the repair looks better."
+        }
+      },
+      {
+        "code": "palette",
+        "scope": "south-east/3",
+        "status": "pass",
+        "detail": {
+          "off_palette_colors": 0
+        }
+      },
+      {
+        "code": "baseline",
+        "scope": "south-east/3",
+        "status": "pass",
+        "detail": {
+          "measured": 89,
+          "expected": 89
+        }
+      },
+      {
+        "code": "height",
+        "scope": "south-east/3",
+        "status": "pass",
+        "detail": {
+          "measured": 81,
+          "expected": [
+            81,
+            81
+          ]
+        }
+      },
+      {
+        "code": "identity",
+        "scope": "south-east/3/0",
+        "status": "pass",
+        "detail": {
+          "accepted": true,
+          "status": "REVIEW_ONLY",
+          "changed_pixels": 0,
+          "outside_mask_pixels": 0,
+          "changed_bbox": null,
+          "errors": [],
+          "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+          "candidate_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+          "note": "Accepted means the pixel contract passed, not that the repair looks better."
+        }
+      }
+    ],
+    "semantic_status": "unverified",
+    "visual_review_required": [
+      "identity",
+      "facing",
+      "proportions",
+      "motion"
+    ],
+    "limitations": [
+      "Palette membership does not prove correct color placement.",
+      "Baseline is the lowest opaque pixel, not recognized foot contact.",
+      "Height is a silhouette bound, not an anatomical proportion measurement.",
+      "Exact masks protect only their annotated regions; no facing or anatomy is inferred."
+    ]
+  },
+  "exact_edit_checks": [
+    {
+      "accepted": true,
+      "status": "REVIEW_ONLY",
+      "changed_pixels": 0,
+      "outside_mask_pixels": 0,
+      "changed_bbox": null,
+      "errors": [],
+      "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "candidate_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "note": "Accepted means the pixel contract passed, not that the repair looks better."
+    },
+    {
+      "accepted": true,
+      "status": "REVIEW_ONLY",
+      "changed_pixels": 57,
+      "outside_mask_pixels": 0,
+      "changed_bbox": [
+        31,
+        19,
+        50,
+        28
+      ],
+      "errors": [],
+      "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "candidate_pixel_sha256": "1b15c850b40959a39ccf463162a47b0043a1ee3991ad2b9c10eb7e01ef09e939",
+      "note": "Accepted means the pixel contract passed, not that the repair looks better."
+    },
+    {
+      "accepted": true,
+      "status": "REVIEW_ONLY",
+      "changed_pixels": 10,
+      "outside_mask_pixels": 0,
+      "changed_bbox": [
+        33,
+        20,
+        50,
+        73
+      ],
+      "errors": [],
+      "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "candidate_pixel_sha256": "5abeaacfdfc8114cedecefb1e3a1ca01c166504dcf6a64d9db20c2cbc68c815f",
+      "note": "Accepted means the pixel contract passed, not that the repair looks better."
+    },
+    {
+      "accepted": true,
+      "status": "REVIEW_ONLY",
+      "changed_pixels": 0,
+      "outside_mask_pixels": 0,
+      "changed_bbox": null,
+      "errors": [],
+      "source_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "candidate_pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "note": "Accepted means the pixel contract passed, not that the repair looks better."
+    }
+  ],
+  "frames": [
+    {
+      "status": "REVIEW_ONLY",
+      "width": 96,
+      "height": 96,
+      "visible_pixels": 3033,
+      "isolated_pixels": 0,
+      "partial_alpha_pixels": 0,
+      "visible_rgb_colors": 46,
+      "errors": [],
+      "warnings": [],
+      "pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "limitations": "Mechanical measurements do not verify identity, anatomy, motion, or visual quality."
+    },
+    {
+      "status": "REVIEW_ONLY",
+      "width": 96,
+      "height": 96,
+      "visible_pixels": 3033,
+      "isolated_pixels": 0,
+      "partial_alpha_pixels": 0,
+      "visible_rgb_colors": 46,
+      "errors": [],
+      "warnings": [],
+      "pixel_sha256": "1b15c850b40959a39ccf463162a47b0043a1ee3991ad2b9c10eb7e01ef09e939",
+      "limitations": "Mechanical measurements do not verify identity, anatomy, motion, or visual quality."
+    },
+    {
+      "status": "REVIEW_ONLY",
+      "width": 96,
+      "height": 96,
+      "visible_pixels": 3033,
+      "isolated_pixels": 0,
+      "partial_alpha_pixels": 0,
+      "visible_rgb_colors": 46,
+      "errors": [],
+      "warnings": [],
+      "pixel_sha256": "5abeaacfdfc8114cedecefb1e3a1ca01c166504dcf6a64d9db20c2cbc68c815f",
+      "limitations": "Mechanical measurements do not verify identity, anatomy, motion, or visual quality."
+    },
+    {
+      "status": "REVIEW_ONLY",
+      "width": 96,
+      "height": 96,
+      "visible_pixels": 3033,
+      "isolated_pixels": 0,
+      "partial_alpha_pixels": 0,
+      "visible_rgb_colors": 46,
+      "errors": [],
+      "warnings": [],
+      "pixel_sha256": "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+      "limitations": "Mechanical measurements do not verify identity, anatomy, motion, or visual quality."
+    }
+  ],
+  "motion": {
+    "status": "REVIEW_ONLY",
+    "frame_count": 4,
+    "duration_ms": 800,
+    "duplicate_pairs": [
+      [
+        0,
+        3
+      ]
+    ],
+    "visible_bounds": [
+      [
+        27,
+        9,
+        71,
+        90
+      ],
+      [
+        27,
+        9,
+        71,
+        90
+      ],
+      [
+        27,
+        9,
+        71,
+        90
+      ],
+      [
+        27,
+        9,
+        71,
+        90
+      ]
+    ],
+    "warnings": [
+      "duplicate_poses_may_be_intentional_holds"
+    ],
+    "not_verified": [
+      "anatomy",
+      "handedness",
+      "foot_contact",
+      "world_root_motion",
+      "aesthetic_quality"
+    ],
+    "note": "No frame was removed, shifted, interpolated, mirrored or recolored."
+  }
+}

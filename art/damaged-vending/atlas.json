@@ -1,0 +1,135 @@
+{
+  "frames": {
+    "damaged-flicker/frame-0": {
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      },
+      "duration": 280,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9270833333333334
+      }
+    },
+    "damaged-flicker/frame-1": {
+      "frame": {
+        "x": 96,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      },
+      "duration": 90,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9270833333333334
+      }
+    },
+    "damaged-flicker/frame-2": {
+      "frame": {
+        "x": 192,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      },
+      "duration": 90,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9270833333333334
+      }
+    },
+    "damaged-flicker/frame-3": {
+      "frame": {
+        "x": 288,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "rotated": false,
+      "trimmed": false,
+      "spriteSourceSize": {
+        "x": 0,
+        "y": 0,
+        "w": 96,
+        "h": 96
+      },
+      "sourceSize": {
+        "w": 96,
+        "h": 96
+      },
+      "duration": 340,
+      "pivot": {
+        "x": 0.5,
+        "y": 0.9270833333333334
+      }
+    }
+  },
+  "meta": {
+    "app": "pixel-forge-accel",
+    "version": "0.1.0",
+    "image": "../../public/assets/neon/props/damaged-vending-flicker.png",
+    "format": "RGBA8888",
+    "size": {
+      "w": 384,
+      "h": 96
+    },
+    "scale": "1",
+    "frameTags": [
+      {
+        "name": "damaged-flicker",
+        "from": 0,
+        "to": 3,
+        "direction": "forward"
+      }
+    ],
+    "forge": {
+      "status": "REVIEW_ONLY",
+      "trimmed": false,
+      "rotation": false,
+      "palette_reduction": false,
+      "source_pixel_sha256": [
+        "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894",
+        "1b15c850b40959a39ccf463162a47b0043a1ee3991ad2b9c10eb7e01ef09e939",
+        "5abeaacfdfc8114cedecefb1e3a1ca01c166504dcf6a64d9db20c2cbc68c815f",
+        "4ac146e763ed1e24a6c52ad192c43d32e6d8b04363944c635e00d38ec1356894"
+      ]
+    }
+  }
+}
