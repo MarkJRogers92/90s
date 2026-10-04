@@ -71,7 +71,7 @@ if (attack) {
           const seen = [];
           let framed = false;
           for (let f = 0; f < 40; f += 1) {
-            const actors = await page.evaluate(() => window.__DEAD_MALL_DEBUG__.snapshot().actorPresentation?.hangers ?? []);
+            const actors = await page.evaluate(() => window.__DEAD_MALL_DEBUG__.snapshot().actorPresentation?.enemies ?? []);
             const mine = actors.find((a) => a.id === `enemy:${hit.id}`);
             if (mine) seen.push(`${mine.textureKey.split(':').pop()}[${mine.frame.column}]`);
             if (!framed && mine?.textureKey.includes('hurt')) {

@@ -38,7 +38,7 @@ or start something; keep items small enough for one PR.
 | ID | Item | Status | Size |
 |---|---|---|---|
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
-| V1 | Native hurt reactions for the remaining enemies | **Hanger done**; art banked for Walker, Elf, Spritzer, Poodle, Goon, Mascot (`docs/PIXELLAB_HANDOFF.md`); 16 kinds left to wire | M per batch |
+| V1 | Native hurt reactions for the remaining enemies | **done** 2026-10-04 for every enemy kind (`feat/hurt-reactions`) | — |
 | V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy (Bargain Hunter PR #59; Elf, Poodle, Goon `feat/district-attacks`); Static needs code first | L |
 | V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
 | V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
@@ -89,8 +89,24 @@ Re-run the sweep after any presentation change.
 
 ## V1 — Native hurt reactions for the remaining enemies
 
-**Done:** Mannequin, Static (PR #48), Hanger (2026-10-03). Every other kind
-still gets the generic white flash, blood star, ring and blood decals.
+**Done 2026-10-04 for every enemy kind.** The Mannequin, Static (PR #48) and Hanger came
+first. The other 17 kinds now share one table, `NATIVE` in
+`src/game/view/EnemyReactionView.ts`, and one build script,
+`art/enemy-reactions/materials/build_material_reactions.py`:
+- **PixelLab hurt strips:** the Walker, Elf, Spritzer, Poodle, Goon, Mascot and Roofer. The
+  script erases the flashes and sparks PixelLab painted in.
+- **Derived from the walk art:** the Bargain Hunter, the Spitter (from its idle) and all eight
+  bosses. Bosses flinch over 2/2/2/1 ticks.
+- **Material impact strips:** each kind has a 6 × 48 px strip in its own material: sweat,
+  coupons, foam, tar, goo, glitter, mist, fur, ice, paper, tinsel and so on.
+- **Hits:** no enemy bleeds on a hit any more. Deaths are unchanged.
+- **`hurtOutranksAttack`:** true only for the Hanger and the Walker, the contact biters.
+
+To redo one kind's art, change the script and re-run it. To change the timing or scale,
+edit `NATIVE`. `tests/unit/material-reactions.test.ts` checks every kind against the real
+PNGs.
+
+The original recipe, kept for reference:
 
 Pattern (copy the Hanger):
 1. Add the kind to `MATERIAL_REACTIONS` in `src/game/view/EnemyReactionView.ts`:

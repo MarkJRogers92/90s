@@ -3,7 +3,7 @@
 **For:** whoever finishes the PixelLab animation work next, whether that's a GPT agent or a
 person. It assumes nothing beyond this repository and a PixelLab API key.
 
-**Status:** 4 October 2026, branch `feat/district-attacks`. **Credits left: 32 of 2,000
+**Status:** 4 October 2026, after `feat/hurt-reactions`. **Credits left: 16 of 2,000
 subscription generations** (check before you start; see section 3).
 
 Read `docs/ANIMATION_HANDOFF.md` sections 1, 2 and 4 first. They cover the sheet format, how the
@@ -19,65 +19,41 @@ pipeline and the remaining jobs.
 | attack sheets for all 7 bosses | santa, glamour-queen, whiskers, zamboni, manager, owner, developer | shipped (PR #57) |
 | `shopper-attack` | Bargain Hunter | shipped (PR #59, GPT pilot + Pixel Forge, not PixelLab) |
 | `poodle-attack`, `elf-attack`, `goon-attack` | district monsters | **shipped on this branch**, registered, live-checked |
-| `walker-hurt`, `elf-hurt` | Mall Walker, Elf | **banked** in `art/pixellab/` (generated, not wired) |
-| `spritzer-hurt`, `poodle-hurt`, `goon-hurt` | district monsters | **banked** in `art/pixellab/` |
-| `mascot-hurt` | Mascot Brute (132 px canvas) | **banked** in `art/pixellab/` |
+| hurt strips for every enemy kind | all 17 remaining kinds | **shipped** (`feat/hurt-reactions`, roadmap V1) |
 
-"Banked" means the PNG is generated and aligned, but it is **not** in `public/` and the game
-doesn't use it yet. Each still needs the V1 wiring in section 4. Don't regenerate it: that wastes
-credits.
+**How the hurt strips were made:**
+- **PixelLab:** the Walker, Elf, Spritzer, Poodle, Goon, Mascot and Roofer. The raw strips stay
+  in `art/pixellab/<kind>-hurt.png`.
+- **Derived from the walk art (no credits):** the Bargain Hunter, the Spitter and the bosses.
+- **Build:** `art/enemy-reactions/materials/build_material_reactions.py` turns the raw strips
+  into the runtime ones. It erases the flashes and sparks PixelLab painted in, derives the
+  rest, and draws each kind's impact strip. If you re-collect a PixelLab strip, re-run the
+  script.
 
 ### Known defects in what exists
 
 - **`goon-attack`:** the hockey stick changes colour between facings (white, brown or black)
   and is missing from frame 0 in some rows. In the SE row the figure is about 9% taller. It is
-  usable at game scale, but a person should look at it. Fix it by hand, or with
-  `recolor.py` (add a RULES entry), rather than spending credits: a redo follows the same
-  character rotations, so it comes back the same.
-- **`walker-hurt`:** the north row (row 4) has a **white impact flash baked into frames 1–2**.
-  Erase it before wiring, because the game draws its own flash and impact strip.
-- **`spritzer-hurt`:** baked effects: sparks under the feet in S frame 1, motion lines in E,
-  perfume bottles falling in N. Erase them before wiring.
-- **`mascot-hurt`:** a small yellow spark in the E row, frames 0–1. Erase it.
-- **`poodle-hurt`:** the collar is red in most facings and teal in N/NE/E. Recolour it to red
-  (`recolor.py`), or leave it; it's tiny at game scale.
+  usable at game scale. Fix it by hand, or with `recolor.py` (add a RULES entry), rather than
+  spending credits: a redo follows the same character rotations, so it comes back the same.
+- **`poodle-hurt`:** the collar is red in most facings and teal in N/NE/E. It's tiny at game
+  scale.
+- **Derived hurt strips** (Bargain Hunter, Spitter, bosses) squash and stretch the standing
+  figure rather than drawing a new pose. That reads as a flinch at game speed, but a drawn or
+  PixelLab flinch would be better. For a boss, replace one by adding a PixelLab job (about
+  13–40 credits), collecting it, moving the kind from `DERIVED` to `PIXELLAB_KINDS` in the
+  build script, and setting its `frame` in `NATIVE`.
 - **All hurt strips:** `collect` warns "height ×0.90" on some rows. That is the flinch (the head
   snaps back), not a scale drift, so it's expected.
 
-## 2. What is still left (in priority order)
+## 2. What is still left (all optional)
 
-1. **Wire the banked hurt strips** (code only, no credits). Follow `docs/VISUAL_ROADMAP.md`
-   **V1**: copy `tests/unit/hanger-reactions.test.ts`, add the kind to `MATERIAL_REACTIONS` in
-   `src/game/view/EnemyReactionView.ts`, register the keys, add a `CombatFeedback.onHit`
-   branch, and make an impact strip of 6 frames × 48 px in the enemy's material:
-
-   | Kind | Material |
-   |---|---|
-   | Walker | sweat drops and tracksuit fabric |
-   | Elf | glitter |
-   | Spritzer | perfume mist |
-   | Poodle | pink fur |
-   | Goon | ice chips |
-
-   The impact strips are tiny; draw them or generate them with image generation, not
-   PixelLab animation.
-   - Every one of these kinds has a timed wind-up, so `hurtOutranksAttack` stays false for
-     them.
-   - Only the Walker could set it to true, because it has no wind-up.
-   - The hurt sheets come back on a grown canvas (Walker 100 px, Elf 108 px, and so on). The
-     reaction view's `frameSize` must be the sheet's actual frame size, and `feetY` must follow
-     the V1 formula for that canvas.
-2. *(Mascot hurt is banked; it cost 13. Wire it like the others; its attack keeps priority.)*
-3. **Roofer hurt** (`d6eb1ca9-7b67-4f9e-909c-18eac03de22f`): the canvas is about 136 px, so
-   about 13–25 credits, so it fits in what is left. Do it next.
-4. **Bargain Hunter hurt** (`shopper-hurt`): **no PixelLab character exists** for the Bargain
-   Hunter. Its walk sheet came from elsewhere. Draw it with image generation plus Pixel Forge
-   (branch `pixel-forge-rig`, `bargain-hunter-finish/`), as was done for its attack, not
-   PixelLab.
-5. **Spitter hurt:** it has no walk sheet, so build it from its idle strip. Not PixelLab.
-6. **Boss hurt strips:** they are 160–216 px, about 32–40 credits each. Don't start these
-   without more credits.
-7. **`walker-attack` and `static-attack`:** `enemySpriteSheet` names these keys, but
+1. **Upgrade the derived hurt strips** to drawn ones (see above), most-seen first: the Bargain
+   Hunter, then the Spitter. The Bargain Hunter has **no PixelLab character**, so use image
+   generation plus Pixel Forge (branch `pixel-forge-rig`, `bargain-hunter-finish/`).
+2. **Death strips** for the kinds that still use the generic blood death. Only the Mannequin,
+   Static and Hanger have one.
+3. **`walker-attack` and `static-attack`:** `enemySpriteSheet` names these keys, but
    `attackFrameFor` **never selects** them:
    - The Walker is a contact enemy, with no wind-up.
    - The Static's `blink` is not mapped to any frames.
