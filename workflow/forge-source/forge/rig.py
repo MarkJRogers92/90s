@@ -666,6 +666,84 @@ def previews(render_dir, out_dir, background=(25, 24, 36), scales=(1, 2)):
     return {"out": str(out), "frames": len(frames), "files": written}
 
 
+def _changed_pixels(a, b):
+    return int(np.any(np.asarray(a.convert("RGBA")) != np.asarray(b.convert("RGBA")), axis=2).sum())
+
+
+def review(recipe_path, out_dir, baseline=None):
+    """One call for the whole loop: render, checked review export, previews, native document
+    (only where Aseprite exists) and an optional same-scale comparison with a baseline render.
+    Writes SUMMARY.json and SUMMARY.md. Nothing here approves anything."""
+    from . import animation_export, aseprite
+    out = Path(out_dir).expanduser().absolute()
+    if out.exists() or out.is_symlink():
+        raise FileExistsError(f"{out} exists; never overwriting")
+    out.mkdir(parents=True)
+    summary = {"workflow": "forge rig-review", "recipe": str(Path(recipe_path).resolve()), "approved": False}
+    summary["render"] = render_recipe(recipe_path, out / "render")
+    report = animation_export.export_animation(out / "render" / "manifest.json", out / "export", review=True)
+    checks = report["checks"]
+    summary["export"] = {"status": report["status"], "technical": checks["technical_status"],
+                         "failed": [f"{c['code']}:{c['scope']}: {c['detail']}" for c in checks["checks"] if c["status"] == "fail"],
+                         "manual_review_required": report["manual_review_required"],
+                         "rig_bytes_verified": checks.get("rig_provenance", {}).get("verified_bytes", False)}
+    summary["previews"] = previews(out / "render", out / "previews")["files"]
+    if aseprite.find_executable() is None:
+        summary["native"] = {"status": "skipped", "reason": "Aseprite not found (set ASEPRITE_PATH to build and verify the layered document)"}
+    else:
+        try:
+            doc = build_native(out / "render", out / "native.aseprite")
+            native = animation_export.export_animation(out / "render" / "manifest.json", out / "native-export", review=True, document=doc)
+            summary["native"] = {"status": "verified", "document": str(doc), **(native["native_document"] or {})}
+        except Exception as error:   # report, never hide: the summary is the reviewer's view
+            summary["native"] = {"status": "failed", "error": str(error)}
+    if baseline is not None:
+        base = Path(baseline).resolve(strict=True)
+        provenance = json.loads((out / "render" / "provenance.json").read_text())
+        ids = [f["id"] for f in provenance["frames"]]
+        new = [Image.open(out / "render" / f"frame-{i:03d}.png") for i in range(len(ids))]
+        old = [Image.open(base / f"frame-{i:03d}.png") for i in range(len(ids))]
+        summary["compare"] = {"baseline": str(base), "changed_pixels": {fid: _changed_pixels(a, b) for fid, a, b in zip(ids, old, new)}}
+        w, h = new[0].size
+        sheet = Image.new("RGBA", (w * 2 * len(ids), h * 4), (25, 24, 36, 255))
+        for i, (a, b) in enumerate(zip(old, new)):
+            sheet.alpha_composite(a.convert("RGBA").resize((w * 2, h * 2), Image.NEAREST), (i * w * 2, 0))
+            sheet.alpha_composite(b.convert("RGBA").resize((w * 2, h * 2), Image.NEAREST), (i * w * 2, h * 2))
+        sheet.convert("RGB").save(out / "compare-2x.png")
+    (out / "SUMMARY.json").write_text(json.dumps(summary, indent=1) + "\n")
+    lines = [f"# rig-review: {Path(recipe_path).name}", "", "Not approved: this is review evidence only.", "",
+             f"- export: **{summary['export']['status']}**, technical **{summary['export']['technical']}**, "
+             f"rig/recipe bytes verified: {summary['export']['rig_bytes_verified']}",
+             f"- repair pixels: {summary['render']['repair_pixels']}, manual coordinates: {summary['render']['manual_coordinates']}",
+             f"- native: {summary['native']['status']}" + (f" ({summary['native'].get('reason') or summary['native'].get('error')})" if summary['native']['status'] != 'verified' else
+                                                           f", pixel exact {summary['native'].get('visible_frames_pixel_exact')}, durations {summary['native'].get('durations_seconds')}"),
+             "", "## Needs a person", *[f"- {item}" for item in summary["export"]["manual_review_required"]]]
+    if summary["export"]["failed"]:
+        lines += ["", "## Failed checks", *[f"- {item}" for item in summary["export"]["failed"]]]
+    if "compare" in summary:
+        lines += ["", "## Changed pixels against the baseline", *[f"- frame {k}: {v}" for k, v in summary["compare"]["changed_pixels"].items()],
+                  "", "`compare-2x.png`: baseline on top, this render below."]
+    lines += ["", "Look at `previews/in-place-2x.gif`, `previews/ground-2x.gif` and `previews/strip-1x.png` before judging the art."]
+    (out / "SUMMARY.md").write_text("\n".join(lines) + "\n")
+    return summary
+
+
+def review_cli(argv=None):
+    import argparse
+    parser = argparse.ArgumentParser(prog="forge rig-review", description="Render, check, preview and (with Aseprite) natively verify a recipe in one step")
+    parser.add_argument("recipe")
+    parser.add_argument("--out", required=True)
+    parser.add_argument("--baseline", help="an earlier render directory to compare frame by frame")
+    args = parser.parse_args(argv)
+    try:
+        summary = review(args.recipe, args.out, args.baseline)
+    except (RigError, OSError, ValueError) as error:
+        print(json.dumps({"status": "blocked", "error": str(error)}))
+        return 1
+    print((Path(args.out) / "SUMMARY.md").read_text())
+    return 0 if summary["export"]["technical"] == "pass" else 2
+
+
 def variant_cli(argv=None):
     import argparse
     parser = argparse.ArgumentParser(prog="forge rig-variant", description="Derive a rotated variant; prints the rig variant block")

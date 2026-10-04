@@ -2,6 +2,7 @@ import copy
 import hashlib
 import io
 import json
+import sys
 import os
 import socket
 import subprocess
@@ -356,7 +357,7 @@ def test_worker_runs_with_model_network_and_process_dependencies_blocked():
         "assert not any(name in sys.modules for name in ('forge.artist','forge.routes','forge.cli','forge.editors','forge.mcp_server'))",
     ])
     packet = {"kind": "render", "request": crate_request(), "profile": None, "source_png": None}
-    output = subprocess.run([str(root / ".venv" / "bin" / "python"), "-c", script],
+    output = subprocess.run([sys.executable, "-c", script],  # the interpreter running the tests
                             input=json.dumps(packet), cwd=root, text=True, capture_output=True, timeout=5)
     assert output.returncode == 0
     assert "error" not in json.loads(output.stdout)

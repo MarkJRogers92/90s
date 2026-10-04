@@ -484,3 +484,22 @@ def test_6_the_checked_export_verifies_and_snapshots_the_rig_and_recipe_bytes(pr
     rig_copy.write_bytes(rig_copy.read_bytes() + b" ")       # tampered rig copy fails closed
     report = check(project)
     assert any(c["code"] == "HASH_MISMATCH" for c in report["checks"])
+
+
+def test_rig_review_runs_the_whole_loop_and_summarises_it(project, monkeypatch):
+    from forge import cli, aseprite
+    monkeypatch.setattr(aseprite, "find_executable", lambda: None)
+    render(project, "baseline")
+    edit(project, "recipe.json", lambda r: r["frames"][2]["pose"].__setitem__("bag", {"variant": "rest", "nudge": [0, 1]}))
+    assert cli.main(["rig-review", str(project / "recipe.json"), "--out", str(project / "review"),
+                     "--baseline", str(project / "baseline")]) == 0
+    summary = json.loads((project / "review" / "SUMMARY.json").read_text())
+    assert summary["export"]["status"] == "review_only" and summary["export"]["technical"] == "pass"
+    assert summary["export"]["manual_review_required"] == ["PROP_OWNER_RIG_LABEL:rig:bag", "SEMANTIC_ANATOMY:manual_visual_review"]
+    assert summary["native"]["status"] == "skipped" and "Aseprite" in summary["native"]["reason"]
+    assert summary["compare"]["changed_pixels"] == {"0": 0, "1": 0, "2": summary["compare"]["changed_pixels"]["2"]}
+    assert summary["compare"]["changed_pixels"]["2"] > 0
+    for rel in ("render/manifest.json", "export/export-report.json", "previews/in-place-2x.gif", "compare-2x.png", "SUMMARY.md"):
+        assert (project / "review" / rel).is_file(), rel
+    assert summary["approved"] is False
+    assert cli.main(["rig-review", str(project / "recipe.json"), "--out", str(project / "review")]) == 1   # never overwrites

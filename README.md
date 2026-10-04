@@ -9,6 +9,7 @@ for redistribution.
   `ASEPRITE_PATH=/path/to/aseprite bash run_native_check.sh`.
 - **Code:** `workflow/forge-source/` (the new module is `forge/rig.py`; tests are in `tests/`).
   The rig benchmark is in `workflow/examples/west-rig/`.
+- **Authoring guide (start here to make new animations):** `workflow/forge-source/RIG_GUIDE.md`; one command does the whole loop: `bash ./forge.sh rig-review RECIPE --out DIR`.
 - **Evidence:** `evidence-rig/`.
 
 The historical `authoring/` and `evidence/` folders from the original frozen handoff are not

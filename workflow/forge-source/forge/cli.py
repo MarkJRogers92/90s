@@ -12,6 +12,7 @@
   open LIBRARY_ID [--editor E]       open a result in aseprite (layered), piskel, or both
   from-aseprite DOC.aseprite         an edited single-frame document back, checked
   animation-export MANIFEST --out DIR  automatically checked animation review/final export
+  rig-review RECIPE --out DIR [--baseline RENDER]  render + checked review export + previews + native check, one summary
   rig-render RECIPE --out DIR        render a rig + pose recipe into frames, layers and a derived manifest
   rig-variant PNG --of S.V --rotate DEG --pivot X,Y --out PNG   derive a verified rotated variant
   rig-preview RENDER_DIR --out DIR   stills plus in-place and ground-relative motion previews
@@ -131,6 +132,9 @@ def main(argv=None):
     if args and args[0] == "rig-render":
         from .rig import cli as rig_cli
         return rig_cli(args[1:])
+    if args and args[0] == "rig-review":
+        from .rig import review_cli
+        return review_cli(args[1:])
     if args and args[0] == "rig-variant":
         from .rig import variant_cli
         return variant_cli(args[1:])

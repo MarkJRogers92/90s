@@ -138,7 +138,7 @@ def lint(s: Sprite) -> dict:
 def lint_image(img: Image.Image) -> dict:
     """Lint a PNG as it is on disk: soft alpha first, then the sprite it becomes."""
     img = img.convert("RGBA")
-    alphas = img.getchannel("A").getdata()
+    alphas = img.getchannel("A").get_flattened_data()
     semi = sum(1 for a in alphas if 0 < a < 255)
     rep = lint(Sprite.from_image(img))
     if semi:
