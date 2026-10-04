@@ -34,18 +34,18 @@ const TARGETS = [
 const only = arg('only', null)?.split(',');
 for (const [query, kind] of TARGETS.filter(([, k]) => !only || only.includes(k))) {
   const { p, errors, box } = await open(query);
-  const seen = new Set(); let shots = 0; const big = TARGETS.indexOf(TARGETS.find(([, k]) => k === kind)) >= 3;
+  const seen = new Set(); const charging = new Set(); let shots = 0; const big = TARGETS.indexOf(TARGETS.find(([, k]) => k === kind)) >= 3;
   for (let i = 0; i < 500; i++) {
     const s = await snap(p); if (s.status !== 'playing') break;
     const ev = s.actorPresentation?.enemies ?? [];
-    for (const e of s.enemies) if (e.kind === kind && e.phase === 'telegraph') {
+    for (const e of s.enemies) if (e.kind === kind && (e.phase === 'telegraph' || (e.chargeTicks ?? 0) > 0)) {
       const x = ev.find((v) => v.id === `enemy:${e.id}`); if (!x) continue;
-      seen.add(`${x.textureKey.split(':').pop()}[${x.frame.column}]`);
+      (e.phase === 'telegraph' ? seen : charging).add(`${x.textureKey.split(':').pop()}[${x.frame.column}]`);
       if (shots < 3 && x.textureKey.includes('attack') && x.frame.column >= shots * 2) { await crop(p, box, e.x, e.y - (big ? 70 : 40), `${kind}-${shots}.png`, big ? 130 : 90); shots += 1; }
     }
     await p.waitForTimeout(15);
   }
-  report[kind] = { frames: [...seen].sort(), errors: errors.length };
+  report[kind] = { frames: [...seen].sort(), charge: [...charging].sort(), errors: errors.length };
   await p.close();
 }
 if (!only || only.includes('alex')) { // Alex: dash east while aiming top-left, then fire a ranged weapon.

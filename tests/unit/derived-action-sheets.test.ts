@@ -105,3 +105,21 @@ describe('boss attack sheets drawn at their walk figure size (roadmap V2)', () =
     }
   });
 });
+
+describe('the active charge keeps the attack sheet (Bargain Hunter, Mascot, Poodle, boss charges)', () => {
+  const charging = (kind: EnemyState['kind'], chargeTicks: number) => ({ ...enemy(kind), phase: 'pursue', phaseTicks: 0, chargeTicks } as EnemyState);
+  it('alternates the release frames while the charge runs, instead of falling back to the walk', () => {
+    for (const kind of ['shopper', 'mascot', 'poodle', 'owner'] as const) {
+      const shown = [0, 4, 8, 12].map((tick) => attackFrameFor(charging(kind, 10), [], 6, tick));
+      expect(shown, kind).toEqual([4, 5, 4, 5]);
+    }
+  });
+  it('drops back to the walk once the charge is over', () => {
+    expect(attackFrameFor(charging('shopper', 0), [], 6, 0)).toBeNull();
+    expect(attackFrameFor({ ...enemy('shopper'), phase: 'pursue' } as EnemyState, [], 6, 0)).toBeNull();
+  });
+  it('leaves the Elf hop on its lob timing and ignores kinds without a sheet', () => {
+    expect(attackFrameFor(charging('elf', 10), [windup('lob', 0.5)], 6, 0)).toBe(2);
+    expect(attackFrameFor(charging('shopper', 10), [], 0, 0)).toBeNull();
+  });
+});

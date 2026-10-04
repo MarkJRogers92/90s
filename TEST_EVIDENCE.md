@@ -1,5 +1,25 @@
 # Test evidence
 
+## 2026-10-04 UTC — Charging enemies keep their attack pose during the charge
+
+Branch `fix/charge-attack-frames`. Presentation only; no `src/sim` change.
+
+**Bug (found by the Pixel Forge handoff review):** after the warning, a charge runs as phase
+`pursue` with `chargeTicks > 0`. `attackFrameFor` only handled the warning and recovery, so the
+Bargain Hunter, Mascot, Poodle and the boss charges (Owner, Whiskers, Zamboni) were drawn with
+their **walk** sheet mid-lunge.
+
+**Fix:** while `chargeTicks > 0`, `attackFrameFor` steps between the release frames every
+`CHARGE_STRIDE_TICKS` (4). The Elf's hop keeps its lob timing (its wind-up is checked first).
+The debug snapshot now reports `chargeTicks` per enemy, and `scripts/live-capture-actions.mjs`
+records the frames shown during the charge separately (`charge` in its report).
+
+**Evidence:** tests in `derived-action-sheets.test.ts` failed first (`[null, null, null, null]`),
+then pass. Unit 1,849 of 1,849; tsc and build pass; browser night-shift:355, 636, 753 and
+break-room:84 pass 4/4. Live, Mascot charge frames: before the fix `mascot-walk[0,1,2,5]`, after
+`mascot-attack[4]`, 0 errors (`artifacts/live-qa/charge/`). Boss charges start in phase 2, which
+the capture does not reach; the unit test covers them.
+
 ## 2026-10-03 UTC — PixelLab boss attack wind-ups (V2 bosses) — DONE (HANDOFF)
 
 Branch `feat/boss-attack-sheets` (PR #56 merged; this is the follow-up). Presentation only;
