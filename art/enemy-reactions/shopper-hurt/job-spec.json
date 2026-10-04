@@ -1,0 +1,20 @@
+{
+  "prompt": "The Bargain Hunter, an UNDEAD zombie mall shopper, in a hurt reaction. Draw this exact character from the reference sprites: pale grey, slack-jawed face with hollow dark eye sockets and an open mouth with teeth (no mustache, no sunglasses, not a healthy living man); brown hair with a small red-and-white bandage/wrap patch on the crown of the head; tattered blue denim jacket hanging open with red trim at collar, cuffs and hem; cream shirt with a small dark stain/patch on the chest; faded blue jeans with green-yellow moss stains on both knees; off-white sneakers; a tan paper shopping bag held in the anatomical-left hand. Pose for this single image: the peak recoil of a hurt reaction, facing south toward the viewer: torso leaning back away from the blow, head snapped back, free arm flung out, bag swinging outward, feet planted on the same floor row. The finished animation will have 4 frames per facing: impact, peak recoil, rebound, nearly back to standing.",
+  "style": "Match the reference sprites exactly: the same undead character, outfit, proportions and limited muted palette, crisp 1-px dark outline, top-left lighting, flat pixel clusters, the same pixel density as the references (enlarged with square pixels), not smoother or more detailed than the references. Transparent background, no ground shadow, no impact effects, no text.",
+  "references": [
+    "/home/user/90s/public/assets/neon/enemies/shopper-walk.png",
+    "/home/user/90s/public/assets/neon/enemies/shopper-attack.png"
+  ],
+  "frame_size": 96,
+  "frames": 4,
+  "facings": ["south", "south-west", "west", "north-west", "north", "north-east", "east", "south-east"],
+  "durations_ms": [50, 50, 67, 67],
+  "pivot": [48, 95],
+  "constraints": [
+    "The character is UNDEAD in every frame and every facing: grey skin, hollow eyes, open mouth, red-and-white head wrap, green knee stains. Never draw a healthy living man.",
+    "Keep the shopping bag in the anatomical-left hand in every facing; do not mirror asymmetric facings.",
+    "Same character, outfit and colours in every frame and every facing; no new props or costume changes."
+  ],
+  "max_followups": 3,
+  "revision": "hurt-native-sol61-2"
+}

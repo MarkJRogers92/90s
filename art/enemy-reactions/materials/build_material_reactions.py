@@ -7,7 +7,9 @@ on the walk canvas grown evenly; impacts are 6 x 48 px):
   art/pixellab/<kind>-hurt.png, already aligned to the walk sheet by animate_characters.py.
   CLEANUP erases the hit flashes, sparks and motion lines PixelLab painted into a few cells,
   because the game draws its own impact.
-- Derived strips (shopper, spitter and the bosses, which have no PixelLab hurt animation) are the
+- Drawn strips (shopper) are copied from their own art folder: art/enemy-reactions/shopper-hurt/
+  holds a GPT sheet converted to the game's grid by convert_gpt_hurt.py (see its README).
+- Derived strips (spitter and the bosses, which have no drawn hurt animation) are the
   enemy's own first walk frame per facing, re-posed with nearest-neighbour squash and stretch
   anchored at the feet, as the Hanger's are (art/enemy-reactions/hanger). Pixel-exact palette,
   no spend.
@@ -19,6 +21,7 @@ Impacts are drawn in each enemy's own material from a fixed palette and a partic
 Checked by tests/unit/material-reactions.test.ts.
 """
 import math
+import shutil
 from collections import deque
 from pathlib import Path
 from PIL import Image
@@ -28,9 +31,11 @@ ENEMIES = ROOT / 'public/assets/neon/enemies'
 PIXELLAB = ROOT / 'art/pixellab'
 
 PIXELLAB_KINDS = ['walker', 'elf', 'spritzer', 'poodle', 'goon', 'mascot', 'roofer']
+# kind: the drawn 4 x 8 hurt sheet to ship as is (already on the walk grid)
+DRAWN = {'shopper': ROOT / 'art/enemy-reactions/shopper-hurt/shopper-hurt.png'}
 # kind: (walk sheet frames across, use the idle strip instead of the walk sheet)
 DERIVED = {
-    'shopper': False, 'spitter': True, 'lp-manager': False, 'manager': False, 'owner': False,
+    'spitter': True, 'lp-manager': False, 'manager': False, 'owner': False,
     'developer': False, 'santa': False, 'glamour-queen': False, 'whiskers': False, 'zamboni': False,
 }
 
@@ -259,8 +264,10 @@ def impact(style, palette):
 if __name__ == '__main__':
     for kind in PIXELLAB_KINDS:
         pixellab_hurt(kind).save(ENEMIES / f'{kind}-hurt.png')
+    for kind, source in DRAWN.items():
+        shutil.copyfile(source, ENEMIES / f'{kind}-hurt.png')
     for kind, from_idle in DERIVED.items():
         derived_hurt(kind, from_idle).save(ENEMIES / f'{kind}-hurt.png')
     for kind, (style, palette) in MATERIALS.items():
         impact(style, palette).save(ENEMIES / f'{kind}-impact.png')
-    print(f'wrote {len(PIXELLAB_KINDS) + len(DERIVED)} hurt strips and {len(MATERIALS)} impact strips')
+    print(f'wrote {len(PIXELLAB_KINDS) + len(DRAWN) + len(DERIVED)} hurt strips and {len(MATERIALS)} impact strips')

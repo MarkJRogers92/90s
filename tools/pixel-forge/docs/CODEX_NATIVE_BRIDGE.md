@@ -5,8 +5,9 @@
 Implemented: an opt-in, same-host stdio adapter connecting a Claude-compatible
 MCP client to Forge's durable image-pair jobs and a private Codex native worker.
 The real MCP transport and the native JSONL protocol have been tested together
-with an explicitly synthetic image fixture. **A signed-in native image turn has
-not been verified through this adapter. It is not live-enabled.**
+with an explicitly synthetic image fixture. **One signed-in native image job (a mockup and a
+sheet) has now run through this adapter, from a cloud container, on 2026-10-04; see
+[Field notes](#field-notes-2026-10-04). It is still not live-enabled by default.**
 
 This is developer-side authoring. It changes no game assets or runtime code.
 It creates no HTTP listener, hosted service, account, login, token, API key,
@@ -178,3 +179,36 @@ identity, animation, facing, anatomy, or visual quality.
 
 See [Verification](CODEX_NATIVE_BRIDGE_VERIFICATION.md) for the tested scope and
 the remaining live-acceptance requirements.
+
+## Field notes (2026-10-04)
+
+One real run, from a Claude Code cloud container rather than the clean personal host this
+document asks for. The owner chose that route and completed the sign-in; nothing here widens
+what the bridge supports. Result: the Bargain Hunter hurt strip,
+`art/enemy-reactions/shopper-hurt/README.md`.
+
+- **Network.** The cloud environment's allowed domains needed `auth.openai.com` (sign-in) and
+  `chatgpt.com` (generation). `api.openai.com` is for the separate Images API route, which bills
+  an API balance and is not covered by a ChatGPT plan (`credit_balance_exhausted`).
+- **Sign-in.** `CODEX_HOME=$HOME/.pixel-forge-codex codex login --device-auth` prints a link and a
+  one-time code the owner enters in their browser. It connected through the container's HTTPS
+  proxy with the CA variables already set there, with no extra configuration. `codex logout`
+  removes the login; it also dies with the container.
+- **Model.** `codex debug models` lists what the account offers. `--model` is the orchestrator
+  (`gpt-6.1-sol` here), not an image model.
+- **An interrupted `run` strands the job.** The turn starts within seconds, so interrupting the
+  command leaves the job `in_flight` with no image, and `run` then refuses to reissue it. Start a
+  new job under a new `revision` instead. A rejected tool prompt counts as an interrupt.
+- **`max_followups` is capped at 3 per job** (`_validate` in `forge/image_pair.py`). A longer run
+  chains jobs, seeding the next one from the last accepted image.
+- **Codex rewrites the prompt** ("revised_prompt" in the receipt). A short prompt lost the
+  character's identity (an undead shopper came back as a healthy man); spelling the traits out in
+  the job `prompt` and `constraints` fixed it, even though the references were right.
+- **The sheet comes back off-grid.** A 4 × 8 request returned 887 × 1774 px (2.31 × the game's
+  scale, soft edges). Validation rejected it (`dimensions_not_exact_or_uniform_integer_
+  enlargement`) and `normalize` needs a whole-number grid. Convert it locally and look at every
+  facing; `art/enemy-reactions/shopper-hurt/convert_gpt_hurt.py` is a worked example.
+- **Cost.** Mockup 1, a corrected mockup 2 and the sheet: three finished image turns, plus two
+  turns cut off after about 10 seconds by interrupts. Codex image turns count against plan
+  limits faster than ordinary turns.
+

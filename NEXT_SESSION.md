@@ -1,5 +1,27 @@
 # Next session
 
+## 2026-10-04 UTC — Bargain Hunter hurt strip drawn with GPT image (handoff)
+
+Branch `claude/pixel-forge-image-generation-go3b0z`, committed locally, **not pushed** (AGENTS.md:
+no push without the owner's say-so). Presentation only; no `src/sim` change.
+
+**Done.** `public/assets/neon/enemies/shopper-hurt.png` is now a drawn strip, built from
+`art/enemy-reactions/shopper-hurt/` (see its README). `tests/unit/shopper-hurt-art.test.ts` pins it
+(new `tests/support/png.ts` decodes sprite pixels for tests).
+
+**Still needs a person:**
+- Look at every facing next to the walk sheet, in motion. Items are in the art README.
+- **Seeing the flinch live was not achieved.** A mop hit lands during the hunter's own telegraph,
+  charge or recover, and an attack pose outranks a flinch by design (`flinchOutranksAttack`), so
+  the live capture showed `shopper-attack[...]` frames, not `shopper-hurt[...]`. The flinch only
+  shows while it walks (`pursue`), which at mop range is a gap of a few ticks. A ranged weapon from
+  a distance, or a fixture that holds the hunter in `pursue`, would show it. Kiting with the bot
+  died before a swing landed. The unit tests cover the flinch path against the real PNG.
+
+**Next:** the Spitter's and the bosses' derived hurt strips (`docs/PIXELLAB_HANDOFF.md` §2). To
+generate with GPT again, follow the Codex field notes; sign in again with `codex login --device-auth`
+in a new container, and note that a job allows 3 follow-ups.
+
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
 
 Branch `feat/hurt-reactions`. Presentation only; no `src/sim` change, no balance change.

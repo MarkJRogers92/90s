@@ -101,8 +101,10 @@ Each kind also needs a 6-frame × 48 px **impact strip** in its own material
 so on), plus a little code. Follow the step-by-step recipe in
 `docs/VISUAL_ROADMAP.md` under **V1**, and copy `tests/unit/hanger-reactions.test.ts`.
 
-In order: Bargain Hunter (`shopper-hurt.png`), Mall Walker (`walker-hurt.png`),
-Mascot, Roofer, Elf, Spritzer, Poodle, Goon, then the bosses (shorter flinches).
+In order: Bargain Hunter (`shopper-hurt.png`, **done** 2026-10-04, see
+`art/enemy-reactions/shopper-hurt/README.md` for how a GPT sheet was generated and converted),
+Mall Walker (`walker-hurt.png`), Mascot, Roofer, Elf, Spritzer, Poodle, Goon, then the bosses
+(shorter flinches).
 PixelLab hurt strips for some of these are banked in `art/pixellab/`; see
 `docs/PIXELLAB_HANDOFF.md` before drawing one from scratch.
 

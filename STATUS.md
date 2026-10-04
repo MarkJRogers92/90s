@@ -1,5 +1,37 @@
 # Status
 
+## 2026-10-04 UTC — Bargain Hunter hurt strip drawn with GPT image (roadmap V1, first derived strip upgraded)
+
+Branch `claude/pixel-forge-image-generation-go3b0z`. Presentation only; no `src/sim` change, no
+balance change (so `npm run balance` was not run).
+
+**What changed.** The Bargain Hunter's flinch is now a drawn 4-frame × 8-facing strip instead of the
+walk frame squashed and stretched. The peak recoil snaps the head back and flings an arm out; the
+feet stay planted.
+- **Art:** `art/enemy-reactions/shopper-hurt/` holds the raw GPT sheet, the Pixel Forge job spec,
+  `convert_gpt_hurt.py` and the converted `shopper-hurt.png`. Its README has the provenance and the
+  open review items.
+- **Install:** `build_material_reactions.py` now copies that sheet (new `DRAWN` table) instead of
+  deriving the strip. Of the 34 strips it rewrites, only this one changed. The shipped file is
+  `public/assets/neon/enemies/shopper-hurt.png`, same 384 × 768 format, so no game code changed.
+- **How it was generated:** Pixel Forge's Codex bridge, signed in with the owner's ChatGPT plan from
+  this cloud container, orchestrator `gpt-6.1-sol`. See the field notes in
+  `tools/pixel-forge/docs/CODEX_NATIVE_BRIDGE.md` (network hosts, the interrupt trap, the follow-up
+  cap, why the prompt must spell out the character).
+- **`scripts/live-capture.mjs --attack`** now aims along the line to the target, 120 units out. It
+  used to point at the target's own position, which for an enemy standing on Alex is a few pixels
+  from him and swings at the wrong angle (the sim's cone is measured from the player). That
+  explains why it never landed a hit on the Bargain Hunter (confirmed), and probably the Walker and
+  Goon, which stand close to Alex too (not retested).
+
+**State of the art: review-only.** `check_sheet.py` and the tests cover format and registration, not
+drawing quality. Known items: the figures are a little stockier and more shaded than the walk
+figure; the east row's bag side is unchecked; the chest mark is a brown stain, not the walk art's
+checkered patch. The Spitter and the eight bosses still use derived strips.
+
+**Evidence:** `TEST_EVIDENCE.md`, same date. Live, the new sheet loads and the hunter can be hit with
+0 console errors, but no flinch frame was seen on screen (below).
+
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
 
 Branch `feat/hurt-reactions`. Presentation only; no `src/sim` change, no balance change.

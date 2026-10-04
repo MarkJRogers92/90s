@@ -1,5 +1,49 @@
 # Test evidence
 
+## 2026-10-04 UTC — Bargain Hunter hurt strip drawn with GPT image
+
+Presentation art only; no `src/sim` change, no balance change.
+
+**Tests, first.** `tests/unit/shopper-hurt-art.test.ts` (18 tests) was written before the art was
+installed. It failed 17 of 18, for the intended reasons:
+- the committed source sheet did not exist (`ENOENT art/enemy-reactions/shopper-hurt/shopper-hurt.png`);
+- the derived strip's feet bounce between rows 93 and 95 (the walk sheet's floor row is 95);
+- the derived strip's peak recoil is narrower than the walk frame (40 px against 42 px, south), where
+  the new contract needs 12 px wider.
+The one that passed (hard alpha, 384 × 768) is satisfied by both strips. It then passed 18 of 18.
+
+**Checks after the install:**
+- Adjacent: `material-reactions`, `hanger-reactions`, `derived-action-sheets` and the new file, 109
+  of 109.
+- Full unit suite: **1,938 of 1,938 across 181 files** (was 1,920 in 180: the 18 new tests).
+- `npx tsc --noEmit` and `npm run build` pass (the large-bundle warning is old).
+- `python3 art/enemy-reactions/materials/build_material_reactions.py` rewrote 17 hurt and 17 impact
+  strips; `git status` showed only `shopper-hurt.png` changed, so the build is deterministic and
+  keeps the drawn art.
+- `python3 art/pixellab/check_sheet.py art/enemy-reactions/shopper-hurt/shopper-hurt.png
+  public/assets/neon/enemies/shopper-hurt.png --frames 4`: feet and centre off by 0 px in all eight
+  facings. It warns on the west and east rows (mean colour off by 31 and 33). Measured without the bag
+  pixels the difference is 14 and 19: the walk frames in those rows carry no bag.
+- The repo converter reproduces the reviewed sheet pixel for pixel.
+
+**Live** (`artifacts/live-qa/hurt-shopper/`, debug build on 4180, Chromium, fixture
+`mvp-floor-two-hunter`):
+- `shopper-hurt.png` served 200, 237,712 bytes (the new file); 0 load failures; 0 console errors.
+- Two mop hits landed on the Bargain Hunter, 0 errors. Both landed during its attack animation, where
+  the attack pose keeps priority, so no `shopper-hurt[n]` frame was drawn. **The flinch itself was
+  not seen on screen.**
+- Before the `live-capture.mjs` aim fix, 240 steps landed 0 hits; the sim logged "no target inside 70
+  units" on every swing. Swings connect with the pointer well past Alex along the line to the
+  enemy, and miss with it a few pixels from him.
+
+**Not run:** the browser suite (art swap and a dev script only); `npm run balance` (nothing
+balance-related changed).
+
+**Generation spend:** Codex bridge on a ChatGPT plan: three finished image turns (two mockups, one
+sheet) plus two turns cut off after about 10 seconds. The earlier Images API attempt returned
+`credit_balance_exhausted` (HTTP 429) before drawing anything, so nothing was billed. PixelLab and
+Retro Diffusion were not used.
+
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
 
 Branch `feat/hurt-reactions`. Presentation only; no `src/sim` change, no balance change.

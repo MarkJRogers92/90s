@@ -95,8 +95,10 @@ first. The other 17 kinds now share one table, `NATIVE` in
 `art/enemy-reactions/materials/build_material_reactions.py`:
 - **PixelLab hurt strips:** the Walker, Elf, Spritzer, Poodle, Goon, Mascot and Roofer. The
   script erases the flashes and sparks PixelLab painted in.
-- **Derived from the walk art:** the Bargain Hunter, the Spitter (from its idle) and all eight
-  bosses. Bosses flinch over 2/2/2/1 ticks.
+- **Drawn (GPT image, converted):** the Bargain Hunter, from `art/enemy-reactions/shopper-hurt/`
+  (added later the same day; see its README for the job, the conversion and the review items).
+- **Derived from the walk art:** the Spitter (from its idle) and all eight bosses. Bosses
+  flinch over 2/2/2/1 ticks.
 - **Material impact strips:** each kind has a 6 × 48 px strip in its own material: sweat,
   coupons, foam, tar, goo, glitter, mist, fur, ice, paper, tinsel and so on.
 - **Hits:** no enemy bleeds on a hit any more. Deaths are unchanged.
