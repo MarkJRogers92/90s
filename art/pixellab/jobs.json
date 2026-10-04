@@ -207,7 +207,8 @@
       "north-west": "0c7f2778-a737-4864-8685-14c14babb2e2",
       "north": "87e4e164-8834-4e38-a8e9-44ba103da14c",
       "north-east": "f4d1b857-214f-4952-b4db-75057933760c",
-      "east": "026ddb3a-be3f-4352-b963-fa0136d68cea"
+      "east": "026ddb3a-be3f-4352-b963-fa0136d68cea",
+      "south-east": "837e176c-f56b-4c8e-93c4-ee445bed7936"
     }
   }
 }
