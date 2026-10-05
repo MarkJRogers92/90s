@@ -40,6 +40,7 @@ import {
   dustMotes,
   fountainDroplets,
   fountainRipples,
+  damagedVendingFrame,
   propMotion,
   propSeed,
   rockAngle,
@@ -101,7 +102,7 @@ export class MallRoomView {
     readonly seed: number;
   }> = [];
   /** Props drawn from an animated strip (arcade screens, claw machines). */
-  private readonly framedProps: Array<{ image: Phaser.GameObjects.Image; frames: number; seed: number }> = [];
+  private readonly framedProps: Array<{ image: Phaser.GameObjects.Image; prop: DressingProp['prop']; frames: number; seed: number }> = [];
   /** Every neon sign's tube and halo, so a dying tube can stutter both. */
   private readonly signs: Array<{ core: Phaser.GameObjects.Image; halo: Phaser.GameObjects.Image; seed: number }> = [];
   /** The fountain's spray and ripples, y-sorted just in front of it. */
@@ -429,8 +430,20 @@ export class MallRoomView {
     // An animated strip is split into numbered frames before the image is
     // sized, so its display size is a frame's, not the whole strip's.
     const frames = 'frames' in texture ? this.ensureFrames(texture.key, texture.width, texture.height, texture.frames) : 0;
-    const image = this.placeImage(texture.key, prop.x, prop.y, width, height, true, prop.flipX, frames > 0 ? '0' : undefined);
-    if (image && frames > 0) this.framedProps.push({ image, frames, seed: propSeed(prop.id) });
+    // A padded sprite keeps its full native cell; only its visible body sizes
+    // the contact shadow and fallback. The pivot is independent of canvas padding.
+    const bounds = 'bounds' in texture ? texture.bounds : null;
+    const image = this.placeImage(texture.key, prop.x, prop.y, bounds?.width ?? width, bounds?.height ?? height, true, prop.flipX, frames > 0 ? '0' : undefined);
+    if (image && 'pivot' in texture) {
+      image.setOrigin(texture.pivot.x / texture.width, texture.pivot.y / texture.height).setDisplaySize(width, height);
+      this.occluders.push({ object: image, rect: {
+        x: prop.x + (texture.bounds.x - texture.pivot.x) * width / texture.width,
+        y: prop.y + (texture.bounds.y - texture.pivot.y) * height / texture.height,
+        width: texture.bounds.width * width / texture.width,
+        height: texture.bounds.height * height / texture.height,
+      } });
+    }
+    if (image && frames > 0) this.framedProps.push({ image, prop: prop.prop, frames, seed: propSeed(prop.id) });
     if (image && prop.prop === 'saleSign') this.letterSaleSign(prop.x, prop.y, width, height);
     const motion = propMotion(prop.prop);
     if (image && motion) {
@@ -536,7 +549,9 @@ export class MallRoomView {
     this.renderDust(tick);
     // Animated strips at about 8 fps, each machine out of step with the next.
     for (const entry of this.framedProps) {
-      const frame = String(Math.floor((tick + (entry.seed % 97)) / 7) % entry.frames);
+      const frame = String(entry.prop === 'damagedVending'
+        ? damagedVendingFrame(tick, flickers)
+        : Math.floor((tick + (entry.seed % 97)) / 7) % entry.frames);
       if (entry.image.frame.name !== frame) entry.image.setFrame(frame, false, false);
     }
     this.water?.clear();
