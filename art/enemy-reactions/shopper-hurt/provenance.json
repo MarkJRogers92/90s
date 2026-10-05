@@ -1,0 +1,24 @@
+{
+  "status": "REVIEW_ONLY",
+  "base_main": "e58d02a24aacbb22d68bedde7e9aa9aecbe49962",
+  "original_candidate_commit": "70c4061532a5f8ed08e4f741807a68151672d35a",
+  "original_candidate_path": "art/enemy-reactions/shopper-hurt/shopper-hurt.png",
+  "generation_provider": "built-in caller image tool",
+  "underlying_image_model": "not reported by tool",
+  "selected_mockup_invocation": "exec-148caae0-d7fc-474a-8636-244f75c69f31",
+  "associated_row_invocation": "exec-3ae51892-14e5-45a2-ba56-cc7114f8e3ba",
+  "selected_job_key": "0698662578bac71d5510753e8c08ea990dcd0567d5aba2737d3eaafacff24b59",
+  "raw_format_rejected": true,
+  "raw_rejection": "dimensions_not_exact_or_uniform_integer_enlargement",
+  "local_derivation": "build_shopper_hurt.py; four known rectangular columns, transparent-margin crop, uniform nearest-neighbour scale, alpha>=128, common shoe/centre registration; seven other rows preserved",
+  "resampling_is_lossy": true,
+  "art_review": "independent ordered-frame review passed WEST identity, side profile, bag hand and leg separation; no live-playback approval",
+  "files": {
+    "original-candidate.png": "38d0ef96a60a95a8fd1d57e4258daa47f107ac3df48563fc970cf10c30e668ff",
+    "west-mockup.png": "8045428206a9ad1400d658504a1e1fdad7c47304e417f43ad272b2d6d3647119",
+    "west-row-raw.png": "bb59502fc50d5dfe707180c8c457ff4fce0061aec1c3322a5482545bf596e21e",
+    "shopper-hurt.png": "c74f391073d5e55eca6900982a2e38905221fac2429b553b747669ad9d84422b",
+    "reference-west-walk.png": "c278be639b91b26b877e6499f0659326e62eb49291cbcb8bcf5f9834b5023d4b",
+    "reference-west-attack.png": "bdcca7191b0a22763cb5018a528209cf0066d940bca715ed14874c57d31604a0"
+  }
+}

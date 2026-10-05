@@ -191,18 +191,21 @@ IMAGE_PAIR_BACKEND = None
     "the caller must really invoke its image tool, then accept its PNG with the ticket and receipt. "
     "run executes one request only when the server owner explicitly configured a provider adapter. "
     "status is read-only; revise requests a bounded targeted follow-up retaining references. "
+    "Consistency jobs require review-mockup and a current hash-bound review_record before sheet dispatch. "
     "normalize explicitly creates a lossy nearest-neighbor game-size derivative of a rejected uniform-grid sheet. "
     "Format checks never approve anatomy, style or production publication. No automatic retry or fallback."))
 def forge_image_pair(action: str, root: str, spec: dict | None = None, key: str | None = None,
                      ticket: str | None = None, image_path: str | None = None,
                      receipt: dict | None = None, native_image_tool: bool = False,
                      stage: str | None = None, feedback: str | None = None,
-                     edit_mask: str | None = None, max_changed_pixels: int | None = None) -> str:
+                     edit_mask: str | None = None, max_changed_pixels: int | None = None,
+                     review_record: dict | None = None, max_reference_images: int | None = None) -> str:
     from .image_pair_cli import action as pair_action
     return json.dumps(pair_action(action, root, spec=spec, key=key, ticket=ticket,
         image_path=image_path, receipt=receipt, native_image_tool=native_image_tool,
         stage=stage, feedback=feedback, edit_mask=edit_mask,
-        max_changed_pixels=max_changed_pixels, backend=IMAGE_PAIR_BACKEND))
+        max_changed_pixels=max_changed_pixels, backend=IMAGE_PAIR_BACKEND,review_record=review_record,
+        max_reference_images=max_reference_images))
 
 
 def main():

@@ -1,0 +1,22 @@
+{
+  "asset": "Damaged vending machine flicker animation",
+  "source_file": "source/generated-sheet.png",
+  "source_sha256": "7bf64b8c8545ec6e46d0c0206a5dfe518abd142348b27407968afddcd84bbf9b",
+  "source_generation": "OpenAI native image-generation tool; generated for this project on 2026-10-04",
+  "raw_source_size": [
+    2172,
+    724
+  ],
+  "style_references": [
+    "public/assets/neon/props/soda-machine.png",
+    "public/assets/neon/props/soda-machine-broken.png"
+  ],
+  "recipe": "build.py",
+  "forge_source_commit": "1450a956d55e55a9775b6bfed916b46aac8e5895",
+  "dependencies": {
+    "Pillow": "12.3.0",
+    "numpy": "2.3.5"
+  },
+  "rights_note": "Project-generated artwork. No third-party image asset is incorporated in the native sheet; existing project props were style references. Pixel Forge code is reused from this repository and its existing notices/licenses remain unchanged.",
+  "source_metadata": "Original generated PNG retained byte-for-byte, including embedded provenance."
+}

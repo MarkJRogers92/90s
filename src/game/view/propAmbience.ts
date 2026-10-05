@@ -11,6 +11,7 @@
  * on every visit and the tests can pin the behaviour down.
  */
 import type { PropId } from '../presentation/rooms/roomDressing';
+import { TICKS_PER_SECOND } from '../../sim/effects/constants';
 
 export type PropMotion = 'sway' | 'screen' | 'fountain' | 'rock';
 
@@ -199,4 +200,13 @@ export function dustMotes(tick: number, seed: number, radius: number, count = MO
     motes.push({ dx, dy, alpha: Math.max(0, 1 - edge * edge) * twinkle });
   }
   return motes;
+}
+
+/** Authored 280/90/90/340 ms light-only cycle, sampled by the existing game tick.
+ * The body never moves. Reduced Flashes holds the weak, spark-free first frame.
+ */
+export function damagedVendingFrame(tick: number, flashes = true): number {
+  if (!flashes) return 0;
+  const localMs = ((tick % (TICKS_PER_SECOND * 0.8)) * 1000) / TICKS_PER_SECOND;
+  return localMs < 280 ? 0 : localMs < 370 ? 1 : localMs < 460 ? 2 : 3;
 }

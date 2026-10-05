@@ -95,6 +95,15 @@ export const CONCOURSE_FURNITURE: readonly ConcourseFurniture[] = [
   { id: 'sale-e', kind: 'saleSign', x: 788, y: 110, footprint: null },
 ];
 
+/** One already-broken, inert cabinet in the ordinary ground-floor Back Hall.
+ * Shared floor placement for collision and dressing, like concourse furniture.
+ * Its base stays above the side-door lane and clear of both seeded layouts.
+ */
+export const BACK_HALL_DAMAGED_VENDING = {
+  id: 'back-hall-damaged-vending', x: 84, y: 132,
+  footprint: { x: 66, y: 118, width: 36, height: 14 },
+} as const;
+
 /** Every shop in a room, in back-wall order: the wing's own first, then the run's second. */
 export function roomStores(room: WingRoomDefinition): readonly WingStoreInstance[] {
   return room.stores ?? (room.store ? [room.store] : []);
@@ -208,6 +217,9 @@ export function generateRunWing(seed: number, floor: FloorNumber = 1, part?: 1):
   let nextSpare = 0;
   const furniture = CONCOURSE_FURNITURE.flatMap((piece) => (piece.footprint ? [{ ...piece.footprint }] : []));
   const rooms = wing.rooms.map((room): WingRoomDefinition => {
+    if (floor === 1 && part !== 1 && !wing.district && room.id === 'back_hall') {
+      return { ...room, walls: [...room.walls, { ...BACK_HALL_DAMAGED_VENDING.footprint }] };
+    }
     if (!room.store) return room;
     const first = pairUpStock(scaleStore(room.store, room.offers), seed);
     // The concourse furniture stands in the way, like any wall.

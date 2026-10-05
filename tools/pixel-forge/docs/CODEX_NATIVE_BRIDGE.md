@@ -119,6 +119,11 @@ Inspect the mockup before running the sheet. This command never loops through
 stages or reissues an uncertain request. Follow-ups remain explicitly bounded
 by the existing job's revision budget.
 
+Opt-in [consistency jobs](IMAGE_CONSISTENCY.md) require `review-mockup` with a
+current hash-bound `review_record` before the sheet can run. The native MCP facade
+accepts this action and field; the ordinary `forge image-pair review-mockup` CLI
+records the same review without starting the native worker or invoking a provider.
+
 For a Claude-compatible MCP client, use the same command with `serve` instead
 of `run`, omit `--root` and `--key`, and keep the process on stdio. For example,
 configure the client to launch the absolute Forge Python executable with:

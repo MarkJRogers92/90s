@@ -1,0 +1,150 @@
+{
+  "asset": "DEAD MALL damaged vending machine",
+  "format": "384x96 RGBA PNG; four 96x96 cells",
+  "pivot": [
+    48,
+    89
+  ],
+  "durations_ms": [
+    280,
+    90,
+    90,
+    340
+  ],
+  "loop_ms": 800,
+  "facing": "south-east camera label; front and right side visible",
+  "source_sha256": "7bf64b8c8545ec6e46d0c0206a5dfe518abd142348b27407968afddcd84bbf9b",
+  "source_dimensions": [
+    2172,
+    724
+  ],
+  "slot_dimensions": [
+    543,
+    724
+  ],
+  "slot_crop": [
+    128,
+    32,
+    488,
+    688
+  ],
+  "uniform_reduction": 8,
+  "placement": [
+    26,
+    9
+  ],
+  "alpha_threshold": 128,
+  "shared_palette_colors": 48,
+  "palette_selection": "32/48/64 reviewed; 48 retains glass/metal separation, 64 has little visible benefit",
+  "palette_method": "Deterministic median-cut sampled source palette; existing Forge Oklab mapping, no dithering",
+  "geometry": "Frame 0 body and alpha are exact across all four frames; sign colors transferred from source frames 1 and 2; frame 3 is intentional exact frame-0 hold",
+  "spark_preservation": [
+    {
+      "pixel": [
+        48,
+        68
+      ],
+      "source_bright_votes": 24,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    },
+    {
+      "pixel": [
+        49,
+        68
+      ],
+      "source_bright_votes": 38,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    },
+    {
+      "pixel": [
+        47,
+        69
+      ],
+      "source_bright_votes": 25,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    },
+    {
+      "pixel": [
+        48,
+        69
+      ],
+      "source_bright_votes": 17,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    },
+    {
+      "pixel": [
+        49,
+        69
+      ],
+      "source_bright_votes": 16,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    },
+    {
+      "pixel": [
+        47,
+        70
+      ],
+      "source_bright_votes": 9,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    },
+    {
+      "pixel": [
+        49,
+        71
+      ],
+      "source_bright_votes": 22,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    },
+    {
+      "pixel": [
+        49,
+        72
+      ],
+      "source_bright_votes": 18,
+      "rgb": [
+        231,
+        226,
+        204
+      ]
+    }
+  ],
+  "lossy_steps": [
+    "Median-cut palette selection and Oklab mapping",
+    "Alpha threshold removes translucent edge pixels",
+    "8x integer block-mode reduction discards high-resolution detail",
+    "Source frame variation outside sign/spark replaced by frame-0 geometry",
+    "Tiny original spark footprint preserved by explicit source-brightness block votes"
+  ],
+  "tool_source_commit": "1450a956d55e55a9775b6bfed916b46aac8e5895",
+  "runtime_integration": "Not performed",
+  "sheet_pixel_sha256": "dcbe9b5f2f775daf41be662a015cc83ff421fd26d8fdda8d0c3aeace67ea878b",
+  "generation_grid": "Raw generation was not a native grid; this recipe performs an explicit derived conversion."
+}

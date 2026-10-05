@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import ssl
 import urllib.request
 import uuid
@@ -20,11 +21,18 @@ MAX_RESPONSE_BYTES = 64 * 1024 * 1024
 
 
 class OpenAIHttpError(RuntimeError):
-    """A failed call; carries only the HTTP status, never the key or the request."""
+    """A failed call: the HTTP status and the API's error code, never the key or the request.
 
-    def __init__(self, status):
-        super().__init__(f'Images API request failed (HTTP {status})')
+    A 4xx answer means the API refused the request (no credit, bad key, bad parameter), so it
+    never ran and was not charged: `completion` is `not_started`. Anything else (5xx, a
+    timeout, a dropped connection) may have run: `unknown`.
+    """
+
+    def __init__(self, status, code=None):
         self.status = status
+        self.code = code if isinstance(code, str) and re.fullmatch(r'[A-Za-z0-9_.-]{1,64}', code) else None
+        self.completion = 'not_started' if isinstance(status, int) and 400 <= status < 500 else 'unknown'
+        super().__init__(f'HTTP {status}' + (f' {self.code}' if self.code else ''))
 
 
 def _context():
@@ -84,7 +92,11 @@ class OpenAIHttpClient:
                 raw = response.read(MAX_RESPONSE_BYTES + 1)
                 request_id = response.headers.get('x-request-id')
         except urllib.error.HTTPError as error:
-            raise OpenAIHttpError(error.code) from None
+            try:
+                code = json.loads(error.read(64 * 1024)).get('error', {}).get('code')
+            except Exception:
+                code = None
+            raise OpenAIHttpError(error.code, code) from None
         except Exception:
             raise OpenAIHttpError('unreachable') from None
         if len(raw) > MAX_RESPONSE_BYTES:

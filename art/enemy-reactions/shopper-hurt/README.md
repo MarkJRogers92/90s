@@ -1,55 +1,64 @@
-# Bargain Hunter hurt strip (GPT image, converted)
+# Bargain Hunter hurt: focused WEST correction
 
-`shopper-hurt.png` is what ships as `public/assets/neon/enemies/shopper-hurt.png`: 4 frames
-(impact, peak recoil, rebound, settle) × 8 facings at 96 px, rows in `ACTOR_DIRECTION_ORDER`.
-It replaced the derived strip (the walk frame squashed and stretched). Roadmap V1.
+Status: REVIEW_ONLY. Static/native-scale ordered-frame review passed for the corrected WEST row.
+A live in-game flinch has not yet been observed; do not treat format tests or the offline preview as live approval.
 
-**Status: review-only art.** Pixel Forge's checks and `check_sheet.py` cover format and
-registration, not drawing quality. A person has looked at it at preview size only.
+## Scope and provenance
 
-## How it was made (2026-10-04)
+The original candidate at commit 70c4061532a5f8ed08e4f741807a68151672d35a turned nearly front-on during
+the WEST peak recoil. This version replaces only its four WEST cells (row 2). The other seven rows
+remain byte-identical at the decoded-pixel level. The full sheet is 384 x 768: 4 frames x 8 facings at 96 px.
+It is staged against main e58d02a24aacbb22d68bedde7e9aa9aecbe49962, retaining the Images API refusal fixes.
 
-1. **Job.** `job-spec.json` is the Pixel Forge `image-pair` spec (`tools/pixel-forge`,
-   `docs/GPT_IMAGE_PAIR.md`). The references were `shopper-walk.png` and `shopper-attack.png`.
-   The prompt spells out the character (an *undead* shopper: grey slack-jawed face, hollow eyes,
-   red-and-white head wrap, green knee stains, tan paper bag in the left hand). A first job with
-   a shorter prompt came back as a healthy man with a mustache: Codex rewrites the prompt in its
-   own words and dropped those traits.
-2. **Generator.** The native Codex bridge (`tools/pixel-forge/docs/CODEX_NATIVE_BRIDGE.md`),
-   signed in with a ChatGPT plan, orchestrator model `gpt-6.1-sol`. Two stages, one image each:
-   a mockup of the south-facing peak recoil, then the full sheet.
-3. **Raw output.** `gpt-sheet-raw.png`: 887 × 1774 px, a 4 × 8 grid drawn at 2.31 × the game's
-   scale with soft edges. Pixel Forge rejected it (`dimensions_not_exact_or_uniform_integer_
-   enlargement`), and its `normalize` step needs a whole-number grid, so the conversion is local.
-4. **Conversion.** `convert_gpt_hurt.py` (re-runnable, no spend): area-average to 384 × 768,
-   hard alpha, register each facing row like `art/pixellab/check_sheet.py` (frame 0's box centre
-   and floor row match the walk sheet), nudge a frame only if it would leave its cell, and
-   recolour southeast frame 0's cream bag (copied from the old walk art) to the row's tan.
+- original-candidate.png: preserved prior review sheet.
+- reference-west-walk.png / reference-west-attack.png: exact source WEST cell crops, enlarged 6x by nearest neighbour.
+- west-mockup.png: the inspected single-pose guide.
+- west-row-raw.png: the matching four-frame generated row.
+- shopper-hurt.png: the reproducible runtime derivative.
+- job-spec.json: portable Pixel Forge specification; run from this directory when using relative paths.
+- provenance.json: source/output hashes and caller-reported invocation identifiers.
 
-`art/enemy-reactions/materials/build_material_reactions.py` copies `shopper-hurt.png` into
-`public/`, so a rebuild keeps this art. `tests/unit/shopper-hurt-art.test.ts` pins the copy, the
-format, the registration and a flung-arm peak recoil.
+Built-in image generation was used. Three earlier mockups were rejected for identity/proportion drift.
+A fresh job using single-facing source crops produced the selected mockup and then its matching row.
+Five image invocations total; no Images API, PixelLab, credential export or login setup was used.
 
-## Checks
+## Rebuild without generation
 
-- `python3 art/pixellab/check_sheet.py art/enemy-reactions/shopper-hurt/shopper-hurt.png
-  public/assets/neon/enemies/shopper-hurt.png --frames 4`: feet and centre off by 0 px in all
-  eight facings. It warns on the west and east rows ("mean colour off by 31 and 33"). That is
-  the bag: the walk frames there carry none. Without the bag pixels the difference is 14 and 19.
-- Hard alpha only (0 or 255). Lowest opaque row is 94 or 95 in every frame.
+From repository root, using the existing Forge Python environment (Pillow and NumPy):
 
-## Known review items
+    python art/enemy-reactions/shopper-hurt/build_shopper_hurt.py
+    python art/enemy-reactions/materials/build_material_reactions.py
 
-- The figures read a little stockier and more shaded than the lean walk figure. The shipped
-  attack sheet is the same.
-- The walk sheet draws a cream bag in the south-west and south-east rows and none in the west
-  and east rows. The hurt strip uses the tan bag of the attack sheet in all of them.
-- The east row's bag side (the far hand when facing east) was not checked against the attack sheet.
-- The chest mark is a brown stain; the walk art has a dark checkered patch.
+The raw 2172 x 724 row is four known rectangular cells, not the exact square-cell grid Forge requests.
+Forge correctly rejected its dimensions. The explicit local converter crops transparent margins,
+uses one uniform nearest-neighbour scale for all four poses, hardens alpha, aligns shoe/baseline
+registration, then applies a common row translation for the walking rest-frame centre.
+This resampling is lossy; raw generation is preserved. It never invents a new facing or mirrors a row.
 
-## To redo it
+## Verification and limits
 
-Change `job-spec.json` (or its prompt) and run a new Pixel Forge job under a new `revision`; a
-job allows at most 3 follow-ups, and a continuation job can start from the best accepted image.
-Replace `gpt-sheet-raw.png`, run the converter, then `build_material_reactions.py`, then the
-tests. Look at every facing next to the walk sheet before keeping it.
+- Fresh final gate: 1,939 unit tests in 182 files, five converter tests, TypeScript typecheck and build pass.
+- Baseline main passed 1,920 tests before changes. Art and fixture regressions were observed failing first.
+- Independent review reran 101 focused/adjacent TypeScript tests, five converter tests and typecheck successfully.
+- Converter tests cover registration, unchanged rows, hard alpha, empty cells and boundary rejection.
+- Runtime art tests pin the source copy, native grid, preserved rows, baseline/height and rest centre.
+- A narrow-shoulder geometric regression rejects the old 36 px broad peak; it is not a facing classifier.
+- Independent visual review finds consistent WEST face/body profile, source identity, bag grip and leg separation.
+- check_sheet.py reports 0 px centre/baseline error for every facing.
+- The untouched EAST row retains its previous mean-colour warning (33), partly due to its bag.
+- The corrected WEST row is slimmer and closer to the walking source than the untouched candidate rows.
+- Other prior candidate review limits remain: some facings are stockier/more shaded; chest detail differs from walk art.
+- No simulation rules or attack-priority logic changed.
+
+## Reproducible live check
+
+The dev-only mvp-hunter-hurt fixture equips the real Laser Pointer at 410 px. A genuine shot hits the
+shopper during pursue, outside charge range, leaving the normal fourteen-tick hurt window visible.
+It later enters its normal charge telegraph. Unit tests verify this for immediate and delayed input.
+
+    PW_CHROMIUM_PATH=/usr/bin/chromium npx playwright test tests/browser/hunter-hurt-review.spec.ts
+
+The capture spec requires all four WEST shopper-hurt frames after a real hit, no charge/stun, no
+console errors and no external runtime requests. It saves each observed frame and a JSON report.
+This test is present and typechecked but its browser execution is still pending: the current cloud
+browser routes were permission-blocked. Do not weaken browser policy or change attack priority to pass it.
