@@ -1452,6 +1452,28 @@ export class MvpRunScene extends Phaser.Scene {
       }
       return upstairs;
     }
+    if (fixture === 'mvp-room') {
+      // Any room of any floor for a visual sweep: &floor=N &room=<room id> &part=1 (the first
+      // wing; default the boss wing) &store=1|2 (step inside) &enemies=1 (keep its monsters).
+      const params = new URLSearchParams(window.location.search);
+      const floor = Math.min(FINAL_FLOOR, Math.max(1, Number(params.get('floor') ?? 1))) as FloorNumber;
+      const options = { floor, ...(params.get('part') === '1' ? { part: 1 as const } : {}), perks: state.perks };
+      let run = createMvpRun(state.seed, options);
+      // &event=none walks on to the first seed whose wing rolls no event (no outage hiding the room).
+      for (let seed = state.seed + 1; params.get('event') === 'none' && wingEventFor(run.wing) !== null && seed < state.seed + 200; seed += 1) {
+        run = createMvpRun(seed, options);
+      }
+      const stop = params.get('room') ?? run.wing.rooms[0]!.id;
+      while (run.wing.rooms[run.roomIndex]?.id !== stop && run.roomIndex < run.wing.rooms.length - 1) {
+        run.room.combat.enemies = [];
+        tickMvpRun(run, { moveX: 0, moveY: 0, aimX: 0, aimY: 0, fire: false, interact: false, steal: false, recall: false });
+        if (!enterDoorway(run, 'east').accepted) break;
+      }
+      const shop = Number(params.get('store') ?? 0);
+      if (shop > 0) enterStore(run, shop - 1);
+      if (params.get('enemies') !== '1') run.room.combat.enemies = [];
+      return run;
+    }
     if (fixture === 'mvp-district') {
       // Round 50: the first night whose &floor=N first wing is its district, walked to
       // &room=<room id> (default the fight room) with its monsters there; &store=1 or 2 steps into that shop.

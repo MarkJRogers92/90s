@@ -325,7 +325,7 @@ export class MallRoomView {
         wall.fillStyle(0x2c3550, 1).fillRect(facade.x, top, texture.width, FACADE_HEIGHT);
         wall.fillStyle(facade.spill, 0.35).fillRect(facade.x + 20, top + 60, texture.width - 40, 70);
       }
-      if (facade.sign) this.placeSign(facade.sign, facade.sign.x, facade.sign.y, true);
+      if (facade.sign) this.placeSign(facade.sign, facade.sign.x, facade.sign.y, this.plan.signReflections);
     }
   }
 

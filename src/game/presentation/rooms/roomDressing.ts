@@ -94,6 +94,7 @@ export const PROP_TEXTURES = {
   bunny: { key: 'neon:prop:bunny-mascot', file: 'props/bunny-mascot.png', width: 33, height: 91 },
   tableSet: { key: 'neon:prop:food-table-set', file: 'props/food-table-set.png', width: 61, height: 61 },
   planter: { key: 'neon:prop:planter-straight', file: 'props/planter-straight.png', width: 120, height: 52 },
+  planterLong: { key: 'neon:prop:planter-long', file: 'props/planter-long.png', width: 85, height: 55 },
   benchKiosk: { key: 'neon:prop:bench-kiosk', file: 'props/bench-kiosk.png', width: 73, height: 83 },
   crates: { key: 'neon:prop:crate-stack', file: 'props/crate-stack.png', width: 75, height: 86 },
   securityDesk: { key: 'neon:prop:security-desk', file: 'props/security-desk.png', width: 80, height: 45 },
@@ -213,7 +214,14 @@ export type DressingPlan = {
   readonly storeZone: { readonly bounds: Rect; readonly floor: FloorStyle; readonly accent: number } | null;
   /** Shoppers and staff wander the room (the opening only). */
   readonly civilians: boolean;
+  /** Whether the floor is polished enough to mirror the back-wall neon (round 58: never carpet, concrete or gravel). */
+  readonly signReflections: boolean;
 };
+
+/** A room's look before the floor decides whether it reflects. */
+type RoomLook = Omit<DressingPlan, 'signReflections'>;
+
+const POLISHED_FLOORS: ReadonlySet<FloorStyle> = new Set<FloorStyle>(['terrazzo', 'checker', 'linoleum', 'ice']);
 
 export type RoomThemeId =
   | 'opening_concourse'
@@ -342,74 +350,67 @@ function ceilingGrid(color: number, intensity: number, radius: number, rows: rea
   return lights;
 }
 
+/** What covers collision in a room: a long bar, a squarish block, and a bar running away from the camera. */
+type CoverKit = {
+  readonly bar: PropId;
+  readonly block: PropId;
+  /** Stacked down a north-south bar so the copies overlap into one receding row. */
+  readonly column: PropId;
+  /** Stood at the near end of a column, taller than the rest (a palm at the end of a hedge). */
+  readonly columnCap?: PropId;
+};
+
+export type CoverKitId = 'concourse' | 'food_court' | 'back_hall' | 'security_office' | 'roof';
+
+export const COVER_KITS: Readonly<Record<CoverKitId, CoverKit>> = {
+  concourse: { bar: 'planter', block: 'crates', column: 'planterLong', columnCap: 'palm' },
+  food_court: { bar: 'booth', block: 'tableSet', column: 'planterLong', columnCap: 'palm' },
+  back_hall: { bar: 'crates', block: 'crates', column: 'crates' },
+  security_office: { bar: 'securityDesk', block: 'securityDesk', column: 'filingCabinets' },
+  roof: { bar: 'acUnit', block: 'acUnit', column: 'ventStack' },
+};
+
+/** A prop drawn `width` wide at its own aspect ratio (round 58: nothing is squashed to fit). */
+export function atWidth(prop: PropId, width: number): { width: number; height: number } {
+  const texture = PROP_TEXTURES[prop];
+  return { width: Math.round(width), height: Math.round((width * texture.height) / texture.width) };
+}
+
 /**
- * Covers one authored collision rectangle with props chosen by its shape,
- * so blocked space always looks like something solid.
+ * Covers one authored collision rectangle with props chosen by its shape, so
+ * blocked space always looks like something solid. Every sprite keeps its own
+ * proportions: a long bar is tiled with copies, a block takes one scaled
+ * copy, and a bar running away from the camera is a receding row of copies.
  */
-function coverWall(wall: Rect, index: number, theme: RoomThemeId): DressingProp[] {
+export function coverWall(wall: Rect, index: number, kitId: CoverKitId): DressingProp[] {
+  const kit = COVER_KITS[kitId];
   const cx = wall.x + wall.width / 2;
   const base = wall.y + wall.height;
-  const horizontal = wall.width >= wall.height * 2;
-  const vertical = wall.height >= wall.width * 2;
   const id = (suffix: string) => `wall-${index}-${suffix}`;
 
-  if (vertical) {
-    // Tall bars become a column of pillars (back hall) or directory boards and palms.
-    const count = Math.max(1, Math.round(wall.height / 60));
-    const step = wall.height / count;
-    return Array.from({ length: count }, (_, i) => {
-      const y = wall.y + step * (i + 1) - 2;
-      if (theme === 'back_hall') {
-        return { id: id(`pillar-${i}`), prop: 'pillar' as const, x: cx, y, width: wall.width + 6, height: 99, covers: wall };
-      }
-      const prop: PropId = i % 2 === 0 ? 'palm' : 'planter';
-      return prop === 'palm'
-        ? { id: id(`palm-${i}`), prop, x: cx, y, width: 40, height: 61, covers: wall }
-        : { id: id(`planter-${i}`), prop, x: cx, y, width: wall.width + 16, height: 40, covers: wall };
-    });
-  }
-
-  if (horizontal) {
-    switch (theme) {
-      case 'food_court': {
-        const count = Math.max(1, Math.round(wall.width / 144));
-        const step = wall.width / count;
-        return Array.from({ length: count }, (_, i) => ({
-          id: id(`booth-${i}`), prop: 'booth' as const, x: wall.x + step * (i + 0.5), y: base + 4,
-          width: step + 4, height: Math.max(34, wall.height + 12), covers: wall,
-        }));
-      }
-      case 'security_office': {
-        const count = Math.max(1, Math.round(wall.width / 72));
-        const step = wall.width / count;
-        return Array.from({ length: count }, (_, i) => ({
-          id: id(`desk-${i}`), prop: 'securityDesk' as const, x: wall.x + step * (i + 0.5), y: base + 4,
-          width: step + 6, height: wall.height + 20, covers: wall,
-        }));
-      }
-      case 'back_hall':
-        return [{ id: id('crates'), prop: 'crates', x: cx, y: base + 4, width: wall.width + 8, height: wall.height + 40, covers: wall }];
-      default: {
-        // Concourse and storefront bars: planter boxes with a bench in front.
-        const count = Math.max(1, Math.round(wall.width / 72));
-        const step = wall.width / count;
-        return Array.from({ length: count }, (_, i) => ({
-          id: id(`planter-${i}`), prop: 'planter' as const, x: wall.x + step * (i + 0.5), y: base + 6,
-          width: step + 8, height: wall.height + 26, covers: wall,
-        }));
-      }
+  if (wall.height >= wall.width * 2) {
+    const size = atWidth(kit.column, wall.width + 18);
+    const step = Math.max(22, Math.round(size.height * 0.6));
+    const count = Math.max(1, Math.round(wall.height / step));
+    const props: DressingProp[] = Array.from({ length: count }, (_, i) => ({
+      id: id(`column-${i}`), prop: kit.column, x: cx, y: Math.round(wall.y + ((i + 1) * wall.height) / count) + 2, ...size, covers: wall,
+    }));
+    if (kit.columnCap) {
+      props.push({ id: id('cap'), prop: kit.columnCap, x: cx, y: base + 6, ...atWidth(kit.columnCap, Math.max(40, wall.width + 12)), covers: wall });
     }
+    return props;
   }
 
-  // Squarish blocks.
-  switch (theme) {
-    case 'food_court':
-      return [{ id: id('tables'), prop: 'tableSet', x: cx, y: base + 8, width: Math.max(wall.width, 56) + 12, height: wall.height + 28, covers: wall }];
-    case 'security_office':
-      return [{ id: id('desk'), prop: 'securityDesk', x: cx, y: base + 4, width: wall.width + 8, height: wall.height + 18, covers: wall }];
-    default:
-      return [{ id: id('crates'), prop: 'crates', x: cx, y: base + 4, width: wall.width + 8, height: wall.height + 34, covers: wall }];
+  if (wall.width >= wall.height * 2) {
+    const texture = PROP_TEXTURES[kit.bar];
+    const count = Math.max(1, Math.round(wall.width / texture.width));
+    const step = wall.width / count;
+    return Array.from({ length: count }, (_, i) => ({
+      id: id(`bar-${i}`), prop: kit.bar, x: Math.round(wall.x + step * (i + 0.5)), y: base + 4, ...atWidth(kit.bar, step + 8), covers: wall,
+    }));
   }
+
+  return [{ id: id('block'), prop: kit.block, x: cx, y: base + 4, ...atWidth(kit.block, wall.width + 8), covers: wall }];
 }
 
 /* ------------------------------------------------------------------------ */
@@ -460,7 +461,7 @@ export function hasStoreLook(templateId: string): boolean {
   return templateId in STORE_LOOKS && templateId in INTERIOR_LOOKS;
 }
 
-function openingConcourse(room: WingRoomDefinition): DressingPlan {
+function openingConcourse(room: WingRoomDefinition): RoomLook {
   const facades = facadeRow([
     { facade: 'video', sign: sign('VIDEO WORLD', NEON.cyan, 'RENT 2 GET 1 FREE', NEON.yellow), spill: 0xffd9a0 },
     { facade: 'electronics', sign: sign('MEGA MART', NEON.blue, 'MORE FOR A BRIGHTER TOMORROW', NEON.red), spill: 0xe6f0ff },
@@ -471,7 +472,7 @@ function openingConcourse(room: WingRoomDefinition): DressingPlan {
     if (isFountainFootprint(wall)) {
       props.push({ id: 'fountain', prop: 'fountain', x: wall.x + wall.width / 2, y: wall.y + wall.height + 8, width: 150, height: 118, covers: wall });
     } else {
-      props.push(...coverWall(wall, index, 'opening_concourse'));
+      props.push(...coverWall(wall, index, 'concourse'));
     }
   });
   props.push(
@@ -503,13 +504,8 @@ function openingConcourse(room: WingRoomDefinition): DressingPlan {
     facades,
     props,
     lights,
-    neonStrips: [
-      { x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.cyan },
-    ],
-    neonRings: [
-      { x: 480, y: 348, width: 236, height: 92, color: NEON.magenta },
-      { x: 480, y: 348, width: 262, height: 108, color: NEON.cyan },
-    ],
+    neonStrips: [],
+    neonRings: [],
     floorSigns: [],
     storeZone: null,
     civilians: true,
@@ -521,7 +517,7 @@ function openingConcourse(room: WingRoomDefinition): DressingPlan {
  * shop's own door in the back-wall art (see storeInterior.ts), so out here
  * there is only the mall: planters, a bench, a cart, and that door lit up.
  */
-function storefront(room: WingRoomDefinition): DressingPlan {
+function storefront(room: WingRoomDefinition): RoomLook {
   const stores = roomStores(room);
   // Each shopfront is centred on its door (STORE_ENTRANCE_XS), so walking
   // into the art's doorway is walking into the shop.
@@ -541,7 +537,7 @@ function storefront(room: WingRoomDefinition): DressingPlan {
   // The furniture's footprints are collision too, but they carry their own art.
   const furniture = CONCOURSE_FURNITURE.flatMap((piece) => (piece.footprint ? [piece.footprint] : []));
   const isFurniture = (wall: Rect) => furniture.some((rect) => rect.x === wall.x && rect.y === wall.y && rect.width === wall.width && rect.height === wall.height);
-  interiorWalls(room).filter((wall) => !isFurniture(wall)).forEach((wall, index) => props.push(...coverWall(wall, index, 'storefront')));
+  interiorWalls(room).filter((wall) => !isFurniture(wall)).forEach((wall, index) => props.push(...coverWall(wall, index, 'concourse')));
   props.push(
     { id: 'palm-w', prop: 'palm', x: 70, y: 150, width: 44, height: 67 },
     { id: 'palm-e', prop: 'palm', x: 890, y: 440, width: 44, height: 67 },
@@ -555,7 +551,10 @@ function storefront(room: WingRoomDefinition): DressingPlan {
   for (const piece of CONCOURSE_FURNITURE) {
     const texture = PROP_TEXTURES[piece.kind];
     const scale = piece.kind === 'saleSign' ? 1.15 : 1.3;
-    props.push({ id: `concourse-${piece.id}`, prop: piece.kind, x: piece.x, y: piece.y, width: Math.round(texture.width * scale), height: Math.round(texture.height * scale) });
+    props.push({
+      id: `concourse-${piece.id}`, prop: piece.kind, x: piece.x, y: piece.y, width: Math.round(texture.width * scale), height: Math.round(texture.height * scale),
+      ...(piece.footprint ? { covers: piece.footprint } : {}),
+    });
   }
   const lights: PointLight[] = [
     ...facadeSpillLights(facades),
@@ -641,7 +640,7 @@ function sized(prop: PropId, scale = 1.35): { width: number; height: number } {
  * behind every item for sale, checkouts either side of the door, and the
  * door itself at the bottom (drawn by MallRoomView).
  */
-function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null): DressingPlan {
+function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null): RoomLook {
   const look = (store && STORE_LOOKS[store.templateId]) ?? STORE_LOOKS['mall-mart']!;
   const stock = (store && INTERIOR_LOOKS[store.templateId]) ?? INTERIOR_LOOKS['mall-mart']!;
   const b = INTERIOR_BOUNDS;
@@ -690,11 +689,7 @@ function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null
     facades: [],
     props,
     lights,
-    neonStrips: [
-      { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y, color: look.neon },
-      { x1: b.x, y1: door.y, x2: door.x, y2: door.y, color: look.neon },
-      { x1: door.x + door.width, y1: door.y, x2: b.x + b.width, y2: door.y, color: look.neon },
-    ],
+    neonStrips: [],
     neonRings: [],
     // The store's name in neon across its own back wall.
     floorSigns: [{ ...sign((store?.name ?? 'STORE').toUpperCase(), look.neon, look.subtitle, NEON.yellow, 4), x: 480, y: -64 }],
@@ -708,7 +703,7 @@ function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null
  * a confiscation cage, one caged work light swinging over it, and a red
  * EMPLOYEES ONLY over the passage out.
  */
-function backRoom(): DressingPlan {
+function backRoom(): RoomLook {
   const b = INTERIOR_BOUNDS;
   const door = INTERIOR_EXIT;
   const props: DressingProp[] = [];
@@ -734,9 +729,7 @@ function backRoom(): DressingPlan {
     facades: [],
     props,
     lights,
-    neonStrips: [
-      { x1: door.x - 30, y1: door.y, x2: door.x + door.width + 30, y2: door.y, color: NEON.red },
-    ],
+    neonStrips: [],
     neonRings: [],
     floorSigns: [{ ...sign('EMPLOYEES ONLY', NEON.red, 'NO CUSTOMERS BEYOND THIS POINT', NEON.yellow, 3), x: 480, y: -64 }],
     storeZone: null,
@@ -744,7 +737,7 @@ function backRoom(): DressingPlan {
   };
 }
 
-function foodCourt(room: WingRoomDefinition): DressingPlan {
+function foodCourt(room: WingRoomDefinition): RoomLook {
   const facades = facadeRow([
     { facade: 'pizza', sign: sign('PIZZA PALACE', NEON.orange, 'HOT SLICES 99C', NEON.yellow), spill: 0xffb070 },
     { facade: 'wok', sign: sign('WOK N ROLL', NEON.red, 'CHINESE EXPRESS', NEON.yellow), spill: 0xffa060 },
@@ -784,7 +777,7 @@ function foodCourt(room: WingRoomDefinition): DressingPlan {
   };
 }
 
-function backHall(room: WingRoomDefinition): DressingPlan {
+function backHall(room: WingRoomDefinition): RoomLook {
   const facades = facadeRow([
     { facade: 'service', sign: sign('EMPLOYEES ONLY', NEON.red, undefined, undefined, 2), spill: 0xb0c8d0 },
     { facade: 'service', sign: null, spill: 0x90a8b0 },
@@ -827,7 +820,7 @@ function backHall(room: WingRoomDefinition): DressingPlan {
   };
 }
 
-function securityOffice(room: WingRoomDefinition): DressingPlan {
+function securityOffice(room: WingRoomDefinition): RoomLook {
   const facades = facadeRow([
     { facade: 'security', sign: sign('SECURITY', NEON.green, 'LOSS PREVENTION', NEON.red), spill: 0x90ffb0 },
     { facade: 'service', sign: null, spill: 0x80a090 },
@@ -856,11 +849,7 @@ function securityOffice(room: WingRoomDefinition): DressingPlan {
       ...ceilingGrid(0xb0ffc8, 0.55, 150, [160, 380], [240, 560], (i) => (i === 1 ? 'buzz' : undefined)),
       { x: 760, y: 240, radius: 190, color: NEON.red, intensity: 0.45, squash: 0.8, flicker: 'pulse' },
     ],
-    neonStrips: [
-      { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.green },
-      { x1: 580, y1: 110, x2: 940, y2: 110, color: NEON.red },
-      { x1: 580, y1: 370, x2: 940, y2: 370, color: NEON.red },
-    ],
+    neonStrips: [],
     neonRings: [],
     floorSigns: [],
     storeZone: null,
@@ -878,7 +867,7 @@ export function isFountainFootprint(wall: Rect): boolean {
  * (so every collision rectangle stays dressed), new facades, signs, floor,
  * light and neon, so floor 2 reads as a different part of the mall.
  */
-function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
+function upperFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
   switch (room.id) {
     case 'service_corridor': {
       const facades = facadeRow([
@@ -893,8 +882,6 @@ function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan 
         ambient: 0x3a3462,
         facades,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.violet), ...ceilingGrid(0xc0a0ff, 0.5, 180, [150, 390], [140, 480, 820])],
-        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.violet }],
-        neonRings: plan.neonRings.map((ring, i) => ({ ...ring, color: i === 0 ? NEON.cyan : NEON.violet })),
         civilians: false,
       };
     }
@@ -911,7 +898,6 @@ function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan 
         ambient: 0x3a2030,
         facades,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.red), ...ceilingGrid(0xffb090, 0.5, 160, [180, 380], [200, 480, 760], (i) => (i === 2 ? 'buzz' : undefined))],
-        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.yellow }],
       };
     }
     case 'back_hall': {
@@ -942,11 +928,6 @@ function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan 
         ambient: 0x2a1622,
         facades,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.red), ...ceilingGrid(0xffd0a0, 0.5, 150, [160, 380], [240, 560]), { x: 760, y: 240, radius: 200, color: NEON.red, intensity: 0.55, squash: 0.8, flicker: 'pulse' }],
-        neonStrips: [
-          { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow },
-          { x1: 580, y1: 110, x2: 940, y2: 110, color: NEON.red },
-          { x1: 580, y1: 370, x2: 940, y2: 370, color: NEON.red },
-        ],
       };
     }
     default:
@@ -959,7 +940,7 @@ function upperFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan 
  * night. Greasy orange and teal neon over dim warm light, dead menus, dark
  * cabinets and the Owner's gold-and-magenta suite.
  */
-function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
+function topFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
   const teal = 0x2ad8c8;
   switch (room.id) {
     case 'service_corridor': {
@@ -975,8 +956,6 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
         ambient: 0x3a241e,
         facades,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.orange), ...ceilingGrid(0xff9a50, 0.55, 190, [150, 390], [140, 480, 820]), { x: 480, y: 330, radius: 170, color: teal, intensity: 0.5, squash: 0.7 }],
-        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.orange }, { x1: 20, y1: 304, x2: 940, y2: 304, color: teal }],
-        neonRings: plan.neonRings.map((ring, i) => ({ ...ring, color: i === 0 ? NEON.orange : teal })),
         civilians: false,
       };
     }
@@ -986,7 +965,6 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
         ...plan,
         ambient: 0x3e2622,
         lights: [...plan.lights, ...ceilingGrid(0xff9a50, 0.35, 150, [150, 400], [110, 850])],
-        neonStrips: [...plan.neonStrips, { x1: 20, y1: 60, x2: 940, y2: 60, color: teal }],
       };
     case 'food_court': {
       const facades = facadeRow([
@@ -1009,7 +987,6 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
         facades,
         props,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.magenta), ...ceilingGrid(0x9a7cff, 0.5, 170, [180, 380], [200, 480, 760], (i) => (i === 3 ? 'buzz' : undefined))],
-        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.magenta }, { x1: 20, y1: 304, x2: 940, y2: 304, color: teal }],
       };
     }
     case 'back_hall': {
@@ -1039,11 +1016,6 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
         ambient: 0x2a1a2a,
         facades,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.yellow), ...ceilingGrid(0xffc870, 0.5, 150, [160, 380], [240, 560]), { x: 760, y: 240, radius: 210, color: NEON.magenta, intensity: 0.55, squash: 0.8, flicker: 'pulse' }],
-        neonStrips: [
-          { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow },
-          { x1: 580, y1: 110, x2: 940, y2: 110, color: NEON.magenta },
-          { x1: 580, y1: 370, x2: 940, y2: 370, color: NEON.magenta },
-        ],
       };
     }
     default:
@@ -1059,27 +1031,19 @@ function topFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
 const MOON = 0x8aa8ff;
 const SODIUM = 0xffa040;
 
-/** What stands in for a mall prop that dresses collision up on the Roof. */
-const ROOF_STAND_INS: Partial<Record<PropId, PropId>> = {
-  planter: 'ventStack',
-  palm: 'ventStack',
-  booth: 'acUnit',
-  securityDesk: 'acUnit',
-  fountain: 'skylight',
-};
 /** Loose clutter that could plausibly be left on a roof; everything else stays downstairs. */
 const ROOF_CLUTTER: ReadonlySet<PropId> = new Set<PropId>(['bin', 'crates', 'pillar']);
 
 /**
- * The Roof keeps every prop that shows the janitor what blocks him (collision
- * covers), swapped for rooftop machinery, and drops the mall's furniture.
+ * The Roof re-covers every collision rectangle with rooftop machinery (the
+ * fountain's basin becomes a skylight), keeps the clutter that belongs up
+ * here, and drops the mall's furniture.
  */
-function roofProps(props: readonly DressingProp[]): DressingProp[] {
-  return props.flatMap((prop) => {
-    const stand = ROOF_STAND_INS[prop.prop];
-    if (prop.covers) return [{ ...prop, prop: stand ?? prop.prop }];
-    return ROOF_CLUTTER.has(prop.prop) ? [prop] : [];
-  });
+function roofProps(props: readonly DressingProp[], room: WingRoomDefinition): DressingProp[] {
+  const covers = interiorWalls(room).flatMap((wall, index) => (isFountainFootprint(wall)
+    ? [{ id: 'skylight', prop: 'skylight' as const, x: wall.x + wall.width / 2, y: wall.y + wall.height + 8, ...atWidth('skylight', 150), covers: wall }]
+    : coverWall(wall, index, 'roof')));
+  return [...covers, ...props.filter((prop) => !prop.covers && ROOF_CLUTTER.has(prop.prop))];
 }
 
 function roofLights(room: WingRoomDefinition, facades: readonly DressingFacade[]): PointLight[] {
@@ -1091,7 +1055,7 @@ function roofLights(room: WingRoomDefinition, facades: readonly DressingFacade[]
   ];
 }
 
-function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
+function roofFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
   const roof = { floor: 'gravel' as const, ambient: 0x161c30, civilians: false };
   switch (room.id) {
     case 'service_corridor': {
@@ -1102,12 +1066,10 @@ function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props),
+        props: roofProps(plan.props, room),
         areaName: 'ROOF ACCESS',
         facades,
         lights: roofLights(room, facades),
-        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.yellow }],
-        neonRings: plan.neonRings.map((ring) => ({ ...ring, color: NEON.cyan })),
       };
     }
     case 'storefront_a':
@@ -1116,7 +1078,6 @@ function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
         ...plan,
         ambient: 0x1c2036,
         lights: [...plan.lights.map((light) => ({ ...light, intensity: light.intensity * 0.8 })), ...ceilingGrid(MOON, 0.3, 240, [180, 400], [240, 720])],
-        neonStrips: [...plan.neonStrips, { x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow }],
         civilians: false,
       };
     case 'food_court': {
@@ -1127,11 +1088,10 @@ function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props),
+        props: roofProps(plan.props, room),
         areaName: 'HVAC YARD',
         facades,
         lights: roofLights(room, facades),
-        neonStrips: [{ x1: 20, y1: 176, x2: 940, y2: 176, color: NEON.cyan }, { x1: 20, y1: 304, x2: 940, y2: 304, color: NEON.orange }],
       };
     }
     case 'back_hall': {
@@ -1142,7 +1102,7 @@ function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props),
+        props: roofProps(plan.props, room),
         areaName: 'WATER TOWER',
         ambient: 0x121828,
         facades,
@@ -1157,11 +1117,10 @@ function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props),
+        props: roofProps(plan.props, room),
         areaName: 'HELIPAD',
         facades,
         lights: [...roofLights(room, facades), { x: 760, y: 240, radius: 230, color: NEON.yellow, intensity: 0.45, squash: 0.7, flicker: 'pulse' }],
-        neonStrips: [{ x1: 20, y1: 60, x2: 940, y2: 60, color: NEON.yellow }],
         // The pad itself: a painted H in a ring, lit from below.
         neonRings: [{ x: 760, y: 240, width: 260, height: 150, color: NEON.yellow }],
         floorSigns: [{ ...sign('H', NEON.yellow, undefined, undefined, 6), x: 760, y: 240 }],
@@ -1173,7 +1132,7 @@ function roofFloor(plan: DressingPlan, room: WingRoomDefinition): DressingPlan {
 }
 
 /** How each floor re-dresses the ground floor's plan for a room. */
-const FLOOR_DRESSING: Readonly<Record<FloorNumber, (plan: DressingPlan, room: WingRoomDefinition) => DressingPlan>> = {
+const FLOOR_DRESSING: Readonly<Record<FloorNumber, (plan: RoomLook, room: WingRoomDefinition) => RoomLook>> = {
   1: (plan) => plan,
   2: (plan, room) => upperFloor(plan, room),
   3: (plan, room) => topFloor(plan, room),
@@ -1267,13 +1226,13 @@ const DISTRICT_LOOKS: Readonly<Record<DistrictId, Partial<Record<WingRoomDefinit
 };
 
 /** A room of a district wing: its floor's furniture under the district's walls, floor and light. */
-function districtRoom(base: DressingPlan, room: WingRoomDefinition, district: DistrictId): DressingPlan {
+function districtRoom(base: RoomLook, room: WingRoomDefinition, district: DistrictId): RoomLook {
   const look = DISTRICT_LOOKS[district][room.id];
   const named = { ...base, areaName: room.name.toUpperCase() };
   if (!look) return named;
   // Storefront rooms keep their shops' own fronts; only the light and floor take the district's colour.
   if (room.store !== null) {
-    return { ...named, ambient: look.ambient, ...(look.floor ? { floor: look.floor } : {}), neonStrips: [...base.neonStrips, { x1: 20, y1: 60, x2: 940, y2: 60, color: look.light }], civilians: false };
+    return { ...named, ambient: look.ambient, ...(look.floor ? { floor: look.floor } : {}), civilians: false };
   }
   const facades = facadeRow(look.panels.map(([facade, text, subtitle, color, spill]) => ({ facade, sign: sign(text, color, subtitle, subtitle ? NEON.warm : undefined, text.length > 12 ? 2 : 3), spill })));
   return {
@@ -1282,12 +1241,17 @@ function districtRoom(base: DressingPlan, room: WingRoomDefinition, district: Di
     ambient: look.ambient,
     facades,
     lights: [...facadeSpillLights(facades), ...doorwayLights(room, look.light), ...ceilingGrid(look.light, 0.4, 150, [160, 380], [240, 480, 720])],
-    neonStrips: [{ x1: 20, y1: 60, x2: 940, y2: 60, color: look.light }],
+    neonStrips: [],
     civilians: false,
   };
 }
 
 export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1, district?: DistrictId): DressingPlan {
+  const look = lookOf(room, floor, insideStore, part, district);
+  return { ...look, signReflections: POLISHED_FLOORS.has(look.floor) };
+}
+
+function lookOf(room: WingRoomDefinition, floor: FloorNumber, insideStore: number | null, part: 1 | undefined, district: DistrictId | undefined): RoomLook {
   if (room.variantId === 'prop-test' || room.variantId === 'prop-test-return') {
     return { ...openingConcourse(room), areaName: room.name.toUpperCase(), props: [], neonRings: [], civilians: false };
   }
@@ -1300,11 +1264,14 @@ export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 
   if (district) return districtRoom(district === 'rink' ? planFloorOneRoom(room) : FLOOR_DRESSING[floor](planFloorOneRoom(room), room), room, district);
   const plan = FLOOR_DRESSING[floor](planFloorOneRoom(room), room);
   // A first wing (round 45) dresses like its floor but titles each room by the wing's
-  // own names, and (round 48) hangs its own signs on the same shopfronts.
-  return part === 1 ? { ...plan, areaName: room.name.toUpperCase(), facades: relabel(plan.facades, FIRST_WING_SIGNS[floor][room.id]) } : plan;
+  // own names, and (round 48) hangs its own signs on the same shopfronts. Its boss room
+  // is not the Helipad, so it paints no landing ring on the floor.
+  return part === 1
+    ? { ...plan, areaName: room.name.toUpperCase(), facades: relabel(plan.facades, FIRST_WING_SIGNS[floor][room.id]), neonRings: [], floorSigns: [] }
+    : plan;
 }
 
-function planFloorOneRoom(room: WingRoomDefinition): DressingPlan {
+function planFloorOneRoom(room: WingRoomDefinition): RoomLook {
   switch (room.id) {
     case 'service_corridor':
       return openingConcourse(room);
