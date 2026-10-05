@@ -5,6 +5,17 @@ Code cloud session did. Read `AGENTS.md` first (the repo rules), then `STATUS.md
 `NEXT_SESSION.md` (newest entry at the top), then this file. Branch:
 `claude/pixel-forge-image-generation-go3b0z`, pushed, no pull request opened.
 
+> **Update 2026-10-05: `main` moved on; this file's state sections are partly superseded.**
+> GPT picked this work up from `70c4061` and merged it as PR #69 (the **shipped strip is now main's
+> corrected one**, west row replaced, other seven rows identical to the candidate). Also on main: #68
+> (a refused Images API call is reported clearly and the job stays runnable), #70 (source-pinned
+> consistency checks and a review-only west recoil fixture), #71 and #72 (the damaged vending machine).
+> Read `art/enemy-reactions/shopper-hurt/README.md` on main for the current art. `convert_gpt_hurt.py` and
+> `gpt-sheet-raw.png` here are the provenance of `original-candidate.png` (the pre-correction sheet),
+> not of the shipped strip. The live flinch now has a reproducible check, the dev-only `mvp-hunter-hurt`
+> fixture (a real ranged hit during `pursue`) and `tests/browser/hunter-hurt-review.spec.ts`; per main's
+> README that browser run was still pending, and it has not been run from this branch either.
+
 ## 1. What was done
 
 The Bargain Hunter's flinch is now a **drawn** 4-frame × 8-facing strip instead of the walk frame

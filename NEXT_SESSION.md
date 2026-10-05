@@ -18,6 +18,9 @@ no push without the owner's say-so). Presentation only; no `src/sim` change.
   a distance, or a fixture that holds the hunter in `pursue`, would show it. Kiting with the bot
   died before a swing landed. The unit tests cover the flinch path against the real PNG.
 
+**Update 2026-10-05:** main merged GPT's west-row correction (#69) and more; the shipped Bargain Hunter strip
+is main's version. The live flinch check is `tests/browser/hunter-hurt-review.spec.ts` (pending a browser run).
+
 **GPT handoff:** `docs/GPT_IMAGE_HANDOFF.md` has the state, what was and was not verified, the queue and
 the generation traps, written for an agent with GPT image generation.
 
