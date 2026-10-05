@@ -187,6 +187,22 @@ export type DressingProp = {
   readonly covers?: Rect;
 };
 
+/** What an extruded block is made of (round 58): drawn to fit its collision exactly. */
+export type BlockMaterial = 'planterBed' | 'concrete' | 'duct';
+
+/**
+ * A long bar running away from the camera, drawn as a 3/4 box fitted to its
+ * collision rectangle: sprites face the camera and cannot be turned, so a
+ * north-south bar is a raised bed, a curb or a duct with sprites stood on it.
+ */
+export type DressingBlock = {
+  readonly id: string;
+  readonly material: BlockMaterial;
+  readonly covers: Rect;
+  /** How tall the front face stands, in world units. */
+  readonly lift: number;
+};
+
 export type NeonStrip = {
   readonly x1: number;
   readonly y1: number;
@@ -205,6 +221,7 @@ export type DressingPlan = {
   readonly ambient: number;
   readonly facades: readonly DressingFacade[];
   readonly props: readonly DressingProp[];
+  readonly blocks: readonly DressingBlock[];
   readonly lights: readonly PointLight[];
   readonly neonStrips: readonly NeonStrip[];
   /** Elliptical floor inlays, e.g. around the atrium fountain. */
@@ -354,20 +371,21 @@ function ceilingGrid(color: number, intensity: number, radius: number, rows: rea
 type CoverKit = {
   readonly bar: PropId;
   readonly block: PropId;
-  /** Stacked down a north-south bar so the copies overlap into one receding row. */
-  readonly column: PropId;
-  /** Stood at the near end of a column, taller than the rest (a palm at the end of a hedge). */
-  readonly columnCap?: PropId;
+  /** A north-south bar: an extruded block of this material... */
+  readonly column: BlockMaterial;
+  /** ...with these stood along it, front to back, at their own proportions and this width. */
+  readonly columnDecor: readonly PropId[];
+  readonly columnDecorWidth: number;
 };
 
 export type CoverKitId = 'concourse' | 'food_court' | 'back_hall' | 'security_office' | 'roof';
 
 export const COVER_KITS: Readonly<Record<CoverKitId, CoverKit>> = {
-  concourse: { bar: 'planter', block: 'crates', column: 'planterLong', columnCap: 'palm' },
-  food_court: { bar: 'booth', block: 'tableSet', column: 'planterLong', columnCap: 'palm' },
-  back_hall: { bar: 'crates', block: 'crates', column: 'crates' },
-  security_office: { bar: 'securityDesk', block: 'securityDesk', column: 'filingCabinets' },
-  roof: { bar: 'acUnit', block: 'acUnit', column: 'ventStack' },
+  concourse: { bar: 'planter', block: 'crates', column: 'planterBed', columnDecor: ['palm'], columnDecorWidth: 54 },
+  food_court: { bar: 'booth', block: 'tableSet', column: 'planterBed', columnDecor: ['palm'], columnDecorWidth: 54 },
+  back_hall: { bar: 'crates', block: 'crates', column: 'concrete', columnDecor: ['crates', 'pillar'], columnDecorWidth: 40 },
+  security_office: { bar: 'securityDesk', block: 'securityDesk', column: 'concrete', columnDecor: ['filingCabinets'], columnDecorWidth: 46 },
+  roof: { bar: 'acUnit', block: 'acUnit', column: 'duct', columnDecor: ['ventStack'], columnDecorWidth: 46 },
 };
 
 /** A prop drawn `width` wide at its own aspect ratio (round 58: nothing is squashed to fit). */
@@ -382,35 +400,47 @@ export function atWidth(prop: PropId, width: number): { width: number; height: n
  * proportions: a long bar is tiled with copies, a block takes one scaled
  * copy, and a bar running away from the camera is a receding row of copies.
  */
-export function coverWall(wall: Rect, index: number, kitId: CoverKitId): DressingProp[] {
+export type Cover = { readonly props: DressingProp[]; readonly blocks: DressingBlock[] };
+
+const BLOCK_LIFT: Readonly<Record<BlockMaterial, number>> = { planterBed: 16, concrete: 22, duct: 18 };
+
+export function coverWall(wall: Rect, index: number, kitId: CoverKitId): Cover {
   const kit = COVER_KITS[kitId];
   const cx = wall.x + wall.width / 2;
   const base = wall.y + wall.height;
   const id = (suffix: string) => `wall-${index}-${suffix}`;
 
   if (wall.height >= wall.width * 2) {
-    const size = atWidth(kit.column, wall.width + 18);
-    const step = Math.max(22, Math.round(size.height * 0.6));
-    const count = Math.max(1, Math.round(wall.height / step));
-    const props: DressingProp[] = Array.from({ length: count }, (_, i) => ({
-      id: id(`column-${i}`), prop: kit.column, x: cx, y: Math.round(wall.y + ((i + 1) * wall.height) / count) + 2, ...size, covers: wall,
-    }));
-    if (kit.columnCap) {
-      props.push({ id: id('cap'), prop: kit.columnCap, x: cx, y: base + 6, ...atWidth(kit.columnCap, Math.max(40, wall.width + 12)), covers: wall });
-    }
-    return props;
+    // One stood near each end and one in every ~110 units between, nearest the camera last.
+    const count = Math.max(2, Math.round(wall.height / 110) + 1);
+    const props = Array.from({ length: count }, (_, i): DressingProp => {
+      const prop = kit.columnDecor[i % kit.columnDecor.length]!;
+      // Stood on the block's top face, so lifted with it.
+      const y = Math.round(wall.y + 26 + ((wall.height - 30) * i) / (count - 1)) - BLOCK_LIFT[kit.column];
+      return { id: id(`on-${i}`), prop, x: cx, y, ...atWidth(prop, prop === 'pillar' ? wall.width : kit.columnDecorWidth), covers: wall };
+    });
+    return { props, blocks: [{ id: id('block'), material: kit.column, covers: wall, lift: BLOCK_LIFT[kit.column] }] };
   }
 
   if (wall.width >= wall.height * 2) {
     const texture = PROP_TEXTURES[kit.bar];
     const count = Math.max(1, Math.round(wall.width / texture.width));
     const step = wall.width / count;
-    return Array.from({ length: count }, (_, i) => ({
-      id: id(`bar-${i}`), prop: kit.bar, x: Math.round(wall.x + step * (i + 0.5)), y: base + 4, ...atWidth(kit.bar, step + 8), covers: wall,
-    }));
+    return {
+      props: Array.from({ length: count }, (_, i) => ({
+        id: id(`bar-${i}`), prop: kit.bar, x: Math.round(wall.x + step * (i + 0.5)), y: base + 4, ...atWidth(kit.bar, step + 8), covers: wall,
+      })),
+      blocks: [],
+    };
   }
 
-  return [{ id: id('block'), prop: kit.block, x: cx, y: base + 4, ...atWidth(kit.block, wall.width + 8), covers: wall }];
+  return { props: [{ id: id('block'), prop: kit.block, x: cx, y: base + 4, ...atWidth(kit.block, wall.width + 8), covers: wall }], blocks: [] };
+}
+
+/** Adds a cover's props and blocks to a room's lists. */
+function addCover(props: DressingProp[], blocks: DressingBlock[], cover: Cover): void {
+  props.push(...cover.props);
+  blocks.push(...cover.blocks);
 }
 
 /* ------------------------------------------------------------------------ */
@@ -468,11 +498,12 @@ function openingConcourse(room: WingRoomDefinition): RoomLook {
     { facade: 'music', sign: sign('SPIRAL', NEON.magenta, 'MUSIC · MOVIES · MORE', NEON.pink), spill: 0xff9ae6 },
   ]);
   const props: DressingProp[] = [];
+  const blocks: DressingBlock[] = [];
   interiorWalls(room).forEach((wall, index) => {
     if (isFountainFootprint(wall)) {
       props.push({ id: 'fountain', prop: 'fountain', x: wall.x + wall.width / 2, y: wall.y + wall.height + 8, width: 150, height: 118, covers: wall });
     } else {
-      props.push(...coverWall(wall, index, 'concourse'));
+      addCover(props, blocks, coverWall(wall, index, 'concourse'));
     }
   });
   props.push(
@@ -503,6 +534,7 @@ function openingConcourse(room: WingRoomDefinition): RoomLook {
     ambient: 0x5a4a6e,
     facades,
     props,
+    blocks,
     lights,
     neonStrips: [],
     neonRings: [],
@@ -534,10 +566,11 @@ function storefront(room: WingRoomDefinition): RoomLook {
     };
   });
   const props: DressingProp[] = [];
+  const blocks: DressingBlock[] = [];
   // The furniture's footprints are collision too, but they carry their own art.
   const furniture = CONCOURSE_FURNITURE.flatMap((piece) => (piece.footprint ? [piece.footprint] : []));
   const isFurniture = (wall: Rect) => furniture.some((rect) => rect.x === wall.x && rect.y === wall.y && rect.width === wall.width && rect.height === wall.height);
-  interiorWalls(room).filter((wall) => !isFurniture(wall)).forEach((wall, index) => props.push(...coverWall(wall, index, 'concourse')));
+  interiorWalls(room).filter((wall) => !isFurniture(wall)).forEach((wall, index) => addCover(props, blocks, coverWall(wall, index, 'concourse')));
   props.push(
     { id: 'palm-w', prop: 'palm', x: 70, y: 150, width: 44, height: 67 },
     { id: 'palm-e', prop: 'palm', x: 890, y: 440, width: 44, height: 67 },
@@ -577,6 +610,7 @@ function storefront(room: WingRoomDefinition): RoomLook {
     ambient: 0x4a3e5c,
     facades,
     props,
+    blocks,
     lights,
     neonStrips: [],
     neonRings: [],
@@ -688,6 +722,7 @@ function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null
     ambient: stock.ambient,
     facades: [],
     props,
+    blocks: [],
     lights,
     neonStrips: [],
     neonRings: [],
@@ -728,6 +763,7 @@ function backRoom(): RoomLook {
     ambient: 0x2a2630,
     facades: [],
     props,
+    blocks: [],
     lights,
     neonStrips: [],
     neonRings: [],
@@ -744,7 +780,8 @@ function foodCourt(room: WingRoomDefinition): RoomLook {
     { facade: 'burger', sign: sign('BURGER ORBIT', NEON.cyan, 'OUT OF THIS WORLD', NEON.orange), spill: 0xa0fff0 },
   ]);
   const props: DressingProp[] = [];
-  interiorWalls(room).forEach((wall, index) => props.push(...coverWall(wall, index, 'food_court')));
+  const blocks: DressingBlock[] = [];
+  interiorWalls(room).forEach((wall, index) => addCover(props, blocks, coverWall(wall, index, 'food_court')));
   props.push(
     { id: 'condiments', prop: 'condiments', x: 480, y: 76, width: 46, height: 40 },
     { id: 'vending-1', prop: 'vending', x: 60, y: 120, width: 26, height: 45 },
@@ -764,6 +801,7 @@ function foodCourt(room: WingRoomDefinition): RoomLook {
     ambient: 0x3e3448,
     facades,
     props,
+    blocks,
     lights: [
       ...facadeSpillLights(facades),
       ...doorwayLights(room, NEON.orange),
@@ -784,12 +822,13 @@ function backHall(room: WingRoomDefinition): RoomLook {
     { facade: 'service', sign: sign('NO EXIT', NEON.red, undefined, undefined, 2), spill: 0xb0c8d0 },
   ]);
   const props: DressingProp[] = [];
+  const blocks: DressingBlock[] = [];
   interiorWalls(room).forEach((wall, index) => {
     const vending = BACK_HALL_DAMAGED_VENDING;
     const base = vending.footprint;
     if (wall.x === base.x && wall.y === base.y && wall.width === base.width && wall.height === base.height) {
       props.push({ id: vending.id, prop: 'damagedVending', x: vending.x, y: vending.y, covers: wall });
-    } else props.push(...coverWall(wall, index, 'back_hall'));
+    } else addCover(props, blocks, coverWall(wall, index, 'back_hall'));
   });
   props.push(
     { id: 'cart-abandoned', prop: 'cart', x: 820, y: 452, width: 40, height: 37, flipX: true },
@@ -807,6 +846,7 @@ function backHall(room: WingRoomDefinition): RoomLook {
     ambient: 0x22242e,
     facades,
     props,
+    blocks,
     lights: [
       ...facadeSpillLights(facades).map((light) => ({ ...light, intensity: light.intensity * 0.6 })),
       ...doorwayLights(room, NEON.red),
@@ -827,7 +867,8 @@ function securityOffice(room: WingRoomDefinition): RoomLook {
     { facade: 'security', sign: sign('AUTHORIZED ONLY', NEON.red, undefined, undefined, 2), spill: 0x90ffb0 },
   ]);
   const props: DressingProp[] = [];
-  interiorWalls(room).forEach((wall, index) => props.push(...coverWall(wall, index, 'security_office')));
+  const blocks: DressingBlock[] = [];
+  interiorWalls(room).forEach((wall, index) => addCover(props, blocks, coverWall(wall, index, 'security_office')));
   props.push(
     { id: 'atm', prop: 'atm', x: 900, y: 110, width: 30, height: 49 },
     { id: 'bin', prop: 'bin', x: 70, y: 452, width: 20, height: 27 },
@@ -843,6 +884,7 @@ function securityOffice(room: WingRoomDefinition): RoomLook {
     ambient: 0x1c2a24,
     facades,
     props,
+    blocks,
     lights: [
       ...facadeSpillLights(facades),
       ...doorwayLights(room, NEON.red),
@@ -1039,11 +1081,15 @@ const ROOF_CLUTTER: ReadonlySet<PropId> = new Set<PropId>(['bin', 'crates', 'pil
  * fountain's basin becomes a skylight), keeps the clutter that belongs up
  * here, and drops the mall's furniture.
  */
-function roofProps(props: readonly DressingProp[], room: WingRoomDefinition): DressingProp[] {
-  const covers = interiorWalls(room).flatMap((wall, index) => (isFountainFootprint(wall)
-    ? [{ id: 'skylight', prop: 'skylight' as const, x: wall.x + wall.width / 2, y: wall.y + wall.height + 8, ...atWidth('skylight', 150), covers: wall }]
-    : coverWall(wall, index, 'roof')));
-  return [...covers, ...props.filter((prop) => !prop.covers && ROOF_CLUTTER.has(prop.prop))];
+function roofCover(props: readonly DressingProp[], room: WingRoomDefinition): Cover {
+  const roof: Cover = { props: [], blocks: [] };
+  interiorWalls(room).forEach((wall, index) => {
+    if (isFountainFootprint(wall)) {
+      roof.props.push({ id: 'skylight', prop: 'skylight', x: wall.x + wall.width / 2, y: wall.y + wall.height + 8, ...atWidth('skylight', 150), covers: wall });
+    } else addCover(roof.props, roof.blocks, coverWall(wall, index, 'roof'));
+  });
+  roof.props.push(...props.filter((prop) => !prop.covers && ROOF_CLUTTER.has(prop.prop)));
+  return roof;
 }
 
 function roofLights(room: WingRoomDefinition, facades: readonly DressingFacade[]): PointLight[] {
@@ -1066,7 +1112,7 @@ function roofFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props, room),
+        ...roofCover(plan.props, room),
         areaName: 'ROOF ACCESS',
         facades,
         lights: roofLights(room, facades),
@@ -1088,7 +1134,7 @@ function roofFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props, room),
+        ...roofCover(plan.props, room),
         areaName: 'HVAC YARD',
         facades,
         lights: roofLights(room, facades),
@@ -1102,7 +1148,7 @@ function roofFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props, room),
+        ...roofCover(plan.props, room),
         areaName: 'WATER TOWER',
         ambient: 0x121828,
         facades,
@@ -1117,7 +1163,7 @@ function roofFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
       ]);
       return {
         ...plan, ...roof,
-        props: roofProps(plan.props, room),
+        ...roofCover(plan.props, room),
         areaName: 'HELIPAD',
         facades,
         lights: [...roofLights(room, facades), { x: 760, y: 240, radius: 230, color: NEON.yellow, intensity: 0.45, squash: 0.7, flicker: 'pulse' }],
@@ -1253,7 +1299,7 @@ export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 
 
 function lookOf(room: WingRoomDefinition, floor: FloorNumber, insideStore: number | null, part: 1 | undefined, district: DistrictId | undefined): RoomLook {
   if (room.variantId === 'prop-test' || room.variantId === 'prop-test-return') {
-    return { ...openingConcourse(room), areaName: room.name.toUpperCase(), props: [], neonRings: [], civilians: false };
+    return { ...openingConcourse(room), areaName: room.name.toUpperCase(), props: [], blocks: [], neonRings: [], civilians: false };
   }
   // Round 53: through the suspicious vending machine.
   if (insideStore === SECRET_STORE_INDEX) return backRoom();

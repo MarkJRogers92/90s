@@ -7,6 +7,7 @@ import {
   planRoomDressing,
   type DressingPlan,
 } from '../../src/game/presentation/rooms/roomDressing';
+import { blockArt } from '../../src/game/presentation/rooms/blockArt';
 
 /**
  * Round 58, the owner's visual review of every floor: no neon lines across a
@@ -84,6 +85,33 @@ describe('round 58: props keep their proportions', () => {
           && prop.covers.width === wall.width && prop.covers.height === wall.height);
         expect(covered, `${where} wall ${JSON.stringify(wall)}`).toBe(true);
       }
+    }
+  });
+});
+
+describe('round 58: bars that run away from the camera', () => {
+  it('are drawn as a block fitted to the collision, not a ladder of sprites', () => {
+    for (const { where, plan, room } of PLANS) {
+      if (plan.themeId === 'store_interior') continue;
+      for (const wall of interiorWalls(room).filter((candidate) => candidate.height >= candidate.width * 2)) {
+        const block = plan.blocks.find((candidate) => candidate.covers === wall);
+        expect(block, `${where} wall ${JSON.stringify(wall)}`).toBeDefined();
+        const standing = plan.props.filter((prop) => prop.covers === wall);
+        expect(standing.length, where).toBeLessThanOrEqual(Math.round(wall.height / 110) + 1);
+      }
+    }
+  });
+
+  it('paints a block exactly over its collision, top face lifted and near face below', () => {
+    const covers = { x: 180, y: 110, width: 30, height: 260 };
+    for (const material of ['planterBed', 'concrete', 'duct'] as const) {
+      const art = blockArt(material, covers, 16);
+      const all = [...art.top, ...art.front];
+      expect(Math.min(...all.map((p) => p.x))).toBe(covers.x - 1);
+      expect(Math.max(...all.map((p) => p.x + p.width))).toBe(covers.x + covers.width + 1);
+      expect(Math.max(...art.front.map((p) => p.y + p.height))).toBe(covers.y + covers.height + 1);
+      expect(Math.min(...art.top.map((p) => p.y))).toBe(covers.y - 16 - 1);
+      expect(blockArt(material, covers, 16)).toEqual(art);
     }
   });
 });

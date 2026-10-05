@@ -29,9 +29,11 @@ import {
   STAGE_TOP,
   STAGE_WIDTH,
   planRoomDressing,
+  type DressingBlock,
   type DressingPlan,
   type DressingProp,
 } from '../presentation/rooms/roomDressing';
+import { blockArt } from '../presentation/rooms/blockArt';
 import { croppedFrameOrigin } from './ActorSpriteView';
 import { ConcourseAmbience, type ConcourseAmbienceSnapshot, type ConcourseCivilianLane } from './ConcourseAmbience';
 import {
@@ -89,6 +91,7 @@ export class MallRoomView {
   private readonly glow: Layer;
   private readonly effectLayer: Phaser.GameObjects.Layer;
   private readonly sortedProps: Phaser.GameObjects.Image[] = [];
+  private readonly blockFaces: Phaser.GameObjects.Graphics[] = [];
   private readonly pulsing: Array<{ object: Phaser.GameObjects.Image; base: number; seed: number }> = [];
   /** Props with ambient life (see propAmbience.ts), animated in `render`. */
   private readonly animatedProps: Array<{
@@ -224,6 +227,7 @@ export class MallRoomView {
     this.buildSideWalls(this.interior ? { ...room, doorways: [] } : room);
     if (this.interior) this.buildStoreFrontWall();
     else this.buildRailing();
+    this.plan.blocks.forEach((block, index) => this.placeBlock(block, index));
     for (const prop of this.plan.props) this.placeProp(prop);
     if (room.benchKiosk) {
       // The Bench Warrant is a repair desk you can walk up to; the older
@@ -421,6 +425,18 @@ export class MallRoomView {
     }
     railing.fillStyle(0xb8c8d8, 1).fillRect(0, y - 11, STAGE_WIDTH, 2);
     railing.fillStyle(0x5a6a80, 1).fillRect(0, y - 9, STAGE_WIDTH, 1);
+  }
+
+  /** A bar running away from the camera: its top under the actors, its near face sorted with them. */
+  private placeBlock(block: DressingBlock, index: number): void {
+    const art = blockArt(block.material, block.covers, block.lift, index + 1);
+    const top = this.graphics(this.lowProp);
+    for (const pixel of art.top) top.fillStyle(pixel.color, 1).fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
+    const base = block.covers.y + block.covers.height;
+    const front = this.scene.add.graphics().setDepth(presentationDepth('actor', base));
+    for (const pixel of art.front) front.fillStyle(pixel.color, 1).fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
+    front.fillStyle(0x000000, 0.35).fillRect(block.covers.x - 1, base + 1, block.covers.width + 2, 3);
+    this.blockFaces.push(front);
   }
 
   private placeProp(prop: DressingProp): void {
@@ -797,6 +813,8 @@ export class MallRoomView {
       layer.destroy(true);
     }
     for (const image of this.sortedProps) image.destroy();
+    for (const face of this.blockFaces) face.destroy();
+    this.blockFaces.length = 0;
     this.sortedProps.length = 0;
     this.animatedProps.length = 0;
     this.framedProps.length = 0;
