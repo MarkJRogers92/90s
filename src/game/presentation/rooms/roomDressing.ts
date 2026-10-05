@@ -15,7 +15,7 @@
  */
 import type { Rect } from '../../../sim/model';
 import type { WingRoomDefinition } from '../../../sim/wing/types';
-import { CONCOURSE_FURNITURE, INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_XS, roomStores } from '../../../sim/run/storeInterior';
+import { BACK_HALL_DAMAGED_VENDING, CONCOURSE_FURNITURE, INTERIOR_BOUNDS, INTERIOR_EXIT, STORE_ENTRANCE_XS, roomStores } from '../../../sim/run/storeInterior';
 import type { WingStoreInstance } from '../../../sim/wing/types';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
 import type { PointLight } from '../lighting/LightingLayer';
@@ -115,6 +115,11 @@ export const PROP_TEXTURES = {
   // Round 31: PixelLab animate_image strips (9 frames, frame 0 the original sprite).
   arcadeCabinet: { key: 'neon:prop:arcade-cabinet-anim', file: 'props/arcade-cabinet-anim.png', width: 27, height: 59, frames: 9 },
   clawMachine: { key: 'neon:prop:claw-machine-anim', file: 'props/claw-machine-anim.png', width: 32, height: 57, frames: 9 },
+  // Untrimmed cells: preserve the authored floor pivot, not the canvas bottom.
+  damagedVending: {
+    key: 'neon:prop:damaged-vending-flicker', file: 'props/damaged-vending-flicker.png', width: 96, height: 96, frames: 4,
+    pivot: { x: 48, y: 89 }, bounds: { x: 27, y: 9, width: 44, height: 81 },
+  },
   vending: { key: 'neon:prop:vending-machine', file: 'legacy-props/vending-machine.png', width: 22, height: 38 },
   payphone: { key: 'neon:prop:payphone', file: 'legacy-props/payphone.png', width: 31, height: 63 },
   atm: { key: 'neon:prop:atm', file: 'legacy-props/atm.png', width: 29, height: 47 },
@@ -786,7 +791,13 @@ function backHall(room: WingRoomDefinition): DressingPlan {
     { facade: 'service', sign: sign('NO EXIT', NEON.red, undefined, undefined, 2), spill: 0xb0c8d0 },
   ]);
   const props: DressingProp[] = [];
-  interiorWalls(room).forEach((wall, index) => props.push(...coverWall(wall, index, 'back_hall')));
+  interiorWalls(room).forEach((wall, index) => {
+    const vending = BACK_HALL_DAMAGED_VENDING;
+    const base = vending.footprint;
+    if (wall.x === base.x && wall.y === base.y && wall.width === base.width && wall.height === base.height) {
+      props.push({ id: vending.id, prop: 'damagedVending', x: vending.x, y: vending.y, covers: wall });
+    } else props.push(...coverWall(wall, index, 'back_hall'));
+  });
   props.push(
     { id: 'cart-abandoned', prop: 'cart', x: 820, y: 452, width: 40, height: 37, flipX: true },
     { id: 'wetfloor', prop: 'wetFloor', x: 130, y: 90, width: 20, height: 17 },

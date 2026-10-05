@@ -14,7 +14,11 @@ A severely damaged 1990s mall vending prop: crushed red shell, cracked glass, to
 - Individual PNGs: `frames/`
 - Review: `review/native-1x-2x.png`, `review/animation.gif`, self-contained `review/preview.html`
 
-This is an asset addition only. It is not registered or placed into scenes, and it changes no gameplay or simulation behavior.
+The original asset-only addition is now wired into the normal Floor 1 Back Hall at (84,132).
+It is inert furniture with a 36×14 floor collision footprint, native 1× scale and pivot (48,89).
+The game tick samples the authored light cycle; Reduced Flashes holds frame 0.
+First wings, districts, upstairs rooms, stores and test fixtures retain their existing content.
+No interaction or loot behavior is added.
 
 ## Conversion and verification
 
@@ -24,7 +28,7 @@ The native body and alpha silhouette come from frame 0 and stay exact. Only sign
 
 Palette mapping, alpha thresholding and reduction are lossy. Fine high-resolution texture is removed. The source, coordinates and losses are recorded in `conversion-manifest.json`; generation and dependency provenance are in `provenance.json`.
 
-All four frames have bounds `[27,9,71,90]`, no partial alpha and no isolated pixels. The exact identity/palette/baseline/height checks in `native-checks.json` pass. Changed pixels versus frame 0 are `[0,57,10,0]`, all within the 65-pixel editable-light mask. Native ordered-frame visual review found no blockers. GIF frames and timing were decoded and verified. Game-engine playback is not tested because this addition does not activate the asset.
+All four frames have bounds `[27,9,71,90]`, no partial alpha and no isolated pixels. The exact identity/palette/baseline/height checks in `native-checks.json` pass. Changed pixels versus frame 0 are `[0,57,10,0]`, all within the 65-pixel editable-light mask. Native ordered-frame visual review found no blockers. GIF frames and timing were decoded and verified. Production renderer tests verify frame selection, scale, pivot, depth and Reduced Flashes. Live browser/game-engine playback remains untested because of the cloud browser/socket restriction.
 
 ## Rebuild and test
 
