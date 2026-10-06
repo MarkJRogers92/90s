@@ -1,5 +1,16 @@
 # Status
 
+## 2026-10-06 — Frame-attached grips and three native laser effects (draft; live visual review pending)
+
+Branch `codex/frame-grips-laser-pilot`, based on `6d3f90d`. This is the owner's bounded first batch: all 80 primary weapon grips, then Laser Pointer, Laser Tag Rifle and Light-Up Laser Sword. No simulation, balance, firing timing or fusion-rule changes.
+
+- Held items now use the displayed sprite's palm through its actual crop origin, bob/lunge, hurt/dash pose, scale and rotation. Overlap follows the displayed body frame rather than the swinging weapon angle. Existing icon grip/head metadata and continuous aiming remain in use.
+- `alexHandAnchors.ts` measures 280 frames across six neon and two legacy Alex sheets. Conservative 3×3 original-palm crops restore fingers over foreground weapons. Five fully hidden palms are explicitly inferred, and existing action-sheet facing reuse is documented in `art/weapon-grips/README.md`. Actor source PNGs are unchanged.
+- New local pixel effects: a finite thin red/white Pointer segment, chunky segmented cyan Rifle bolts, and a Sword slash ribbon attached to the current blade tip. Projectile flight/count, damage and clocks are unchanged. Reproducible Forge JSON/source is under `art/weapon-effects/laser-pilot/`.
+- Native coverage is now 34/80 (5 melee, 20 sprite projectiles, 9 thrown icons); 46 remain. Do not start the remaining batch without the next review.
+- Verified: 2,089 unit/integration tests in 189 files; typecheck/build; all 240 fixed-seed gameplay traces match the committed baseline. New regressions were observed failing before their fixes.
+- **Not visually accepted:** local Chromium aborts on a sandbox socket permission error; the supported cloud browser blocks the local preview. Browser tests/capture harness are checked in but have not run through gameplay. Static source-anchor sheets are not in-game captures. See `artifacts/weapon-grip-pilot/BROWSER_BLOCKER.md` and `TEST_EVIDENCE.md`.
+
 ## 2026-10-05 — Round 58: a visual review of every floor (branch `claude/floor-visual-review`)
 
 Built on `origin/main` (`90204ab`), merged as PR #73 (`7fceed6`). The owner's review: lines across the top of

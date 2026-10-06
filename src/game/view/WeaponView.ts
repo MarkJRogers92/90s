@@ -21,6 +21,15 @@ export const SWING_VISUAL_TICKS = 16;
 /** How far the outstretched hands reach in alex-aim.png (24 px from the body centre, less the grip). */
 export const AIM_POSE_REACH = 22;
 
+/** World-space palm resolved from the body frame that was actually drawn. */
+export type HeldHandAttachment = {
+  readonly x: number;
+  readonly y: number;
+  readonly behind: boolean;
+  readonly depth: number;
+  readonly alpha: number;
+};
+
 const SMEAR_COLOR: Readonly<Record<string, number>> = {
   janitor_mop: 0xbfe8ff,
   broken_broom_handle: 0xffd9a0,
@@ -39,6 +48,7 @@ export type WeaponSnapshot = {
   readonly delivery: 'direct' | 'projectile';
   readonly range: number;
   readonly halfAngleRadians: number;
+  readonly attachment?: HeldHandAttachment | null;
 };
 
 /** Pure: swing progress 0..1 for a swing that started at `startTick`, or null when idle. */
@@ -151,11 +161,14 @@ export class WeaponView {
     const base = (weaponPresentation(weapon.definitionId).heldSize ?? (weapon.delivery === 'direct' ? 40 : 28)) / size;
     const transform = heldWeaponTransform({
       definitionId: weapon.definitionId, aimAngle: angle,
-      gripX: Math.round(weapon.x + Math.cos(angle) * reach),
-      gripY: Math.round(weapon.y - 20 + Math.sin(angle) * reach * 0.8),
+      // Keep subpixels: rounding independently from the body makes the grip
+      // chatter during a bob, flinch, or scaled/rotated pose.
+      gripX: weapon.attachment?.x ?? Math.round(weapon.x + Math.cos(angle) * reach),
+      gripY: weapon.attachment?.y ?? Math.round(weapon.y - 20 + Math.sin(angle) * reach * 0.8),
       scale: base * scale,
     });
     this.heldTransform = transform;
+    this.held.alpha = weapon.attachment?.alpha ?? 1;
     this.held
       .setVisible(true)
       .setOrigin(transform.originX, transform.originY)
@@ -163,8 +176,11 @@ export class WeaponView {
       .setRotation(transform.rotation)
       .setScale(transform.scale)
       .setFlipY(transform.flipY)
-      // Behind the janitor when pointing up the screen, in front otherwise.
-      .setDepth(Math.sin(angle) < -0.2 ? actorDepth - 1 : actorDepth + 1);
+      // Use the displayed palm's layer, even during a cross-body swing or a
+      // dash whose facing differs from the continuously aimed weapon.
+      .setDepth(weapon.attachment
+        ? weapon.attachment.depth + (weapon.attachment.behind ? -1 : 1)
+        : Math.sin(angle) < -0.2 ? actorDepth - 1 : actorDepth + 1);
   }
 
   /** The crescent the swing leaves: exactly the cone the simulation checks. */
@@ -212,8 +228,8 @@ export class WeaponView {
   }
 
   /** Current image geometry, including its actual visible head/nozzle position. */
-  public headAt(): HeldWeaponTransform | null {
-    return this.heldTransform;
+  public headAt(): (HeldWeaponTransform & { readonly imageDepth: number }) | null {
+    return this.heldTransform ? { ...this.heldTransform, imageDepth: this.held.depth } : null;
   }
 
   public hide(): void {

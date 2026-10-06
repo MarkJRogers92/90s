@@ -1,5 +1,38 @@
 # Test evidence
 
+## 2026-10-06 — Frame-attached grips + three laser effects (draft; browser acceptance blocked)
+
+Base: `6d3f90da32f44f05d4f13cc4e12dc3aebca47e81`. Branch: `codex/frame-grips-laser-pilot`.
+Presentation-only; `src/sim` is unchanged. No balance tuning, main merge or deployment.
+
+### Checks actually run
+
+- Untouched baseline: `npm test` — **1,967/1,967**, 186 files.
+- Final `npm test` — **2,089/2,089**, 189 files (log: `artifacts/weapon-grip-pilot/unit-final.log`).
+- `npm run build` — TypeScript and production Vite build pass (same directory, `build-final.log`). The existing large-bundle warning remains; npm also reports the environment's `http-proxy` warning.
+- `npm exec -- vitest run --config diagnostics/weapon-visuals/vitest.config.ts` — pass; all **240** traces (80 weapons × seeds 1, 7, 42 × 420 ticks) match the committed baseline. The baseline was not rewritten (`replay-final.log`).
+- `node --check scripts/weapon-grip-capture.mjs` and `git diff --check` pass. No project lint command is defined.
+- Re-running `art/weapon-effects/laser-pilot/build_laser_effects.py` reproduced all 37 generated source/runtime files byte-identically. Runtime PNGs and annotated source-anchor sheets were inspected as static art, not live game captures.
+
+### Regression evidence
+
+- Before the attachment fix, held gun and melee tests returned invented radial grip points instead of supplied transformed palms (2 expected failures). Fixed tests pass.
+- Before frame transform/resolver implementation, body crop/origin/bob/lunge/pose tests failed; the implemented resolver passes every authored sheet/frame. All **280** anchors are checked against the actual source PNG dimensions, opaque pixels and pinned source hashes. Five hidden palms remain explicitly inferred; 221 tiny palm-patch candidates are audited.
+- All **80** weapon roots × **8** continuous aim directions, including nested fusions, preserve actual icon grips at the provided hand, follow body-layer depth and carry hurt opacity. Missing texture, swap, reset, timing and effect composition checks remain green.
+- The Night Shift wiring regression was run with the attachment handoff removed, observed failing, restored and passed. Old constructor-bypassing integration fixtures were updated to include the actor-sprite map.
+- Three laser-effect tests: **16 expected failures** before implementation, then pass. They check pixel/source parity, distinct finite silhouettes, stable projectile brightness, fusion precedence, preloading, actual flight/count, head attachment and cleanup.
+- Independent review found duplicate translucent-palm overdraw during hurt flicker. A new test failed first, then passed after suppressing palm overlays while body alpha is below one.
+
+One concurrent full-suite run timed out in `balance-expert.test.ts` (5 s timeout, not a changed assertion). The isolated file passed 4/4 and the later full suite above passed without exclusions. Earlier integration fixture failures were fixed before the final run. Retained logs distinguish those attempts from the final pass.
+
+### Browser and visual acceptance: not run successfully
+
+Chromium aborts before opening a page with `process_singleton_posix.cc:297: socket() failed: Operation not permitted (1)` in this executor, including the approved escalated attempt. The supported cloud browser returned `net::ERR_BLOCKED_BY_CLIENT` for the running local preview. No security setting or network-policy bypass was attempted.
+
+The new seven-test browser suite and capture script are checked in, but neither a gameplay-level browser RED/GREEN cycle nor native gameplay screenshots/contact sheets/motion clips were produced. Existing relevant browser suites were not run to completion for the same launch blocker. See `artifacts/weapon-grip-pilot/BROWSER_BLOCKER.md` for commands to run on a permitted executor.
+
+**Remaining review limits:** five hidden palms and reused facing rows are inherited source-art constraints. Phaser roundPixels/safeAuto may snap body pixels differently from scaled/rotated weapon pixels, leaving subpixel raster discrepancies. Logical debug-coordinate equality is not zero rendered-pixel error. Inspect this in native-scale motion before visual acceptance; shared raster rounding is deferred. The remaining 46 native effects are outside this approved batch.
+
 ## 2026-10-06 — Bargain Hunter west flinch seen live (PR #74)
 
 Ran `tests/browser/hunter-hurt-review.spec.ts` (from #70) in Chromium from this branch, merged with main

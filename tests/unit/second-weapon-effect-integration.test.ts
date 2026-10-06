@@ -14,7 +14,7 @@ vi.mock('phaser', () => ({ default: { Math: { Vector2: class { constructor(publi
 // effect and run-view code chooses the anchors, release and cleanup behavior.
 class ImageSurface {
   texture: { key: string }; width = 32; height = 32;
-  x = 0; y = 0; rotation = 0; scaleX = 1; scaleY = 1; originX = .5; originY = .5; flipY = false; alpha = 1; visible = true; destroyed = false;
+  depth = 0; x = 0; y = 0; rotation = 0; scaleX = 1; scaleY = 1; originX = .5; originY = .5; flipY = false; alpha = 1; visible = true; destroyed = false;
   constructor(key: string) { this.texture = { key }; }
   setTexture(key: string) { this.texture.key = key; return this; }
   setPosition(x: number, y: number) { this.x = x; this.y = y; return this; }
@@ -24,7 +24,7 @@ class ImageSurface {
   setFlipY(v: boolean) { this.flipY = v; return this; }
   setAlpha(v: number) { this.alpha = v; return this; }
   setVisible(v: boolean) { this.visible = v; return this; }
-  setDepth() { return this; } setCrop() { return this; }
+  setDepth(depth: number) { this.depth = depth; return this; } setCrop() { return this; }
   destroy() { this.destroyed = true; this.visible = false; }
   point(x: number, y: number) {
     const dx = (x - this.originX * this.width) * this.scaleX;
@@ -44,7 +44,7 @@ function setup() {
   }
   const weapon = new WeaponView(scene), weaponEffects = new WeaponEffectView(scene);
   return { images, marks, weapon, weaponEffects, g: g as unknown as Phaser.GameObjects.Graphics,
-    context: { weapon, weaponEffects, openingConcourse: null } };
+    context: { weapon, weaponEffects, actorSprites: new Map(), openingConcourse: null } };
 }
 const ids = ['broken_broom_handle', 'box_cutter', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher'] as const;
 const drawPlayer = Reflect.get(MvpRunView.prototype, 'drawPlayer') as (state: MvpRunState, g: Phaser.GameObjects.Graphics, effects: Phaser.GameObjects.Graphics, drawBody: boolean) => void;
@@ -95,4 +95,15 @@ describe('second-slice real held/effect composition', () => {
     expect(images[0]!.visible).toBe(true);
     expect(images[1]!.visible).toBe(false);
   });
+});
+
+
+it('passes the current displayed body palm through the Night Shift held-weapon/effect composition', () => {
+  const { context, g, weapon, weaponEffects } = setup();
+  const palm = { x: 81.125, y: 53.75, behind: true, depth: 100, alpha: .45 };
+  context.actorSprites.set('player', { handAt: () => palm });
+  weaponEffects.beginFrame('room', 10);
+  drawPlayer.call(context, state('party_popper', 0, 10), g, g, false);
+  expect(weapon.headAt()!.grip).toEqual({ x: palm.x, y: palm.y });
+  expect(weapon.headAt()!.imageDepth).toBe(99);
 });

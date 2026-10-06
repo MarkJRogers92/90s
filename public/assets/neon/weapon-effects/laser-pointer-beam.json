@@ -1,0 +1,110 @@
+{
+  "name": "laser-pointer-beam",
+  "description": "Needle-thin finite red beam segment with a steady white core; travels with the real projectile.",
+  "frameWidth": 32,
+  "frameHeight": 12,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    12
+  ],
+  "pivotPixels": [
+    16,
+    6
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    50,
+    50,
+    50,
+    50
+  ],
+  "sourcePalette": {
+    "d": "#752339",
+    "m": "#ef4057",
+    "l": "#ff9696",
+    "h": "#ffeeea"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "source": "art/weapon-effects/laser-pilot/laser-pointer-beam/forge",
+  "rebuild": "python3 art/weapon-effects/laser-pilot/build_laser_effects.py",
+  "iconsInspected": [
+    {
+      "name": "laser-pointer",
+      "sha256": "70374d15b1a27e0f2dbbf8fb9eae2eee78f53632690ac0f97fad602b60298bb8"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        8
+      ],
+      "opaquePixels": 65,
+      "rgbaSha256": "e498cec058a7b811c57d92ad25169c17c108295a6dea71bcf2025fcd27e7b035",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        8
+      ],
+      "opaquePixels": 65,
+      "rgbaSha256": "95705fda9818f7bf76e3191baa7d58f8cfa4a869f4bae77428606502f28ebbf9",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        8
+      ],
+      "opaquePixels": 65,
+      "rgbaSha256": "00e77a90cc5359bb4d7b75c82779af9a303c6d7927688812549ad304a7f8ba18",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        8
+      ],
+      "opaquePixels": 65,
+      "rgbaSha256": "70f6fd1673d01afa57b19333ff4f03d18592c4c29a22056ea9472ddfe5deb1cf",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

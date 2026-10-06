@@ -94,6 +94,9 @@ export class WeaponEffectView {
     // Thrown media, foam balls and nails retain their flash-free presentation.
     const water = art === WEAPON_EFFECT_ART.soaker || art === WEAPON_EFFECT_ART.hose || art === WEAPON_EFFECT_ART.soda || art === WEAPON_EFFECT_ART.shower;
     const release = water ? { width: 32, tailX: 4, scale: 0.55, ticks: 3 }
+      // A tiny piece of the laser's own core. No radial flash, additive bloom
+      // or flashing light; the finite projectiles still travel independently.
+      : art === WEAPON_EFFECT_ART.laserPointer || art === WEAPON_EFFECT_ART.laserTag ? { width: 12, tailX: 4, scale: 0.7, ticks: 2 }
       : art === WEAPON_EFFECT_ART.confetti ? { width: 24, tailX: 4, scale: 0.4, ticks: 2 }
       : art === WEAPON_EFFECT_ART.rocket ? { width: 10, tailX: 2, scale: 0.65, ticks: 2 }
       : art === WEAPON_EFFECT_ART.extinguisher || art === WEAPON_EFFECT_ART.hairspray || art === WEAPON_EFFECT_ART.flea

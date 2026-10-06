@@ -2,6 +2,8 @@ import Phaser from 'phaser';
 import { ACTOR_TEXTURE_KEYS, ENEMY_TEXTURE_KEYS, type ActorTextureKey } from '../presentation/assets';
 import { actorVisualState } from './visualState';
 import { flashAllowed, gameSettings } from '../settings/settings';
+import { alexHandAnchor } from './alexHandAnchors';
+import type { HeldHandAttachment } from './WeaponView';
 
 /** Round 39 display sizes: chosen so the figures match the Mascot's and the Owner's on screen. */
 export const ROOFER_DISPLAY_SIZE = 108;
@@ -357,6 +359,7 @@ export class ActorSpriteView {
   private readonly sprite: Phaser.GameObjects.Image;
   private textureKey: string;
   private crop = { x: 0, y: 0, w: 0, h: 0 };
+  private handOverlay: Phaser.GameObjects.Image | null = null;
 
   public constructor(scene: Phaser.Scene, spec: SpriteSpec) {
     this.scene = scene;
@@ -373,7 +376,7 @@ export class ActorSpriteView {
     spec: SpriteSpec,
     pose: ActorPose = NEUTRAL_POSE,
   ): boolean {
-    if (!usable) { this.sprite.setVisible(false); return false; }
+    if (!usable) { this.sprite.setVisible(false); this.handOverlay?.setVisible(false); return false; }
     if (this.textureKey !== spec.textureKey) {
       this.sprite.setTexture(spec.textureKey);
       this.textureKey = spec.textureKey;
@@ -398,6 +401,27 @@ export class ActorSpriteView {
     );
     this.sprite.setOrigin(origin.x, origin.y);
     this.sprite.setRotation(visual.attackLean ? 0.08 : 0);
+    // Restore a few original finger pixels over a foreground weapon. Never
+    // repaint the sleeve/torso, or cover an item already behind the body.
+    const anchor = alexHandAnchor(this.textureKey, frame);
+    // Duplicate translucent source pixels would become more opaque than the
+    // rest of Alex. During invulnerability flicker use the original hand only.
+    const patch = !anchor?.behind && this.sprite.alpha === 1 ? anchor?.handPatch : null;
+    if (patch) {
+      this.handOverlay ??= this.scene.add.image(0, 0, this.textureKey);
+      this.handOverlay.setTexture(this.textureKey)
+        .setCrop(this.crop.x + patch.x, this.crop.y + patch.y, patch.width, patch.height)
+        .setOrigin(this.sprite.originX, this.sprite.originY)
+        .setPosition(this.sprite.x, this.sprite.y)
+        .setScale(this.sprite.scaleX, this.sprite.scaleY)
+        .setRotation(this.sprite.rotation)
+        .setAlpha(this.sprite.alpha)
+        .setDepth(depth + 2)
+        .setVisible(true);
+      if (pose.flash) this.handOverlay.setTint(0xffffff).setTintMode(TINT_FILL);
+      else if (pose.tint !== undefined) this.handOverlay.setTint(pose.tint).setTintMode(TINT_ADD);
+      else this.handOverlay.clearTint();
+    } else this.handOverlay?.setVisible(false);
     return true;
   }
 
@@ -412,7 +436,24 @@ export class ActorSpriteView {
       .setDepth(this.sprite.depth - 1);
   }
 
-  public destroy(): void { this.sprite.destroy(); }
+  /** Resolve authored frame pixels using the very same image transform as Phaser. */
+  public framePointAt(point: { readonly x: number; readonly y: number }): { x: number; y: number } | null {
+    if (!this.sprite.visible) return null;
+    const x = (this.crop.x + point.x - this.sprite.originX * this.sprite.width) * this.sprite.scaleX;
+    const y = (this.crop.y + point.y - this.sprite.originY * this.sprite.height) * this.sprite.scaleY;
+    const c = Math.cos(this.sprite.rotation), s = Math.sin(this.sprite.rotation);
+    return { x: this.sprite.x + x * c - y * s, y: this.sprite.y + x * s + y * c };
+  }
+
+  /** Palm from the current source sheet/frame, including dash and hurt overrides. */
+  public handAt(): HeldHandAttachment | null {
+    if (!this.sprite.visible) return null;
+    const anchor = alexHandAnchor(this.textureKey, { row: this.crop.y / this.crop.h, column: this.crop.x / this.crop.w });
+    const point = anchor && this.framePointAt(anchor);
+    return point && anchor ? { ...point, behind: anchor.behind, depth: this.sprite.depth, alpha: this.sprite.alpha } : null;
+  }
+
+  public destroy(): void { this.handOverlay?.destroy(); this.sprite.destroy(); }
 }
 
 function directionUnit(direction: ActorDirection): { x: number; y: number } {

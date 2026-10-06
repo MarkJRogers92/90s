@@ -29,8 +29,7 @@
     "figure_skate",
     "skate_lace",
     "pretzel_rod",
-    "power_glove",
-    "lightsaber_toy"
+    "power_glove"
   ],
   "projectile": [
     "paint_marker",
@@ -38,7 +37,6 @@
     "tennis_ball_launcher",
     "staple_gun",
     "slingshot",
-    "laser_pointer",
     "boombox",
     "rc_blimp_remote",
     "camcorder",
@@ -49,7 +47,6 @@
     "seed_spreader",
     "cocoa_thermos",
     "marshmallow_shooter",
-    "game_brick",
-    "laser_tag_rifle"
+    "game_brick"
   ]
 }

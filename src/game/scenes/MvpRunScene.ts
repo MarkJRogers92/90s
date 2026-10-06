@@ -1245,7 +1245,7 @@ export class MvpRunScene extends Phaser.Scene {
       state.room.combat.player.y = SHORTCUT_HATCH.y + 30;
       return state;
     }
-    if (fixture === 'mvp-arsenal' || fixture === 'mvp-thrown' || fixture === 'mvp-water' || fixture === 'mvp-spray') {
+    if (fixture === 'mvp-arsenal' || fixture === 'mvp-thrown' || fixture === 'mvp-water' || fixture === 'mvp-spray' || fixture === 'mvp-grip-pilot') {
       // The food court fight holding every weapon and the visible modifiers,
       // so each weapon's look and each status effect can be seen (keys 1-9).
       // mvp-thrown, mvp-water and mvp-spray hold those weapon families instead (roadmap V3).
@@ -1256,20 +1256,26 @@ export class MvpRunScene extends Phaser.Scene {
         tickMvpRun(state, { moveX: 0, moveY: 0, aimX: state.room.combat.player.x, aimY: state.room.combat.player.y, fire: false, interact: false, steal: false, recall: false });
         if (!enterDoorway(state, 'east').accepted) break;
       }
-      const ids = fixture === 'mvp-thrown'
+      const gripPilot = fixture === 'mvp-grip-pilot';
+      const ids = gripPilot
+        ? ['janitor_mop', 'box_cutter', 'super_soaker_50', 'laser_pointer', 'laser_tag_rifle', 'lightsaber_toy']
+        : fixture === 'mvp-thrown'
         ? ['dodgeball', 'football', 'pog_slammer', 'laserdisc', 'jawbreaker', 'squeaky_toy', 'garden_gnome', 'hockey_puck']
         : fixture === 'mvp-water'
           ? ['garden_hose', 'super_soaker_50', 'super_soaker_cps', 'soda_gun', 'watering_can', 'water_balloons']
           : fixture === 'mvp-spray'
             ? ['hairspray', 'flea_spray', 'ketchup_bottle', 'whoopee_cushion', 'fire_extinguisher']
             : ['pump_soaker', 'party_popper', 'bottle_rocket_pack', 'fire_extinguisher', 'paint_marker', 'foam_ball_blaster', 'slushie_cup', 'box_cutter', 'broken_broom_handle', 'grease_gun', 'plasma_globe', 'extension_cord'];
+      const requestedGripWeapon = new URLSearchParams(window.location.search).get('gripWeapon');
+      const selected = gripPilot && requestedGripWeapon && ids.includes(requestedGripWeapon) ? requestedGripWeapon : ids[0];
+      const instancePrefix = gripPilot ? 'grip' : 'dev';
       state.inventory = {
         ...state.inventory,
         inventory: [
-          ...state.inventory.inventory,
-          ...ids.map((id): InventoryLeaf => ({ kind: 'leaf', instanceId: `dev-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: state.tick })),
+          ...(gripPilot ? [] : state.inventory.inventory),
+          ...ids.map((id): InventoryLeaf => ({ kind: 'leaf', instanceId: `${instancePrefix}-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: state.tick })),
         ],
-        selectedPrimaryInstanceId: `dev-${ids[0]}`,
+        selectedPrimaryInstanceId: `${instancePrefix}-${selected}`,
         revision: state.inventory.revision + 1,
       };
       refreshRunLoadout(state);
@@ -1288,6 +1294,16 @@ export class MvpRunScene extends Phaser.Scene {
       state.room.combat.enemies = targets;
       state.room.combat.player.x = 300;
       state.room.combat.player.y = 235;
+      if (gripPilot) {
+        // Read-only presentation QA uses normal inputs. A separate variant
+        // lets an ordinary Spitter attack land; no debug damage/pose mutation.
+        state.room.combat.player.health = 20;
+        if (new URLSearchParams(window.location.search).get('gripHurt') === '1' && targets[0]) {
+          targets[0].x = 500;
+          targets[0].y = 235;
+          targets[0].phaseTicks = 20;
+        }
+      }
       return state;
     }
     if (fixture === 'mvp-workbench') {

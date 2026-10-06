@@ -1,5 +1,14 @@
 # Next session
 
+## First: review the frame-grip / laser pilot before expanding it (2026-10-06)
+
+`codex/frame-grips-laser-pilot` is a draft implementation, not live visual acceptance. The core tests/build and 240 unchanged gameplay traces pass. Chromium cannot start in the current cloud sandbox, and the cloud browser blocks its localhost preview.
+
+On a supported computer, run the checked-in `tests/browser/weapon-grip-pilot.spec.ts` and `scripts/weapon-grip-capture.mjs`; commands and the exact blocker are in `artifacts/weapon-grip-pilot/BROWSER_BLOCKER.md`. Run relevant existing presentation/night-shift browser specs too. Inspect native-scale all-direction contact sheets, continuous-fire walking/backpedalling, dash across aim, hurt, large/small/two-handed weapons and the three laser effects. The new browser harness itself still needs its first successful runtime check.
+
+Five palm locations are inferred under hidden source-art hands; swing/hurt sheets reuse several facing rows. The preserved source art and annotated sheets are documented in `art/weapon-grips/README.md`. Review those cases rather than mistaking numeric grip equality for visual approval. The remaining 46 native effects need the owner's next review before work expands.
+
+
 ## Round 58 (2026-10-05): start here
 
 Round 58 (PR #73, merged) is the owner's visual review of every floor. What it does:

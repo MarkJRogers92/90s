@@ -36,6 +36,11 @@ export const WEAPON_EFFECT_ART = {
   flea: art('flea-mist', 32, 24, 6, 16, 12, true, 5, 0.6, 6),
   ketchup: art('ketchup-squirt', 32, 24, 6, 16, 12, true, 4, 0.55, 5),
   whoopee: art('whoopee-puff', 32, 24, 6, 16, 12, true, 8, 0.75, 8),
+  // Finite moving segments, never a muzzle-to-target hitscan line. The rifle
+  // gets one thicker segmented body per existing simulation projectile.
+  laserPointer: art('laser-pointer-beam', 32, 12, 4, 16, 6, true, 2, 0.9, 3),
+  laserTag: art('laser-tag-bolt', 32, 16, 4, 16, 8, true, 3, 1, 5),
+  laserSword: art('laser-sword-slash', 64, 48, 6, 48, 24, true, 1, 0.8, 12),
 } as const;
 
 export function meleeEffect(definitionId: string): WeaponEffectArt | null {
@@ -43,7 +48,8 @@ export function meleeEffect(definitionId: string): WeaponEffectArt | null {
   return root === 'janitor_mop' ? WEAPON_EFFECT_ART.mop
     : root === 'golden_mop' ? WEAPON_EFFECT_ART.goldenMop
     : root === 'broken_broom_handle' ? WEAPON_EFFECT_ART.broom
-    : root === 'box_cutter' ? WEAPON_EFFECT_ART.cutter : null;
+    : root === 'box_cutter' ? WEAPON_EFFECT_ART.cutter
+    : root === 'lightsaber_toy' ? WEAPON_EFFECT_ART.laserSword : null;
 }
 
 const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
@@ -57,6 +63,7 @@ const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
   watering_can: WEAPON_EFFECT_ART.shower,
   hairspray: WEAPON_EFFECT_ART.hairspray, flea_spray: WEAPON_EFFECT_ART.flea,
   ketchup_bottle: WEAPON_EFFECT_ART.ketchup, whoopee_cushion: WEAPON_EFFECT_ART.whoopee,
+  laser_pointer: WEAPON_EFFECT_ART.laserPointer, laser_tag_rifle: WEAPON_EFFECT_ART.laserTag,
 };
 
 export function projectileEffect(traits: { readonly sourceItemId: string; readonly delivery: string }): WeaponEffectArt | null {

@@ -29,7 +29,7 @@ const stateFor = (definitionId: string, instanceId: string, tick: number, active
 const earlyBody = Reflect.get(MvpRunView.prototype, 'playerAction') as (state: MvpRunState, fxTick: number) => PlayerBodyAction | null;
 const drawPlayer = Reflect.get(MvpRunView.prototype, 'drawPlayer') as (state: MvpRunState, graphics: Phaser.GameObjects.Graphics, effects: Phaser.GameObjects.Graphics, drawBody: boolean) => void;
 function runView(weapon: WeaponView) {
-  return { weapon, deadSince: null, scene: { time: { now: 0 } }, feedback: { playerHurtAge: () => null },
+  return { weapon, actorSprites: new Map(), deadSince: null, scene: { time: { now: 0 } }, feedback: { playerHurtAge: () => null },
     sheetColumns: () => 7, openingConcourse: null,
     weaponEffects: { canRenderMelee: () => false, canRenderRanged: () => false, syncMelee() {}, syncMuzzle() {} } };
 }

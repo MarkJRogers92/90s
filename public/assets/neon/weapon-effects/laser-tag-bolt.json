@@ -1,0 +1,110 @@
+{
+  "name": "laser-tag-bolt",
+  "description": "Chunky cyan three-segment bolt with clear gaps; one body for each of the existing twin projectiles.",
+  "frameWidth": 32,
+  "frameHeight": 16,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    16
+  ],
+  "pivotPixels": [
+    16,
+    8
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "loop": true,
+  "durationsMs": [
+    50,
+    50,
+    50,
+    50
+  ],
+  "sourcePalette": {
+    "d": "#184d62",
+    "m": "#27b5ca",
+    "l": "#92f3f4",
+    "h": "#e8ffff"
+  },
+  "alpha": "binary",
+  "scale": 1,
+  "filter": "nearest",
+  "trimmed": false,
+  "blend": "normal",
+  "forgeEngine": "Pixel Forge direct-authoring Sprite/DSL",
+  "source": "art/weapon-effects/laser-pilot/laser-tag-bolt/forge",
+  "rebuild": "python3 art/weapon-effects/laser-pilot/build_laser_effects.py",
+  "iconsInspected": [
+    {
+      "name": "laser-tag-rifle",
+      "sha256": "eec1e9a0cc5b8223e2c8e60c5e2c33d14640c0950138e962d8b3d57363fe5909"
+    }
+  ],
+  "frames": [
+    {
+      "index": 0,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        12
+      ],
+      "opaquePixels": 123,
+      "rgbaSha256": "32b9c2bdb78851204fbe2b3869df2b1e6d658077a67dfd803b9bf2c5a2ef1141",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 1,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        12
+      ],
+      "opaquePixels": 123,
+      "rgbaSha256": "bbff2fe1ae5926a0ec210fb067749aecde69bc27d458bf4b5178e7f6e539f497",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 2,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        12
+      ],
+      "opaquePixels": 123,
+      "rgbaSha256": "22ff117efe9982471d85bdafb663aae371114cd3a5886a80db61fbfc48779559",
+      "alphaValues": [
+        0,
+        255
+      ]
+    },
+    {
+      "index": 3,
+      "boundingBoxExclusive": [
+        4,
+        5,
+        29,
+        12
+      ],
+      "opaquePixels": 123,
+      "rgbaSha256": "7fb6cc38bb55ec26f29ee872148c5f9cfaa205055d39ea2e3339248e981983c2",
+      "alphaValues": [
+        0,
+        255
+      ]
+    }
+  ]
+}

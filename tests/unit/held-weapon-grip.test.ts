@@ -7,7 +7,7 @@ import { WeaponView, type WeaponSnapshot } from '../../src/game/view/WeaponView'
 // same origin/flip geometry as Phaser's TransformerImage, not mock call counts.
 class ImageProbe {
   width = 32; height = 32; texture = { key: '__DEFAULT' }; visible = true;
-  x = 0; y = 0; rotation = 0; scaleX = 1; scaleY = 1; flipY = false; originX = .5; originY = .5; depth = 0;
+  alpha = 1; x = 0; y = 0; rotation = 0; scaleX = 1; scaleY = 1; flipY = false; originX = .5; originY = .5; depth = 0;
   setVisible(v: boolean) { this.visible = v; return this; }
   setTexture(key: string) { this.texture = { key }; return this; }
   setPosition(x: number, y: number) { this.x = x; this.y = y; return this; }
@@ -131,4 +131,51 @@ describe('compact cutter image geometry', () => {
       expect(head.y - grip.y).toBeCloseTo(Math.sin(aim) * length);
     }
   });
+});
+
+// A resolved attachment is the displayed body's hand, not a radial estimate.
+// Removing attachment consumption must fail these assertions for every weapon.
+describe('displayed body hand attachment', () => {
+  it('pins a recoiling gun to a transformed hand instead of pulling it out of the palm', () => {
+    const { view, effects, held } = setup();
+    const attachment = { x: 91.25, y: 73.125, behind: true, depth: 100, alpha: 1 };
+    const weapon = { ...snapshot('laser_pointer'), attackActiveTicks: 6, attachment };
+    view.sync(weapon, 10, effects, 100);
+    expect(view.headAt()!.grip).toEqual({ x: attachment.x, y: attachment.y });
+    expect(held.depth).toBe(99);
+  });
+  it('keeps a melee swing at the displayed south-facing palm even when its blade points north', () => {
+    const { view, effects, held } = setup();
+    const attachment = { x: 111.5, y: 68.75, behind: false, depth: 100, alpha: 1 };
+    const weapon = { ...snapshot('janitor_mop', 0, -1), delivery: 'direct' as const, attackActiveTicks: 6, attachment };
+    view.sync(weapon, 10, effects, 100, true);
+    expect(view.headAt()!.grip).toEqual({ x: attachment.x, y: attachment.y });
+    expect(held.depth).toBe(101);
+    view.sync({ ...weapon, attackActiveTicks: 0, attachment: { ...attachment, x: 120.75 } }, 18, effects, 100, true);
+    expect(view.headAt()!.grip.x).toBe(120.75);
+    expect(held.depth).toBe(101);
+  });
+});
+
+import { ITEM_CATALOG } from '../../src/sim/items/catalog';
+import { weaponPresentation } from '../../src/game/view/weaponPresentation';
+import { hybridDefinitionId } from '../../src/sim/fusion/hybrid';
+const primaryItems = ITEM_CATALOG.filter((item) => item.base);
+it.each(primaryItems)('$id keeps its real icon grip on the displayed palm in all eight aims, including nested fusions', (item) => {
+  const { held, view, effects } = setup();
+  const authored = weaponPresentation(item.id);
+  for (let direction = 0; direction < 8; direction += 1) {
+    const angle = direction * Math.PI / 4;
+    const attachment = { x: 105.125 + direction, y: 71.25 - direction, behind: direction >= 4, depth: 100, alpha: .45 };
+    for (const definitionId of [item.id, hybridDefinitionId(hybridDefinitionId(item.id, 'gel_pens'), 'bubble_bath')]) {
+      const weapon = { ...snapshot(definitionId, Math.cos(angle), Math.sin(angle)), delivery: item.base!.delivery, attackActiveTicks: 6, attachment };
+      view.sync(weapon, 10 + direction, effects, 100, true, true);
+      const grip = held.point(authored.grip.x, authored.grip.y);
+      expect(grip.x).toBeCloseTo(attachment.x, 10);
+      expect(grip.y).toBeCloseTo(attachment.y, 10);
+      expect(held.depth).toBe(attachment.behind ? 99 : 101);
+      expect(held.alpha).toBe(attachment.alpha);
+      expect((view.headAt() as { imageDepth?: number }).imageDepth).toBe(held.depth);
+    }
+  }
 });

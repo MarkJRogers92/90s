@@ -40,7 +40,7 @@ or start something; keep items small enough for one PR.
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **done** 2026-10-04 for every enemy kind (`feat/hurt-reactions`) | — |
 | V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy (Bargain Hunter PR #59; Elf, Poodle, Goon `feat/district-attacks`); Static needs code first | L |
-| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
+| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18), laser pilot (3) in draft; 46 left | M per family |
 | V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
@@ -183,10 +183,10 @@ capture, and `npm run balance:reaction` unchanged (presentation only).
 
 Still open: Bargain Hunter, Poodle, Elf and Goon, and the bosses.
 
-## V3 — Native effects for the remaining weapons (49 of 67 left)
+## V3 — Native effects for the remaining weapons (46 of 67 left)
 
 The list is in `diagnostics/weapon-visuals/remaining-effect-roster.json`
-(31 melee, 18 projectile since the thrown, water and spray families landed). Work by family rather than by item: one sheet each
+(30 melee, 16 projectile after the three-weapon laser pilot; live visual acceptance pending). Work by family rather than by item: one sheet each
 in `public/assets/neon/weapon-effects/`, mapped in `src/game/view/weaponEffects.ts`.
 
 | Family | Weapons (examples) | Effect |

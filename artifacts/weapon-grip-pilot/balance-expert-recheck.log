@@ -1,0 +1,9 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+ RUN  v5.0.0 /workspace/scratch/46c24ac297cd/dead-mall-grips-20261006
+
+
+ Test Files  1 passed (1)
+      Tests  4 passed (4)
+   Start at  13:31:26
+   Duration  4.95s (tests 84%, transform 14%, import 2%)

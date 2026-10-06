@@ -87,7 +87,7 @@ import { CombatFeedback } from './CombatFeedback';
 import { flinchOutranksAttack, materialHurtKey, type EnemyHurtFrame } from './EnemyReactionView';
 import { LootView } from './LootView';
 import { ELITE_GLYPHS, eliteRingSegments, type EliteMarkTrait } from './eliteMarks';
-import { WeaponView } from './WeaponView';
+import { WeaponView, type HeldHandAttachment } from './WeaponView';
 import { WeaponEffectView } from './WeaponEffectView';
 import { actionFigureScale, directionForVector, enemySpriteSheet } from './ActorSpriteView';
 import { ENEMY_TEXTURE_KEYS, PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS, characterFrameSize, itemIconKey } from '../presentation/assets';
@@ -124,7 +124,12 @@ type ActorFrameEvidence = {
 };
 
 export type ActorPresentationDebugSnapshot = {
-  readonly player: (ActorFrameEvidence & { readonly mopArcVisible: boolean; readonly mopArcDepth: number | null }) | null;
+  readonly player: (ActorFrameEvidence & {
+    readonly mopArcVisible: boolean;
+    readonly mopArcDepth: number | null;
+    readonly handAttachment: HeldHandAttachment | null;
+    readonly heldWeapon: ReturnType<WeaponView['headAt']>;
+  }) | null;
   readonly hangers: Array<ActorFrameEvidence & { readonly id: string }>;
   /** Every enemy's displayed sheet and frame, for live QA of authored animations. */
   readonly enemies: Array<{ readonly id: string; readonly kind: string; readonly textureKey: string; readonly frame: { readonly row: number; readonly column: number } }>;
@@ -500,6 +505,8 @@ export class MvpRunView {
     this.actorDebug = {
       player: {
         ...playerSprite,
+        handAttachment: this.actorSprites.get('player')?.handAt() ?? null,
+        heldWeapon: this.weapon.headAt(),
         mopArcVisible,
         mopArcDepth: mopArcVisible ? presentationDepth('effect', 1) : null,
       },
@@ -1923,6 +1930,7 @@ export class MvpRunView {
       delivery: primary.delivery,
       range: primary.range,
       halfAngleRadians: primary.halfAngleRadians,
+      attachment: this.actorSprites.get('player')?.handAt() ?? null,
     }, state.tick, effects, presentationDepth('actor', player.y),
     this.weaponEffects.canRenderMelee(primary.definitionId), this.weaponEffects.canRenderRanged(primary.definitionId),
     this.playerBodySheet === 'aim');
