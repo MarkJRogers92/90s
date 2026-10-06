@@ -17,8 +17,14 @@ Branch `claude/floor-visual-review`, on `origin/main` `90204ab`.
 - **Visual:** `scripts/floor-sweep.mjs` captured every room of floors 1-4 (boss and first
   wings, shop interiors) before (`artifacts/floor-sweep/before`, `before34`) and after
   (`after`, `layouts`, `interiors2`). Every image was looked at. Not committed (artifacts).
-- **Not run:** the Playwright browser gate. The owner stopped the session to free CPU before
-  it ran. Run it next: `PW_PORT=4193 npx playwright test`.
+- **Browser gate** (`PW_PORT=4193 npx playwright test`, after `3a27d8f`): all 101 specs pass.
+  - The full parallel run passed 85 and failed 16. Fourteen of the failures were 30 s timeouts.
+    Two were real-input walks that timed out: the bakery and slush props, and the civilians.
+  - Run serially (`--last-failed --workers=1`), 14 of the 16 passed.
+  - The other two (`night-shift.spec.ts:194`, the candy-cauldron slush in
+    `normal-room-props.spec.ts:47`) passed when run alone, then 9/9 with `--repeat-each=3`. They
+    also pass on `origin/main`. So they are load flakes, not regressions.
+- **Unit and integration, final:** 186 files, 1967 tests, all passed, after the atrium commit.
 
 
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)

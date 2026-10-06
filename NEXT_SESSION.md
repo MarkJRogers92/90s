@@ -10,15 +10,11 @@ Branch `claude/floor-visual-review` holds the owner's visual review of every flo
 - fits out the shop interiors;
 - lights the upper floors brighter.
 
-The unit tests pass. **The Playwright gate has not run yet**: it was stopped to free CPU.
-
-Next:
-1. Run `PW_PORT=4193 npx playwright test`.
-2. Fetch `origin/main` and merge.
-3. Ask the owner before pushing.
+The unit tests (1967) and the browser gate (101 specs; see TEST_EVIDENCE.md for the load
+flakes) pass. The branch is pushed with a PR open against `main`. Next: the owner's playtest
+of floors 2-4, then merge (fetch `origin/main` first; other sessions merge there too).
 
 Open look items:
-- The atrium wells read as dark boxes near the HUD edge.
 - The air-hockey and roof-pipe sprites are weak.
 - The isometric `escalator` and `stacked-chairs-table` art is unused. It could be redone; PixelLab has 3 generations left until 2026-10-20.
 
