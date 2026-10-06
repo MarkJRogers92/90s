@@ -1638,3 +1638,79 @@ Dev fixtures added: `?fixture=mvp-hatch&seed=7` (beside a staff passage),
 `?fixture=mvp-volatile&seed=7` (one posed single-hit Volatile elite beside the
 janitor; `tests/browser/volatile-burst.spec.ts` kills it with the real mouse,
 catches the fuse ring and checks the blast takes a health).
+
+## Round 58 - a visual review of every floor
+
+The owner's review (2026-10-05): stray neon lines across the top of each
+room, rings round the fountain, small assets that did not look right, and
+four floors that played and looked alike. Every room on every floor was
+captured before and after (`scripts/floor-sweep.mjs`, below).
+
+- **No floor neon.** The full-width strips (y 60, 176, 304) and the fountain
+  rings are gone from every plan. Only the Helipad keeps its landing ring, and
+  only in the boss wing (the Roof's first-wing boss room is a machine room).
+- **Sign reflections** are only drawn on polished floors (terrazzo, checker,
+  linoleum, ice); on carpet, concrete and gravel they read as mirrored ghost
+  text. `DressingPlan.signReflections`, set once in `planRoomDressing`.
+- **Nothing is squashed to fit.** `coverWall` used to stretch sprites to the
+  collision box (planters 0.6x, desks 0.7x, the Roof's stand-ins up to 1.9x).
+  It now tiles or scales at each sprite's own aspect (`atWidth`), checked for
+  every prop on every floor (8% tolerance).
+- **Blocks.** A bar of collision running away from the camera cannot be a
+  sprite (sprites face the camera; stacked, they read as a ladder). It is now a
+  fitted 3/4 box, `DressingPlan.blocks`, painted by `blockArt.ts` (pure pixel
+  rects, tested) in one of seven materials: `planterBed`, `concrete`, `duct`,
+  `balustrade` (an atrium well onto the floor below, which glows), `steel`,
+  `counter`, `shelving`. Sprites stand on a block's top (`decor`). The top face
+  is drawn under the actors; the near face sorts with them.
+- **Decor gives way.** A free-standing prop that would be drawn on, or just
+  behind, a collision rectangle is dropped (`overWall`). It caught floor 1's
+  directory behind a planter.
+- **Each floor's own layouts.** `FLOOR_ROOM_VARIANTS` in `templates.ts`: two
+  per fight room for floors 2-4 (18 in all), `roomVariantsFor(role, floor)`.
+  Floor 1 keeps `ROOM_VARIANTS` and draws exactly the wings it drew (pinned in
+  `floor-layouts.test.ts`); a district wing also keeps floor 1's under its own
+  dressing. Fight bands match floor 1's per room. The variant draw is one rng
+  call either way, so later draws line up (floor 2's seed-5 fights are
+  unchanged; floor 3's arcade fills its slots in a new order).
+  - Floor 2: atrium wells and planter beds, velvet-rope cinema queues, a
+    concession counter with popcorn carts, parking columns and jersey barriers.
+  - Floor 3: seating islands and booths, arcade cabinet rows and air hockey,
+    loading-dock pallets and concrete bays.
+  - Floor 4: skylights and dishes, vented ducts, an HVAC grid and pipe runs,
+    the water tower's legs and duct runs.
+  Each is dressed by `LAYOUT_KITS` in `roomDressing.ts` (a kit by wall shape,
+  or one piece per wall). `floor-layouts.test.ts` floods every layout at a
+  Mascot Brute's radius: both doors, the entry, every spawn slot and the bench
+  are reachable, side-door lanes and the staff hatch are clear.
+- **Storefront concourses** stand their floor's own furniture
+  (`concourseFurniture(floor)` in `storeInterior.ts`, collision and art from
+  one list as before), on carpet (2), checker (3) or a concrete deck (4), with
+  their own loose decor (`STOREFRONT_LOOSE`).
+- **Shop interiors** were scaled-up legacy thumbnails (a 48x30 VHS shelf, a
+  30x46 gondola). Now six fit-out styles (`INTERIOR_STYLES`: aisles, boutique,
+  food, arcade, garden, candy) line the back wall end to end, fit shelving or
+  counter blocks into the solid strip down each side wall (so nothing looks
+  solid where you can walk), stand a display table under every item and a till
+  either side of the door.
+- **Light.** Floors 2-4 were too dark to read (the Roof's ambient was
+  `0x161c30`); ambients are raised and the Roof's moonlight is stronger.
+- **Art.** Eleven PixelLab `create_map_object` props (13 generations; 3 left
+  this cycle), sources and `report.json` in
+  `docs/art/neon-overhaul/pixellab/round58/`. Nine are used. `escalator` and
+  `stacked-chairs-table` came back isometric and are not wired in.
+- **Balance** (`docs/neon-overhaul/balance/round58-layouts.md`): floor 1
+  unchanged row for row. Over 160 nights the shopping pro bot wins 61% -> 57%
+  and the expert 94% -> 89%, the deaths moving from the Owner's Suite to the
+  floors' middle fights (F2b, F3a). The owner wants harder; not tuned back.
+
+### Looking at every room
+
+```bash
+VITE_ENABLE_DEBUG_BRIDGE=true npx vite --host 127.0.0.1 --port 4180 --strictPort
+node scripts/floor-sweep.mjs --out artifacts/floor-sweep/now [--seed 3] [--floors 2,3] [--parts boss,first] [--rooms food_court]
+```
+
+It uses the dev fixture `?fixture=mvp-room&floor=N&room=<id>[&part=1][&store=1|2][&enemies=1][&event=none]`;
+`event=none` walks forward to a seed with no floor or room event, so an
+outage does not hide the room.

@@ -78,7 +78,11 @@ const OFFERS_PER_STORE = 4;
  */
 export type ConcourseFurniture = {
   readonly id: string;
-  readonly kind: 'seatingIsland' | 'pretzelCart' | 'massageChairs' | 'photoBooth' | 'gumballStand' | 'saleSign';
+  readonly kind:
+    | 'seatingIsland' | 'pretzelCart' | 'massageChairs' | 'photoBooth' | 'gumballStand' | 'saleSign'
+    // Round 58: the other floors' own.
+    | 'atriumWell' | 'popcornCart' | 'displayTable' | 'velvetRope' | 'trashBank' | 'trayReturn'
+    | 'skylight' | 'satelliteDish' | 'acUnit' | 'ventStack' | 'palletStack';
   readonly x: number;
   readonly y: number;
   readonly footprint: Rect | null;
@@ -94,6 +98,44 @@ export const CONCOURSE_FURNITURE: readonly ConcourseFurniture[] = [
   { id: 'sale-w', kind: 'saleSign', x: 172, y: 110, footprint: null },
   { id: 'sale-e', kind: 'saleSign', x: 788, y: 110, footprint: null },
 ];
+
+/**
+ * Round 58: every floor furnished its storefronts with the same seven pieces.
+ * Floor 1 keeps them; the Upper Level stands an atrium well and a popcorn cart
+ * on its carpet, the Food Court After Dark its closed tables and tray returns,
+ * and the Roof its skylight, dish and HVAC. Same rules as floor 1's: out of the
+ * side-door lane, the shop doors, the staff hatch and the secret machine.
+ */
+const FLOOR_CONCOURSE_FURNITURE: Readonly<Record<2 | 3 | 4, readonly ConcourseFurniture[]>> = {
+  2: [
+    { id: 'atrium', kind: 'atriumWell', x: 480, y: 352, footprint: { x: 390, y: 304, width: 180, height: 48 } },
+    { id: 'popcorn', kind: 'popcornCart', x: 250, y: 366, footprint: { x: 234, y: 352, width: 32, height: 14 } },
+    { id: 'display', kind: 'displayTable', x: 710, y: 366, footprint: { x: 684, y: 350, width: 52, height: 16 } },
+    { id: 'ropes', kind: 'velvetRope', x: 480, y: 92, footprint: null },
+    { id: 'sale-w', kind: 'saleSign', x: 172, y: 110, footprint: null },
+    { id: 'sale-e', kind: 'saleSign', x: 788, y: 110, footprint: null },
+  ],
+  3: [
+    { id: 'seats-w', kind: 'seatingIsland', x: 330, y: 344, footprint: { x: 290, y: 312, width: 80, height: 30 } },
+    { id: 'seats-e', kind: 'seatingIsland', x: 630, y: 344, footprint: { x: 590, y: 312, width: 80, height: 30 } },
+    { id: 'pretzels', kind: 'pretzelCart', x: 480, y: 372, footprint: { x: 454, y: 354, width: 52, height: 16 } },
+    { id: 'trash', kind: 'trashBank', x: 480, y: 92, footprint: { x: 450, y: 76, width: 60, height: 14 } },
+    { id: 'trays', kind: 'trayReturn', x: 160, y: 120, footprint: null },
+    { id: 'gumballs', kind: 'gumballStand', x: 800, y: 120, footprint: null },
+  ],
+  4: [
+    { id: 'skylight', kind: 'skylight', x: 480, y: 350, footprint: { x: 424, y: 304, width: 112, height: 44 } },
+    { id: 'dish', kind: 'satelliteDish', x: 250, y: 368, footprint: { x: 234, y: 354, width: 32, height: 14 } },
+    { id: 'hvac', kind: 'acUnit', x: 710, y: 368, footprint: { x: 678, y: 348, width: 64, height: 20 } },
+    { id: 'vent', kind: 'ventStack', x: 480, y: 92, footprint: { x: 462, y: 76, width: 36, height: 16 } },
+    { id: 'pallets', kind: 'palletStack', x: 160, y: 130, footprint: null },
+  ],
+};
+
+/** The pieces on a floor's storefront concourses (a district keeps floor 1's under its own walls). */
+export function concourseFurniture(floor: FloorNumber): readonly ConcourseFurniture[] {
+  return floor === 1 ? CONCOURSE_FURNITURE : FLOOR_CONCOURSE_FURNITURE[floor];
+}
 
 /** One already-broken, inert cabinet in the ordinary ground-floor Back Hall.
  * Shared floor placement for collision and dressing, like concourse furniture.
@@ -215,7 +257,7 @@ export function generateRunWing(seed: number, floor: FloorNumber = 1, part?: 1):
     .filter((template) => !used.has(template.id))
     .sort((first, second) => hash(seed, first.id) - hash(seed, second.id));
   let nextSpare = 0;
-  const furniture = CONCOURSE_FURNITURE.flatMap((piece) => (piece.footprint ? [{ ...piece.footprint }] : []));
+  const furniture = concourseFurniture(wing.district ? 1 : floor).flatMap((piece) => (piece.footprint ? [{ ...piece.footprint }] : []));
   const rooms = wing.rooms.map((room): WingRoomDefinition => {
     if (floor === 1 && part !== 1 && !wing.district && room.id === 'back_hall') {
       return { ...room, walls: [...room.walls, { ...BACK_HALL_DAMAGED_VENDING.footprint }] };

@@ -1,5 +1,26 @@
 # Status
 
+## 2026-10-05 — Round 58: a visual review of every floor (branch `claude/floor-visual-review`)
+
+Built on `origin/main` (`90204ab`). The owner's review: lines across the top of
+each room, rings round the fountain, assets that did not fit, and floors that
+all looked alike. Every room on every floor (boss and first wings, districts,
+shop interiors) was captured before and after with the new
+`scripts/floor-sweep.mjs`.
+
+- The floor neon strips and fountain rings are gone; sign reflections only on
+  polished floors.
+- No sprite is stretched to fit collision any more; bars that run away from the
+  camera are fitted 3/4 blocks (planter beds, curbs, ducts, atrium wells,
+  counters, shelving) with sprites stood on them.
+- Floors 2-4 have their own layouts (18 new) and storefront furniture; floor 1
+  is unchanged. Shop interiors are fitted out in six styles. Floors 2-4 are
+  lit brighter. Nine new PixelLab props.
+- Balance: floor 1 identical; over 160 nights the shopping pro bot 61% -> 57%,
+  expert 94% -> 89%. The owner asked for harder, so it stays.
+
+See the playbook's Round 58 section and TEST_EVIDENCE.md.
+
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
 
 Branch `feat/hurt-reactions`. Presentation only; no `src/sim` change, no balance change.

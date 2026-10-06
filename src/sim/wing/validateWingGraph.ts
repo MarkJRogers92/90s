@@ -12,6 +12,7 @@ import {
   AUTHORED_OFFER_BANDS,
   REGULAR_COMBAT_ROOM_ROLES,
   ROOM_VARIANTS,
+  findRoomVariant,
 } from './templates';
 import {
   WING_ROOM_COUNT,
@@ -446,9 +447,7 @@ function validateCombatRoom(room: WingRoomDefinition): void {
     return;
   }
 
-  const variant = ROOM_VARIANTS[room.id as keyof typeof ROOM_VARIANTS].find(
-    (candidate) => candidate.id === room.variantId,
-  );
+  const variant = findRoomVariant(room.id as keyof typeof ROOM_VARIANTS, room.variantId);
   if (!variant) {
     fail(
       `combat room ${room.id} references unknown variant ${room.variantId}`,
