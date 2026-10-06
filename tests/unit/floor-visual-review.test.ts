@@ -136,3 +136,33 @@ describe('round 58: loose decor stays off the furniture', () => {
     }
   });
 });
+
+describe('round 58: shop interiors', () => {
+  const LEGACY_FIXTURES = new Set(['gondola', 'vhsShelf', 'clothingRack', 'checkout']);
+  const interiors = PLANS.filter(({ plan }) => plan.themeId === 'store_interior' && plan.areaName !== 'THE BACK ROOM');
+
+  it('stocks the shops with full-size fixtures, not the old thumbnail shelves', () => {
+    expect(interiors.length).toBeGreaterThan(20);
+    for (const { where, plan } of interiors) {
+      for (const prop of plan.props) expect(LEGACY_FIXTURES.has(prop.prop), `${where} ${prop.id} is a ${prop.prop}`).toBe(false);
+    }
+  });
+
+  it('lines both side walls with fitted blocks and the back wall end to end', () => {
+    for (const { where, plan } of interiors) {
+      expect(plan.blocks.length, where).toBeGreaterThanOrEqual(2);
+      const back = plan.props.filter((prop) => prop.id.startsWith('wall-')).sort((a, b) => a.x - b.x);
+      const blockBack = plan.blocks.some((block) => block.id === 'back-counter');
+      expect(back.length > 0 || blockBack, where).toBe(true);
+      for (let i = 1; i < back.length; i += 1) {
+        const gap = back[i]!.x - (back[i]!.width ?? 0) / 2 - (back[i - 1]!.x + (back[i - 1]!.width ?? 0) / 2);
+        expect(gap, `${where} gap before ${back[i]!.id}`).toBeLessThanOrEqual(6);
+      }
+    }
+  });
+
+  it('dresses shops in more than one way', () => {
+    const styles = new Set(interiors.map(({ plan }) => plan.props.filter((prop) => prop.id.startsWith('wall-')).map((prop) => prop.prop).join() || 'counter'));
+    expect(styles.size).toBeGreaterThanOrEqual(5);
+  });
+});

@@ -199,7 +199,7 @@ export type DressingProp = {
 };
 
 /** What an extruded block is made of (round 58): drawn to fit its collision exactly. */
-export type BlockMaterial = 'planterBed' | 'concrete' | 'duct' | 'balustrade' | 'steel' | 'counter';
+export type BlockMaterial = 'planterBed' | 'concrete' | 'duct' | 'balustrade' | 'steel' | 'counter' | 'shelving';
 
 /**
  * A long bar running away from the camera, drawn as a 3/4 box fitted to its
@@ -440,7 +440,7 @@ export function atWidth(prop: PropId, width: number): { width: number; height: n
 
 export type Cover = { readonly props: DressingProp[]; readonly blocks: DressingBlock[] };
 
-const BLOCK_LIFT: Readonly<Record<BlockMaterial, number>> = { planterBed: 16, concrete: 22, duct: 18, balustrade: 14, steel: 40, counter: 26 };
+const BLOCK_LIFT: Readonly<Record<BlockMaterial, number>> = { planterBed: 16, concrete: 22, duct: 18, balustrade: 14, steel: 40, counter: 26, shelving: 44 };
 
 function isPieceList(layout: CoverKit | readonly CoverPiece[] | undefined): layout is readonly CoverPiece[] {
   return Array.isArray(layout);
@@ -506,38 +506,38 @@ function addCover(props: DressingProp[], blocks: DressingBlock[], cover: Cover):
 /* Themes                                                                     */
 /* ------------------------------------------------------------------------ */
 
-type StoreLook = { facade: FacadeId; neon: number; subtitle: string; floor: FloorStyle; spill: number; fixture: PropId };
+type StoreLook = { facade: FacadeId; neon: number; subtitle: string; floor: FloorStyle; spill: number };
 
 /** Each authored store template gets its own shopfront and interior. */
 const STORE_LOOKS: Readonly<Record<string, StoreLook>> = {
-  'mall-mart': { facade: 'electronics', neon: NEON.blue, subtitle: 'MORE FOR A BRIGHTER TOMORROW', floor: 'linoleum', spill: 0xdce8ff, fixture: 'gondola' },
-  'cinema-snacks': { facade: 'cinema', neon: NEON.red, subtitle: 'NOW SHOWING', floor: 'carpet', spill: 0xffc070, fixture: 'vending' },
-  'arcade-annex': { facade: 'arcade', neon: NEON.cyan, subtitle: 'INSERT COIN', floor: 'carpet', spill: 0x9a7cff, fixture: 'arcadeCabinet' },
-  'department-outlet': { facade: 'boutique', neon: NEON.pink, subtitle: 'FASHION FOR LESS', floor: 'carpet', spill: 0xff9ad8, fixture: 'clothingRack' },
+  'mall-mart': { facade: 'electronics', neon: NEON.blue, subtitle: 'MORE FOR A BRIGHTER TOMORROW', floor: 'linoleum', spill: 0xdce8ff },
+  'cinema-snacks': { facade: 'cinema', neon: NEON.red, subtitle: 'NOW SHOWING', floor: 'carpet', spill: 0xffc070 },
+  'arcade-annex': { facade: 'arcade', neon: NEON.cyan, subtitle: 'INSERT COIN', floor: 'carpet', spill: 0x9a7cff },
+  'department-outlet': { facade: 'boutique', neon: NEON.pink, subtitle: 'FASHION FOR LESS', floor: 'carpet', spill: 0xff9ad8 },
   // Round 32: the themed stores. Round 33 gave the four that borrowed a front their own PixelLab shopfront.
-  'sports-locker': { facade: 'sports', neon: NEON.green, subtitle: 'GAME ON', floor: 'linoleum', spill: 0xb8ffc8, fixture: 'gondola' },
-  'hardware-hut': { facade: 'hardware', neon: NEON.orange, subtitle: 'DO IT YOURSELF', floor: 'concrete', spill: 0xffc08a, fixture: 'gondola' },
-  'toy-box': { facade: 'toys', neon: NEON.yellow, subtitle: 'KIDS RULE', floor: 'checker', spill: 0xfff09a, fixture: 'gondola' },
-  'radio-shed': { facade: 'radio', neon: NEON.red, subtitle: "YOU'VE GOT QUESTIONS", floor: 'linoleum', spill: 0xff9a9a, fixture: 'vhsShelf' },
-  'spiral-records': { facade: 'music', neon: NEON.magenta, subtitle: 'MUSIC · MOVIES · MORE', floor: 'carpet', spill: 0xff9ae6, fixture: 'vhsShelf' },
-  'slice-station': { facade: 'pizza', neon: NEON.orange, subtitle: 'HOT N READY', floor: 'checker', spill: 0xffd08a, fixture: 'condiments' },
-  'video-world': { facade: 'video', neon: NEON.cyan, subtitle: 'BE KIND REWIND', floor: 'carpet', spill: 0xffd9a0, fixture: 'vhsShelf' },
+  'sports-locker': { facade: 'sports', neon: NEON.green, subtitle: 'GAME ON', floor: 'linoleum', spill: 0xb8ffc8 },
+  'hardware-hut': { facade: 'hardware', neon: NEON.orange, subtitle: 'DO IT YOURSELF', floor: 'concrete', spill: 0xffc08a },
+  'toy-box': { facade: 'toys', neon: NEON.yellow, subtitle: 'KIDS RULE', floor: 'checker', spill: 0xfff09a },
+  'radio-shed': { facade: 'radio', neon: NEON.red, subtitle: "YOU'VE GOT QUESTIONS", floor: 'linoleum', spill: 0xff9a9a },
+  'spiral-records': { facade: 'music', neon: NEON.magenta, subtitle: 'MUSIC · MOVIES · MORE', floor: 'carpet', spill: 0xff9ae6 },
+  'slice-station': { facade: 'pizza', neon: NEON.orange, subtitle: 'HOT N READY', floor: 'checker', spill: 0xffd08a },
+  'video-world': { facade: 'video', neon: NEON.cyan, subtitle: 'BE KIND REWIND', floor: 'carpet', spill: 0xffd9a0 },
   // Round 50: the district stores.
-  'candy-cauldron': { facade: 'candyCauldron', neon: NEON.pink, subtitle: 'BULK CANDY BY THE POUND', floor: 'checker', spill: 0xffa8dc, fixture: 'gumballStand' },
-  'novelty-nook': { facade: 'noveltyNook', neon: NEON.violet, subtitle: 'GAGS · GIFTS · GLOW', floor: 'carpet', spill: 0xc89aff, fixture: 'gondola' },
-  'glam-snaps': { facade: 'glamSnaps', neon: NEON.magenta, subtitle: 'PORTRAITS WHILE U WAIT', floor: 'carpet', spill: 0xffd0f0, fixture: 'clothingRack' },
-  'hair-affair': { facade: 'hairAffair', neon: NEON.pink, subtitle: 'CUTS · PERMS · TEASE', floor: 'checker', spill: 0xff9ad8, fixture: 'gondola' },
-  'pet-palace': { facade: 'petPalace', neon: NEON.yellow, subtitle: 'PUPPIES · FISH · BIRDS', floor: 'linoleum', spill: 0xfff0a0, fixture: 'gondola' },
-  'green-thumb': { facade: 'greenThumb', neon: NEON.green, subtitle: 'GARDEN CENTER', floor: 'concrete', spill: 0xb8ffb0, fixture: 'palm' },
-  'skate-shack': { facade: 'skateShack', neon: NEON.cyan, subtitle: 'RENTALS · SHARPENING', floor: 'linoleum', spill: 0xc0e8ff, fixture: 'gondola' },
-  'cocoa-hut': { facade: 'cocoaHut', neon: NEON.orange, subtitle: 'HOT COCOA · PRETZELS', floor: 'checker', spill: 0xffc080, fixture: 'condiments' },
+  'candy-cauldron': { facade: 'candyCauldron', neon: NEON.pink, subtitle: 'BULK CANDY BY THE POUND', floor: 'checker', spill: 0xffa8dc },
+  'novelty-nook': { facade: 'noveltyNook', neon: NEON.violet, subtitle: 'GAGS · GIFTS · GLOW', floor: 'carpet', spill: 0xc89aff },
+  'glam-snaps': { facade: 'glamSnaps', neon: NEON.magenta, subtitle: 'PORTRAITS WHILE U WAIT', floor: 'carpet', spill: 0xffd0f0 },
+  'hair-affair': { facade: 'hairAffair', neon: NEON.pink, subtitle: 'CUTS · PERMS · TEASE', floor: 'checker', spill: 0xff9ad8 },
+  'pet-palace': { facade: 'petPalace', neon: NEON.yellow, subtitle: 'PUPPIES · FISH · BIRDS', floor: 'linoleum', spill: 0xfff0a0 },
+  'green-thumb': { facade: 'greenThumb', neon: NEON.green, subtitle: 'GARDEN CENTER', floor: 'concrete', spill: 0xb8ffb0 },
+  'skate-shack': { facade: 'skateShack', neon: NEON.cyan, subtitle: 'RENTALS · SHARPENING', floor: 'linoleum', spill: 0xc0e8ff },
+  'cocoa-hut': { facade: 'cocoaHut', neon: NEON.orange, subtitle: 'HOT COCOA · PRETZELS', floor: 'checker', spill: 0xffc080 },
   // Round 55: the floor-exclusive stores.
-  'shade-station': { facade: 'shadeStation', neon: NEON.yellow, subtitle: 'LOOK COOL · SEE LESS', floor: 'carpet', spill: 0xfff0a0, fixture: 'clothingRack' },
-  'page-turner': { facade: 'pageTurner', neon: NEON.violet, subtitle: 'BOOKS · ZINES · PENS', floor: 'carpet', spill: 0xc89aff, fixture: 'vhsShelf' },
-  'pretzel-pit': { facade: 'pretzelPit', neon: NEON.orange, subtitle: 'SALTED · TWISTED', floor: 'checker', spill: 0xffc080, fixture: 'condiments' },
-  'frosty-freeze': { facade: 'frostyFreeze', neon: NEON.cyan, subtitle: 'FROZEN YOGURT', floor: 'checker', spill: 0xc0f0ff, fixture: 'vending' },
-  'antenna-annex': { facade: 'antennaAnnex', neon: NEON.green, subtitle: 'DISHES · COILS · RADIOS', floor: 'concrete', spill: 0xb8ffc8, fixture: 'vhsShelf' },
-  'pawn-palace': { facade: 'pawnPalace', neon: NEON.red, subtitle: 'WE BUY GOLD', floor: 'concrete', spill: 0xffb0a0, fixture: 'gondola' },
+  'shade-station': { facade: 'shadeStation', neon: NEON.yellow, subtitle: 'LOOK COOL · SEE LESS', floor: 'carpet', spill: 0xfff0a0 },
+  'page-turner': { facade: 'pageTurner', neon: NEON.violet, subtitle: 'BOOKS · ZINES · PENS', floor: 'carpet', spill: 0xc89aff },
+  'pretzel-pit': { facade: 'pretzelPit', neon: NEON.orange, subtitle: 'SALTED · TWISTED', floor: 'checker', spill: 0xffc080 },
+  'frosty-freeze': { facade: 'frostyFreeze', neon: NEON.cyan, subtitle: 'FROZEN YOGURT', floor: 'checker', spill: 0xc0f0ff },
+  'antenna-annex': { facade: 'antennaAnnex', neon: NEON.green, subtitle: 'DISHES · COILS · RADIOS', floor: 'concrete', spill: 0xb8ffc8 },
+  'pawn-palace': { facade: 'pawnPalace', neon: NEON.red, subtitle: 'WE BUY GOLD', floor: 'concrete', spill: 0xffb0a0 },
 };
 
 /** The shopfront panel a store template shows on its concourse. */
@@ -728,11 +728,32 @@ function storefront(room: WingRoomDefinition, floor: FloorNumber): RoomLook {
 }
 
 /** What each store stocks its walls with, beyond the shelves behind the offers. */
+/**
+ * Round 58: how a shop is fitted out. Each style lines the back wall end to
+ * end, fits the side walls with blocks, and stands a display table under every
+ * item for sale; shops of one style still differ by floor, light and corners.
+ */
+type InteriorStyle = 'aisles' | 'boutique' | 'food' | 'arcade' | 'garden' | 'candy';
+
+const INTERIOR_STYLES: Readonly<Record<InteriorStyle, {
+  /** Along the back wall, alternating, or null for a counter run the whole width. */
+  readonly back: readonly PropId[] | null;
+  readonly backWidth: number;
+  /** Down both side walls, between the drawn wall and the shop floor. */
+  readonly sides: BlockMaterial;
+}>> = {
+  aisles: { back: ['storeShelf'], backWidth: 58, sides: 'shelving' },
+  boutique: { back: ['rackOfClothes'], backWidth: 60, sides: 'shelving' },
+  food: { back: null, backWidth: 0, sides: 'counter' },
+  arcade: { back: ['arcadeCabinet', 'arcadeCabinet', 'clawMachine'], backWidth: 40, sides: 'counter' },
+  garden: { back: ['palm'], backWidth: 52, sides: 'planterBed' },
+  candy: { back: ['gumballStand'], backWidth: 44, sides: 'counter' },
+};
+
 type InteriorLook = {
-  /** Along the back wall, repeated. */
-  readonly wall: readonly PropId[];
-  /** Stood down both side walls. */
-  readonly sides: PropId;
+  readonly style: InteriorStyle;
+  /** For a food counter: what stands on it. */
+  readonly counterTop?: readonly PropId[];
   /** A few pieces in the corners. */
   readonly corners: readonly PropId[];
   readonly ambient: number;
@@ -740,33 +761,33 @@ type InteriorLook = {
 
 const INTERIOR_LOOKS: Readonly<Record<string, InteriorLook>> = {
   // No decorative carts: Mall Mart's carts roll (storeTwists.ts), so a still one would mislead.
-  'mall-mart': { wall: ['gondola'], sides: 'gondola', corners: ['bin', 'wetFloor', 'vending', 'bin'], ambient: 0x6a6878 },
-  'cinema-snacks': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['bench', 'bin', 'palm', 'drinkingFountain'], ambient: 0x5a3e4a },
-  'arcade-annex': { wall: ['arcadeCabinet', 'clawMachine'], sides: 'arcadeCabinet', corners: ['kiddieRide', 'atm', 'clawMachine', 'bin'], ambient: 0x3a2e5a },
-  'department-outlet': { wall: ['clothingRack'], sides: 'clothingRack', corners: ['bunny', 'palm', 'palm', 'directory'], ambient: 0x5e4a62 },
-  'sports-locker': { wall: ['gondola', 'clothingRack'], sides: 'clothingRack', corners: ['bin', 'palm', 'waterCooler', 'bench'], ambient: 0x3e5a4a },
-  'hardware-hut': { wall: ['gondola', 'crates'], sides: 'gondola', corners: ['floorBuffer', 'crates', 'wetFloor', 'janitorCart'], ambient: 0x5a4a3a },
-  'toy-box': { wall: ['clawMachine', 'gondola'], sides: 'gondola', corners: ['kiddieRide', 'bunny', 'gumballStand', 'kiddieRide'], ambient: 0x5a5a3a },
-  'radio-shed': { wall: ['vhsShelf', 'atm'], sides: 'gondola', corners: ['atm', 'payphone', 'bin', 'waterCooler'], ambient: 0x4a3a3e },
-  'spiral-records': { wall: ['vhsShelf'], sides: 'vhsShelf', corners: ['palm', 'photoBooth', 'bench', 'bin'], ambient: 0x4a2e52 },
-  'slice-station': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'trayReturn', 'trashBank', 'drinkingFountain'], ambient: 0x5a3e2e },
-  'video-world': { wall: ['vhsShelf'], sides: 'vhsShelf', corners: ['saleSign', 'bin', 'palm', 'directory'], ambient: 0x2e3e5a },
+  'mall-mart': { style: 'aisles', corners: ['bin', 'wetFloor', 'palletStack', 'bin'], ambient: 0x6a6878 },
+  'cinema-snacks': { style: 'food', counterTop: ['popcornCart', 'condiments', 'popcornCart'], corners: ['bench', 'bin', 'palm', 'velvetRope'], ambient: 0x5a3e4a },
+  'arcade-annex': { style: 'arcade', corners: ['kiddieRide', 'airHockey', 'atm', 'bin'], ambient: 0x3a2e5a },
+  'department-outlet': { style: 'boutique', corners: ['bunny', 'palm', 'palm', 'directory'], ambient: 0x5e4a62 },
+  'sports-locker': { style: 'aisles', corners: ['bin', 'palm', 'waterCooler', 'bench'], ambient: 0x3e5a4a },
+  'hardware-hut': { style: 'aisles', corners: ['floorBuffer', 'palletStack', 'wetFloor', 'janitorCart'], ambient: 0x5a4a3a },
+  'toy-box': { style: 'candy', corners: ['kiddieRide', 'bunny', 'clawMachine', 'kiddieRide'], ambient: 0x5a5a3a },
+  'radio-shed': { style: 'aisles', corners: ['atm', 'payphone', 'bin', 'waterCooler'], ambient: 0x4a3a3e },
+  'spiral-records': { style: 'aisles', corners: ['palm', 'photoBooth', 'bench', 'bin'], ambient: 0x4a2e52 },
+  'slice-station': { style: 'food', counterTop: ['pizzaOven', 'condiments', 'pizzaOven'], corners: ['trashBank', 'trayReturn', 'bin', 'drinkingFountain'], ambient: 0x5a3e2e },
+  'video-world': { style: 'aisles', corners: ['saleSign', 'bin', 'palm', 'directory'], ambient: 0x2e3e5a },
   // Round 50: the district stores.
-  'candy-cauldron': { wall: ['gumballStand', 'condiments'], sides: 'gumballStand', corners: ['kiddieRide', 'bin', 'gumballStand', 'saleSign'], ambient: 0x5a3a52 },
-  'novelty-nook': { wall: ['gondola', 'photoBooth'], sides: 'gondola', corners: ['bunny', 'saleSign', 'clawMachine', 'bin'], ambient: 0x3a2a5a },
-  'glam-snaps': { wall: ['clothingRack', 'photoBooth'], sides: 'clothingRack', corners: ['palm', 'photoBooth', 'bench', 'directory'], ambient: 0x5a3a5a },
-  'hair-affair': { wall: ['massageChairs', 'gondola'], sides: 'gondola', corners: ['palm', 'waterCooler', 'bench', 'bin'], ambient: 0x5a3a4e },
-  'pet-palace': { wall: ['gondola', 'crates'], sides: 'gondola', corners: ['palm', 'bin', 'crates', 'waterCooler'], ambient: 0x4e4a32 },
-  'green-thumb': { wall: ['palm', 'planter'], sides: 'palm', corners: ['planter', 'palm', 'crates', 'wetFloor'], ambient: 0x2e4a32 },
-  'skate-shack': { wall: ['lockerRow', 'gondola'], sides: 'lockerRow', corners: ['bench', 'waterCooler', 'bin', 'saleSign'], ambient: 0x2e3e5a },
-  'cocoa-hut': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'bench', 'trashBank', 'pretzelCart'], ambient: 0x5a3e2e },
+  'candy-cauldron': { style: 'candy', corners: ['kiddieRide', 'bin', 'gumballStand', 'saleSign'], ambient: 0x5a3a52 },
+  'novelty-nook': { style: 'arcade', corners: ['bunny', 'saleSign', 'photoBooth', 'bin'], ambient: 0x3a2a5a },
+  'glam-snaps': { style: 'boutique', corners: ['palm', 'photoBooth', 'bench', 'directory'], ambient: 0x5a3a5a },
+  'hair-affair': { style: 'boutique', corners: ['massageChairs', 'waterCooler', 'bench', 'bin'], ambient: 0x5a3a4e },
+  'pet-palace': { style: 'aisles', corners: ['palm', 'bin', 'palletStack', 'waterCooler'], ambient: 0x4e4a32 },
+  'green-thumb': { style: 'garden', corners: ['planterLong', 'palm', 'palletStack', 'wetFloor'], ambient: 0x2e4a32 },
+  'skate-shack': { style: 'aisles', corners: ['bench', 'waterCooler', 'bin', 'saleSign'], ambient: 0x2e3e5a },
+  'cocoa-hut': { style: 'food', counterTop: ['condiments', 'pretzelCart', 'condiments'], corners: ['trashBank', 'bench', 'bin', 'palm'], ambient: 0x5a3e2e },
   // Round 55: the floor-exclusive stores.
-  'shade-station': { wall: ['clothingRack'], sides: 'clothingRack', corners: ['palm', 'bench', 'directory', 'bin'], ambient: 0x4e4a32 },
-  'page-turner': { wall: ['vhsShelf', 'gondola'], sides: 'vhsShelf', corners: ['bench', 'palm', 'bin', 'directory'], ambient: 0x3a2e52 },
-  'pretzel-pit': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'pretzelCart', 'trashBank', 'drinkingFountain'], ambient: 0x5a3e2e },
-  'frosty-freeze': { wall: ['vending', 'condiments'], sides: 'vending', corners: ['tableSet', 'trayReturn', 'trashBank', 'waterCooler'], ambient: 0x2e4a5a },
-  'antenna-annex': { wall: ['vhsShelf', 'atm'], sides: 'gondola', corners: ['atm', 'payphone', 'crates', 'waterCooler'], ambient: 0x2e4a3a },
-  'pawn-palace': { wall: ['gondola', 'crates'], sides: 'gondola', corners: ['crates', 'bin', 'saleSign', 'janitorCart'], ambient: 0x4a3a32 },
+  'shade-station': { style: 'boutique', corners: ['palm', 'bench', 'directory', 'bin'], ambient: 0x4e4a32 },
+  'page-turner': { style: 'aisles', corners: ['bench', 'palm', 'bin', 'directory'], ambient: 0x3a2e52 },
+  'pretzel-pit': { style: 'food', counterTop: ['pretzelCart', 'condiments', 'pretzelCart'], corners: ['trashBank', 'trayReturn', 'bin', 'drinkingFountain'], ambient: 0x5a3e2e },
+  'frosty-freeze': { style: 'food', counterTop: ['condiments', 'waterCooler', 'condiments'], corners: ['trashBank', 'trayReturn', 'bin', 'waterCooler'], ambient: 0x2e4a5a },
+  'antenna-annex': { style: 'aisles', corners: ['satelliteDish', 'payphone', 'palletStack', 'waterCooler'], ambient: 0x2e4a3a },
+  'pawn-palace': { style: 'aisles', corners: ['palletStack', 'bin', 'saleSign', 'janitorCart'], ambient: 0x4a3a32 },
 };
 
 /** Draw size for a prop stood in a store: a little larger than out on the concourse. */
@@ -776,43 +797,53 @@ function sized(prop: PropId, scale = 1.35): { width: number; height: number } {
 }
 
 /**
- * Inside a store: its floor wall to wall, its neon name on the back wall,
- * the back wall and side walls stocked in the store's own style, a shelf
- * behind every item for sale, checkouts either side of the door, and the
- * door itself at the bottom (drawn by MallRoomView).
+ * Inside a store: its floor wall to wall, its neon name on the back wall, the
+ * back wall lined end to end in the store's style, fitted fixtures down both
+ * side walls (in the solid strip outside the shop floor, so nothing looks
+ * solid that is not), a display table under every item for sale, tills either
+ * side of the door, and the door itself at the bottom (drawn by MallRoomView).
  */
 function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null): RoomLook {
   const look = (store && STORE_LOOKS[store.templateId]) ?? STORE_LOOKS['mall-mart']!;
   const stock = (store && INTERIOR_LOOKS[store.templateId]) ?? INTERIOR_LOOKS['mall-mart']!;
+  const style = INTERIOR_STYLES[stock.style];
   const b = INTERIOR_BOUNDS;
   const door = INTERIOR_EXIT;
   const props: DressingProp[] = [];
-  // The back wall, stocked end to end.
-  let index = 0;
-  for (let x = b.x + 50; x <= b.x + b.width - 50; x += 78) {
-    const prop = stock.wall[index % stock.wall.length]!;
-    props.push({ id: `wall-${index}`, prop, x, y: b.y + 30, ...sized(prop) });
-    index += 1;
-  }
-  // Down both side walls.
-  for (const [side, x] of [['w', b.x + 26], ['e', b.x + b.width - 26]] as const) {
-    for (let row = 0; row < 2; row += 1) {
-      props.push({ id: `side-${side}-${row}`, prop: stock.sides, x, y: b.y + 150 + row * 100, ...sized(stock.sides), flipX: side === 'e' });
+  const blocks: DressingBlock[] = [];
+  // The back wall, stood in the solid band above the shop floor and lined end to end.
+  if (style.back) {
+    const count = Math.floor((b.width - 16) / style.backWidth);
+    const step = (b.width - 16) / count;
+    for (let index = 0; index < count; index += 1) {
+      const prop = style.back[index % style.back.length]!;
+      props.push({ id: `wall-${index}`, prop, x: Math.round(b.x + 8 + step * (index + 0.5)), y: b.y + 4, ...atWidth(prop, step + 3) });
     }
+  } else {
+    // A food shop's counter runs the whole back wall, with its kitchen on top.
+    const counter: Rect = { x: b.x, y: 0, width: b.width, height: b.y };
+    blocks.push({ id: 'back-counter', material: 'counter', covers: counter, lift: BLOCK_LIFT.counter });
+    (stock.counterTop ?? []).forEach((prop, index, all) => {
+      props.push({ id: `counter-top-${index}`, prop, x: Math.round(b.x + (b.width * (index + 1)) / (all.length + 1)), y: b.y - BLOCK_LIFT.counter + 6, ...atWidth(prop, Math.min(PROP_TEXTURES[prop].width * 1.3, 90)) });
+    });
   }
-  // A shelf behind every item for sale, so it reads as on display.
+  // Down both side walls, in the strip between the drawn wall and the shop floor.
+  for (const [side, x] of [['w', 14], ['e', b.x + b.width]] as const) {
+    blocks.push({ id: `side-${side}`, material: style.sides, covers: { x, y: b.y + 40, width: b.x - 14, height: door.y - b.y - 60 }, lift: BLOCK_LIFT[style.sides] });
+  }
+  // A display table under every item for sale, so it reads as on show.
   for (const offer of room.offers.filter((candidate) => candidate.storeId === store?.templateId)) {
-    props.push({ id: `fixture-${offer.id}`, prop: look.fixture, x: offer.position.x, y: offer.position.y - 12, ...sized(look.fixture, 1.5) });
+    props.push({ id: `fixture-${offer.id}`, prop: 'displayTable', x: offer.position.x, y: offer.position.y - 2, ...atWidth('displayTable', 100) });
   }
-  // Checkouts either side of the door, and the corners.
+  // Tills either side of the door, and the corners.
   props.push(
-    { id: 'checkout', prop: 'checkout', x: door.x - 50, y: door.y - 6, width: 48, height: 42 },
-    { id: 'checkout-2', prop: 'checkout', x: door.x + door.width + 50, y: door.y - 6, width: 48, height: 42, flipX: true },
+    { id: 'checkout', prop: 'cashCounter', x: door.x - 56, y: door.y - 4, ...atWidth('cashCounter', 62) },
+    { id: 'checkout-2', prop: 'cashCounter', x: door.x + door.width + 56, y: door.y - 4, ...atWidth('cashCounter', 62), flipX: true },
   );
   const corners = [
     { x: b.x + 90, y: b.y + b.height - 30 },
-    { x: b.x + 170, y: b.y + b.height - 22 },
-    { x: b.x + b.width - 170, y: b.y + b.height - 22 },
+    { x: b.x + 190, y: b.y + b.height - 22 },
+    { x: b.x + b.width - 190, y: b.y + b.height - 22 },
     { x: b.x + b.width - 90, y: b.y + b.height - 30 },
   ];
   stock.corners.forEach((prop, i) => props.push({ id: `corner-${i}`, prop, x: corners[i]!.x, y: corners[i]!.y, ...sized(prop, 1.2) }));
@@ -829,7 +860,7 @@ function storeInterior(room: WingRoomDefinition, store: WingStoreInstance | null
     ambient: stock.ambient,
     facades: [],
     props,
-    blocks: [],
+    blocks,
     lights,
     neonStrips: [],
     neonRings: [],

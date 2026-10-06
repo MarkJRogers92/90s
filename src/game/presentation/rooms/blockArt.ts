@@ -115,6 +115,29 @@ const PAINTERS: Readonly<Record<BlockMaterial, Painter>> = {
     for (let x = front.x + 30; x < front.x + front.width - 10; x += 60) fill(out.front, x, front.y + 3, 2, front.height - 4, 0x7a1820);
     fill(out.front, front.x, front.y + front.height - 3, front.width, 3, 0x3a1014);
   },
+  // A shop's wall shelving seen from the end: boxed stock on the top shelf, shelf lips down the front.
+  shelving: (top, front, out, seed) => {
+    fill(out.top, top.x, top.y, top.width, top.height, 0x3a3a48);
+    const stock = [0xd84a4a, 0x4a8ad8, 0xe8c040, 0x5ab868, 0xe88a3a, 0xc86ad8, 0xe8e0d0];
+    for (let y = top.y + 2; y < top.y + top.height - 6; y += 7) {
+      for (let x = top.x + 2; x < top.x + top.width - 4; x += 6) {
+        const n = cellNoise(x, y, seed);
+        if (n < 0.85) {
+          fill(out.top, x, y, 5, 6, stock[Math.floor(n * 97) % stock.length]!);
+          fill(out.top, x, y, 5, 1, 0xf4f0e8);
+        }
+      }
+    }
+    fill(out.top, top.x, top.y, top.width, 1, 0x8a8a9a);
+    fill(out.front, front.x, front.y, front.width, front.height, 0x2a2a36);
+    for (let y = front.y + 4; y < front.y + front.height - 2; y += 10) {
+      fill(out.front, front.x, y, front.width, 2, 0x9a9aaa);
+      for (let x = front.x + 2; x < front.x + front.width - 4; x += 6) {
+        const n = cellNoise(x, y, seed + 7);
+        if (n < 0.8) fill(out.front, x, y - 6, 5, 6, stock[Math.floor(n * 53) % stock.length]!);
+      }
+    }
+  },
   // The water tower's legs: riveted steel girder, weathered red.
   steel: (top, front, out) => {
     fill(out.top, top.x, top.y, top.width, top.height, 0xc05a40);
