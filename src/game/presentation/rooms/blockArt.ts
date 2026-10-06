@@ -83,24 +83,31 @@ const PAINTERS: Readonly<Record<BlockMaterial, Painter>> = {
     fill(out.front, front.x, front.y + front.height - 2, front.width, 2, 0x2e343c);
     for (let x = front.x + 3; x < front.x + front.width - 2; x += 8) fill(out.front, x, front.y + 4, 1, 1, 0xa8b4c2);
   },
-  // The Upper Level's atrium: a chrome-railed opening, the floor below dim through it, glass at the front.
+  // The Upper Level's atrium: a chrome-railed opening onto the lit level below, glass at the front.
   balustrade: (top, front, out, seed) => {
-    fill(out.top, top.x, top.y, top.width, top.height, 0xc8d4e0);
-    fill(out.top, top.x + 2, top.y + 2, top.width - 4, top.height - 4, 0x0e0b16);
-    // The level below: a few lit tiles and a shopper's-eye glimmer of neon.
-    for (let y = top.y + 6; y < top.y + top.height - 6; y += 6) {
-      for (let x = top.x + 6; x < top.x + top.width - 6; x += 6) {
+    fill(out.top, top.x, top.y, top.width, top.height, 0xd8e2ec);
+    const inner = { x: top.x + 3, y: top.y + 3, width: top.width - 6, height: top.height - 6 };
+    // The level below: terrazzo tiles in its own light, a few shop windows glowing.
+    fill(out.top, inner.x, inner.y, inner.width, inner.height, 0x2a2240);
+    for (let y = inner.y; y < inner.y + inner.height; y += 8) {
+      for (let x = inner.x; x < inner.x + inner.width; x += 8) {
         const n = cellNoise(x, y, seed);
-        fill(out.top, x, y, 5, 5, n < 0.12 ? 0x2a2440 : n > 0.94 ? 0x3a2a5a : 0x17121f);
+        const tile = n < 0.08 ? 0x8a6ab8 : n > 0.93 ? 0x4ad8e8 : n > 0.5 ? 0x463a66 : 0x3c3258;
+        fill(out.top, x + 1, y + 1, Math.min(7, inner.x + inner.width - x - 1), Math.min(7, inner.y + inner.height - y - 1), tile);
       }
     }
-    fill(out.top, top.x + 2, top.y + 2, top.width - 4, 2, 0x3ff0ff);
-    fill(out.top, top.x, top.y, top.width, 1, 0xf0f6ff);
-    fill(out.front, front.x, front.y, front.width, front.height, 0x2e4a66);
-    fill(out.front, front.x, front.y, front.width, 2, 0xe0e8f0);
+    // Depth: the far wall of the opening falls away in shadow under the rail.
+    fill(out.top, inner.x, inner.y, inner.width, 6, 0x0c0a14);
+    fill(out.top, inner.x, inner.y + 6, inner.width, 3, 0x1a1428);
+    fill(out.top, inner.x, inner.y, 3, inner.height, 0x14101e);
+    fill(out.top, inner.x + inner.width - 3, inner.y, 3, inner.height, 0x14101e);
+    fill(out.top, top.x, top.y, top.width, 1, 0xffffff);
+    fill(out.top, top.x, top.y + 2, top.width, 1, 0x8a96a8);
+    fill(out.front, front.x, front.y, front.width, front.height, 0x3a6488);
+    fill(out.front, front.x, front.y, front.width, 3, 0xe8f0f8);
     for (let x = front.x + 6; x < front.x + front.width - 4; x += 18) {
-      fill(out.front, x, front.y + 3, 1, front.height - 4, 0x8ab0d0);
-      fill(out.front, x + 2, front.y + 5, 1, Math.max(1, front.height - 9), 0x5a7a98);
+      fill(out.front, x, front.y + 4, 2, front.height - 5, 0x9ac4e4);
+      fill(out.front, x + 4, front.y + 6, 1, Math.max(1, front.height - 10), 0x6a94b8);
     }
     fill(out.front, front.x, front.y + front.height - 2, front.width, 2, 0x8a96a4);
   },
