@@ -1,5 +1,26 @@
 # Test evidence
 
+## 2026-10-05 — Round 58: a visual review of every floor
+
+Branch `claude/floor-visual-review`, on `origin/main` `90204ab`.
+
+- **Unit and integration:** `npx vitest run` gives 186 files, 1967 tests, all passed (last run
+  after the shop-interior commit `f0f34f1`). New: `floor-visual-review.test.ts` (no floor
+  neon, rings only on the Helipad, reflections only on polished floors, every prop at its
+  own aspect, every collision rectangle dressed, north-south bars drawn as fitted blocks,
+  decor off the walls, shop interiors) and `floor-layouts.test.ts` (per-floor layouts and
+  furniture, flood-fill reachability, floor 1's wings pinned). `floor-four.test.ts`
+  re-pins floor 3's seed-5 fight order (same monsters, new slot order).
+- **Balance:** `npm run balance` before and after, plus 160 nights of `pro:buy,expert:buy` on
+  both. See `docs/neon-overhaul/balance/round58-layouts.md`. Floor 1 is identical. Pro
+  shopping 61% -> 57%, expert 94% -> 89%. The owner wants harder.
+- **Visual:** `scripts/floor-sweep.mjs` captured every room of floors 1-4 (boss and first
+  wings, shop interiors) before (`artifacts/floor-sweep/before`, `before34`) and after
+  (`after`, `layouts`, `interiors2`). Every image was looked at. Not committed (artifacts).
+- **Not run:** the Playwright browser gate. The owner stopped the session to free CPU before
+  it ran. Run it next: `PW_PORT=4193 npx playwright test`.
+
+
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
 
 Branch `feat/hurt-reactions`. Presentation only; no `src/sim` change, no balance change.
