@@ -31,7 +31,9 @@ no push without the owner's say-so). Presentation only; no `src/sim` change.
 
 **Still needs a person:**
 - Look at every facing next to the walk sheet, in motion. Items are in the art README.
-- **Seeing the flinch live was not achieved.** A mop hit lands during the hunter's own telegraph,
+- **Seen live for the WEST row on 2026-10-06** (`hunter-hurt-review.spec.ts` passed; strip in
+  `artifacts/live-qa/hurt-shopper-flinch/`); the other seven facings were not captured live. Earlier, with a mop,
+  the flinch was not seen: A mop hit lands during the hunter's own telegraph,
   charge or recover, and an attack pose outranks a flinch by design (`flinchOutranksAttack`), so
   the live capture showed `shopper-attack[...]` frames, not `shopper-hurt[...]`. The flinch only
   shows while it walks (`pursue`), which at mop range is a gap of a few ticks. A ranged weapon from

@@ -1,5 +1,20 @@
 # Test evidence
 
+## 2026-10-06 — Bargain Hunter west flinch seen live (PR #74)
+
+Ran `tests/browser/hunter-hurt-review.spec.ts` (from #70) in Chromium from this branch, merged with main
+at df72476: `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium npx playwright test tests/browser/hunter-hurt-review.spec.ts`.
+**1 passed (18.9 s).** The spec needs all four WEST `shopper-hurt` frames after a real laser hit during
+`pursue`, no charge or stun, no console errors and no external requests; it passed with the corrected strip
+from #69.
+- `artifacts/live-qa/hurt-shopper-flinch/west-flinch-strip.png`: the four frames cropped around the hunter
+  (impact, peak recoil, rebound, settle), facing west, bag swinging, with the hit chips and damage number.
+- **Scope:** only the WEST row was seen live. The other seven facings are covered by the format and
+  registration tests, not by a live capture.
+- The old mop capture (`artifacts/live-qa/hurt-shopper/`) still shows the attack pose winning over a flinch
+  during telegraph, charge and recover, as designed. The flinch shows in `pursue`, which this fixture reaches
+  with a ranged weapon.
+
 ## 2026-10-05 — Round 58: a visual review of every floor
 
 Branch `claude/floor-visual-review`, on `origin/main` `90204ab`.

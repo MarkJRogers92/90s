@@ -14,7 +14,8 @@ Code cloud session did. Read `AGENTS.md` first (the repo rules), then `STATUS.md
 > `gpt-sheet-raw.png` here are the provenance of `original-candidate.png` (the pre-correction sheet),
 > not of the shipped strip. The live flinch now has a reproducible check, the dev-only `mvp-hunter-hurt`
 > fixture (a real ranged hit during `pursue`) and `tests/browser/hunter-hurt-review.spec.ts`; per main's
-> README that browser run was still pending, and it has not been run from this branch either.
+> README that browser run was pending. **It was run from this branch on 2026-10-06 and passed**: the west
+> flinch is seen live (see `TEST_EVIDENCE.md`); the other seven facings were not captured live.
 
 ## 1. What was done
 
