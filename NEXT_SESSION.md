@@ -11,8 +11,9 @@ Branch `claude/floor-visual-review` holds the owner's visual review of every flo
 - lights the upper floors brighter.
 
 The unit tests (1967) and the browser gate (101 specs; see TEST_EVIDENCE.md for the load
-flakes) pass. The branch is pushed with a PR open against `main`. Next: the owner's playtest
-of floors 2-4, then merge (fetch `origin/main` first; other sessions merge there too).
+flakes) pass. The branch is committed locally, not pushed (pushing needs the owner's go-ahead). Next:
+the owner's playtest of floors 2-4, then push and merge (fetch `origin/main` first; other
+sessions merge there too).
 
 Open look items:
 - The air-hockey and roof-pipe sprites are weak.
