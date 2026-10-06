@@ -1,5 +1,30 @@
 # Next session
 
+## Round 58 (2026-10-05): start here
+
+Branch `claude/floor-visual-review` holds the owner's visual review of every floor. It is not merged or pushed. What it does:
+- removes the floor neon lines and the fountain rings;
+- stops stretching sprites to fit collision;
+- draws fitted 3/4 blocks for collision bars;
+- gives floors 2-4 their own layouts and storefront furniture;
+- fits out the shop interiors;
+- lights the upper floors brighter.
+
+The unit tests pass. **The Playwright gate has not run yet**: it was stopped to free CPU.
+
+Next:
+1. Run `PW_PORT=4193 npx playwright test`.
+2. Fetch `origin/main` and merge.
+3. Ask the owner before pushing.
+
+Open look items:
+- The atrium wells read as dark boxes near the HUD edge.
+- The air-hockey and roof-pipe sprites are weak.
+- The isometric `escalator` and `stacked-chairs-table` art is unused. It could be redone; PixelLab has 3 generations left until 2026-10-20.
+
+See the playbook's Round 58.
+
+
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
 
 Branch `feat/hurt-reactions`. Presentation only; no `src/sim` change, no balance change.
