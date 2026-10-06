@@ -1,5 +1,31 @@
 # Test evidence
 
+## 2026-10-05 — Round 58: a visual review of every floor
+
+Branch `claude/floor-visual-review`, on `origin/main` `90204ab`.
+
+- **Unit and integration:** `npx vitest run` gives 186 files, 1967 tests, all passed (last run
+  after the shop-interior commit `f0f34f1`). New: `floor-visual-review.test.ts` (no floor
+  neon, rings only on the Helipad, reflections only on polished floors, every prop at its
+  own aspect, every collision rectangle dressed, north-south bars drawn as fitted blocks,
+  decor off the walls, shop interiors) and `floor-layouts.test.ts` (per-floor layouts and
+  furniture, flood-fill reachability, floor 1's wings pinned). `floor-four.test.ts`
+  re-pins floor 3's seed-5 fight order (same monsters, new slot order).
+- **Balance:** `npm run balance` before and after, plus 160 nights of `pro:buy,expert:buy` on
+  both. See `docs/neon-overhaul/balance/round58-layouts.md`. Floor 1 is identical. Pro
+  shopping 61% -> 57%, expert 94% -> 89%. The owner wants harder.
+- **Visual:** `scripts/floor-sweep.mjs` captured every room of floors 1-4 (boss and first
+  wings, shop interiors) before (`artifacts/floor-sweep/before`, `before34`) and after
+  (`after`, `layouts`, `interiors2`). Every image was looked at. Not committed (artifacts).
+- **Browser gate** (`PW_PORT=4193 npx playwright test`, after `3a27d8f`): all 101 specs pass.
+  - The full parallel run passed 85 and failed 16. Fourteen of the failures were 30 s timeouts.
+    Two were real-input walks that timed out: the bakery and slush props, and the civilians.
+  - Run serially (`--last-failed --workers=1`), 14 of the 16 passed.
+  - The other two (`night-shift.spec.ts:194`, the candy-cauldron slush in
+    `normal-room-props.spec.ts:47`) passed when run alone, then 9/9 with `--repeat-each=3`. They
+    also pass on `origin/main`. So they are load flakes, not regressions.
+- **Unit and integration, final:** 186 files, 1967 tests, all passed, after the atrium commit.
+
 ## 2026-10-04 UTC — Bargain Hunter hurt strip drawn with GPT image
 
 Presentation art only; no `src/sim` change, no balance change.

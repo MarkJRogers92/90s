@@ -3398,5 +3398,115 @@
       160
     ],
     "sha256": "342a0f6a726d9ac6b957705cecb758a3e11e07922b3a279cb12e6d078de98bda"
+  },
+  {
+    "path": "public/assets/neon/props/store-shelf-unit.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/store-shelf-unit.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      46,
+      69
+    ],
+    "sha256": "e6f605052ff9f46a67ae1a4eec1d940c5808763e864f9499b6778eb180c29716"
+  },
+  {
+    "path": "public/assets/neon/props/display-table.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/display-table.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      51,
+      42
+    ],
+    "sha256": "2eb8fd6f5418991d1b00d1d27b6ab4749438d6efd13fd770069639f6f99d4272"
+  },
+  {
+    "path": "public/assets/neon/props/cash-counter.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/cash-counter.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      60,
+      56
+    ],
+    "sha256": "f66a90732bb235aeeb404150d3ca4595ccd94f37c24c2b9984a654e3337becf5"
+  },
+  {
+    "path": "public/assets/neon/props/popcorn-cart.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/popcorn-cart.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      38,
+      70
+    ],
+    "sha256": "99a59899e7885a6247f10b3377ab359a58664ffae2712c9001aa672da02a7c47"
+  },
+  {
+    "path": "public/assets/neon/props/velvet-rope.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/velvet-rope.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      89,
+      39
+    ],
+    "sha256": "e4a24ea14417344072900e1a075ae374fbe9182e14fc648653f9b33bd6b8c1d3"
+  },
+  {
+    "path": "public/assets/neon/props/escalator.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/escalator.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      124,
+      90
+    ],
+    "sha256": "32954075b22cfa2b6740bf31857aa7d4dff19c38ec774fa5263150b3ebdf5a07"
+  },
+  {
+    "path": "public/assets/neon/props/stacked-chairs-table.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/stacked-chairs-table.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      55,
+      52
+    ],
+    "sha256": "bf2e1897ac19f87ff0a11042f211feadc3cfae8ce6e95d4e153cfb8c818b3a0d"
+  },
+  {
+    "path": "public/assets/neon/props/air-hockey.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/air-hockey.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      58,
+      35
+    ],
+    "sha256": "2705f8dd66de6aad599b86f74ebb76cb1fea3bbc452b16c0e8e8f54286851589"
+  },
+  {
+    "path": "public/assets/neon/props/satellite-dish.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/satellite-dish.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      39,
+      54
+    ],
+    "sha256": "ccfe370dbd1a159cc95db2d9684bd24f881de85fca35cf9f363244041f395cd0"
+  },
+  {
+    "path": "public/assets/neon/props/pallet-stack.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/pallet-stack.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      54,
+      50
+    ],
+    "sha256": "27b7eac68308de7dd76208b4fa0bc0c1d695ecf10ad4c9806538f29b87710a6b"
+  },
+  {
+    "path": "public/assets/neon/props/roof-pipes.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/roof-pipes.png",
+    "generator": "PixelLab create_map_object",
+    "size": [
+      104,
+      17
+    ],
+    "sha256": "384c8748e1e18565e640bf1b91bb8ede8026a0ac8efa26dea2d061e828e7fe54"
   }
 ]

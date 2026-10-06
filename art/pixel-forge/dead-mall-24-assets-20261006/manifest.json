@@ -1,0 +1,1977 @@
+[
+  {
+    "library_id": "20261005-231706-dead-mall-shoebox-display-tower-one-free-f58f",
+    "size": [
+      48,
+      64
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        64
+      ],
+      "opaque_pixels": 2060,
+      "warnings": [
+        "337 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        2,
+        2,
+        45,
+        62
+      ],
+      "fill_of_canvas": 0.87,
+      "colors": 32,
+      "orphan_pixels": 337,
+      "outline_coverage": 0.86,
+      "components": 1,
+      "mirror_symmetry": 0.08,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "7 pair(s) of near-identical colours, e.g. #ddc8aa and #e6d2b3; merge them.",
+            "count": 7
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Transparent background and complete silhouette with 2px margin",
+        "Three-quarter top-down projection matching DEAD MALL props",
+        "Readable sneaker and separated box tiers at native resolution",
+        "No gibberish lettering, no floor plane, no extra objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 1,
+    "name": "Shoebox display tower",
+    "request_id": "dm-20261006-b24-01-shoebox",
+    "qa_visual": "Pass at 1x and 2x: readable sneaker, shoe boxes, slim steel stand; full isolated silhouette. Four boxes rather than six; acceptable useful retail prop.",
+    "prompt": "DEAD MALL shoebox display tower. One freestanding 1990s mall shoe-store retail display: narrow dark steel three-tier stepped stand holding six closed cream cardboard shoe boxes with small cyan and magenta lid strips, one cream athletic sneaker displayed clearly on the top shelf. Three-quarter top-down late SNES/GBA game perspective, front dominant and narrow visible right depth, upright verticals. Match dead-mall-current-props-20260930: steel gray, deep navy shadows, cream/gold highlights, restrained cyan/magenta. Clean detailed pixel art, bold readable silhouette, deliberate pixel clusters, sparse wear, selective dark outlines. Single complete isolated prop, transparent background, 2px breathing room. No floor, room, people, extra objects, letters or words, no large cast shadow. Native 48x64 canvas.",
+    "filename": "01-shoebox.png",
+    "sha256": "7d9a21076281abd188dc6c8dacb9cd5b0d38a50ec296bb3525e7f91a2d421beb",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-231854-one-freestanding-1990s-mall-hat-display--58fa",
+    "size": [
+      48,
+      64
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        64
+      ],
+      "opaque_pixels": 1521,
+      "warnings": [
+        "129 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        1,
+        45,
+        62
+      ],
+      "fill_of_canvas": 0.91,
+      "colors": 32,
+      "orphan_pixels": 129,
+      "outline_coverage": 0.72,
+      "components": 1,
+      "mirror_symmetry": 0.13,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "2 pair(s) of near-identical colours, e.g. #090a13 and #0e121f; merge them.",
+            "count": 2
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background, full silhouette and 2px margins",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish letters or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 2,
+    "name": "Hat display spinner",
+    "request_id": "dm-20261006-b24-02-hat-spinner",
+    "prompt": "One freestanding 1990s mall hat display spinner: slim brass central pole on a dark four-foot base, three staggered circular tiers with six distinct baseball caps, alternating cream, muted cyan and dusty magenta. Clear cap brims, airy gaps between tiers, no clothing rack. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 48x64.",
+    "qa_visual": "Pass at 1x/2x: six distinct baseball caps, open brass rack, stable base. Thin limbs intentional; one pixel breathing room at closest edge.",
+    "filename": "02-hat-spinner.png",
+    "sha256": "3cc7e50fb85396db4573cb97592474ff47ea3757748eeab9ca74575f3213e8b5",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-232037-one-countertop-rotating-sunglasses-stand-8a38",
+    "size": [
+      32,
+      48
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        32,
+        48
+      ],
+      "opaque_pixels": 1076,
+      "warnings": [
+        "174 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        3,
+        2,
+        29,
+        46
+      ],
+      "fill_of_canvas": 0.79,
+      "colors": 32,
+      "orphan_pixels": 174,
+      "outline_coverage": 0.79,
+      "components": 1,
+      "mirror_symmetry": 0.16,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 21-pixel straight boundary between #927948 and #60523c; let the edge wander or dither part of it.",
+            "at": [
+              21,
+              11
+            ],
+            "count": 21
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "4 pair(s) of near-identical colours, e.g. #dbd3bc and #d1c4ae; merge them.",
+            "count": 4
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 3,
+    "name": "Sunglasses display stand",
+    "request_id": "dm-20261006-b24-03-sunglasses",
+    "prompt": "One countertop rotating sunglasses stand: narrow cream upright four-sided display column with three orderly pairs of black sunglasses on its front, cyan tinted lenses, small dark circular rotating base, brass top cap. No extra glasses lying around. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 32x48.",
+    "qa_visual": "Pass at 1x/2x: three legible sunglasses pairs with cyan lenses and rotary cream/brass stand; crisp silhouette and clean transparency.",
+    "filename": "03-sunglasses.png",
+    "sha256": "99dae2a3701fcbf34429899b2ba471868b99fc1d5da7946b1c1e5f64705d1e9c",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-232217-one-low-open-top-1990s-music-store-casse-91c9",
+    "size": [
+      48,
+      48
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        48
+      ],
+      "opaque_pixels": 1582,
+      "warnings": [
+        "250 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        46,
+        46
+      ],
+      "fill_of_canvas": 0.9,
+      "colors": 32,
+      "orphan_pixels": 250,
+      "outline_coverage": 0.81,
+      "components": 1,
+      "mirror_symmetry": 0.23,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 17-pixel straight boundary between #0c2253 and #313248; let the edge wander or dither part of it.",
+            "at": [
+              44,
+              10
+            ],
+            "count": 17
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "4 pair(s) of near-identical colours, e.g. #d5ccb6 and #e4d7bb; merge them.",
+            "count": 4
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 4,
+    "name": "Cassette bargain bin",
+    "request_id": "dm-20261006-b24-04-cassette-bin",
+    "prompt": "One low open-top 1990s music-store cassette bargain bin, navy metal body on four short legs, densely packed upright cassette cases in three neat rows, cream spines with small magenta cyan bands, several visible rectangular cassette windows. No text. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 48x48.",
+    "qa_visual": "Pass at 1x/2x: three cassette rows with recognizable front windows, compact navy bargain bin and readable legs; no extra floor.",
+    "filename": "04-cassette-bin.png",
+    "sha256": "21f6830d637936e8f0f734013eba0dea7b62778e50f0c340179d205fe905554c",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-232404-one-compact-department-store-perfume-tes-71ba",
+    "size": [
+      40,
+      48
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        40,
+        48
+      ],
+      "opaque_pixels": 1309,
+      "warnings": [
+        "224 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        2,
+        2,
+        38,
+        46
+      ],
+      "fill_of_canvas": 0.87,
+      "colors": 32,
+      "orphan_pixels": 224,
+      "outline_coverage": 0.65,
+      "components": 1,
+      "mirror_symmetry": 0.12,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "3 pair(s) of near-identical colours, e.g. #d7c4a9 and #e4d4b8; merge them.",
+            "count": 3
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 5,
+    "name": "Perfume tester pedestal",
+    "request_id": "dm-20261006-b24-05-perfume",
+    "prompt": "One compact department-store perfume tester pedestal, cream rectangular plinth with brass trim and dark navy inset front panel, shallow glass-edged top holding three chunky differently shaped perfume bottles in cyan magenta and amber with small gold caps. Keep bottle silhouettes readable. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 40x48.",
+    "qa_visual": "Pass at 1x/2x: clearly separated cyan, magenta and amber perfume bottles atop cream/gold plinth, clean silhouette and no text.",
+    "filename": "05-perfume.png",
+    "sha256": "3351e6bf9cb4de1301dee3fd519873ee0c0c59159bda745624099ac15d7a72d1",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-232547-one-1990s-mall-gift-wrapping-station-com-c07f",
+    "size": [
+      64,
+      48
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        64,
+        48
+      ],
+      "opaque_pixels": 2128,
+      "warnings": [
+        "160 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        60,
+        46
+      ],
+      "fill_of_canvas": 0.88,
+      "colors": 32,
+      "orphan_pixels": 160,
+      "outline_coverage": 0.84,
+      "components": 1,
+      "mirror_symmetry": 0.11,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "2 pair(s) of near-identical colours, e.g. #e1d3bb and #eddab9; merge them.",
+            "count": 2
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 6,
+    "name": "Gift wrapping station",
+    "request_id": "dm-20261006-b24-06-gift-wrap",
+    "prompt": "One 1990s mall gift-wrapping station: compact cream counter with dark navy side and one open cubby containing two cream gift boxes, horizontal rear spindle holding magenta paper roll and thin cyan ribbon roll, small neat wrapped gold parcel on counter. One connected compact prop. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 64x48.",
+    "qa_visual": "Pass at 1x/2x: distinctive rear magenta roll, ribbon, gold parcel, tidy cream wrapping counter and boxed cubby; strong game-scale readability.",
+    "filename": "06-gift-wrap.png",
+    "sha256": "656b8e546d001df1630216552f4d2881e13edbb802f66237b10096a1168d2b47",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-232734-one-vintage-commercial-countertop-espres-f1aa",
+    "size": [
+      48,
+      40
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        40
+      ],
+      "opaque_pixels": 1392,
+      "warnings": [
+        "272 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        45,
+        38
+      ],
+      "fill_of_canvas": 0.87,
+      "colors": 32,
+      "orphan_pixels": 272,
+      "outline_coverage": 0.65,
+      "components": 1,
+      "mirror_symmetry": 0.12,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "7 pair(s) of near-identical colours, e.g. #dec39d and #e9d2ac; merge them.",
+            "count": 7
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 7,
+    "name": "Espresso machine",
+    "request_id": "dm-20261006-b24-07-espresso",
+    "prompt": "One vintage commercial countertop espresso machine: boxy brushed steel body with cream top and dark navy lower front, two protruding black portafilter handles, thin steam wand on right, ridged drip tray below, one tiny white cup under left spout, two brass round gauges. No counter. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 48x40.",
+    "qa_visual": "Pass at 1x/2x: readable dual-head espresso machine, cream cup, gauges and steel drip tray; fine machinery detail intentionally denser but silhouette stays clear.",
+    "filename": "07-espresso.png",
+    "sha256": "e8a7bdc3ccb5d68c19eeace5781f7de69dc572dca5a4ebca6dbb3a69361373fe",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-232916-one-compact-food-court-countertop-hotdog-87b5",
+    "size": [
+      48,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        32
+      ],
+      "opaque_pixels": 1005,
+      "warnings": [
+        "133 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        1,
+        46,
+        30
+      ],
+      "fill_of_canvas": 0.9,
+      "colors": 32,
+      "orphan_pixels": 133,
+      "outline_coverage": 0.37,
+      "components": 1,
+      "mirror_symmetry": 0.15,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "1 pair(s) of near-identical colours, e.g. #080917 and #0c0e21; merge them.",
+            "count": 1
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 8,
+    "name": "Hotdog roller grill",
+    "request_id": "dm-20261006-b24-08-hotdog",
+    "prompt": "One compact food-court countertop hotdog roller grill: low brushed-steel rectangular base with dark front controls, six parallel silver rollers on top with three warm russet sausages, clear angular glass sneeze-guard canopy supported by two narrow side struts. Single prop no counter. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 48x32.",
+    "qa_visual": "Pass at 1x/2x: three distinct sausages over steel rollers, transparent sneeze guard reads via cyan edge glints, fully contained compact machine.",
+    "filename": "08-hotdog.png",
+    "sha256": "e2be2e351ad847ec00b6dd78aea856c4d09fd1afc9f3e598121652de4e5e014f",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-233101-one-open-commercial-waffle-iron-on-a-sma-c7ce",
+    "size": [
+      32,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        32,
+        32
+      ],
+      "opaque_pixels": 395,
+      "warnings": [
+        "99 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        6,
+        1,
+        25,
+        30
+      ],
+      "fill_of_canvas": 0.59,
+      "colors": 32,
+      "orphan_pixels": 99,
+      "outline_coverage": 0.71,
+      "components": 1,
+      "mirror_symmetry": 0.16,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "5 pair(s) of near-identical colours, e.g. #0e0c19 and #0f0e21; merge them.",
+            "count": 5
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 9,
+    "name": "Open waffle iron",
+    "request_id": "dm-20261006-b24-09-waffle",
+    "prompt": "One open commercial waffle iron on a small cream rectangular base, dark navy hinged circular lid tilted upright at rear revealing a gold square-grid cooking plate, matching round waffle-grid lower plate, thick black horizontal handle, small red indicator light. No food or countertop. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 32x32.",
+    "qa_visual": "Pass at 1x/2x: small open clamshell waffle iron, two gold gridded plates and cream base; thin handle retained. Best used on counters rather than as large scene anchor.",
+    "filename": "09-waffle.png",
+    "sha256": "60f0632aa9bd1f452d068093d87b07c2379739cd7480e151d87ac85005711e88",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-233247-one-abandoned-cafeteria-tray-lying-flat--12da",
+    "size": [
+      32,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        32,
+        32
+      ],
+      "opaque_pixels": 684,
+      "warnings": [
+        "102 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        4,
+        30,
+        28
+      ],
+      "fill_of_canvas": 0.73,
+      "colors": 32,
+      "orphan_pixels": 102,
+      "outline_coverage": 0.43,
+      "components": 1,
+      "mirror_symmetry": 0.38,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 24-pixel straight boundary between #58e6f0 and #0b193e; let the edge wander or dither part of it.",
+            "at": [
+              4,
+              26
+            ],
+            "count": 24
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 10,
+    "name": "Abandoned food tray",
+    "request_id": "dm-20261006-b24-10-food-tray",
+    "prompt": "One abandoned cafeteria tray lying flat, foreshortened rectangular cyan plastic tray with raised rim, crumpled cream burger wrapper and half-eaten golden fries in small magenta carton, tipped cream paper cup contained within tray. Distinct readable three objects within tray. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 32x32.",
+    "qa_visual": "Pass at 1x/2x as colorful food-court clutter: cyan rim encloses wrapper, fries carton and tipped cup. More overhead than tall props by design; strong readable small clutter silhouette.",
+    "filename": "10-food-tray.png",
+    "sha256": "10ba2197bddc7aabfcf544692341c3ed849457df7fdd739909d04e20b3ccea21",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-233434-one-dark-cyan-rectangular-plastic-restau-4d54",
+    "size": [
+      32,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        32,
+        32
+      ],
+      "opaque_pixels": 623,
+      "warnings": [
+        "139 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        30,
+        30
+      ],
+      "fill_of_canvas": 0.85,
+      "colors": 32,
+      "orphan_pixels": 139,
+      "outline_coverage": 0.73,
+      "components": 1,
+      "mirror_symmetry": 0.11,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "13 pair(s) of near-identical colours, e.g. #d6be93 and #d6be9c; merge them.",
+            "count": 13
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 11,
+    "name": "Dish bussing tub",
+    "request_id": "dm-20261006-b24-11-bus-tub",
+    "prompt": "One dark cyan rectangular plastic restaurant dish-bussing tub with thick rolled rim and two inset grip handles, top visible, three cream plates stacked inside and a single small magenta cup tipped against them. Compact low prop with readable open interior. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 32x32.",
+    "qa_visual": "Pass at 1x/2x: open navy/cyan bussing tub with stacked cream dishes and magenta cup; strong low-box silhouette, no debris outside canvas.",
+    "filename": "11-bus-tub.png",
+    "sha256": "ed259a1d8c92e68ca7b04fd8785165022b0974e37e14c3ea5d0dcf6f66af989b",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-233810-dead-mall-spill-kit-bucket-handle-cleara-aad9",
+    "parent_asset_id": "20261005-233621-one-industrial-spill-kit-bucket-tall-gol-815e",
+    "size": [
+      32,
+      40
+    ],
+    "qa": {
+      "size": [
+        32,
+        40
+      ],
+      "opaque_pixels": 775,
+      "warnings": [
+        "91 isolated single pixels (noisy texture)",
+        "32 output colors differ from the profile palette (preference)"
+      ],
+      "bbox": [
+        2,
+        2,
+        29,
+        38
+      ],
+      "fill_of_canvas": 0.81,
+      "colors": 32,
+      "orphan_pixels": 91,
+      "outline_coverage": 0.48,
+      "components": 1,
+      "mirror_symmetry": 0.15,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "6 pair(s) of near-identical colours, e.g. #f9c700 and #efc515; merge them.",
+            "count": 6
+          }
+        ],
+        "passed": true,
+        "score": 100
+      },
+      "checks_run": [
+        "dimensions",
+        "rgba_bytes",
+        "palette_limit",
+        "png_roundtrip",
+        "strays",
+        "outline",
+        "banding",
+        "near_duplicate_colors",
+        "partial_alpha",
+        "profile_palette_preference"
+      ],
+      "automatic_cleanup": false
+    },
+    "repair": {
+      "request_id": "dm-20261006-b24-12-spill-kit-handle",
+      "method": "direct pixel edit",
+      "source_sha256": "61544fe4c5bc2b86b41941b005e2ae6604f5deea2dc76de87e11d359f7a5cddb",
+      "output_sha256": "cf081aea2005d25d28f917098efd5a0f88dd455549e131e3bd04dff4855261d0"
+    },
+    "index": 12,
+    "name": "Spill kit bucket",
+    "request_id": "dm-20261006-b24-12-spill-kit",
+    "prompt": "One industrial spill-kit bucket: tall golden-yellow cylindrical lidded pail with strong dark navy horizontal band, folded cream absorbent pad strapped on its front, dark metal carry handle arcing upward. Plain hazard diamond shape without letters. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 32x40.",
+    "qa_visual": "Pass at 1x/2x after focused direct edit: bucket and absorbent pad readable; handle now has two transparent rows of top clearance. No model repair or new generation.",
+    "filename": "12-spill-kit.png",
+    "sha256": "cf081aea2005d25d28f917098efd5a0f88dd455549e131e3bd04dff4855261d0",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1). Focused direct-pixel handle correction; original preserved.",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-233834-one-waist-high-1990s-mall-service-entran-efdc",
+    "size": [
+      48,
+      48
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        48
+      ],
+      "opaque_pixels": 1076,
+      "warnings": [
+        "170 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        44,
+        45
+      ],
+      "fill_of_canvas": 0.84,
+      "colors": 32,
+      "orphan_pixels": 170,
+      "outline_coverage": 0.69,
+      "components": 1,
+      "mirror_symmetry": 0.04,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 25-pixel straight boundary between #4f5d6e and #3f4d60; let the edge wander or dither part of it.",
+            "at": [
+              35,
+              18
+            ],
+            "count": 25
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "2 pair(s) of near-identical colours, e.g. #e9dfc1 and #f1e4c1; merge them.",
+            "count": 2
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 13,
+    "name": "Security turnstile",
+    "request_id": "dm-20261006-b24-13-turnstile",
+    "prompt": "One waist-high 1990s mall service entrance mechanical tripod turnstile, cream rectangular main housing with navy side and cyan reader plate on top, three thick chrome arms radiating from front brass hub, two firmly planted dark vertical support posts. No fence or floor. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 48x48.",
+    "qa_visual": "Pass at 1x/2x: three mechanical arms from clear hub, cyan reader, two steel support posts, clean open gaps. Useful service-entry obstacle.",
+    "filename": "13-turnstile.png",
+    "sha256": "294beaf16a81e3483302670c94952c76c268ae146d222108c2185e8935eee6a9",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-234018-one-vintage-wall-mounted-cctv-security-c-e18a",
+    "size": [
+      32,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        32,
+        32
+      ],
+      "opaque_pixels": 464,
+      "warnings": [
+        "88 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        30,
+        30
+      ],
+      "fill_of_canvas": 0.85,
+      "colors": 32,
+      "orphan_pixels": 88,
+      "outline_coverage": 0.68,
+      "components": 1,
+      "mirror_symmetry": 0.06,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "29 pair(s) of near-identical colours, e.g. #b9ad99 and #c2b6a0; merge them.",
+            "count": 29
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 14,
+    "name": "CCTV wall camera",
+    "request_id": "dm-20261006-b24-14-cctv",
+    "prompt": "One vintage wall-mounted CCTV security camera: long cream rectangular weather hood with deep navy lens opening aimed diagonally down-left, dark steel swivel bracket descending behind to small rectangular wall plate, tiny red recording light. Entire mount visible, no wall. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 32x32.",
+    "qa_visual": "Pass at 1x/2x: unmistakable cream CCTV hood and navy lens aimed down-left, red status pixel and connected wall bracket. No wall plane.",
+    "filename": "14-cctv.png",
+    "sha256": "159a4263f96a68b08402818b8f205500f11180d2d442dd36b46dea4abb3c0e3a",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-234201-one-wall-mounted-red-emergency-alarm-pul-fc35",
+    "size": [
+      24,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        24,
+        32
+      ],
+      "opaque_pixels": 575,
+      "warnings": [
+        "95 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        22,
+        30
+      ],
+      "fill_of_canvas": 0.83,
+      "colors": 32,
+      "orphan_pixels": 95,
+      "outline_coverage": 0.67,
+      "components": 1,
+      "mirror_symmetry": 0.15,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 17-pixel straight boundary between #500c1c and #131224; let the edge wander or dither part of it.",
+            "at": [
+              21,
+              7
+            ],
+            "count": 17
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "4 pair(s) of near-identical colours, e.g. #090713 and #0c0c1b; merge them.",
+            "count": 4
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 15,
+    "name": "Alarm call point",
+    "request_id": "dm-20261006-b24-15-alarm",
+    "prompt": "One wall-mounted red emergency alarm pull station, rectangular aged red metal body with slanted protective top lip, recessed cream rectangular pull handle in lower half, small dark indicator window above. No words, letters or wall. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 24x32.",
+    "qa_visual": "Pass at 1x/2x: red emergency pull station with cream handle and inset dark window; legible at small scale and no text artifacts.",
+    "filename": "15-alarm.png",
+    "sha256": "2a550d8abd547f0faa8aaf1656b3aaedfa081178ba0d537040124a924faa2ee4",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-234353-one-open-cream-metal-security-key-cabine-927f",
+    "size": [
+      40,
+      48
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        40,
+        48
+      ],
+      "opaque_pixels": 1488,
+      "warnings": [
+        "249 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        3,
+        38,
+        46
+      ],
+      "fill_of_canvas": 0.87,
+      "colors": 32,
+      "orphan_pixels": 249,
+      "outline_coverage": 0.82,
+      "components": 1,
+      "mirror_symmetry": 0.05,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 19-pixel straight boundary between #727272 and #0d1a37; let the edge wander or dither part of it.",
+            "at": [
+              37,
+              14
+            ],
+            "count": 19
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "23 pair(s) of near-identical colours, e.g. #c6bba6 and #d0c4ab; merge them.",
+            "count": 23
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 16,
+    "name": "Open security key cabinet",
+    "request_id": "dm-20261006-b24-16-key-cabinet",
+    "prompt": "One open cream metal security key cabinet with its single door swung to left, dark navy interior displaying six clearly separated small gold keys on two rows of hooks, small louver slots in inside door, visible slim rectangular case thickness. No wall. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 40x48.",
+    "qa_visual": "Pass at 1x/2x: exactly six visible gold keys in dark cabinet, open left door with vents; clear interaction-point prop, consistent shallow perspective.",
+    "filename": "16-key-cabinet.png",
+    "sha256": "a2657bf0f1666bdcb8f7b38c3ef1136b4cef666e7fde6f9988d00f8d23fcfd88",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-234519-one-portable-folding-maintenance-barrica-d61b",
+    "size": [
+      64,
+      40
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        64,
+        40
+      ],
+      "opaque_pixels": 982,
+      "warnings": [
+        "121 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        3,
+        62,
+        37
+      ],
+      "fill_of_canvas": 0.85,
+      "colors": 32,
+      "orphan_pixels": 121,
+      "outline_coverage": 0.68,
+      "components": 1,
+      "mirror_symmetry": 0.1,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "23 pair(s) of near-identical colours, e.g. #d4cbb5 and #d8cab3; merge them.",
+            "count": 23
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 17,
+    "name": "Folding service barricade",
+    "request_id": "dm-20261006-b24-17-barricade",
+    "prompt": "One portable folding maintenance barricade, two silver-gray A-frame trestle legs supporting a horizontal cream board with four broad alternating amber and navy diagonal warning stripes, compact stable feet and slight top visible. No lettering, no traffic cone. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 64x40.",
+    "qa_visual": "Pass at 1x/2x: legible amber/navy diagonal warning board and two A-frame supports; thin legs connected and complete.",
+    "filename": "17-barricade.png",
+    "sha256": "9f2e814700400be649eb6d24378d978dcb90d1a60efd8321255c7654267c7d21",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-234635-one-upright-red-fire-extinguisher-rounde-c914",
+    "size": [
+      24,
+      40
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        24,
+        40
+      ],
+      "opaque_pixels": 545,
+      "warnings": [
+        "44 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        2,
+        22,
+        38
+      ],
+      "fill_of_canvas": 0.85,
+      "colors": 32,
+      "orphan_pixels": 44,
+      "outline_coverage": 0.81,
+      "components": 1,
+      "mirror_symmetry": 0.14,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "10 pair(s) of near-identical colours, e.g. #d7c4a4 and #e5d4b5; merge them.",
+            "count": 10
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 18,
+    "name": "Fire extinguisher",
+    "request_id": "dm-20261006-b24-18-extinguisher",
+    "prompt": "One upright red fire extinguisher, rounded cylindrical scarlet steel tank with dark navy lower rim, cream blank label band, brass valve with small round gauge, black squeeze handle and short black hose curving down its right side. No wall bracket. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 24x40.",
+    "qa_visual": "Pass at 1x/2x: red extinguisher, cream label, black handle/hose and brass gauge all readable; no cropping or stray detached pixels.",
+    "filename": "18-extinguisher.png",
+    "sha256": "a5743f0be5bac2e73852a71583bbc5da20e25c712614a4a37d008e3bb25b006a",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-234752-one-horizontal-hanging-mall-restroom-sig-8c43",
+    "size": [
+      48,
+      24
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        24
+      ],
+      "opaque_pixels": 689,
+      "warnings": [
+        "86 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        2,
+        2,
+        45,
+        21
+      ],
+      "fill_of_canvas": 0.76,
+      "colors": 32,
+      "orphan_pixels": 86,
+      "outline_coverage": 0.63,
+      "components": 1,
+      "mirror_symmetry": 0.29,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 25-pixel straight boundary between #727d90 and #8d98a8; let the edge wander or dither part of it.",
+            "at": [
+              12,
+              7
+            ],
+            "count": 25
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "21 pair(s) of near-identical colours, e.g. #efe1aa and #e9daa2; merge them.",
+            "count": 21
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 19,
+    "name": "Restroom pictogram sign",
+    "request_id": "dm-20261006-b24-19-restroom-sign",
+    "prompt": "One horizontal hanging mall restroom sign, cream rectangular lightbox with slim navy edge and two short dark suspension rods, three simple bold navy pictograms: standing person, skirted person, wheelchair circle. Small magenta accent stripe. No letters. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 48x24.",
+    "qa_visual": "Pass at 1x/2x: three restroom/accessibility pictograms recognizable with two short hanging supports; cream face and restrained magenta trim, no lettering.",
+    "filename": "19-restroom-sign.png",
+    "sha256": "2af5f524bcfd493aa68fe37350a29b95ee67a066610247db7a3142ca9ba44eec",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-234906-one-horizontal-1990s-mall-wayfinding-lig-7cd2",
+    "size": [
+      48,
+      24
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        48,
+        24
+      ],
+      "opaque_pixels": 670,
+      "warnings": [
+        "68 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        3,
+        2,
+        44,
+        21
+      ],
+      "fill_of_canvas": 0.73,
+      "colors": 32,
+      "orphan_pixels": 68,
+      "outline_coverage": 0.67,
+      "components": 1,
+      "mirror_symmetry": 0.36,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "banding",
+            "severity": "note",
+            "message": "A 19-pixel straight boundary between #00000c and #95259c; let the edge wander or dither part of it.",
+            "at": [
+              7,
+              20
+            ],
+            "count": 19
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "17 pair(s) of near-identical colours, e.g. #f0e8b9 and #fbefb7; merge them.",
+            "count": 17
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 20,
+    "name": "Directional arrow lightbox",
+    "request_id": "dm-20261006-b24-20-arrow-sign",
+    "prompt": "One horizontal 1990s mall wayfinding lightbox, thick navy casing and cream illuminated face with one large solid cyan right-pointing arrow, thin magenta lower accent bar, two short top suspension brackets. No text or other symbols. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 48x24.",
+    "qa_visual": "Pass at 1x/2x: bold cyan right arrow on cream lightbox, dark frame and magenta lower accent, complete brackets; clear wayfinding silhouette.",
+    "filename": "20-arrow-sign.png",
+    "sha256": "97be4f339aff0e6dd1789a35674d94c8931582644bb7f34e62c0bf04913fc8aa",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-235021-one-small-coherent-floor-clutter-cluster-c820",
+    "size": [
+      40,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        40,
+        32
+      ],
+      "opaque_pixels": 759,
+      "warnings": [
+        "100 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        1,
+        38,
+        30
+      ],
+      "fill_of_canvas": 0.89,
+      "colors": 32,
+      "orphan_pixels": 100,
+      "outline_coverage": 0.59,
+      "components": 1,
+      "mirror_symmetry": 0.04,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "1 pair(s) of near-identical colours, e.g. #c5ad91 and #b8a188; merge them.",
+            "count": 1
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 21,
+    "name": "Toppled shopping bags",
+    "request_id": "dm-20261006-b24-21-bags",
+    "prompt": "One small coherent floor-clutter cluster of two toppled paper shopping bags, one cream with magenta handles and one muted cyan with gold handles, crumpled paper rims, a little cream tissue paper sticking out, perspective matching top-down game. No logos, merchandise or floor. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 40x32.",
+    "qa_visual": "Pass at 1x/2x: two fallen shopping bags in cream and muted cyan, colored handles and tissue clearly separated; coherent floor clutter without ground plane.",
+    "filename": "21-bags.png",
+    "sha256": "2e0b7e9b8016166d7386dad4eaafc4a379b41e67a24be000a9c4157e670e27c4",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-235209-one-partially-unfolded-crumpled-cream-pa-9016",
+    "size": [
+      32,
+      24
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        32,
+        24
+      ],
+      "opaque_pixels": 416,
+      "warnings": [
+        "107 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        1,
+        30,
+        22
+      ],
+      "fill_of_canvas": 0.86,
+      "colors": 32,
+      "orphan_pixels": 107,
+      "outline_coverage": 0.44,
+      "components": 1,
+      "mirror_symmetry": 0.05,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "7 pair(s) of near-identical colours, e.g. #e1cda9 and #ecd9b4; merge them.",
+            "count": 7
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 22,
+    "name": "Crumpled mall map",
+    "request_id": "dm-20261006-b24-22-map",
+    "prompt": "One partially unfolded crumpled cream paper mall map lying flat, readable three-panel zigzag fold with two raised corners, sparse cyan and magenta rectangular store blocks and tiny navy corridor lines, no words or letters, no floor or shadow plane. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 32x24.",
+    "qa_visual": "Pass at 1x/2x: folded cream map with cyan/magenta store blocks and visible zigzag paper contour, no fake text; strong small floor-clutter accent.",
+    "filename": "22-map.png",
+    "sha256": "4b221e0613ad92b0bf5dab2b58c643464bd1c2ffd3244ff98f50a0b26e984969",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-235406-one-portable-maintenance-extension-cable-0272",
+    "size": [
+      40,
+      40
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        40,
+        40
+      ],
+      "opaque_pixels": 906,
+      "warnings": [
+        "167 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        1,
+        38,
+        38
+      ],
+      "fill_of_canvas": 0.9,
+      "colors": 32,
+      "orphan_pixels": 167,
+      "outline_coverage": 0.78,
+      "components": 1,
+      "mirror_symmetry": 0.05,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "6 pair(s) of near-identical colours, e.g. #0e0c13 and #0f0e1a; merge them.",
+            "count": 6
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 23,
+    "name": "Extension cable reel",
+    "request_id": "dm-20261006-b24-23-extension-reel",
+    "prompt": "One portable maintenance extension cable reel: dark steel A-frame stand and top grab handle holding a circular magenta cable drum, three concentric cable loops and cream hub with two dark square sockets, short cyan plug clipped neatly to side. No trailing cable. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 40x40.",
+    "qa_visual": "Pass at 1x/2x: magenta cable coil, cream two-socket hub, clipped cyan plug and intact dark steel stand; bright accent fits neon mall palette.",
+    "filename": "23-extension-reel.png",
+    "sha256": "d5dbe290b7393e182b2b3d05abfa8fda83f04fb6953942a90492cb00bf5b715c",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  },
+  {
+    "library_id": "20261005-235551-one-fallen-broken-acoustic-ceiling-tile--b3e7",
+    "size": [
+      40,
+      32
+    ],
+    "status": "awaiting_visual_review",
+    "qa": {
+      "size": [
+        40,
+        32
+      ],
+      "opaque_pixels": 614,
+      "warnings": [
+        "173 isolated single pixels (noisy texture)"
+      ],
+      "bbox": [
+        1,
+        1,
+        38,
+        30
+      ],
+      "fill_of_canvas": 0.89,
+      "colors": 32,
+      "orphan_pixels": 173,
+      "outline_coverage": 0.66,
+      "components": 3,
+      "mirror_symmetry": 0.11,
+      "lint": {
+        "findings": [
+          {
+            "check": "outline",
+            "severity": "note",
+            "message": "No single colour owns the silhouette edge, so the sprite is not outlined (a valid style; keep it consistent)."
+          },
+          {
+            "check": "palette",
+            "severity": "note",
+            "message": "49 pair(s) of near-identical colours, e.g. #e8dec9 and #ecdfc6; merge them.",
+            "count": 49
+          }
+        ],
+        "passed": true,
+        "score": 100
+      }
+    },
+    "review": {
+      "reviewer": "dot",
+      "status": "awaiting_visual_review",
+      "scales": [
+        1,
+        2
+      ],
+      "checks": [
+        "Readable identity at 1x and 2x",
+        "Transparent background and complete silhouette",
+        "Consistent 3/4 top-down DEAD MALL style",
+        "No gibberish lettering or unrelated objects"
+      ],
+      "instructions": "Inspect the current sprite at 1x and 2x. Check identity, readability, style and requirements. QA is measurement, not visual approval. Request a focused repair only for a concrete problem, then review again before Aseprite/final export."
+    },
+    "index": 24,
+    "name": "Fallen ceiling tile",
+    "request_id": "dm-20261006-b24-24-ceiling-tile",
+    "prompt": "One fallen broken acoustic ceiling tile, flat square cream mineral panel tilted in perspective with a single large missing triangular corner, two detached nearby matching chips, sparse dark pinprick texture, steel-gray narrow border remnant along one edge. No floor. Clean detailed late-SNES/GBA 1990s mall pixel art matching DEAD MALL current roof and shop props profile dead-mall-current-props-20260930. Three-quarter top-down view, front dominant, narrow visible top/right depth and upright verticals. Steel-gray, deep navy shadows, cream/gold accents, restrained cyan/magenta. Bold readable silhouette, deliberate pixel clusters, selective dark outlines, sparse wear. One complete isolated prop on transparent background with 2px breathing room. No floor, wall, room, people, words, letters, logo or large cast shadow. Native canvas 40x32.",
+    "qa_visual": "Pass at 1x/2x: acoustic tile fragment and two intentional detached chips, broken corner and restrained speckle texture readable; no unintended detached components.",
+    "filename": "24-ceiling-tile.png",
+    "sha256": "490457bdd65cb7469f0cbc0fa568f8dc0acdd34388af62d12cd66faae183bdd8",
+    "provenance": "Pixel Forge forge_prepare: GPT pixel-art reference, free RD neural fixer, conservative cleanup. Native PNG retrieved via forge_preview(scale=1).",
+    "delivery_validation": {
+      "native_dimensions_match": true,
+      "rgba": true,
+      "binary_transparency": true,
+      "visual_review_scales": [
+        1,
+        2
+      ]
+    }
+  }
+]
