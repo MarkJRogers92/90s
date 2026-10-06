@@ -2,7 +2,7 @@
 
 ## Round 58 (2026-10-05): start here
 
-Branch `claude/floor-visual-review` holds the owner's visual review of every floor. It is not merged or pushed. What it does:
+Round 58 (PR #73, merged) is the owner's visual review of every floor. What it does:
 - removes the floor neon lines and the fountain rings;
 - stops stretching sprites to fit collision;
 - draws fitted 3/4 blocks for collision bars;
@@ -11,9 +11,8 @@ Branch `claude/floor-visual-review` holds the owner's visual review of every flo
 - lights the upper floors brighter.
 
 The unit tests (1967) and the browser gate (101 specs; see TEST_EVIDENCE.md for the load
-flakes) pass. The branch is committed locally, not pushed (pushing needs the owner's go-ahead). Next:
-the owner's playtest of floors 2-4, then push and merge (fetch `origin/main` first; other
-sessions merge there too).
+flakes) pass. Merged to `main` as PR #73 (`7fceed6`) on the owner's say-so. Next: the owner's playtest of
+floors 2-4 (are the new fights fun, not just harder?).
 
 Open look items:
 - The air-hockey and roof-pipe sprites are weak.

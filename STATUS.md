@@ -2,7 +2,7 @@
 
 ## 2026-10-05 — Round 58: a visual review of every floor (branch `claude/floor-visual-review`)
 
-Built on `origin/main` (`90204ab`). The owner's review: lines across the top of
+Built on `origin/main` (`90204ab`), merged as PR #73 (`7fceed6`). The owner's review: lines across the top of
 each room, rings round the fountain, assets that did not fit, and floors that
 all looked alike. Every room on every floor (boss and first wings, districts,
 shop interiors) was captured before and after with the new
