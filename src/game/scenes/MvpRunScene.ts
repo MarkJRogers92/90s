@@ -1459,8 +1459,9 @@ export class MvpRunScene extends Phaser.Scene {
       const floor = Math.min(FINAL_FLOOR, Math.max(1, Number(params.get('floor') ?? 1))) as FloorNumber;
       const options = { floor, ...(params.get('part') === '1' ? { part: 1 as const } : {}), perks: state.perks };
       let run = createMvpRun(state.seed, options);
-      // &event=none walks on to the first seed whose wing rolls no event (no outage hiding the room).
-      for (let seed = state.seed + 1; params.get('event') === 'none' && wingEventFor(run.wing) !== null && seed < state.seed + 200; seed += 1) {
+      // &event=none walks on to the first seed whose wing and rooms roll no event (no outage hiding the room).
+      const evented = (candidate: MvpRunState) => wingEventFor(candidate.wing) !== null || candidate.wing.rooms.some((_, index) => roomEventFor(candidate, index) !== null);
+      for (let seed = state.seed + 1; params.get('event') === 'none' && evented(run) && seed < state.seed + 200; seed += 1) {
         run = createMvpRun(seed, options);
       }
       const stop = params.get('room') ?? run.wing.rooms[0]!.id;

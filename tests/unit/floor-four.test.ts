@@ -44,7 +44,8 @@ describe('Floor 4: the Roof', () => {
     // Captured from the three-floor game before Floor 4 existed.
     expect(fights(1)).toBe('||hanger,hanger,spitter,hanger||hanger,spitter,hanger,spitter|');
     expect(fights(2)).toBe('||static,hanger,shopper,static||shopper,shopper,hanger,static|');
-    expect(fights(3)).toBe('||static,hanger,shopper,static||shopper,mascot,hanger,mascot|');
+    // Round 58 gave floor 3 its own layouts: the same monsters, in the Arcade's own slot order.
+    expect(fights(3)).toBe('||shopper,hanger,static,static||shopper,mascot,hanger,mascot|');
   });
 
   it('the escalator opens after the Owner, and the Roof is the top', () => {

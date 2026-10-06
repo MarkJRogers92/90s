@@ -24,6 +24,7 @@ import {
   ROOM_HEIGHT,
   ROOM_NAMES,
   ROOM_VARIANTS,
+  roomVariantsFor,
   ROOM_WIDTH,
   SECURITY_OFFICE_VARIANT,
   FLOOR_STORE_IDS,
@@ -308,7 +309,8 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
 
   const combatVariants = new Map<CombatRoomRole, AuthoredRoomVariant>();
   for (const role of COMBAT_ROOM_ROLES) {
-    const authoredVariants = ROOM_VARIANTS[role];
+    // Round 58: each floor rolls its own layouts; a district keeps floor 1's under its own dressing.
+    const authoredVariants = district ? ROOM_VARIANTS[role] : roomVariantsFor(role, floor);
     const variantIndex = nextInt(rng, 0, authoredVariants.length - 1);
     combatVariants.set(role, authoredVariants[variantIndex]!);
   }

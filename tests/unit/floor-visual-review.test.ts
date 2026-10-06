@@ -81,8 +81,9 @@ describe('round 58: props keep their proportions', () => {
     for (const { where, plan, room } of PLANS) {
       if (plan.themeId === 'store_interior') continue;
       for (const wall of interiorWalls(room)) {
-        const covered = plan.props.some((prop) => prop.covers && prop.covers.x === wall.x && prop.covers.y === wall.y
-          && prop.covers.width === wall.width && prop.covers.height === wall.height);
+        const same = (rect: { x: number; y: number; width: number; height: number } | undefined) => !!rect && rect.x === wall.x && rect.y === wall.y
+          && rect.width === wall.width && rect.height === wall.height;
+        const covered = plan.props.some((prop) => same(prop.covers)) || plan.blocks.some((block) => same(block.covers));
         expect(covered, `${where} wall ${JSON.stringify(wall)}`).toBe(true);
       }
     }
@@ -112,6 +113,26 @@ describe('round 58: bars that run away from the camera', () => {
       expect(Math.max(...art.front.map((p) => p.y + p.height))).toBe(covers.y + covers.height + 1);
       expect(Math.min(...art.top.map((p) => p.y))).toBe(covers.y - 16 - 1);
       expect(blockArt(material, covers, 16)).toEqual(art);
+    }
+  });
+});
+
+describe('round 58: loose decor stays off the furniture', () => {
+  it('never stands a free prop on top of, or just behind, a collision rectangle', () => {
+    for (const { where, plan, room } of PLANS) {
+      if (plan.themeId === 'store_interior') continue;
+      for (const prop of plan.props) {
+        if (prop.covers) continue;
+        const texture = PROP_TEXTURES[prop.prop];
+        const width = prop.width ?? texture.width;
+        const height = prop.height ?? texture.height;
+        const sprite = { x: prop.x - width / 2, y: prop.y - height, width, height };
+        for (const wall of interiorWalls(room)) {
+          const drawn = { x: wall.x, y: wall.y - 40, width: wall.width, height: wall.height + 44 };
+          const overlaps = sprite.x < drawn.x + drawn.width && drawn.x < sprite.x + sprite.width && sprite.y < drawn.y + drawn.height && drawn.y < sprite.y + sprite.height;
+          expect(overlaps, `${where} ${prop.id} over ${JSON.stringify(wall)}`).toBe(false);
+        }
+      }
     }
   });
 });

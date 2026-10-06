@@ -1,0 +1,112 @@
+[
+  {
+    "name": "store-shelf-unit",
+    "file": "public/assets/neon/props/store-shelf-unit.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/store-shelf-unit.png",
+    "width": 46,
+    "height": 69,
+    "generations_used": 1,
+    "verdict": "good",
+    "notes": "Reads clearly as a stocked wall shelf; four shelves of coloured boxes, no text. Nearly straight-on front view (no visible top), suits placement against a back wall."
+  },
+  {
+    "name": "display-table",
+    "file": "public/assets/neon/props/display-table.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/display-table.png",
+    "width": 51,
+    "height": 42,
+    "generations_used": 1,
+    "verdict": "good",
+    "notes": "Wooden table with folded shirt stacks and boxes; 3/4 angled view consistent with pretzel-cart."
+  },
+  {
+    "name": "cash-counter",
+    "file": "public/assets/neon/props/cash-counter.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/cash-counter.png",
+    "width": 60,
+    "height": 56,
+    "generations_used": 1,
+    "verdict": "good",
+    "notes": "Beige register on a pink-beige counter; conveyor is not really visible. Raw touches top/bottom canvas edge but nothing looks cropped."
+  },
+  {
+    "name": "popcorn-cart",
+    "file": "public/assets/neon/props/popcorn-cart.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/popcorn-cart.png",
+    "width": 38,
+    "height": 70,
+    "generations_used": 1,
+    "verdict": "good",
+    "notes": "Red popcorn machine on wheeled cart, glass case full of popcorn; style very close to pretzel-cart."
+  },
+  {
+    "name": "velvet-rope",
+    "file": "public/assets/neon/props/velvet-rope.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/velvet-rope.png",
+    "width": 89,
+    "height": 39,
+    "generations_used": 1,
+    "verdict": "good",
+    "notes": "Three brass stanchions with red ropes, left to right. Lower, more side-on angle than other props (bases seen as ellipses), still reads well."
+  },
+  {
+    "name": "escalator",
+    "file": "public/assets/neon/props/escalator.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/escalator.png",
+    "width": 124,
+    "height": 90,
+    "generations_used": 2,
+    "verdict": "usable",
+    "notes": "v1 (escalator-v1-rejected.png) was a one-point perspective escalator rising away from the viewer, wrong view, rejected. v2 is a railed rectangular floor opening with an escalator in it; strongly isometric (diamond footprint), steeper angle than the rest of the set, and the steps read as rising out of the well rather than clearly descending. Bright cream floor rim may stand out on dark tiles."
+  },
+  {
+    "name": "stacked-chairs-table",
+    "file": "public/assets/neon/props/stacked-chairs-table.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/stacked-chairs-table.png",
+    "width": 55,
+    "height": 52,
+    "generations_used": 2,
+    "verdict": "usable",
+    "notes": "v1 (stacked-chairs-table-v1-rejected.png) had chairs set around the table, missing the closed-for-the-night idea, rejected. v2 has chairs on the tabletop but upright, not upside down, and includes a grey floor slab under the table. Isometric angle."
+  },
+  {
+    "name": "air-hockey",
+    "file": "public/assets/neon/props/air-hockey.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/air-hockey.png",
+    "width": 58,
+    "height": 35,
+    "generations_used": 1,
+    "verdict": "usable",
+    "notes": "Reads as an air hockey table with neon pink trim, near pure top-down so legs barely show. Paddles look a bit like small faces. Flatter perspective than the rest."
+  },
+  {
+    "name": "satellite-dish",
+    "file": "public/assets/neon/props/satellite-dish.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/satellite-dish.png",
+    "width": 39,
+    "height": 54,
+    "generations_used": 1,
+    "verdict": "good",
+    "notes": "Dish on tripod frame with cable; frame is dark navy, low contrast on dark rooftop tiles."
+  },
+  {
+    "name": "pallet-stack",
+    "file": "public/assets/neon/props/pallet-stack.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/pallet-stack.png",
+    "width": 54,
+    "height": 50,
+    "generations_used": 1,
+    "verdict": "good",
+    "notes": "Pallet with shrink-wrapped boxes; clean 3/4 view, no labels."
+  },
+  {
+    "name": "roof-pipes",
+    "file": "public/assets/neon/props/roof-pipes.png",
+    "source": "docs/art/neon-overhaul/pixellab/round58/roof-pipes.png",
+    "width": 104,
+    "height": 17,
+    "generations_used": 1,
+    "verdict": "usable",
+    "notes": "Weak: flat side-on strip only 17px tall, no top surface, so it reads more like a single pipe on posts than a run of insulated pipes. Works as a thin rooftop barrier. Not regenerated to save budget."
+  }
+]
