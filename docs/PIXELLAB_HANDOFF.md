@@ -38,7 +38,8 @@ pipeline and the remaining jobs.
   spending credits: a redo follows the same character rotations, so it comes back the same.
 - **`poodle-hurt`:** the collar is red in most facings and teal in N/NE/E. It's tiny at game
   scale.
-- **Derived hurt strips** (Bargain Hunter, Spitter, bosses) squash and stretch the standing
+- **Derived hurt strips** (Spitter, bosses; the Bargain Hunter's is now drawn, see
+  `art/enemy-reactions/shopper-hurt/README.md`) squash and stretch the standing
   figure rather than drawing a new pose. That reads as a flinch at game speed, but a drawn or
   PixelLab flinch would be better. For a boss, replace one by adding a PixelLab job (about
   13–40 credits), collecting it, moving the kind from `DERIVED` to `PIXELLAB_KINDS` in the
@@ -48,9 +49,9 @@ pipeline and the remaining jobs.
 
 ## 2. What is still left (all optional)
 
-1. **Upgrade the derived hurt strips** to drawn ones (see above), most-seen first: the Bargain
-   Hunter, then the Spitter. The Bargain Hunter has **no PixelLab character**, so use image
-   generation plus Pixel Forge (branch `pixel-forge-rig`, `bargain-hunter-finish/`).
+1. **Upgrade the derived hurt strips** to drawn ones (see above), most-seen first. The Bargain
+   Hunter is **done** (GPT image through Pixel Forge's Codex bridge, converted locally:
+   `art/enemy-reactions/shopper-hurt/`). The Spitter is next, then the bosses.
 2. **Death strips** for the kinds that still use the generic blood death. Only the Mannequin,
    Static and Hanger have one.
 3. **`walker-attack` and `static-attack`:** `enemySpriteSheet` names these keys, but

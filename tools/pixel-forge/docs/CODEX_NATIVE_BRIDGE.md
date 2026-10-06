@@ -5,8 +5,9 @@
 Implemented: an opt-in, same-host stdio adapter connecting a Claude-compatible
 MCP client to Forge's durable image-pair jobs and a private Codex native worker.
 The real MCP transport and the native JSONL protocol have been tested together
-with an explicitly synthetic image fixture. **A signed-in native image turn has
-not been verified through this adapter. It is not live-enabled.**
+with an explicitly synthetic image fixture. **One signed-in native image job (a mockup and a
+sheet) has now run through this adapter, from a cloud container, on 2026-10-04; see
+[Field notes](#field-notes-2026-10-04). It is still not live-enabled by default.**
 
 This is developer-side authoring. It changes no game assets or runtime code.
 It creates no HTTP listener, hosted service, account, login, token, API key,
@@ -183,3 +184,98 @@ identity, animation, facing, anatomy, or visual quality.
 
 See [Verification](CODEX_NATIVE_BRIDGE_VERIFICATION.md) for the tested scope and
 the remaining live-acceptance requirements.
+
+## Field notes (2026-10-04)
+
+One real run, from a Claude Code cloud container rather than the clean personal host this
+document asks for. The owner chose that route and completed the sign-in; nothing here widens
+what the bridge supports. Result: the Bargain Hunter hurt strip,
+`art/enemy-reactions/shopper-hurt/README.md`.
+
+- **Network.** The cloud environment's allowed domains needed `auth.openai.com` (sign-in) and
+  `chatgpt.com` (generation). `api.openai.com` is for the separate Images API route, which bills
+  an API balance and is not covered by a ChatGPT plan (`credit_balance_exhausted`).
+- **Sign-in.** `CODEX_HOME=$HOME/.pixel-forge-codex codex login --device-auth` prints a link and a
+  one-time code the owner enters in their browser. It connected through the container's HTTPS
+  proxy with the CA variables already set there, with no extra configuration. `codex logout`
+  removes the login; it also dies with the container.
+- **Model.** `codex debug models` lists what the account offers. `--model` is the orchestrator
+  (`gpt-6.1-sol` here), not an image model.
+- **An interrupted `run` strands the job.** The turn starts within seconds, so interrupting the
+  command leaves the job `in_flight` with no image, and `run` then refuses to reissue it. Start a
+  new job under a new `revision` instead. A rejected tool prompt counts as an interrupt.
+- **`max_followups` is capped at 3 per job** (`_validate` in `forge/image_pair.py`). A longer run
+  chains jobs, seeding the next one from the last accepted image.
+- **Codex rewrites the prompt** ("revised_prompt" in the receipt). A short prompt lost the
+  character's identity (an undead shopper came back as a healthy man); spelling the traits out in
+  the job `prompt` and `constraints` fixed it, even though the references were right.
+- **The sheet comes back off-grid.** A 4 × 8 request returned 887 × 1774 px (2.31 × the game's
+  scale, soft edges). Validation rejected it (`dimensions_not_exact_or_uniform_integer_
+  enlargement`) and `normalize` needs a whole-number grid. Convert it locally and look at every
+  facing; `art/enemy-reactions/shopper-hurt/convert_gpt_hurt.py` is a worked example.
+- **Cost.** Mockup 1, a corrected mockup 2 and the sheet: three finished image turns, plus two
+  turns cut off after about 10 seconds by interrupts. Codex image turns count against plan
+  limits faster than ordinary turns.
+
+### Next-session quick start (cloud)
+
+What persists between cloud sessions, and what does not:
+
+- **Persists:** the environment's allowed domains (keep `auth.openai.com` and `chatgpt.com`), the
+  repo (this script, the docs, the converted art), and anything in the environment's *Setup script*.
+- **Does not persist:** the Codex CLI, the Forge venv, any job under `/tmp` or `$HOME`, and, by
+  default, the ChatGPT sign-in. The bridge asks for a fresh owner sign-in per worker, and a stored
+  copy of Codex's auth file can go stale when the token refreshes. The owner can choose to keep a
+  login anyway: see [Keeping the login](#keeping-the-login-owner-exception).
+
+`tools/pixel-forge/scripts/cloud-gpt-setup.sh` rebuilds everything else in one command:
+
+```sh
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh setup   # isolated venv + Codex CLI + host check
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh login   # prints the link and one-time code
+# the owner opens the link, enters the code, approves; then:
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh status
+bash tools/pixel-forge/scripts/cloud-gpt-setup.sh models  # pick the orchestrator (gpt-6.1-sol was used)
+```
+
+To have step 1 ready at session start, set the cloud environment's **Setup script** (the cloud
+environment menu in the session's title bar, then Edit) to run
+`bash tools/pixel-forge/scripts/cloud-gpt-setup.sh setup` from the repo root. Leave `login` manual:
+only the owner can approve it.
+
+`setup` prints the exact `begin` and `run` commands. Then follow the field notes above: spell the
+character out in the job prompt, never interrupt a `run`, plan for the sheet to need conversion
+(`art/enemy-reactions/shopper-hurt/convert_gpt_hurt.py` is a worked example).
+
+### Keeping the login (owner exception)
+
+On 2026-10-04 the owner said it is fine to save the login. That is an exception to the guidance
+above ("do not copy authentication files"), made knowingly by the account owner; keep it narrow.
+The login is stored as a **cloud environment secret**, never in the repo and never pasted into a
+chat. `cloud-gpt-setup.sh restore` (run by `setup` and `login`) writes it to
+`$CODEX_HOME/auth.json` with mode 600, checks it looks like a Codex login, and prints nothing.
+
+Set it up once, on your own computer:
+
+1. Make a **dedicated** login (not your everyday Codex one):
+   `CODEX_HOME="$(mktemp -d)" codex login`, then sign in with ChatGPT. (No Codex installed?
+   `npx @openai/codex login` with the same `CODEX_HOME`.)
+2. Encode it on one line: `base64 < "$CODEX_HOME/auth.json" | tr -d '\n'`, and copy the output.
+3. In the cloud environment settings (the menu in the session title bar, then Edit), add an
+   environment variable (under API credentials if that section is offered) named
+   **`PIXEL_FORGE_CODEX_AUTH_B64`** with that value.
+4. A new session now gets the login from `setup` or `login`; `status` shows whether the variable
+   is set, never its value.
+
+Limits and care:
+
+- **It can go stale.** Codex refreshes its tokens inside the session and cannot save the new ones
+  back to the secret. If OpenAI rotates refresh tokens, the stored copy stops working after a
+  refresh. `restore` only checks that the file parses and looks like a login; the first image
+  turn is the real test. On an auth error, run `login` for a fresh sign-in, or repeat steps 1 to 3.
+- **It is an account credential.** Anyone who can read or edit the environment, or run commands in
+  a session of it (including Claude), can use it. To revoke it, sign the device out in your ChatGPT
+  account's security settings. Remove the variable to stop restoring it.
+- **Never commit it.** `auth.json` lives under `$CODEX_HOME`, outside the repo, and the script
+  never writes it anywhere else.
+

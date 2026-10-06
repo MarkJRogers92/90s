@@ -4,6 +4,8 @@ This is for an agent with image generation (GPT, "dot") picking up DEAD MALL's
 character animation work. It says exactly what to draw, shows animations that
 already shipped, and explains how to check and install a sheet. Read `AGENTS.md`
 first (the repo rules), then this file.
+**Newer: `docs/GPT_IMAGE_HANDOFF.md`** (2026-10-04) has the current state of the hurt strips and
+what a GPT run taught us; read it too.
 
 **Tools:** use whatever makes the best pixel art. Options include your own image
 generation, PixelLab (pixellab.ai), and **Pixel Forge**, which authored the game's
@@ -101,8 +103,10 @@ Each kind also needs a 6-frame × 48 px **impact strip** in its own material
 so on), plus a little code. Follow the step-by-step recipe in
 `docs/VISUAL_ROADMAP.md` under **V1**, and copy `tests/unit/hanger-reactions.test.ts`.
 
-In order: Bargain Hunter (`shopper-hurt.png`), Mall Walker (`walker-hurt.png`),
-Mascot, Roofer, Elf, Spritzer, Poodle, Goon, then the bosses (shorter flinches).
+In order: Bargain Hunter (`shopper-hurt.png`, **done** 2026-10-04, see
+`art/enemy-reactions/shopper-hurt/README.md` for how a GPT sheet was generated and converted),
+Mall Walker (`walker-hurt.png`), Mascot, Roofer, Elf, Spritzer, Poodle, Goon, then the bosses
+(shorter flinches).
 PixelLab hurt strips for some of these are banked in `art/pixellab/`; see
 `docs/PIXELLAB_HANDOFF.md` before drawing one from scratch.
 

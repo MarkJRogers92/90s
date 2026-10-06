@@ -20,6 +20,38 @@ Open look items:
 
 See the playbook's Round 58.
 
+## 2026-10-04 UTC — Bargain Hunter hurt strip drawn with GPT image (handoff)
+
+Branch `claude/pixel-forge-image-generation-go3b0z`, committed locally, **not pushed** (AGENTS.md:
+no push without the owner's say-so). Presentation only; no `src/sim` change.
+
+**Done.** `public/assets/neon/enemies/shopper-hurt.png` is now a drawn strip, built from
+`art/enemy-reactions/shopper-hurt/` (see its README). `tests/unit/shopper-hurt-art.test.ts` pins it
+(new `tests/support/png.ts` decodes sprite pixels for tests).
+
+**Still needs a person:**
+- Look at every facing next to the walk sheet, in motion. Items are in the art README.
+- **Seen live for the WEST row on 2026-10-06** (`hunter-hurt-review.spec.ts` passed; strip in
+  `artifacts/live-qa/hurt-shopper-flinch/`); the other seven facings were not captured live. Earlier, with a mop,
+  the flinch was not seen: A mop hit lands during the hunter's own telegraph,
+  charge or recover, and an attack pose outranks a flinch by design (`flinchOutranksAttack`), so
+  the live capture showed `shopper-attack[...]` frames, not `shopper-hurt[...]`. The flinch only
+  shows while it walks (`pursue`), which at mop range is a gap of a few ticks. A ranged weapon from
+  a distance, or a fixture that holds the hunter in `pursue`, would show it. Kiting with the bot
+  died before a swing landed. The unit tests cover the flinch path against the real PNG.
+
+**Update 2026-10-05:** main merged GPT's west-row correction (#69) and more; the shipped Bargain Hunter strip
+is main's version. The live flinch check is `tests/browser/hunter-hurt-review.spec.ts` (pending a browser run).
+
+**GPT handoff:** `docs/GPT_IMAGE_HANDOFF.md` has the state, what was and was not verified, the queue and
+the generation traps, written for an agent with GPT image generation.
+
+**Next:** the Spitter's and the bosses' derived hurt strips (`docs/PIXELLAB_HANDOFF.md` §2). To
+generate with GPT again: `bash tools/pixel-forge/scripts/cloud-gpt-setup.sh setup`, then `login` (the
+owner enters the code, unless they stored a login as the environment secret
+`PIXEL_FORGE_CODEX_AUTH_B64`, which `setup` restores; see "Keeping the login"), then follow the field notes and quick
+start in `tools/pixel-forge/docs/CODEX_NATIVE_BRIDGE.md`. A job allows 3 follow-ups. Keep
+`auth.openai.com` and `chatgpt.com` in the cloud environment's allowed domains.
 
 ## 2026-10-04 UTC — Native hurt reactions for every enemy (roadmap V1 done)
 

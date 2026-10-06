@@ -62,9 +62,12 @@ if (attack) {
     const foes = (state.enemies ?? []).filter((e) => e.health > 0 && (!targetKind || e.kind === targetKind));
     if (!foes.length || state.status !== 'playing') break;
     const target = foes.sort((a, b) => Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y))[0];
-    const aim = await toPage(target.x, target.y - 20);
-    await page.mouse.move(aim.x, aim.y);
     const dist = Math.hypot(target.x - me.x, target.y - me.y);
+    // The swing cone is measured from the player, so a pointer a few pixels from a close enemy
+    // points the wrong way. Aim along the line to the target, well past it.
+    const heading = dist > 1 ? { x: (target.x - me.x) / dist, y: (target.y - me.y) / dist } : { x: 1, y: 0 };
+    const aim = await toPage(me.x + heading.x * 120, me.y + heading.y * 120);
+    await page.mouse.move(aim.x, aim.y);
     const keys = dist > 50 ? [target.x > me.x + 8 ? 'd' : target.x < me.x - 8 ? 'a' : null, target.y > me.y + 8 ? 's' : target.y < me.y - 8 ? 'w' : null].filter(Boolean) : [];
     for (const k of keys) await page.keyboard.down(k);
     await page.waitForTimeout(80);
