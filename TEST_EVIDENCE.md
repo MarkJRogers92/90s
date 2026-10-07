@@ -2,7 +2,7 @@
 
 ## 2026-10-07 — Round 62: the Static's blink (V2) and roof weather (V7)
 
-- **Unit tests:** `npx vitest run` gives 192 files and 2006 tests, all passing.
+- **Unit tests:** `npx vitest run` gives 191 files and 2003 tests, all passing.
   - New: `static-attack.test.ts` (3) and `roof-weather.test.ts` (5).
   - The weather test was written alongside the module rather than first. A mutation check
     removed the Reduced-flashes guard, the test failed, and the guard was restored.
