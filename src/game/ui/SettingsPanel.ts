@@ -51,6 +51,11 @@ export class SettingsPanel {
         if (input.checked) gameSettings().update({ coach: input.value === 'on' });
       });
     }
+    for (const input of this.panel.querySelectorAll<HTMLInputElement>('input[name="setting-crt"]')) {
+      input.addEventListener('change', () => {
+        if (input.checked) gameSettings().update({ crt: input.value === 'on' });
+      });
+    }
     this.music.addEventListener('input', () => {
       gameSettings().update({ musicVolume: Number(this.music.value) / 100 });
       this.render(gameSettings().get());
@@ -99,6 +104,9 @@ export class SettingsPanel {
     }
     for (const input of this.panel.querySelectorAll<HTMLInputElement>('input[name="setting-coach"]')) {
       input.checked = input.value === (settings.coach ? 'on' : 'off');
+    }
+    for (const input of this.panel.querySelectorAll<HTMLInputElement>('input[name="setting-crt"]')) {
+      input.checked = input.value === (settings.crt ? 'on' : 'off');
     }
     this.music.value = String(Math.round(settings.musicVolume * 100));
     this.sfx.value = String(Math.round(settings.sfxVolume * 100));

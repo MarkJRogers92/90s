@@ -191,8 +191,10 @@ export class GameHud {
     const cardAge = state.roomIndex === 0 ? state.tick - (this.shiftStartTick ?? state.tick) : null;
     const logAges = this.log.map((entry) => bucket(state.tick - entry.tick)).join(',');
     const hurt = state.room.combat.player.invulnerableTicks > 0 && flashAllowed(gameSettings().get()) && Math.floor(state.tick / 6) % 2 === 0;
+    // The wince (roadmap V5) changes the portrait whether or not the blink is on.
+    const recovering = state.room.combat.player.invulnerableTicks > 0;
     return JSON.stringify([
-      model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, this.windupActive(state),
+      model, state.roomIndex, state.wing.rooms[state.roomIndex]?.id, hurt, recovering, this.windupActive(state),
       state.room.combat.player.y > 200,
       state.room.combat.player.y > 380,
       titleAge !== null && titleAge < 200 ? bucket(titleAge) : 'x',
@@ -403,8 +405,13 @@ export class GameHud {
     this.panel(g, 12, 506, 218, 82);
     g.fillStyle(0x333443, 1).fillRect(22, 518, 58, 58);
     g.lineStyle(1, 0x687b83, 1).strokeRect(22.5, 518.5, 57, 57);
-    const hurt = state.room.combat.player.invulnerableTicks > 0 && flashAllowed(gameSettings().get()) && Math.floor(state.tick / 6) % 2 === 0;
-    this.portrait?.setTint(hurt ? 0xff6070 : 0xffffff);
+    // Roadmap V5: Alex winces for the whole recovery window under every setting; the red
+    // blink is extra, and only when flashes are allowed.
+    const recovering = state.room.combat.player.invulnerableTicks > 0;
+    const blink = recovering && flashAllowed(gameSettings().get()) && Math.floor(state.tick / 6) % 2 === 0;
+    const face = recovering && usableTextureKey(this.scene.textures, PORTRAIT_TEXTURE_KEYS.alexHurt) ? PORTRAIT_TEXTURE_KEYS.alexHurt : PORTRAIT_TEXTURE_KEYS.alex;
+    if (this.portrait && this.portrait.texture.key !== face) this.portrait.setTexture(face).setDisplaySize(56, 56);
+    this.portrait?.setTint(blink ? 0xff6070 : 0xffffff);
     this.stamp(g, 'name', 'ALEX', 90, 514, YELLOW, true);
     // All supported health upgrades remain visible, and old hearts vanish on restart.
     this.hearts.forEach((image, index) => {

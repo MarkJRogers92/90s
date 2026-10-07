@@ -1,5 +1,11 @@
 # Next session
 
+## Round 63 (2026-10-07): Alex's portrait and the CRT filter
+
+Branch `claude/portrait-crt`, not merged. Visual roadmap left: V9 (colourblind telegraphs), V11
+(old modes). Playtest question: is the CRT filter worth keeping, and is the wince visible at a
+glance?
+
 ## Round 62 (2026-10-07): the Static's blink and rain on the Roof
 
 Branch `claude/static-aim-weather`, not merged. V2, V3, V4, V7 and V8 are done. Still open:

@@ -224,6 +224,8 @@ export function itemIconKey(itemDefinitionId: string): string | null {
 
 export const PORTRAIT_TEXTURE_KEYS = {
   alex: 'neon:portrait:alex',
+  /** Roadmap V5: the same face mid-wince, shown while Alex recovers from a hit. */
+  alexHurt: 'neon:portrait:alex-hurt',
   lpManager: 'neon:portrait:security-guard',
 } as const;
 
@@ -352,7 +354,9 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.developerIdle, 'enemies/developer-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.developerWalk, 'enemies/developer-walk.png'),
   neon(ENEMY_TEXTURE_KEYS.developerDeath, 'enemies/developer-death.png'),
-  neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex.png'),
+  // Native 56 px (art/portraits/build_alex_portrait.py): the HUD draws them at exactly 1x.
+  neon(PORTRAIT_TEXTURE_KEYS.alex, 'portraits/alex-56.png'),
+  neon(PORTRAIT_TEXTURE_KEYS.alexHurt, 'portraits/alex-56-hurt.png'),
   neon(PORTRAIT_TEXTURE_KEYS.lpManager, 'portraits/security-guard.png'),
   neon(SCENE_TEXTURE_KEYS.dawnExit, 'ui/dawn-exit.png'),
   neon(SCENE_TEXTURE_KEYS.timeClock, 'ui/time-clock.png'),

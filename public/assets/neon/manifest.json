@@ -3758,5 +3758,25 @@
       768
     ],
     "sha256": "edbb45c669c54cd9310d7083410e4ffbdac376e1f793ba5b8cc6afb3c333d045"
+  },
+  {
+    "path": "public/assets/neon/portraits/alex-56.png",
+    "source": "art/portraits/build_alex_portrait.py",
+    "generator": "derived from portraits/alex.png (crop, exact 2x reduction, palette snap)",
+    "size": [
+      56,
+      56
+    ],
+    "sha256": "154f8616471ba5a160db21a719939f4356b5a41b824cf486def06e7bcf122c90"
+  },
+  {
+    "path": "public/assets/neon/portraits/alex-56-hurt.png",
+    "source": "art/portraits/build_alex_portrait.py",
+    "generator": "derived from portraits/alex.png (crop, exact 2x reduction, palette snap)",
+    "size": [
+      56,
+      56
+    ],
+    "sha256": "95df0588b3c5abc5fa63f4af4f52f33424c0cfd729c1d79f77a0e60abc6daa77"
   }
 ]

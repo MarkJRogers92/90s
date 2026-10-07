@@ -28,7 +28,8 @@ import { fusionRevealModel } from '../ui/fusionRevealModel';
 import { NO_PERKS, type ShiftPerks } from '../../sim/run/perks';
 import Phaser from 'phaser';
 import { HIT_STOP_MS } from '../view/combatBeats';
-import { gameSettings, hitStopScale } from '../settings/settings';
+import { gameSettings, hitStopScale, type GameSettings } from '../settings/settings';
+import { crtLook, installCrt } from '../presentation/crtFilter';
 import { ShiftCard, type ShiftCardAction } from '../ui/ShiftCard';
 import { buildShiftCardModel, shareCardText } from '../ui/shiftCardModel';
 import { nextShiftSeed } from '../run/shiftSeed';
@@ -489,6 +490,10 @@ export class MvpRunScene extends Phaser.Scene {
   private pauseCard: PauseCard | undefined;
   private benchCard: BenchCard | undefined;
   private removeBloom: (() => void) | undefined;
+  /** Roadmap V6: the CRT look while it is switched on, and the settings listener that follows it. */
+  private removeCrt: (() => void) | undefined;
+  private unsubscribeCrt: (() => void) | undefined;
+  private crtKey = '';
   private audio: GameAudioEngine | undefined;
   private removeDebugBridge: (() => void) | undefined;
   private presentationLoadFailures = 0;
@@ -554,6 +559,8 @@ export class MvpRunScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, STAGE_TOP, STAGE_WIDTH, STAGE_HEIGHT);
     this.cameras.main.setBackgroundColor('#07050c');
     this.removeBloom = installAdaptiveBloom(this);
+    this.syncCrt(gameSettings().get());
+    this.unsubscribeCrt = gameSettings().subscribe((settings) => this.syncCrt(settings));
     this.gameHud = new GameHud(this);
     this.gameHud.setCoachAllowed(this.devFixture() === null);
     const hud = this.gameHud;
@@ -1104,6 +1111,16 @@ export class MvpRunScene extends Phaser.Scene {
 
   private readonly cleanCapture = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true'
     && new URLSearchParams(window.location.search).get('clean') === '1';
+
+  /** Puts the CRT look on, takes it off, or rebuilds it when the setting (or Flashes) changes. */
+  private syncCrt(settings: GameSettings): void {
+    const look = crtLook(settings);
+    const key = look ? JSON.stringify(look) : '';
+    if (key === this.crtKey) return;
+    this.crtKey = key;
+    this.removeCrt?.();
+    this.removeCrt = look ? installCrt(this, look) : undefined;
+  }
 
   private applyDevFixture(state: MvpRunState): MvpRunState {
     if (!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true')) {
@@ -1730,6 +1747,11 @@ export class MvpRunScene extends Phaser.Scene {
     this.benchCard = undefined;
     this.removeBloom?.();
     this.removeBloom = undefined;
+    this.unsubscribeCrt?.();
+    this.unsubscribeCrt = undefined;
+    this.removeCrt?.();
+    this.removeCrt = undefined;
+    this.crtKey = '';
     window.removeEventListener('pointerdown', this.unlockAudio);
     window.removeEventListener('keydown', this.unlockAudio);
     window.removeEventListener(SETTINGS_OPENED_EVENT, this.pauseForSettings);
