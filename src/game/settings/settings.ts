@@ -20,6 +20,8 @@ export type GameSettings = {
   readonly sfxVolume: number;
   /** Round 57: short how-to tips for a new janitor's first shifts. */
   readonly coach: boolean;
+  /** Roadmap V6: an opt-in CRT/VHS look (scanlines, curve, bleed). Off by default. */
+  readonly crt: boolean;
 };
 
 export const DEFAULT_SETTINGS: GameSettings = {
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: GameSettings = {
   musicVolume: 0.8,
   sfxVolume: 1,
   coach: true,
+  crt: false,
 };
 
 const STORAGE_KEY = 'dead-mall:settings:v1';
@@ -66,6 +69,7 @@ export function sanitizeSettings(raw: unknown): GameSettings {
     musicVolume: volume(source.musicVolume, DEFAULT_SETTINGS.musicVolume),
     sfxVolume: volume(source.sfxVolume, DEFAULT_SETTINGS.sfxVolume),
     coach: typeof source.coach === 'boolean' ? source.coach : DEFAULT_SETTINGS.coach,
+    crt: typeof source.crt === 'boolean' ? source.crt : DEFAULT_SETTINGS.crt,
   };
 }
 

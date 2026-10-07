@@ -1,5 +1,17 @@
 # Test evidence
 
+## 2026-10-07 — Round 63: Alex's portrait (V5) and the CRT filter (V6)
+
+- **Unit tests:** `npx vitest run` gives 193 files and 2013 tests, all passing.
+  - New: `alex-portrait.test.ts` (4) and `crt-filter.test.ts` (6).
+  - `game-hud-renderer` finds the portrait by either face.
+  - The first HUD wiring failed the new test: the redraw signature tracked only the blink, so
+    the face never returned to calm under Reduced flashes. That is fixed.
+- **Live:** the Roof and the Opening Concourse with CRT on and off, plus a four-way tuning
+  comparison (`artifacts/live-qa/crt/`). The first tuning was too dark and blurry; the 4-pass
+  blur was the cause. Both rooms run at 60 fps either way.
+
+
 ## 2026-10-07 — Round 62: the Static's blink (V2) and roof weather (V7)
 
 - **Unit tests:** `npx vitest run` gives 191 files and 2003 tests, all passing.

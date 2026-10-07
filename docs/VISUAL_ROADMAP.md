@@ -42,8 +42,8 @@ or start something; keep items small enough for one PR.
 | V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy, the Static's blink last (round 62) | — |
 | V3 | Native effects for the 67 remaining weapons (by family) | **done** 2026-10-07: every weapon has its own effect (round 61) | — |
 | V4 | Alex: dash and ranged-aim animations | **done** (dash + aim, PixelLab, PR #56); live-checked | — |
-| V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
-| V6 | CRT/VHS post-process toggle | open | M |
+| V5 | Purpose-made Alex HUD portrait (56 px) | **done** 2026-10-07 (round 63) | — |
+| V6 | CRT/VHS post-process toggle | **done** 2026-10-07 (round 63, Settings: CRT filter) | — |
 | V7 | Skylight/roof weather | **done** 2026-10-07 (round 62, `roofWeather.ts`) | — |
 | V8 | Per-floor colour grading | **done** 2026-10-07 (`colorGrade.ts`) | S |
 | V9 | Colourblind-safe telegraph shapes | open | M |
@@ -302,11 +302,35 @@ status table already said done.
 
 ## V5 — Purpose-made Alex portrait
 
+**Done 2026-10-07 (round 63).** The HUD drew the 128 px painting at 0.4375x, which
+nearest-neighbour rendering cannot do cleanly: it dropped uneven pixels. Now
+`art/portraits/build_alex_portrait.py` builds two portraits:
+- `alex-56.png`: the head and shoulders cropped to 112 px and halved exactly (each 2x2 block
+  becomes its most common colour), in the painting's own 33 colours;
+- `alex-56-hurt.png`: the same face mid-wince, with eyes squeezed shut, gritted teeth, a
+  flush and a sweat drop, placed from a darkness map of the 56 px face.
+
+The HUD shows the hurt face for the whole recovery window under every Flashes setting. Under
+Reduced flashes there used to be no portrait cue at all; the red blink is now extra. The real
+Alex has no cap, so the note below asking for one was not followed.
+
 The HUD draws `portraits/alex.png` at 56 px. Author a 56 or 64 px portrait (a
 bust with the janitor cap and name tag) with a hurt variant, so the hurt tint
 is not the only cue. Already an open follow-up in NEXT_SESSION.
 
 ## V6 — CRT/VHS post-process toggle
+
+**Done 2026-10-07 (round 63).** `src/game/presentation/crtFilter.ts`, Settings: **CRT filter**,
+off by default. It uses Phaser 4's built-in camera filters, so there is no custom shader:
+- a barrel curve of 1.03, kept slight because it bends the picture and not the mouse;
+- a soft vignette;
+- a one-pass sideways blur for VHS bleed;
+- 1x3 scanlines over everything, including the HUD;
+- a faint rolling bar, only with Flashes: Full.
+
+It is tuned by eye for HUD legibility (`artifacts/live-qa/crt/tune.png`). Bleed 0.5 smeared
+small text, so the bleed is 0.2. It holds 60 fps on the Roof with it on or off. It follows the
+setting live, with no restart.
 
 Phaser's post pipeline is unused. Add an opt-in Settings switch (default off)
 for scanlines, slight barrel distortion and chroma bleed. Respect Flashes:

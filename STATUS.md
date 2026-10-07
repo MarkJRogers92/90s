@@ -1,5 +1,15 @@
 # Status
 
+## 2026-10-07 — Round 63: Alex's portrait and a CRT filter (branch `claude/portrait-crt`)
+
+Built on `origin/main` (`5ba25f1`, round 62).
+- **V5:** a crisp native 56 px HUD portrait, with a wincing hurt face that now shows under
+  Reduced flashes too.
+- **V6:** an optional CRT filter in Settings (scanlines, a slight tube curve, VHS bleed and a
+  rolling bar), off by default, at 60 fps.
+
+Presentation only. Not merged or pushed.
+
 ## 2026-10-07 — Round 62: the Static's blink, rain on the Roof (branch `claude/static-aim-weather`)
 
 Built on `origin/main` (`f09eaad`, round 61).
