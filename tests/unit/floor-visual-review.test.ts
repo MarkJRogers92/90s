@@ -166,3 +166,35 @@ describe('round 58: shop interiors', () => {
     expect(styles.size).toBeGreaterThanOrEqual(5);
   });
 });
+
+describe('round 59: decor stands where it belongs', () => {
+  const MOUNTS = new Set(['cctv', 'alarmPoint', 'extinguisher', 'restroomSign', 'arrowSign']);
+  const rooms = PLANS.filter(({ plan, room }) => plan.themeId !== 'store_interior' && room.variantId !== 'prop-test');
+
+  it('never floats a loose prop in the open middle of a room', () => {
+    for (const { where, plan } of rooms) {
+      const covers = [...plan.props.flatMap((prop) => (prop.covers ? [prop.covers] : [])), ...plan.blocks.map((block) => block.covers)];
+      for (const prop of plan.props) {
+        if (prop.covers) continue;
+        const againstWall = prop.y <= 130;
+        const onRailing = prop.y >= 430;
+        const inCorner = prop.x <= 100 || prop.x >= 860;
+        const byFurniture = covers.some((rect) => prop.x >= rect.x - 24 && prop.x <= rect.x + rect.width + 24 && prop.y >= rect.y && prop.y <= rect.y + rect.height + 80);
+        expect(againstWall || onRailing || inCorner || byFurniture, `${where} ${prop.id} (${prop.prop}) at ${prop.x},${prop.y}`).toBe(true);
+      }
+    }
+  });
+
+  it('fits every room out with something on its walls', () => {
+    for (const { where, plan } of rooms) {
+      expect(plan.props.some((prop) => MOUNTS.has(prop.prop)), where).toBe(true);
+    }
+  });
+
+  it('dresses the same room the same way every time', () => {
+    for (const { where, plan, room } of rooms.slice(0, 40)) {
+      expect(planRoomDressing(room, 1).props.map((prop) => prop.id), where).toEqual(planRoomDressing(room, 1).props.map((prop) => prop.id));
+      void plan;
+    }
+  });
+});

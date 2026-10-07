@@ -82,7 +82,9 @@ export type ConcourseFurniture = {
     | 'seatingIsland' | 'pretzelCart' | 'massageChairs' | 'photoBooth' | 'gumballStand' | 'saleSign'
     // Round 58: the other floors' own.
     | 'atriumWell' | 'popcornCart' | 'displayTable' | 'velvetRope' | 'trashBank' | 'trayReturn'
-    | 'skylight' | 'satelliteDish' | 'acUnit' | 'ventStack' | 'palletStack';
+    | 'skylight' | 'satelliteDish' | 'acUnit' | 'ventStack' | 'palletStack'
+    // Round 59: the first wings' named courts.
+    | 'fountain' | 'planterBed' | 'counter' | 'palm' | 'bench';
   readonly x: number;
   readonly y: number;
   readonly footprint: Rect | null;
@@ -132,9 +134,85 @@ const FLOOR_CONCOURSE_FURNITURE: Readonly<Record<2 | 3 | 4, readonly ConcourseFu
   ],
 };
 
+/**
+ * Round 59: a first wing's two storefront rooms are furnished as they are
+ * named (FloorSpec.firstWingNames): Fountain Court has its fountain, Garden
+ * Court its beds, the Skybridges their drop to the floor below, Dessert Row
+ * and the Prep Kitchen their counters, Antenna Row and the Satellite Deck their
+ * dishes. Same rules as every concourse.
+ */
+const FIRST_WING_FURNITURE: Readonly<Record<FloorNumber, Readonly<Record<'storefront_a' | 'storefront_b', readonly ConcourseFurniture[]>>>> = {
+  1: {
+    storefront_a: [
+      { id: 'fountain', kind: 'fountain', x: 480, y: 360, footprint: { x: 425, y: 304, width: 110, height: 48 } },
+      { id: 'bench-w', kind: 'bench', x: 330, y: 372, footprint: { x: 300, y: 356, width: 60, height: 14 } },
+      { id: 'bench-e', kind: 'bench', x: 630, y: 372, footprint: { x: 600, y: 356, width: 60, height: 14 } },
+      { id: 'palm-w', kind: 'palm', x: 172, y: 112, footprint: null },
+      { id: 'palm-e', kind: 'palm', x: 788, y: 112, footprint: null },
+    ],
+    storefront_b: [
+      { id: 'bed-w', kind: 'planterBed', x: 300, y: 340, footprint: { x: 210, y: 310, width: 180, height: 30 } },
+      { id: 'bed-e', kind: 'planterBed', x: 660, y: 340, footprint: { x: 570, y: 310, width: 180, height: 30 } },
+      { id: 'bench', kind: 'bench', x: 480, y: 372, footprint: { x: 450, y: 356, width: 60, height: 14 } },
+      { id: 'gumballs', kind: 'gumballStand', x: 480, y: 100, footprint: null },
+    ],
+  },
+  2: {
+    storefront_a: [
+      { id: 'drop', kind: 'atriumWell', x: 480, y: 350, footprint: { x: 130, y: 314, width: 700, height: 36 } },
+      { id: 'ropes', kind: 'velvetRope', x: 480, y: 92, footprint: null },
+    ],
+    storefront_b: [
+      { id: 'drop-w', kind: 'atriumWell', x: 290, y: 350, footprint: { x: 130, y: 314, width: 300, height: 36 } },
+      { id: 'drop-e', kind: 'atriumWell', x: 670, y: 350, footprint: { x: 530, y: 314, width: 300, height: 36 } },
+      { id: 'bench', kind: 'bench', x: 480, y: 372, footprint: { x: 450, y: 356, width: 60, height: 14 } },
+      { id: 'display', kind: 'displayTable', x: 480, y: 100, footprint: null },
+    ],
+  },
+  3: {
+    storefront_a: [
+      { id: 'counter', kind: 'counter', x: 480, y: 340, footprint: { x: 300, y: 310, width: 360, height: 30 } },
+      { id: 'gumballs-w', kind: 'gumballStand', x: 172, y: 112, footprint: null },
+      { id: 'gumballs-e', kind: 'gumballStand', x: 788, y: 112, footprint: null },
+    ],
+    storefront_b: [
+      { id: 'prep-w', kind: 'counter', x: 300, y: 340, footprint: { x: 200, y: 310, width: 200, height: 30 } },
+      { id: 'prep-e', kind: 'counter', x: 660, y: 340, footprint: { x: 560, y: 310, width: 200, height: 30 } },
+      { id: 'trash', kind: 'trashBank', x: 480, y: 92, footprint: { x: 450, y: 76, width: 60, height: 14 } },
+    ],
+  },
+  4: {
+    storefront_a: [
+      { id: 'dish-w', kind: 'satelliteDish', x: 300, y: 360, footprint: { x: 284, y: 346, width: 32, height: 14 } },
+      { id: 'dish-c', kind: 'satelliteDish', x: 480, y: 360, footprint: { x: 464, y: 346, width: 32, height: 14 } },
+      { id: 'dish-e', kind: 'satelliteDish', x: 660, y: 360, footprint: { x: 644, y: 346, width: 32, height: 14 } },
+      { id: 'vent', kind: 'ventStack', x: 480, y: 92, footprint: { x: 462, y: 76, width: 36, height: 16 } },
+    ],
+    storefront_b: [
+      { id: 'skylight', kind: 'skylight', x: 480, y: 352, footprint: { x: 424, y: 306, width: 112, height: 44 } },
+      { id: 'dish-w', kind: 'satelliteDish', x: 260, y: 368, footprint: { x: 244, y: 354, width: 32, height: 14 } },
+      { id: 'dish-e', kind: 'satelliteDish', x: 700, y: 368, footprint: { x: 684, y: 354, width: 32, height: 14 } },
+      { id: 'pallets', kind: 'palletStack', x: 172, y: 130, footprint: null },
+    ],
+  },
+};
+
 /** The pieces on a floor's storefront concourses (a district keeps floor 1's under its own walls). */
-export function concourseFurniture(floor: FloorNumber): readonly ConcourseFurniture[] {
+export function concourseFurniture(floor: FloorNumber, part?: 1, role?: 'storefront_a' | 'storefront_b'): readonly ConcourseFurniture[] {
+  if (part === 1 && role) return FIRST_WING_FURNITURE[floor][role];
   return floor === 1 ? CONCOURSE_FURNITURE : FLOOR_CONCOURSE_FURNITURE[floor];
+}
+
+/** A storefront room's furniture as it stands this night: its wing's set, flipped when the room is (round 59). */
+export function roomFurniture(room: Pick<WingRoomDefinition, 'id' | 'mirrored'>, floor: FloorNumber, part?: 1, district = false): readonly ConcourseFurniture[] {
+  const role = room.id === 'storefront_a' || room.id === 'storefront_b' ? room.id : undefined;
+  const pieces = district ? CONCOURSE_FURNITURE : concourseFurniture(floor, part, role);
+  if (!room.mirrored) return pieces;
+  return pieces.map((piece) => ({
+    ...piece,
+    x: PLAYFIELD_WIDTH - piece.x,
+    footprint: piece.footprint ? { ...piece.footprint, x: PLAYFIELD_WIDTH - piece.footprint.x - piece.footprint.width } : null,
+  }));
 }
 
 /** One already-broken, inert cabinet in the ordinary ground-floor Back Hall.
@@ -257,8 +335,8 @@ export function generateRunWing(seed: number, floor: FloorNumber = 1, part?: 1):
     .filter((template) => !used.has(template.id))
     .sort((first, second) => hash(seed, first.id) - hash(seed, second.id));
   let nextSpare = 0;
-  const furniture = concourseFurniture(wing.district ? 1 : floor).flatMap((piece) => (piece.footprint ? [{ ...piece.footprint }] : []));
   const rooms = wing.rooms.map((room): WingRoomDefinition => {
+    const furniture = roomFurniture(room, floor, part, !!wing.district).flatMap((piece) => (piece.footprint ? [{ ...piece.footprint }] : []));
     if (floor === 1 && part !== 1 && !wing.district && room.id === 'back_hall') {
       return { ...room, walls: [...room.walls, { ...BACK_HALL_DAMAGED_VENDING.footprint }] };
     }

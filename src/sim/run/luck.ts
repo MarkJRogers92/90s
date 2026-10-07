@@ -8,7 +8,7 @@
 import { createWingRng, nextUnitFloat } from '../wing/rng';
 
 /** A regular enemy's chance to arrive as a glowing CLEARANCE elite. */
-export const ELITE_CHANCE = 0.18;
+export const ELITE_CHANCE = 0.28;
 export const ELITE_HEALTH_MULTIPLIER = 2;
 export const ELITE_TOKEN_MULTIPLIER = 2;
 /** Chance a kill drops a food-court pretzel (heals half a heart). */

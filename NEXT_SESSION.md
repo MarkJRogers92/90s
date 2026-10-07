@@ -1,5 +1,12 @@
 # Next session
 
+## Round 59 (2026-10-07): start here
+
+Branch `claude/round59-named-rooms` (not merged or pushed): rooms laid out as named,
+mirrored nights, per-floor boss arenas, placed decor, and a difficulty tune (playbook
+Round 59). Next: the owner's playtest. Is it harder in their hands? (The bot barely moves:
+59% -> 56%.) Does any room read wrong mirrored? Tune from the playtest log, not the bot.
+
 ## Round 58 (2026-10-05): start here
 
 Round 58 (PR #73, merged) is the owner's visual review of every floor. What it does:

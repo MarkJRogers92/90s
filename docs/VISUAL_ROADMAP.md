@@ -49,6 +49,7 @@ or start something; keep items small enough for one PR.
 | V9 | Colourblind-safe telegraph shapes | open | M |
 | V10 | Elite trait glyphs (Swift / Volatile) | **done** 2026-10-03 | S |
 | V11 | Remaining vector rooms and earlier modes to the neon kit | open | L |
+| V12 | Rooms as named, mirrored nights, placed decor (owner: "samey") | **done** 2026-10-07 (round 59; playbook) | L |
 | F1 | HUD toolbar covered the PA ticker | **done** 2026-10-03 | — |
 | F2 | Stage off-centre on every window wider than 16:10 | **done** 2026-10-03 | — |
 | B1 | Browser: Bench Warrant car shots spec fails (also on main) | **done** 2026-10-03 | — |

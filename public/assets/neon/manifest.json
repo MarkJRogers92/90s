@@ -3508,5 +3508,245 @@
       17
     ],
     "sha256": "384c8748e1e18565e640bf1b91bb8ede8026a0ac8efa26dea2d061e828e7fe54"
+  },
+  {
+    "path": "public/assets/neon/props/forge-shoebox.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/01-shoebox.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      44,
+      61
+    ],
+    "sha256": "d375fcc0ea0a2460f1d04c3960316b0cb3e154a264cd2c3cf28775121f22594b"
+  },
+  {
+    "path": "public/assets/neon/props/forge-hat-spinner.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/02-hat-spinner.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      45,
+      62
+    ],
+    "sha256": "71edcc037858fe2d289e89dac0de1ea7eca43d6cc704b77abbd1e04d3315a984"
+  },
+  {
+    "path": "public/assets/neon/props/forge-sunglasses.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/03-sunglasses.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      27,
+      45
+    ],
+    "sha256": "38c22a3382feda86afd38ef8a605283267e347b3bfbaba7f15f77def4426fe64"
+  },
+  {
+    "path": "public/assets/neon/props/forge-cassette-bin.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/04-cassette-bin.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      46,
+      45
+    ],
+    "sha256": "599aadb3470df6b5c833aa1e5f11b614e4ff80452840b24b6d4ffd84e512fb1f"
+  },
+  {
+    "path": "public/assets/neon/props/forge-perfume.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/05-perfume.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      37,
+      45
+    ],
+    "sha256": "4c2b868c3aea7af1379aada6e1135b630c2b160956c5519e2e70643f05246acc"
+  },
+  {
+    "path": "public/assets/neon/props/forge-gift-wrap.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/06-gift-wrap.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      60,
+      45
+    ],
+    "sha256": "cbb4ce26eec4721981e4a54569c6c79512810bae0ef78ecd33d8c5573f224f5a"
+  },
+  {
+    "path": "public/assets/neon/props/forge-espresso.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/07-espresso.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      45,
+      37
+    ],
+    "sha256": "a70b46d8412bb92646a80ec27c67b595799d6ab366b66d7397b3f78726727ed2"
+  },
+  {
+    "path": "public/assets/neon/props/forge-hotdog.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/08-hotdog.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      46,
+      30
+    ],
+    "sha256": "8846dd84d32f483d03a200f827f79fa03ef40a99080fa78f07887080e3f554d8"
+  },
+  {
+    "path": "public/assets/neon/props/forge-waffle.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/09-waffle.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      20,
+      30
+    ],
+    "sha256": "7dbbc0097f3b8df17f03f603ac08d78186fc7a861a672c160bfdad52e612cbde"
+  },
+  {
+    "path": "public/assets/neon/props/forge-food-tray.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/10-food-tray.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      30,
+      25
+    ],
+    "sha256": "2496c308fd6e38d0f56858b68187d197d533f2f1438d477868c0e0d452cff3ae"
+  },
+  {
+    "path": "public/assets/neon/props/forge-bus-tub.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/11-bus-tub.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      30,
+      29
+    ],
+    "sha256": "b17425141cdd42258eb9b003b1f215874d63be1dc84a3f31d44c83a3e1da6e34"
+  },
+  {
+    "path": "public/assets/neon/props/forge-spill-kit.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/12-spill-kit.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      28,
+      37
+    ],
+    "sha256": "e90b8d5c6a239bc5a9d707a50ea6a45057c4bdf29c02b987d2935375b47207d9"
+  },
+  {
+    "path": "public/assets/neon/props/forge-turnstile.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/13-turnstile.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      44,
+      44
+    ],
+    "sha256": "c50d1d9eb0b2e99655200e202f171f15625f3e524c084842bfc0bb2c30e74a10"
+  },
+  {
+    "path": "public/assets/neon/props/forge-cctv.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/14-cctv.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      30,
+      29
+    ],
+    "sha256": "33644c2fc713335b96e2ce680c748a79d9888af0ff01b5f24ed31ece4ecfb174"
+  },
+  {
+    "path": "public/assets/neon/props/forge-alarm.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/15-alarm.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      22,
+      29
+    ],
+    "sha256": "d7021b8f256adb026949962995401d7def494f50bbedbae5fddcfda036da436a"
+  },
+  {
+    "path": "public/assets/neon/props/forge-key-cabinet.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/16-key-cabinet.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      38,
+      44
+    ],
+    "sha256": "b09e5c9b62545e1bf65cd37398d5859b89f5392b9f8551f63b1902af74b39a01"
+  },
+  {
+    "path": "public/assets/neon/props/forge-barricade.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/17-barricade.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      62,
+      35
+    ],
+    "sha256": "9de7a3cd89acc9259d7dd84a77efe84a19aeaa684c64e59f2169ca9d7cb22776"
+  },
+  {
+    "path": "public/assets/neon/props/forge-extinguisher.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/18-extinguisher.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      22,
+      37
+    ],
+    "sha256": "d491787ec820fef0f10e83e2bfdb5a3a78146a744f85f5b2618225cfc1fe580d"
+  },
+  {
+    "path": "public/assets/neon/props/forge-restroom-sign.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/19-restroom-sign.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      44,
+      20
+    ],
+    "sha256": "0a8aca5a8078cf82a6b86763b494545f09e9ae0404472b1fc7658574179526d4"
+  },
+  {
+    "path": "public/assets/neon/props/forge-arrow-sign.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/20-arrow-sign.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      42,
+      20
+    ],
+    "sha256": "a9f4420b5f819504717d2ec806ceaf61c058abd372ddbb9c4a56d923c4c3e7a6"
+  },
+  {
+    "path": "public/assets/neon/props/forge-bags.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/21-bags.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      38,
+      30
+    ],
+    "sha256": "5d1b4db50e441c29ea4c758dcdc58db90f61947a677c77b528b9651bac47e299"
+  },
+  {
+    "path": "public/assets/neon/props/forge-map.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/22-map.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      30,
+      22
+    ],
+    "sha256": "0fd8f1469194b0960357cec451d5675cc21ae54fa1c598c7ca0daa8ddd239e21"
+  },
+  {
+    "path": "public/assets/neon/props/forge-extension-reel.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/23-extension-reel.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      38,
+      38
+    ],
+    "sha256": "06d2892da8353a923d5ca5550998532d717d99e159672abc029e996d81968265"
+  },
+  {
+    "path": "public/assets/neon/props/forge-ceiling-tile.png",
+    "source": "art/pixel-forge/dead-mall-24-assets-20261006/24-ceiling-tile.png",
+    "generator": "Pixel Forge (GPT reference + RD fixer), 2026-10-06 batch",
+    "size": [
+      38,
+      30
+    ],
+    "sha256": "c418f33c74b67e55b3a18127b38016e6e7c9fb235bb1add54b35d72670524916"
   }
 ]

@@ -1,5 +1,30 @@
 # Test evidence
 
+## 2026-10-07 — Round 59: rooms as named, mirrored nights, placed decor
+
+Branch `claude/round59-named-rooms` on `origin/main` `6d3f90d`.
+- **Unit and integration:** `npx vitest run` gives 186 files and 1974 tests, all passing.
+  - New tests in `floor-layouts.test.ts`:
+    - Every layout is walkable in both orientations: both doors, entry, slots and bench, at a
+      Mascot's radius.
+    - No spawn slot is within 60 of the entry.
+    - First wings roll their own named pairs, and about half of rooms are mirrored.
+    - Each of the 8 boss and Lockdown arenas keeps the boss's ground.
+    - Furniture stays clear of lanes, shop doors, the hatch and the secret machine in both
+      orientations.
+  - New tests in `floor-visual-review.test.ts`: no loose decor floats in the open middle of a
+    room, and every room has something on its walls.
+  - Re-pinned tests:
+    - `floor-specs` (Floor 1 at full strength).
+    - The Floor 1 layout pin (same layouts, now at full strength).
+    - `balance-expert`: the pro bot now dies to the Owner in his new Suite. It lost 4 health
+      there before. The expert bot still takes none.
+- **Balance:** 100 nights, before/after, `docs/neon-overhaul/balance/round59.md`.
+- **Visual:** `scripts/floor-sweep.mjs` captured every first wing on floors 1-4 (seeds 3, 8)
+  and every boss wing (seed 3), in `artifacts/floor-sweep/r59/`. All were looked at.
+- **Browser gate:** `PW_PORT=4193 npx playwright test --workers=2`: 101 passed (8.1 min), no flakes.
+
+
 ## 2026-10-06 — Bargain Hunter west flinch seen live (PR #74)
 
 Ran `tests/browser/hunter-hurt-review.spec.ts` (from #70) in Chromium from this branch, merged with main

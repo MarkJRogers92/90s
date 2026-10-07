@@ -145,6 +145,75 @@ const PAINTERS: Readonly<Record<BlockMaterial, Painter>> = {
       }
     }
   },
+  // The Ball Pit: padded vinyl walls in primary panels round a sea of plastic balls.
+  ballPit: (top, front, out, seed) => {
+    const pads = [0xd83a3a, 0xf0c030, 0x3a6ad8, 0x3ab85a];
+    fill(out.top, top.x, top.y, top.width, top.height, 0x2a3a8a);
+    for (let x = top.x; x < top.x + top.width; x += 12) fill(out.top, x, top.y, Math.min(12, top.x + top.width - x), 4, pads[Math.floor((x - top.x) / 12) % 4]!);
+    fill(out.top, top.x, top.y, 4, top.height, 0x3a6ad8);
+    fill(out.top, top.x + top.width - 4, top.y, 4, top.height, 0x3a6ad8);
+    const balls = [0xff4a4a, 0xffd84a, 0x4a8aff, 0x5ad86a, 0xff8ad8, 0xffffff];
+    for (let y = top.y + 5; y < top.y + top.height - 3; y += 3) {
+      for (let x = top.x + 5 + ((y >> 1) % 2) * 2; x < top.x + top.width - 6; x += 4) {
+        const n = cellNoise(x, y, seed);
+        const color = balls[Math.floor(n * 6)]!;
+        fill(out.top, x, y, 3, 3, color);
+        fill(out.top, x, y, 1, 1, 0xffffff);
+      }
+    }
+    fill(out.front, front.x, front.y, front.width, front.height, 0xd83a3a);
+    for (let x = front.x, i = 0; x < front.x + front.width; x += 16, i += 1) {
+      fill(out.front, x, front.y, Math.min(16, front.x + front.width - x), front.height, pads[i % 4]!);
+      fill(out.front, x, front.y, 1, front.height, 0x1a1428);
+    }
+    fill(out.front, front.x, front.y, front.width, 2, 0xffffff);
+    // Padding seams a third and two thirds of the way down.
+    fill(out.front, front.x, front.y + Math.floor(front.height / 3), front.width, 1, 0x1a1428);
+    fill(out.front, front.x, front.y + Math.floor((front.height * 2) / 3), front.width, 1, 0x1a1428);
+  },
+  // The Freezer Aisle: chest freezers, frosted glass lids over boxed stock, white enamel fronts.
+  freezer: (top, front, out, seed) => {
+    fill(out.top, top.x, top.y, top.width, top.height, 0xd8e0e8);
+    fill(out.top, top.x + 3, top.y + 3, top.width - 6, top.height - 6, 0x6aa8c8);
+    const boxes = [0xd84a4a, 0x4a8ad8, 0xe8c040, 0x8ad8e8, 0xe8e0d0];
+    for (let y = top.y + 5; y < top.y + top.height - 6; y += 6) {
+      for (let x = top.x + 5; x < top.x + top.width - 8; x += 8) {
+        const n = cellNoise(x, y, seed);
+        if (n < 0.8) fill(out.top, x, y, 6, 4, boxes[Math.floor(n * 31) % boxes.length]!);
+      }
+    }
+    // Frost on the glass: pale diagonal streaks.
+    for (let x = top.x + 4; x < top.x + top.width - 6; x += 14) {
+      for (let i = 0; i < Math.min(10, top.height - 8); i += 1) fill(out.top, x + i, top.y + 4 + i, 2, 1, 0xe8f8ff);
+    }
+    fill(out.top, top.x + Math.floor(top.width / 2), top.y + 2, 1, top.height - 4, 0xa8b8c8);
+    fill(out.front, front.x, front.y, front.width, front.height, 0xe8ecf0);
+    fill(out.front, front.x, front.y + 3, front.width, 3, 0x3a8ad8);
+    for (let x = front.x + 6; x < front.x + front.width - 10; x += 10) fill(out.front, x, front.y + front.height - 7, 6, 3, 0x6a7280);
+    fill(out.front, front.x, front.y + front.height - 2, front.width, 2, 0x8a929e);
+  },
+  // The Gallery Walk: white partition walls hung with framed prints, each under its own spot.
+  partition: (top, front, out, seed) => {
+    fill(out.top, top.x, top.y, top.width, top.height, 0xf0ece4);
+    fill(out.top, top.x, top.y, top.width, 1, 0xffffff);
+    fill(out.front, front.x, front.y, front.width, front.height, 0xe8e2d8);
+    fill(out.front, front.x, front.y + front.height - 4, front.width, 4, 0x8a8278);
+    const prints: ReadonlyArray<readonly [number, number]> = [[0xff3fc8, 0x3ff0ff], [0xffd84a, 0xff6a3a], [0x4a7dff, 0xa46bff], [0x6aff8a, 0x2a6a3a]];
+    const frames = Math.max(1, Math.floor(front.width / 46));
+    const step = front.width / frames;
+    for (let i = 0; i < frames; i += 1) {
+      const cx = Math.round(front.x + step * (i + 0.5));
+      const w = 26, h = Math.max(10, front.height - 18);
+      const fx = cx - w / 2, fy = front.y + 6;
+      const [a, b] = prints[Math.floor(cellNoise(i, front.x, seed) * 4)]!;
+      fill(out.front, fx - 2, fy - 2, w + 4, h + 4, 0x2a2018);
+      fill(out.front, fx, fy, w, h, a);
+      fill(out.front, fx + 4, fy + Math.floor(h / 2), w - 8, Math.ceil(h / 2) - 3, b);
+      fill(out.front, fx + Math.floor(w / 2) - 3, fy + 3, 6, 5, 0xffffff);
+      // The spot's pool of light above the frame.
+      fill(out.front, cx - 1, front.y + 1, 2, 2, 0xfff8e0);
+    }
+  },
   // The water tower's legs: riveted steel girder, weathered red.
   steel: (top, front, out) => {
     fill(out.top, top.x, top.y, top.width, top.height, 0xc05a40);
