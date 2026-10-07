@@ -35,7 +35,7 @@ describe('HUD inventory and lifecycle edge cases',()=>{
 
 
 describe('HUD comfort and full simulation preservation',()=>{
- it('avoids portrait hit-flashing in the reduced-flash setting',()=>{gameSettings().update({...DEFAULT_SETTINGS,flashes:'reduced'});try{const r=setup();r.state.room.combat.player.invulnerableTicks=12;r.state.tick=612;r.hud.sync(r.state);expect(r.images.find(i=>i.texture.key==='neon:portrait:alex')!.tint).toBe(0xffffff);}finally{gameSettings().update(DEFAULT_SETTINGS);}});
+ it('avoids portrait hit-flashing in the reduced-flash setting',()=>{gameSettings().update({...DEFAULT_SETTINGS,flashes:'reduced'});try{const r=setup();r.state.room.combat.player.invulnerableTicks=12;r.state.tick=612;r.hud.sync(r.state);expect(r.images.find(i=>i.texture.key.startsWith('neon:portrait:alex'))!.tint).toBe(0xffffff);}finally{gameSettings().update(DEFAULT_SETTINGS);}});
  it('keeps 720 full run states identical with the renderer active',()=>{for(const seed of [1,7,42]){const r=hudRenderer();const hud=new GameHud(r.scene);hud.setCoachAllowed(false);const observed=createMvpRun(seed),control=createMvpRun(seed);for(let tick=0;tick<240;tick++){const input={moveX:tick%90<45?1:-1,moveY:tick%120<60?.3:-.3,aimX:800,aimY:240,fire:tick%3!==1,dash:tick%80===0,interact:false,steal:false,recall:false};tickMvpRun(observed,input);tickMvpRun(control,input);hud.sync(observed);expect(observed).toEqual(control);}hud.destroy();}});
 });
 
