@@ -22,7 +22,7 @@ Branch `claude/round59-named-rooms` on `origin/main` `6d3f90d`.
 - **Balance:** 100 nights, before/after, `docs/neon-overhaul/balance/round59.md`.
 - **Visual:** `scripts/floor-sweep.mjs` captured every first wing on floors 1-4 (seeds 3, 8)
   and every boss wing (seed 3), in `artifacts/floor-sweep/r59/`. All were looked at.
-- **Browser gate:** see below.
+- **Browser gate:** `PW_PORT=4193 npx playwright test --workers=2`: 101 passed (8.1 min), no flakes.
 
 
 ## 2026-10-06 — Bargain Hunter west flinch seen live (PR #74)
