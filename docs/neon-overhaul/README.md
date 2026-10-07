@@ -1714,3 +1714,47 @@ node scripts/floor-sweep.mjs --out artifacts/floor-sweep/now [--seed 3] [--floor
 It uses the dev fixture `?fixture=mvp-room&floor=N&room=<id>[&part=1][&store=1|2][&enemies=1][&event=none]`;
 `event=none` walks forward to a seed with no floor or room event, so an
 outage does not hide the room.
+
+## Round 59 - rooms as named, mirrored nights, placed decor
+
+The owner (2026-10-07): "Everything is very samey and has the same layout ...
+some of the assets seem out of place and randomly placed ... if this makes the
+game harder, perfect, because it's currently too easy." Shopfronts unchanged.
+
+- **Rooms as named.** Each floor's first wing had borrowed its boss wing's
+  rooms. `FIRST_WING_VARIANTS` (templates.ts) gives every first-wing fight room
+  two layouts of its own, 24 in all: the Opening Concourse's fountain plaza and
+  twin gardens, Kiosk Alley's kiosk rows, the Freight Hall's pallets and dock
+  lanes, the Mezzanine's overlook, the Gallery Walk's print walls, the Elevator
+  Bank, the Snack Bar, the Ball Pit, the Freezer Aisle, the Service Ladder, the
+  Duct Maze and the Gravel Yard. `roomVariantsFor(role, floor, part)`.
+- **Named courts.** `roomFurniture(room, floor, part)` (storeInterior.ts)
+  furnishes each first-wing storefront room as named: Fountain Court's fountain
+  and benches, Garden Court's beds, the Skybridges' drop to the floor below,
+  Dessert Row's counter, the Prep Kitchen, Antenna Row's dishes, the Satellite
+  Deck. Collision and art from one list, as before.
+- **Boss rooms.** `BOSS_ARENAS`: each floor's boss room and each first wing's
+  Lockdown room has its own cover, all west of x 600 so the boss and the
+  Lockdown ring keep their ground (Floor 1's boss wing keeps its desks).
+- **Mirrored nights.** About half the rooms of a wing are flipped left to right
+  (`mirrorVariant`; `WingRoomDefinition.mirrored`), from their own salted rng so
+  no other draw moves. Never a district's rooms or the boss room. The dressing
+  plans the room as authored and flips the result (`mirrorLook`), so every
+  cover still points at its own wall. Mirroring found eight spawn slots that
+  stood within 60 of the entry door (three already did unmirrored in round 58's
+  arcade and HVAC yard); all moved.
+- **Decor in its place.** The hand-placed decor lists are gone. `roomDecor.ts`
+  stands every loose piece in one of five places: mounted on the back-wall
+  pillars (cameras, signs, alarms, extinguishers), flanking the shopfronts,
+  along the railing, as a cluster in each corner, or dropped in front of
+  furniture. Each floor and room has a kit; picks are a stable hash of the
+  room. Tested: nothing loose floats in the open middle of a room, every room
+  has something on its walls. No still shopping carts (carts roll in fights).
+- **Art.** The 24 Pixel Forge environment sprites
+  (`art/pixel-forge/dead-mall-24-assets-20261006`) are trimmed into
+  `props/forge-*.png` and in the manifest. Three new block materials:
+  `ballPit`, `freezer`, `partition` (gallery walls with framed prints).
+- **Harder.** Floor 1's boss wing fights at full strength (as floors 2-4 do);
+  floors 2-4 monster health x1.25 / x1.45 / x1.65 (was 1.15 / 1.3 / 1.5). Floor
+  1 health stays x1 so a Hanger still drops in three mop hits. Elite chance
+  0.18 -> 0.28. Measured in `docs/neon-overhaul/balance/round59.md`.

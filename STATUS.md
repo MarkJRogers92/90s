@@ -1,5 +1,22 @@
 # Status
 
+## 2026-10-07 — Round 59: rooms as named, mirrored nights, placed decor (branch `claude/round59-named-rooms`)
+
+Built on `origin/main` (`6d3f90d`). The owner found the floors samey and the decor
+randomly placed, and the game too easy. Shopfronts are unchanged.
+- Every first wing's rooms are laid out as named (24 new layouts: Kiosk Alley, the
+  Ball Pit, the Gallery Walk, the Duct Maze ...), its courts furnished as named
+  (Fountain Court, Garden Court, the Skybridges ...), and each floor has its own
+  boss and Lockdown room.
+- About half the rooms are mirrored each night.
+- Loose decor now stands in five deliberate places from per-floor kits
+  (`roomDecor.ts`). 24 Pixel Forge sprites are imported.
+- Harder: Floor 1's boss wing at full strength, floors 2-4 monster health up,
+  elites 0.18 -> 0.28. Bot: shopping pro 59% -> 56% of nights won; see
+  `docs/neon-overhaul/balance/round59.md`.
+
+See the playbook's Round 59 and TEST_EVIDENCE.md. Not merged or pushed.
+
 ## 2026-10-05 — Round 58: a visual review of every floor (branch `claude/floor-visual-review`)
 
 Built on `origin/main` (`90204ab`), merged as PR #73 (`7fceed6`). The owner's review: lines across the top of
