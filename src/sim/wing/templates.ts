@@ -300,7 +300,7 @@ export const FLOOR_ROOM_VARIANTS: Readonly<Record<2 | 3 | 4, Readonly<Record<Com
         { x: 200, y: 150, width: 180, height: 24 },
         { x: 580, y: 150, width: 180, height: 24 },
         { x: 390, y: 320, width: 180, height: 24 },
-      ], [[480, 130, 'h'], [480, 390, 'hs'], [800, 260, 's'], [240, 260, 'hs']], { min: 3, max: 3 }, true),
+      ], [[480, 130, 'h'], [480, 390, 'hs'], [780, 330, 's'], [240, 260, 'hs']], { min: 3, max: 3 }, true),
     ],
   },
   3: {
@@ -331,7 +331,7 @@ export const FLOOR_ROOM_VARIANTS: Readonly<Record<2 | 3 | 4, Readonly<Record<Com
         { x: 634, y: 120, width: 76, height: 44 },
         { x: 250, y: 316, width: 76, height: 44 },
         { x: 634, y: 316, width: 76, height: 44 },
-      ], [[480, 120, 's'], [480, 360, 'hs'], [150, 240, 'hs'], [810, 240, 'h']], { min: 3, max: 4 }),
+      ], [[480, 120, 's'], [480, 360, 'hs'], [180, 340, 'hs'], [790, 140, 'h']], { min: 3, max: 4 }),
     ],
     back_hall: [
       fightRoom('dock-pallets', [
@@ -370,7 +370,7 @@ export const FLOOR_ROOM_VARIANTS: Readonly<Record<2 | 3 | 4, Readonly<Record<Com
         { x: 230, y: 320, width: 70, height: 46 },
         { x: 660, y: 320, width: 70, height: 46 },
         { x: 445, y: 215, width: 70, height: 46 },
-      ], [[480, 110, 's'], [480, 380, 'hs'], [150, 240, 'hs'], [810, 240, 'h']], { min: 3, max: 4 }),
+      ], [[480, 110, 's'], [480, 380, 'hs'], [180, 400, 'hs'], [800, 120, 'h']], { min: 3, max: 4 }),
       fightRoom('hvac-pipes', [
         { x: 170, y: 150, width: 250, height: 14 },
         { x: 540, y: 150, width: 250, height: 14 },
@@ -393,14 +393,254 @@ export const FLOOR_ROOM_VARIANTS: Readonly<Record<2 | 3 | 4, Readonly<Record<Com
   },
 };
 
-/** The layouts a floor's room can roll: floor 1's own, or the floor's round-58 pair. */
-export function roomVariantsFor(role: CombatRoomRole, floor: FloorNumber): readonly AuthoredRoomVariant[] {
+/**
+ * Round 59: each floor's first wing is laid out as its rooms are named
+ * (FloorSpec.firstWingNames), so Kiosk Alley has its kiosks, the Ball Pit its
+ * pit and the Duct Maze its ducts, instead of borrowing the boss wing's rooms.
+ * Fight bands match the same room's elsewhere on the floor.
+ */
+export const FIRST_WING_VARIANTS: Readonly<Record<FloorNumber, Readonly<Record<CombatRoomRole, readonly [AuthoredRoomVariant, AuthoredRoomVariant]>>>> = {
+  1: {
+    service_corridor: [
+      safeRoom('opening-fountain-plaza', [
+        OPENING_FOUNTAIN,
+        { x: 200, y: 330, width: 150, height: 30 },
+        { x: 610, y: 330, width: 150, height: 30 },
+        { x: 250, y: 112, width: 44, height: 40 },
+        { x: 666, y: 112, width: 44, height: 40 },
+      ], [[180, 200], [780, 200], [150, 410], [810, 410]]),
+      safeRoom('opening-twin-gardens', [
+        OPENING_FOUNTAIN,
+        { x: 290, y: 120, width: 34, height: 190 },
+        { x: 636, y: 120, width: 34, height: 190 },
+      ], [[200, 140], [760, 140], [200, 400], [760, 400]]),
+    ],
+    food_court: [
+      fightRoom('kiosk-alley-rows', [
+        { x: 210, y: 120, width: 56, height: 40 },
+        { x: 452, y: 120, width: 56, height: 40 },
+        { x: 694, y: 120, width: 56, height: 40 },
+        { x: 210, y: 320, width: 56, height: 40 },
+        { x: 452, y: 320, width: 56, height: 40 },
+        { x: 694, y: 320, width: 56, height: 40 },
+      ], [[340, 240, 'hs'], [790, 240, 'h'], [600, 240, 's'], [480, 410, 'hs']], { min: 3, max: 4 }),
+      fightRoom('kiosk-alley-island', [
+        { x: 330, y: 210, width: 300, height: 60 },
+        { x: 200, y: 110, width: 56, height: 40 },
+        { x: 704, y: 330, width: 56, height: 40 },
+      ], [[480, 130, 's'], [480, 360, 'hs'], [190, 300, 'hs'], [790, 200, 'h']], { min: 3, max: 4 }),
+    ],
+    back_hall: [
+      fightRoom('freight-pallet-rows', [
+        { x: 220, y: 130, width: 64, height: 52 },
+        { x: 220, y: 320, width: 64, height: 52 },
+        { x: 690, y: 130, width: 64, height: 52 },
+        { x: 690, y: 320, width: 64, height: 52 },
+        { x: 466, y: 200, width: 28, height: 130 },
+      ], [[360, 240, 'hs'], [600, 240, 's'], [820, 130, 'h'], [360, 410, 'hs']], { min: 3, max: 4 }, true),
+      fightRoom('freight-dock-lanes', [
+        { x: 180, y: 170, width: 240, height: 26 },
+        { x: 540, y: 300, width: 240, height: 26 },
+        { x: 620, y: 110, width: 64, height: 52 },
+        { x: 270, y: 330, width: 64, height: 52 },
+      ], [[480, 150, 'h'], [480, 400, 'hs'], [200, 250, 'hs'], [790, 180, 's']], { min: 3, max: 3 }, true),
+    ],
+  },
+  2: {
+    service_corridor: [
+      safeRoom('mezzanine-overlook', [
+        { x: 200, y: 340, width: 560, height: 34 },
+        { x: 230, y: 120, width: 48, height: 40 },
+        { x: 682, y: 120, width: 48, height: 40 },
+      ], [[200, 260], [760, 260], [140, 420], [820, 420]]),
+      safeRoom('mezzanine-wells', [
+        { x: 180, y: 300, width: 120, height: 48 },
+        { x: 420, y: 330, width: 120, height: 48 },
+        { x: 660, y: 300, width: 120, height: 48 },
+      ], [[200, 150], [760, 150], [480, 230], [480, 420]]),
+    ],
+    food_court: [
+      fightRoom('gallery-partitions', [
+        { x: 220, y: 140, width: 180, height: 22 },
+        { x: 560, y: 140, width: 180, height: 22 },
+        { x: 390, y: 320, width: 180, height: 22 },
+      ], [[480, 110, 's'], [190, 240, 'hs'], [790, 240, 'h'], [480, 410, 'hs']], { min: 3, max: 4 }),
+      fightRoom('gallery-ropes', [
+        { x: 380, y: 180, width: 200, height: 14 },
+        { x: 380, y: 300, width: 200, height: 14 },
+        { x: 180, y: 110, width: 160, height: 22 },
+        { x: 620, y: 350, width: 160, height: 22 },
+      ], [[480, 240, 's'], [190, 320, 'hs'], [790, 180, 'h'], [480, 410, 'hs']], { min: 3, max: 4 }),
+    ],
+    back_hall: [
+      fightRoom('elevator-shafts', [
+        { x: 290, y: 320, width: 120, height: 56 },
+        { x: 550, y: 320, width: 120, height: 56 },
+        { x: 250, y: 140, width: 40, height: 40 },
+        { x: 670, y: 140, width: 40, height: 40 },
+      ], [[480, 220, 'h'], [170, 260, 'hs'], [790, 190, 's'], [480, 420, 'hs']], { min: 3, max: 4 }, true),
+      fightRoom('elevator-planters', [
+        { x: 330, y: 150, width: 30, height: 180 },
+        { x: 600, y: 150, width: 30, height: 180 },
+      ], [[480, 240, 'h'], [190, 130, 'hs'], [780, 360, 's'], [800, 140, 'hs']], { min: 3, max: 3 }, true),
+    ],
+  },
+  3: {
+    service_corridor: [
+      safeRoom('snack-bar-counter', [
+        { x: 300, y: 150, width: 360, height: 30 },
+        { x: 220, y: 320, width: 60, height: 44 },
+        { x: 680, y: 320, width: 60, height: 44 },
+      ], [[480, 260], [180, 140], [780, 140], [480, 420]]),
+      safeRoom('snack-bar-booths', [
+        { x: 180, y: 320, width: 160, height: 34 },
+        { x: 400, y: 320, width: 160, height: 34 },
+        { x: 620, y: 320, width: 160, height: 34 },
+      ], [[200, 160], [760, 160], [480, 230], [480, 420]]),
+    ],
+    food_court: [
+      fightRoom('ball-pit-center', [
+        { x: 380, y: 180, width: 200, height: 120 },
+      ], [[200, 140, 'hs'], [790, 140, 'h'], [200, 380, 's'], [790, 380, 'hs']], { min: 3, max: 4 }),
+      fightRoom('ball-pit-twin', [
+        { x: 220, y: 130, width: 160, height: 90 },
+        { x: 580, y: 260, width: 160, height: 90 },
+      ], [[480, 150, 's'], [480, 330, 'hs'], [190, 330, 'hs'], [790, 160, 'h']], { min: 3, max: 4 }),
+    ],
+    back_hall: [
+      fightRoom('freezer-aisles', [
+        { x: 200, y: 170, width: 220, height: 30 },
+        { x: 540, y: 170, width: 220, height: 30 },
+        { x: 200, y: 320, width: 220, height: 30 },
+        { x: 540, y: 320, width: 220, height: 30 },
+      ], [[480, 250, 'hs'], [800, 120, 's'], [480, 410, 'hs'], [480, 130, 'h']], { min: 3, max: 4 }, true),
+      fightRoom('freezer-islands', [
+        { x: 280, y: 140, width: 90, height: 44 },
+        { x: 590, y: 140, width: 90, height: 44 },
+        { x: 280, y: 310, width: 90, height: 44 },
+        { x: 590, y: 310, width: 90, height: 44 },
+      ], [[480, 240, 'h'], [190, 240, 'hs'], [790, 400, 's'], [480, 410, 'hs']], { min: 3, max: 3 }, true),
+    ],
+  },
+  4: {
+    service_corridor: [
+      safeRoom('ladder-landing', [
+        { x: 200, y: 330, width: 240, height: 24 },
+        { x: 520, y: 330, width: 240, height: 24 },
+        { x: 230, y: 130, width: 36, height: 28 },
+        { x: 694, y: 130, width: 36, height: 28 },
+      ], [[200, 260], [760, 260], [480, 420], [480, 200]]),
+      safeRoom('ladder-skylights', [
+        { x: 400, y: 300, width: 160, height: 60 },
+        { x: 200, y: 140, width: 70, height: 46 },
+        { x: 690, y: 140, width: 70, height: 46 },
+      ], [[200, 260], [760, 260], [220, 410], [740, 410]]),
+    ],
+    food_court: [
+      fightRoom('duct-maze-zigzag', [
+        { x: 180, y: 120, width: 200, height: 24 },
+        { x: 356, y: 144, width: 24, height: 110 },
+        { x: 580, y: 336, width: 200, height: 24 },
+        { x: 580, y: 226, width: 24, height: 110 },
+      ], [[480, 240, 'h'], [190, 300, 'hs'], [790, 180, 's'], [480, 420, 'hs']], { min: 3, max: 4 }),
+      fightRoom('duct-maze-grid', [
+        { x: 260, y: 110, width: 24, height: 130 },
+        { x: 676, y: 110, width: 24, height: 130 },
+        { x: 420, y: 250, width: 24, height: 130 },
+        { x: 516, y: 250, width: 24, height: 130 },
+      ], [[480, 130, 's'], [190, 330, 'hs'], [790, 330, 'h'], [480, 420, 'hs']], { min: 3, max: 4 }),
+    ],
+    back_hall: [
+      fightRoom('gravel-yard-units', [
+        { x: 220, y: 150, width: 70, height: 46 },
+        { x: 670, y: 150, width: 70, height: 46 },
+        { x: 445, y: 300, width: 70, height: 46 },
+      ], [[480, 220, 'h'], [170, 280, 'hs'], [820, 120, 's'], [800, 380, 'hs']], { min: 3, max: 4 }, true),
+      fightRoom('gravel-yard-pipes', [
+        { x: 180, y: 180, width: 280, height: 14 },
+        { x: 500, y: 300, width: 280, height: 14 },
+        { x: 700, y: 120, width: 40, height: 40 },
+      ], [[480, 140, 'h'], [200, 330, 'hs'], [780, 220, 's'], [480, 410, 'hs']], { min: 3, max: 3 }, true),
+    ],
+  },
+};
+
+/** The layouts a floor's room can roll: the first wing's named pair, floor 1's own, or the floor's round-58 pair. */
+export function roomVariantsFor(role: CombatRoomRole, floor: FloorNumber, part?: 1): readonly AuthoredRoomVariant[] {
+  if (part === 1) return FIRST_WING_VARIANTS[floor][role];
   return floor === 1 ? ROOM_VARIANTS[role] : FLOOR_ROOM_VARIANTS[floor][role];
 }
 
 /** Any floor's layout for a room, by id (the wing records only the id). */
 export function findRoomVariant(role: CombatRoomRole, id: string): AuthoredRoomVariant | undefined {
-  return [ROOM_VARIANTS[role], ...([2, 3, 4] as const).map((floor) => FLOOR_ROOM_VARIANTS[floor][role])].flat().find((variant) => variant.id === id);
+  const floors = [1, 2, 3, 4] as const;
+  return [
+    ROOM_VARIANTS[role],
+    ...([2, 3, 4] as const).map((floor) => FLOOR_ROOM_VARIANTS[floor][role]),
+    ...floors.map((floor) => FIRST_WING_VARIANTS[floor][role]),
+  ].flat().find((variant) => variant.id === id);
+}
+
+function arena(id: string, interiorWalls: readonly Rect[]): AuthoredRoomVariant {
+  return { id, interiorWalls, playerEntry: ENTRY, bossAnchor: { x: 760, y: 240 }, spawnSlots: [], enemyCount: { min: 0, max: 0 }, benchKiosk: null };
+}
+
+/**
+ * Round 59: each floor's boss room (and each first wing's Lockdown room) has
+ * its own cover, all of it west of x 600 so the boss and the Lockdown ring
+ * around the anchor (760, 240) always have their ground.
+ */
+export const BOSS_ARENAS: Readonly<Record<FloorNumber, { readonly first: AuthoredRoomVariant; readonly boss: AuthoredRoomVariant | null }>> = {
+  1: {
+    first: arena('customer-service-queue', [
+      { x: 260, y: 150, width: 200, height: 14 },
+      { x: 260, y: 330, width: 200, height: 14 },
+      { x: 480, y: 120, width: 60, height: 40 },
+      { x: 480, y: 320, width: 60, height: 40 },
+    ]),
+    // Floor 1's boss wing keeps SECURITY_OFFICE_VARIANT (declared below this table).
+    boss: null,
+  },
+  2: {
+    first: arena('mezzanine-office-desks', [
+      { x: 280, y: 130, width: 70, height: 40 },
+      { x: 280, y: 310, width: 70, height: 40 },
+      { x: 470, y: 130, width: 70, height: 40 },
+      { x: 470, y: 310, width: 70, height: 40 },
+    ]),
+    boss: arena('management-boardroom', [
+      { x: 340, y: 210, width: 220, height: 60 },
+      { x: 300, y: 110, width: 48, height: 40 },
+      { x: 300, y: 330, width: 48, height: 40 },
+    ]),
+  },
+  3: {
+    first: arena('walk-in-shelves', [
+      { x: 260, y: 120, width: 240, height: 28 },
+      { x: 260, y: 330, width: 240, height: 28 },
+    ]),
+    boss: arena('owners-suite-desk', [
+      { x: 420, y: 150, width: 140, height: 40 },
+      { x: 300, y: 320, width: 40, height: 40 },
+      { x: 540, y: 320, width: 40, height: 40 },
+    ]),
+  },
+  4: {
+    first: arena('elevator-housing-machinery', [
+      { x: 320, y: 130, width: 90, height: 50 },
+      { x: 480, y: 310, width: 90, height: 50 },
+    ]),
+    boss: arena('helipad-pad', [
+      { x: 300, y: 110, width: 70, height: 46 },
+      { x: 300, y: 320, width: 70, height: 46 },
+      { x: 480, y: 220, width: 40, height: 40 },
+    ]),
+  },
+};
+
+/** The boss room's layout for a floor's first wing (its Lockdown) or boss wing. */
+export function bossArenaFor(floor: FloorNumber, part?: 1): AuthoredRoomVariant {
+  return part === 1 ? BOSS_ARENAS[floor].first : BOSS_ARENAS[floor].boss ?? SECURITY_OFFICE_VARIANT;
 }
 
 /** The boss room composition is fixed, so it is not one of the seeded variants. */

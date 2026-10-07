@@ -8,11 +8,10 @@ const expert: BotOptions = { skill: 'expert', shop: 'none' };
 const SEEDS = [1, 2, 3];
 
 describe('the expert bot (round 57 follow-up): every lane, slam and shot scored at once', () => {
-  it('the pro bot loses 4 health to the Mall Owner every time: it retreats along his charge lane and ignores two Mascot lanes while dodging a tray (the number the expert has to beat)', () => {
+  it('the pro bot dies to the Mall Owner every time since round 59 (it lost 4 health before): his Suite has a desk and two pillars now, and it retreats into them along his charge lane', () => {
     for (const seed of SEEDS) {
       const fight = bossFight(seed, pro);
-      expect(fight.outcome).toBe('won');
-      expect(fight.hpLost).toBe(4);
+      expect(fight.outcome).toBe('dead');
     }
   });
 

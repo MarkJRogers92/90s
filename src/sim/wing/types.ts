@@ -77,6 +77,12 @@ export type WingRoomDefinition = {
   readonly stores?: readonly WingStoreInstance[];
   readonly offers: readonly WingOffer[];
   readonly benchKiosk: Vec2 | null;
+  /**
+   * Round 59: the layout (and, in a storefront, its furniture) flipped left to
+   * right this night. Walls and spawns are already flipped; the dressing reads
+   * this to flip what it stands on them.
+   */
+  readonly mirrored?: true;
   /** Optional fixed props; absent preserves the ordinary seeded prop layout. */
   readonly props?: readonly Pick<MallProp, 'kind' | 'x' | 'y'>[];
 };

@@ -15,7 +15,7 @@
  */
 import type { Rect } from '../../../sim/model';
 import type { WingRoomDefinition } from '../../../sim/wing/types';
-import { BACK_HALL_DAMAGED_VENDING, INTERIOR_BOUNDS, concourseFurniture, type ConcourseFurniture, INTERIOR_EXIT, STORE_ENTRANCE_XS, roomStores } from '../../../sim/run/storeInterior';
+import { BACK_HALL_DAMAGED_VENDING, INTERIOR_BOUNDS, roomFurniture, type ConcourseFurniture, INTERIOR_EXIT, STORE_ENTRANCE_XS, roomStores } from '../../../sim/run/storeInterior';
 import type { WingStoreInstance } from '../../../sim/wing/types';
 import { OPENING_FOUNTAIN } from '../../../sim/wing/templates';
 import type { FloorStyle, NeonSignSpec } from '../neon/proceduralTextures';
@@ -23,6 +23,7 @@ import type { PointLight } from '../lighting/LightingLayer';
 import type { FloorNumber } from '../../../sim/wing/floorSpecs';
 import type { DistrictId } from '../../../sim/wing/districts';
 import { SECRET_STORE_INDEX } from '../../../sim/run/secretRoom';
+import { roomDecor } from './roomDecor';
 
 /* ------------------------------------------------------------------------ */
 /* Stage geometry                                                             */
@@ -124,6 +125,31 @@ export const PROP_TEXTURES = {
   satelliteDish: { key: 'neon:prop:satellite-dish', file: 'props/satellite-dish.png', width: 39, height: 54 },
   palletStack: { key: 'neon:prop:pallet-stack', file: 'props/pallet-stack.png', width: 54, height: 50 },
   roofPipes: { key: 'neon:prop:roof-pipes', file: 'props/roof-pipes.png', width: 104, height: 17 },
+  // Round 59: the Pixel Forge environment batch (art/pixel-forge/dead-mall-24-assets-20261006), trimmed.
+  shoeTower: { key: 'neon:prop:forge-shoebox', file: 'props/forge-shoebox.png', width: 44, height: 61 },
+  hatSpinner: { key: 'neon:prop:forge-hat-spinner', file: 'props/forge-hat-spinner.png', width: 45, height: 62 },
+  sunglassStand: { key: 'neon:prop:forge-sunglasses', file: 'props/forge-sunglasses.png', width: 27, height: 45 },
+  cassetteBin: { key: 'neon:prop:forge-cassette-bin', file: 'props/forge-cassette-bin.png', width: 46, height: 45 },
+  perfumeStand: { key: 'neon:prop:forge-perfume', file: 'props/forge-perfume.png', width: 37, height: 45 },
+  giftWrap: { key: 'neon:prop:forge-gift-wrap', file: 'props/forge-gift-wrap.png', width: 60, height: 45 },
+  espresso: { key: 'neon:prop:forge-espresso', file: 'props/forge-espresso.png', width: 45, height: 37 },
+  hotdogGrill: { key: 'neon:prop:forge-hotdog', file: 'props/forge-hotdog.png', width: 46, height: 30 },
+  waffleIron: { key: 'neon:prop:forge-waffle', file: 'props/forge-waffle.png', width: 20, height: 30 },
+  foodTray: { key: 'neon:prop:forge-food-tray', file: 'props/forge-food-tray.png', width: 30, height: 25 },
+  busTub: { key: 'neon:prop:forge-bus-tub', file: 'props/forge-bus-tub.png', width: 30, height: 29 },
+  spillKit: { key: 'neon:prop:forge-spill-kit', file: 'props/forge-spill-kit.png', width: 28, height: 37 },
+  turnstile: { key: 'neon:prop:forge-turnstile', file: 'props/forge-turnstile.png', width: 44, height: 44 },
+  cctv: { key: 'neon:prop:forge-cctv', file: 'props/forge-cctv.png', width: 30, height: 29 },
+  alarmPoint: { key: 'neon:prop:forge-alarm', file: 'props/forge-alarm.png', width: 22, height: 29 },
+  keyCabinet: { key: 'neon:prop:forge-key-cabinet', file: 'props/forge-key-cabinet.png', width: 38, height: 44 },
+  barricade: { key: 'neon:prop:forge-barricade', file: 'props/forge-barricade.png', width: 62, height: 35 },
+  extinguisher: { key: 'neon:prop:forge-extinguisher', file: 'props/forge-extinguisher.png', width: 22, height: 37 },
+  restroomSign: { key: 'neon:prop:forge-restroom-sign', file: 'props/forge-restroom-sign.png', width: 44, height: 20 },
+  arrowSign: { key: 'neon:prop:forge-arrow-sign', file: 'props/forge-arrow-sign.png', width: 42, height: 20 },
+  droppedBags: { key: 'neon:prop:forge-bags', file: 'props/forge-bags.png', width: 38, height: 30 },
+  mallMap: { key: 'neon:prop:forge-map', file: 'props/forge-map.png', width: 30, height: 22 },
+  cableReel: { key: 'neon:prop:forge-extension-reel', file: 'props/forge-extension-reel.png', width: 38, height: 38 },
+  ceilingTile: { key: 'neon:prop:forge-ceiling-tile', file: 'props/forge-ceiling-tile.png', width: 38, height: 30 },
   // Round 31: PixelLab animate_image strips (9 frames, frame 0 the original sprite).
   arcadeCabinet: { key: 'neon:prop:arcade-cabinet-anim', file: 'props/arcade-cabinet-anim.png', width: 27, height: 59, frames: 9 },
   clawMachine: { key: 'neon:prop:claw-machine-anim', file: 'props/claw-machine-anim.png', width: 32, height: 57, frames: 9 },
@@ -199,7 +225,7 @@ export type DressingProp = {
 };
 
 /** What an extruded block is made of (round 58): drawn to fit its collision exactly. */
-export type BlockMaterial = 'planterBed' | 'concrete' | 'duct' | 'balustrade' | 'steel' | 'counter' | 'shelving';
+export type BlockMaterial = 'planterBed' | 'concrete' | 'duct' | 'balustrade' | 'steel' | 'counter' | 'shelving' | 'ballPit' | 'freezer' | 'partition';
 
 /**
  * A long bar running away from the camera, drawn as a 3/4 box fitted to its
@@ -430,6 +456,49 @@ const LAYOUT_KITS: Readonly<Record<string, CoverKit | readonly CoverPiece[]>> = 
   'hvac-pipes': { bar: { prop: 'roofPipes' }, block: { prop: 'acUnit' }, column: VENTED_DUCT },
   'tower-legs': { bar: { material: 'steel' }, block: { material: 'steel', lift: 64 }, column: { material: 'steel' } },
   'tower-tanks': { bar: VENTED_DUCT, block: { prop: 'acUnit' }, column: VENTED_DUCT },
+
+  // Round 59: each first wing's rooms, as named (templates.ts FIRST_WING_VARIANTS).
+  // Floor 1: the Opening Concourse, Kiosk Alley, the Freight Hall.
+  'opening-fountain-plaza': [{ prop: 'fountain' }, PALM_BED, PALM_BED, { prop: 'palm' }, { prop: 'palm' }],
+  'opening-twin-gardens': { bar: PALM_BED, block: { prop: 'palm' }, column: PALM_BED },
+  'kiosk-alley-rows': [{ prop: 'pretzelCart' }, { prop: 'displayTable' }, { prop: 'pretzelCart' }, { prop: 'displayTable' }, { prop: 'pretzelCart' }, { prop: 'displayTable' }],
+  'kiosk-alley-island': {
+    bar: { material: 'counter', decor: ['gumballStand', 'displayTable', 'gumballStand'], decorWidth: 40 },
+    block: { prop: 'pretzelCart' },
+    column: PALM_BED,
+  },
+  'freight-pallet-rows': { bar: { prop: 'palletStack' }, block: { prop: 'palletStack' }, column: { material: 'concrete', decor: ['crates'], decorWidth: 40 } },
+  'freight-dock-lanes': { bar: { material: 'concrete', lift: 20 }, block: { prop: 'palletStack' }, column: { material: 'concrete' } },
+  // Floor 2: the Mezzanine, the Gallery Walk, the Elevator Bank.
+  'mezzanine-overlook': { bar: { material: 'balustrade' }, block: { prop: 'planterLong' }, column: PALM_BED },
+  'mezzanine-wells': { bar: { material: 'balustrade' }, block: { material: 'balustrade' }, column: PALM_BED },
+  'gallery-partitions': { bar: { material: 'partition' }, block: { material: 'partition' }, column: { material: 'partition' } },
+  'gallery-ropes': [{ prop: 'velvetRope' }, { prop: 'velvetRope' }, { material: 'partition' }, { material: 'partition' }],
+  'elevator-shafts': [{ material: 'duct', lift: 48 }, { material: 'duct', lift: 48 }, { material: 'concrete', lift: 56 }, { material: 'concrete', lift: 56 }],
+  'elevator-planters': { bar: PALM_BED, block: { prop: 'palm' }, column: PALM_BED },
+  // Floor 3: the Snack Bar, the Ball Pit, the Freezer Aisle.
+  'snack-bar-counter': [{ material: 'counter', decor: ['popcornCart', 'condiments', 'popcornCart'], decorWidth: 40 }, { prop: 'seatingIsland' }, { prop: 'seatingIsland' }],
+  'snack-bar-booths': { bar: { prop: 'booth' }, block: { prop: 'seatingIsland' }, column: PALM_BED },
+  'ball-pit-center': { bar: { material: 'ballPit' }, block: { material: 'ballPit' }, column: { material: 'ballPit' } },
+  'ball-pit-twin': { bar: { material: 'ballPit' }, block: { material: 'ballPit' }, column: { material: 'ballPit' } },
+  'freezer-aisles': { bar: { material: 'freezer' }, block: { material: 'freezer' }, column: { material: 'freezer' } },
+  'freezer-islands': { bar: { material: 'freezer' }, block: { material: 'freezer' }, column: { material: 'freezer' } },
+  // Floor 4: the Service Ladder, the Duct Maze, the Gravel Yard.
+  'ladder-landing': { bar: VENTED_DUCT, block: { prop: 'satelliteDish' }, column: VENTED_DUCT },
+  'ladder-skylights': { bar: { prop: 'skylight' }, block: { prop: 'acUnit' }, column: VENTED_DUCT },
+  'duct-maze-zigzag': { bar: VENTED_DUCT, block: VENTED_DUCT, column: VENTED_DUCT },
+  'duct-maze-grid': { bar: VENTED_DUCT, block: VENTED_DUCT, column: VENTED_DUCT },
+  'gravel-yard-units': { bar: { prop: 'roofPipes' }, block: { prop: 'acUnit' }, column: VENTED_DUCT },
+  'gravel-yard-pipes': { bar: { prop: 'roofPipes' }, block: { prop: 'ventStack' }, column: VENTED_DUCT },
+
+  // Round 59: the boss rooms and Lockdowns (templates.ts BOSS_ARENAS).
+  'customer-service-queue': [{ prop: 'velvetRope' }, { prop: 'velvetRope' }, { prop: 'cashCounter' }, { prop: 'cashCounter' }],
+  'mezzanine-office-desks': { bar: { prop: 'securityDesk' }, block: { prop: 'securityDesk' }, column: { material: 'concrete' } },
+  'management-boardroom': [{ material: 'counter', lift: 20 }, { prop: 'filingCabinets' }, { prop: 'filingCabinets' }],
+  'walk-in-shelves': { bar: { material: 'shelving' }, block: { material: 'shelving' }, column: { material: 'shelving' } },
+  'owners-suite-desk': [{ prop: 'securityDesk' }, { material: 'concrete', lift: 56 }, { material: 'concrete', lift: 56 }],
+  'elevator-housing-machinery': { bar: VENTED_DUCT, block: { material: 'duct', lift: 40, decor: ['ventStack'], decorWidth: 46 }, column: VENTED_DUCT },
+  'helipad-pad': [{ prop: 'acUnit' }, { prop: 'acUnit' }, { prop: 'ventStack' }],
 };
 
 /** A prop drawn `width` wide at its own aspect ratio (round 58: nothing is squashed to fit). */
@@ -440,7 +509,9 @@ export function atWidth(prop: PropId, width: number): { width: number; height: n
 
 export type Cover = { readonly props: DressingProp[]; readonly blocks: DressingBlock[] };
 
-const BLOCK_LIFT: Readonly<Record<BlockMaterial, number>> = { planterBed: 16, concrete: 22, duct: 18, balustrade: 14, steel: 40, counter: 26, shelving: 44 };
+const BLOCK_LIFT: Readonly<Record<BlockMaterial, number>> = {
+  planterBed: 16, concrete: 22, duct: 18, balustrade: 14, steel: 40, counter: 26, shelving: 44, ballPit: 18, freezer: 24, partition: 44,
+};
 
 function isPieceList(layout: CoverKit | readonly CoverPiece[] | undefined): layout is readonly CoverPiece[] {
   return Array.isArray(layout);
@@ -565,21 +636,6 @@ function openingConcourse(room: WingRoomDefinition): RoomLook {
       addCover(props, blocks, coverWall(wall, index, 'concourse', room.variantId));
     }
   });
-  props.push(
-    { id: 'bunny', prop: 'bunny', x: 842, y: 452, width: 40, height: 110 },
-    { id: 'directory', prop: 'directory', x: 300, y: 70, width: 22, height: 70 },
-    { id: 'palm-nw', prop: 'palm', x: 70, y: 150, width: 44, height: 67 },
-    { id: 'palm-sw', prop: 'palm', x: 70, y: 440, width: 44, height: 67 },
-    { id: 'palm-ne', prop: 'palm', x: 900, y: 150, width: 44, height: 67 },
-    { id: 'bench-s1', prop: 'bench', x: 330, y: 452, width: 64, height: 34 },
-    { id: 'bench-s2', prop: 'bench', x: 630, y: 452, width: 64, height: 34 },
-    { id: 'cart-1', prop: 'cart', x: 160, y: 72, width: 40, height: 37 },
-    { id: 'cart-2', prop: 'cart', x: 188, y: 78, width: 40, height: 37, flipX: true },
-    { id: 'bin-1', prop: 'bin', x: 740, y: 70, width: 20, height: 27 },
-    { id: 'payphone', prop: 'payphone', x: 930, y: 118, width: 28, height: 57 },
-    { id: 'kiddie', prop: 'kiddieRide', x: 180, y: 452, width: 46, height: 35 },
-    { id: 'wetfloor', prop: 'wetFloor', x: 560, y: 452, width: 20, height: 17 },
-  );
   const lights: PointLight[] = [
     ...facadeSpillLights(facades),
     ...doorwayLights(room, NEON.cyan),
@@ -622,44 +678,20 @@ const FURNITURE_ART: Readonly<Record<ConcourseFurniture['kind'], { readonly prop
   acUnit: { prop: 'acUnit', scale: 1.15 },
   ventStack: { prop: 'ventStack', scale: 0.9 },
   palletStack: { prop: 'palletStack', scale: 1.2 },
+  fountain: { prop: 'fountain', scale: 1.1 },
+  planterBed: { material: 'planterBed' },
+  counter: { material: 'counter' },
+  palm: { prop: 'palm', scale: 1.25 },
+  bench: { prop: 'bench', scale: 1.15 },
 };
 
-/** The loose things on each floor's storefront concourses, clear of every door lane. */
-const STOREFRONT_LOOSE: Readonly<Record<FloorNumber, readonly DressingProp[]>> = {
-  1: [
-    { id: 'palm-w', prop: 'palm', x: 70, y: 150, width: 44, height: 67 },
-    { id: 'palm-e', prop: 'palm', x: 890, y: 440, width: 44, height: 67 },
-    { id: 'palm-c1', prop: 'palm', x: 340, y: 92, width: 40, height: 60 },
-    { id: 'bench', prop: 'bench', x: 160, y: 452, width: 64, height: 34 },
-    { id: 'cart', prop: 'cart', x: 820, y: 76, width: 40, height: 37 },
-    { id: 'bin', prop: 'bin', x: 560, y: 452, width: 20, height: 27 },
-  ],
-  2: [
-    { id: 'palm-w', prop: 'palm', x: 70, y: 150, width: 44, height: 67 },
-    { id: 'directory', prop: 'directory', x: 340, y: 92, width: 22, height: 70 },
-    { id: 'bench', prop: 'bench', x: 160, y: 452, width: 64, height: 34 },
-    { id: 'planter-e', prop: 'planterLong', x: 880, y: 452, ...atWidth('planterLong', 72) },
-    { id: 'bin', prop: 'bin', x: 600, y: 452, width: 20, height: 27 },
-  ],
-  3: [
-    { id: 'wetfloor', prop: 'wetFloor', x: 340, y: 100, width: 20, height: 17 },
-    { id: 'bench', prop: 'bench', x: 160, y: 452, width: 64, height: 34 },
-    { id: 'condiments', prop: 'condiments', x: 880, y: 440, ...atWidth('condiments', 50) },
-    { id: 'bin', prop: 'bin', x: 600, y: 452, width: 20, height: 27 },
-  ],
-  4: [
-    { id: 'crates', prop: 'crates', x: 880, y: 448, ...atWidth('crates', 56) },
-    { id: 'bin', prop: 'bin', x: 600, y: 452, width: 20, height: 27 },
-    { id: 'pipes', prop: 'roofPipes', x: 160, y: 452, ...atWidth('roofPipes', 120) },
-  ],
-};
 
 /**
  * A storefront room's concourse. The store itself is inside, through the
  * shop's own door in the back-wall art (see storeInterior.ts), so out here
  * there is only the mall: planters, a bench, a cart, and that door lit up.
  */
-function storefront(room: WingRoomDefinition, floor: FloorNumber): RoomLook {
+function storefront(room: WingRoomDefinition, floor: FloorNumber, part?: 1): RoomLook {
   const stores = roomStores(room);
   // Each shopfront is centred on its door (STORE_ENTRANCE_XS), so walking
   // into the art's doorway is walking into the shop.
@@ -678,11 +710,10 @@ function storefront(room: WingRoomDefinition, floor: FloorNumber): RoomLook {
   const props: DressingProp[] = [];
   const blocks: DressingBlock[] = [];
   // The furniture's footprints are collision too, but they carry their own art.
-  const pieces = concourseFurniture(floor);
+  const pieces = roomFurniture(room, floor, part);
   const furniture = pieces.flatMap((piece) => (piece.footprint ? [piece.footprint] : []));
   const isFurniture = (wall: Rect) => furniture.some((rect) => rect.x === wall.x && rect.y === wall.y && rect.width === wall.width && rect.height === wall.height);
   interiorWalls(room).filter((wall) => !isFurniture(wall)).forEach((wall, index) => addCover(props, blocks, coverWall(wall, index, 'concourse', room.variantId)));
-  props.push(...STOREFRONT_LOOSE[floor]);
   // The furniture the sim stands in the way (concourseFurniture), drawn a
   // little larger than its source art like the rest of the mall's props.
   for (const piece of pieces) {
@@ -920,18 +951,6 @@ function foodCourt(room: WingRoomDefinition): RoomLook {
   const props: DressingProp[] = [];
   const blocks: DressingBlock[] = [];
   interiorWalls(room).forEach((wall, index) => addCover(props, blocks, coverWall(wall, index, 'food_court', room.variantId)));
-  props.push(
-    { id: 'condiments', prop: 'condiments', x: 480, y: 76, width: 46, height: 40 },
-    { id: 'vending-1', prop: 'vending', x: 60, y: 120, width: 26, height: 45 },
-    { id: 'vending-2', prop: 'vending', x: 900, y: 120, width: 26, height: 45 },
-    { id: 'bin-1', prop: 'bin', x: 120, y: 452, width: 20, height: 27 },
-    { id: 'bin-2', prop: 'bin', x: 840, y: 452, width: 20, height: 27 },
-    { id: 'palm-s', prop: 'palm', x: 480, y: 456, width: 44, height: 67 },
-    { id: 'wetfloor', prop: 'wetFloor', x: 700, y: 88, width: 20, height: 17 },
-    // Along the top wall, clear of every seeded seating layout.
-    { id: 'tray-return', prop: 'trayReturn', x: 160, y: 98, ...sized('trayReturn', 1.25) },
-    { id: 'trash-bank', prop: 'trashBank', x: 800, y: 96, ...sized('trashBank', 1.25) },
-  );
   return {
     themeId: 'food_court',
     areaName: 'FOOD COURT',
@@ -968,15 +987,6 @@ function backHall(room: WingRoomDefinition): RoomLook {
       props.push({ id: vending.id, prop: 'damagedVending', x: vending.x, y: vending.y, covers: wall });
     } else addCover(props, blocks, coverWall(wall, index, 'back_hall', room.variantId));
   });
-  props.push(
-    { id: 'cart-abandoned', prop: 'cart', x: 820, y: 452, width: 40, height: 37, flipX: true },
-    { id: 'wetfloor', prop: 'wetFloor', x: 130, y: 90, width: 20, height: 17 },
-    { id: 'bin', prop: 'bin', x: 900, y: 80, width: 20, height: 27 },
-    // Alex's own cart by the wet-floor sign, the staff lockers, the buffer.
-    { id: 'janitor-cart', prop: 'janitorCart', x: 186, y: 104, ...sized('janitorCart', 1.3) },
-    { id: 'lockers', prop: 'lockerRow', x: 640, y: 82, ...sized('lockerRow', 1.3) },
-    { id: 'buffer', prop: 'floorBuffer', x: 832, y: 152, ...sized('floorBuffer', 1.25) },
-  );
   return {
     themeId: 'back_hall',
     areaName: 'SERVICE HALL B',
@@ -1007,14 +1017,6 @@ function securityOffice(room: WingRoomDefinition): RoomLook {
   const props: DressingProp[] = [];
   const blocks: DressingBlock[] = [];
   interiorWalls(room).forEach((wall, index) => addCover(props, blocks, coverWall(wall, index, 'security_office', room.variantId)));
-  props.push(
-    { id: 'atm', prop: 'atm', x: 900, y: 110, width: 30, height: 49 },
-    { id: 'bin', prop: 'bin', x: 70, y: 452, width: 20, height: 27 },
-    // Everything the janitor's colleagues ever took back, under lock and key.
-    { id: 'confiscated', prop: 'confiscationCage', x: 172, y: 116, ...sized('confiscationCage', 1.2) },
-    { id: 'files', prop: 'filingCabinets', x: 640, y: 92, ...sized('filingCabinets', 1.3) },
-    { id: 'cooler', prop: 'waterCooler', x: 72, y: 156, ...sized('waterCooler', 1.3) },
-  );
   return {
     themeId: 'security_office',
     areaName: 'SECURITY OFFICE',
@@ -1156,20 +1158,12 @@ function topFloor(plan: RoomLook, room: WingRoomDefinition): RoomLook {
         { facade: 'arcade', sign: sign('HIGH SCORES', teal, 'AAA 999999', NEON.orange), spill: 0x60ffe8 },
         { facade: 'arcade', sign: sign('TOKENS', NEON.orange, '4 FOR A DOLLAR', teal), spill: 0xff9a50 },
       ]);
-      const props = [
-        ...plan.props,
-        { id: 'cab-1', prop: 'arcadeCabinet' as const, x: 60, y: 300, width: 32, height: 70 },
-        { id: 'cab-2', prop: 'arcadeCabinet' as const, x: 900, y: 300, width: 32, height: 70 },
-        { id: 'claw-1', prop: 'clawMachine' as const, x: 60, y: 400, width: 38, height: 68 },
-        { id: 'claw-2', prop: 'clawMachine' as const, x: 900, y: 400, width: 38, height: 68 },
-      ];
       return {
         ...plan,
         areaName: 'ARCADE',
         floor: 'carpet',
         ambient: 0x30244a,
         facades,
-        props,
         lights: [...facadeSpillLights(facades), ...doorwayLights(room, NEON.magenta), ...ceilingGrid(0x9a7cff, 0.5, 170, [180, 380], [200, 480, 760], (i) => (i === 3 ? 'buzz' : undefined))],
       };
     }
@@ -1437,7 +1431,19 @@ function districtRoom(base: RoomLook, room: WingRoomDefinition, district: Distri
 
 export function planRoomDressing(room: WingRoomDefinition, floor: FloorNumber = 1, insideStore: number | null = null, part?: 1, district?: DistrictId): DressingPlan {
   const look = lookOf(room, floor, insideStore, part, district);
-  const props = look.themeId === 'store_interior' ? look.props : look.props.filter((prop) => prop.covers || !overWall(prop, interiorWalls(room)));
+  const inside = look.themeId === 'store_interior';
+  const testRoom = room.variantId === 'prop-test' || room.variantId === 'prop-test-return';
+  // Round 59: loose decor stands in its places on the room's own walls (roomDecor.ts).
+  const decor: DressingProp[] = inside || testRoom ? [] : roomDecor({
+    room, floor, ...(part ? { part } : {}), district: district !== undefined,
+    facades: look.facades.map((facade) => ({ x: facade.x, width: FACADE_TEXTURES[facade.facade].width })),
+    covers: [...look.props.flatMap((prop) => (prop.covers ? [prop.covers] : [])), ...look.blocks.map((block) => block.covers)],
+    sizeAt: (prop, width) => atWidth(prop as PropId, width),
+    nativeWidth: (prop) => PROP_TEXTURES[prop as PropId].width,
+  }).map((piece) => ({ ...piece, prop: piece.prop as PropId }));
+  const props = inside
+    ? look.props
+    : [...look.props, ...decor].filter((prop) => prop.covers || (!overWall(prop, interiorWalls(room)) && !doorwayLaneBlocked(prop.x, prop.y)));
   // An atrium well glows with the lit level below it.
   const wells = look.blocks.filter((block) => block.material === 'balustrade').map((block): PointLight => ({
     x: block.covers.x + block.covers.width / 2, y: block.covers.y + block.covers.height / 2 - block.lift,
@@ -1469,9 +1475,11 @@ function lookOf(room: WingRoomDefinition, floor: FloorNumber, insideStore: numbe
   // A shop looks like itself on any floor.
   const shop = insideStore === null ? undefined : roomStores(room)[insideStore];
   if (shop) return storeInterior(room, shop);
+  // Round 59: a flipped room is dressed the right way round, then the dressing is flipped with it.
+  if (room.mirrored) return mirrorLook(lookOf(unmirrored(room), floor, null, part, district), room);
   // The Skate Arena (round 50) is indoors under the skylight, so it starts from the mall's furniture, not the Roof's.
   if (district) return districtRoom(district === 'rink' ? planFloorOneRoom(room) : FLOOR_DRESSING[floor](planFloorOneRoom(room), room), room, district);
-  const plan = FLOOR_DRESSING[floor](planFloorOneRoom(room, floor), room);
+  const plan = FLOOR_DRESSING[floor](planFloorOneRoom(room, floor, part), room);
   // A first wing (round 45) dresses like its floor but titles each room by the wing's
   // own names, and (round 48) hangs its own signs on the same shopfronts. Its boss room
   // is not the Helipad, so it paints no landing ring on the floor.
@@ -1480,14 +1488,52 @@ function lookOf(room: WingRoomDefinition, floor: FloorNumber, insideStore: numbe
     : plan;
 }
 
-/** A room's mall dressing before its floor restyles it; storefronts stand their floor's own furniture. */
-function planFloorOneRoom(room: WingRoomDefinition, floor: FloorNumber = 1): RoomLook {
+/** Things that stand where they stand whichever way the room is flipped. */
+const ANCHORED_PROP_IDS: ReadonlySet<string> = new Set([BACK_HALL_DAMAGED_VENDING.id]);
+
+const sameRect = (a: Rect, b: Rect) => a.x === b.x && a.y === b.y && a.width === b.width && a.height === b.height;
+const flipRect = (rect: Rect): Rect => ({ ...rect, x: STAGE_WIDTH - rect.x - rect.width });
+
+/** The room as authored: its flipped walls flipped back (anchored fixtures stay put). */
+function unmirrored(room: WingRoomDefinition): WingRoomDefinition {
+  const { mirrored: _flipped, ...rest } = room;
+  return {
+    ...rest,
+    walls: room.walls.map((wall) => (sameRect(wall, BACK_HALL_DAMAGED_VENDING.footprint) || isPerimeter(wall) ? wall : flipRect(wall))),
+  };
+}
+
+/**
+ * Flips a room's dressing left to right to match its flipped walls: every
+ * prop, block and floor ring, each cover pointing at the room's own wall. The
+ * back wall (shopfronts, signs) and the lights stay as they are.
+ */
+function mirrorLook(look: RoomLook, room: WingRoomDefinition): RoomLook {
+  const actual = (rect: Rect) => {
+    const flipped = flipRect(rect);
+    return room.walls.find((wall) => sameRect(wall, flipped)) ?? flipped;
+  };
+  return {
+    ...look,
+    props: look.props.map((prop) => (ANCHORED_PROP_IDS.has(prop.id) ? prop : {
+      ...prop,
+      x: STAGE_WIDTH - prop.x,
+      flipX: !prop.flipX,
+      ...(prop.covers ? { covers: actual(prop.covers) } : {}),
+    })),
+    blocks: look.blocks.map((block) => ({ ...block, covers: actual(block.covers) })),
+    neonRings: look.neonRings.map((ring) => ({ ...ring, x: STAGE_WIDTH - ring.x })),
+  };
+}
+
+/** A room's mall dressing before its floor restyles it; storefronts stand their wing's own furniture. */
+function planFloorOneRoom(room: WingRoomDefinition, floor: FloorNumber = 1, part?: 1): RoomLook {
   switch (room.id) {
     case 'service_corridor':
       return openingConcourse(room);
     case 'storefront_a':
     case 'storefront_b':
-      return storefront(room, floor);
+      return storefront(room, floor, part);
     case 'food_court':
       return foodCourt(room);
     case 'back_hall':

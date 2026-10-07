@@ -9,7 +9,9 @@
  *      enemy-count draw, one Fisher-Yates shuffle of that variant's slots, then
  *      one kind draw per selected slot that authors more than one kind.
  *
- * No step performs free-form geometry or unbounded enemy selection.
+ * No step performs free-form geometry or unbounded enemy selection. Side draws
+ * on their own salted rngs (the floor store, round 55; which rooms are mirrored,
+ * round 59) never move the main sequence.
  */
 import { freezeDeep } from '../items/types';
 import type { Rect } from '../model';
@@ -24,6 +26,7 @@ import {
   ROOM_HEIGHT,
   ROOM_NAMES,
   ROOM_VARIANTS,
+  bossArenaFor,
   roomVariantsFor,
   ROOM_WIDTH,
   SECURITY_OFFICE_VARIANT,
@@ -265,8 +268,7 @@ function combatRoom(
   };
 }
 
-function securityOffice(): WingRoomDefinition {
-  const variant = SECURITY_OFFICE_VARIANT;
+function securityOffice(variant: AuthoredRoomVariant): WingRoomDefinition {
   return {
     ...baseRoom(
       'security_office',
@@ -298,6 +300,18 @@ function storefrontRoom(
 }
 
 const FLOOR_STORE_SALT = 0x55f10a;
+/** Round 59: whether each room is flipped left to right comes from its own rng, so no other draw moves. */
+const MIRROR_SALT = 0x3a1e59;
+
+/** A layout flipped left to right: walls, spawn slots and the bench. Entry stays at the west door. */
+export function mirrorVariant(variant: AuthoredRoomVariant): AuthoredRoomVariant {
+  return {
+    ...variant,
+    interiorWalls: variant.interiorWalls.map((wall) => ({ ...wall, x: ROOM_WIDTH - wall.x - wall.width })),
+    spawnSlots: variant.spawnSlots.map((slot) => ({ ...slot, x: ROOM_WIDTH - slot.x })),
+    benchKiosk: variant.benchKiosk === null ? null : { ...variant.benchKiosk, x: ROOM_WIDTH - variant.benchKiosk.x },
+  };
+}
 
 /** `part` 1 is the floor's first wing (round 45): its own names, drawn fight sizes, a Lockdown at the end. */
 export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): GeneratedWing {
@@ -307,12 +321,18 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
   roomNames = district ? district.roomNames : part === 1 ? floorSpec(floor).firstWingNames : floorSpec(floor).roomNames;
   const fullStrength = part !== 1 && floorSpec(floor).fullStrength;
 
+  // Round 59: each room may be flipped left to right (not a district's, nor the boss room).
+  const mirrorRng = createWingRng((seed ^ MIRROR_SALT) | 0);
+  const mirrored = new Set(WING_ROOM_ORDER.filter((roomId) => nextInt(mirrorRng, 0, 1) === 1 && !district && roomId !== 'security_office'));
+
   const combatVariants = new Map<CombatRoomRole, AuthoredRoomVariant>();
   for (const role of COMBAT_ROOM_ROLES) {
-    // Round 58: each floor rolls its own layouts; a district keeps floor 1's under its own dressing.
-    const authoredVariants = district ? ROOM_VARIANTS[role] : roomVariantsFor(role, floor);
+    // Round 58: each floor rolls its own layouts; round 59: a first wing rolls its named ones.
+    // A district keeps floor 1's under its own dressing.
+    const authoredVariants = district ? ROOM_VARIANTS[role] : roomVariantsFor(role, floor, part);
     const variantIndex = nextInt(rng, 0, authoredVariants.length - 1);
-    combatVariants.set(role, authoredVariants[variantIndex]!);
+    const variant = authoredVariants[variantIndex]!;
+    combatVariants.set(role, mirrored.has(role) ? mirrorVariant(variant) : variant);
   }
 
   // Round 55: floors 2-4 open one of their own stores first. It has its own rng so no other draw moves.
@@ -391,7 +411,8 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
         );
         break;
       case 'security_office':
-        rooms.push(securityOffice());
+        // Round 59: each floor's boss room and Lockdown has its own cover; a district keeps the original.
+        rooms.push(securityOffice(district ? SECURITY_OFFICE_VARIANT : bossArenaFor(floor, part)));
         break;
       case 'storefront_a': {
         const selection = storefrontTemplateById.get('storefront_a')!;
@@ -422,7 +443,7 @@ export function generateWing(seed: number, floor: FloorNumber = 1, part?: 1): Ge
     ...(floor === 1 ? {} : { floor }),
     ...(part === 1 ? { part } : {}),
     ...(districtId ? { district: districtId } : {}),
-    rooms,
+    rooms: rooms.map((room) => (mirrored.has(room.id) ? { ...room, mirrored: true as const } : room)),
     startingCash: STARTING_CASH,
   });
   validateWingGraph(wing);
