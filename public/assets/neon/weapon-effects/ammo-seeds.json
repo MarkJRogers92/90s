@@ -1,0 +1,22 @@
+{
+  "name": "ammo-seeds",
+  "frameWidth": 16,
+  "frameHeight": 16,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    64,
+    16
+  ],
+  "pivotPixels": [
+    8,
+    8
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "colours": 3,
+  "source": "art/weapon-effects/derived/build_weapon_families.py"
+}

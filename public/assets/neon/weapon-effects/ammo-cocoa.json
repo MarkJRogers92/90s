@@ -1,0 +1,22 @@
+{
+  "name": "ammo-cocoa",
+  "frameWidth": 24,
+  "frameHeight": 16,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    96,
+    16
+  ],
+  "pivotPixels": [
+    15,
+    8
+  ],
+  "originNormalized": [
+    0.625,
+    0.5
+  ],
+  "direction": "+X",
+  "colours": 4,
+  "source": "art/weapon-effects/derived/build_weapon_families.py"
+}

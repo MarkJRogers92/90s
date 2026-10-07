@@ -1,0 +1,22 @@
+{
+  "name": "ammo-sound",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    96,
+    24
+  ],
+  "pivotPixels": [
+    14,
+    12
+  ],
+  "originNormalized": [
+    0.5833333333333334,
+    0.5
+  ],
+  "direction": "+X",
+  "colours": 4,
+  "source": "art/weapon-effects/derived/build_weapon_families.py"
+}

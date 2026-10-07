@@ -16,17 +16,17 @@ describe('first-slice native weapon effect selection', () => {
     expect(projectileEffect(traits('hybrid__pump_soaker__nail_gun'))).toBe(WEAPON_EFFECT_ART.soaker);
     expect(projectileEffect(traits('hybrid__(hybrid__janitor_mop__foam_ball_blaster)__gel_pens'))).toBe(WEAPON_EFFECT_ART.foam);
     expect(projectileEffect(traits('hybrid__janitor_mop__(hybrid__vhs_tape__vhs_rewinder)'))).toBe(WEAPON_EFFECT_ART.vhs);
-    // A fallback shooter never takes its ingredient's authored identity...
-    expect(projectileEffect(traits('hybrid__staple_gun__pump_soaker'))).toBeNull();
+    // A root shooter keeps its own art over its ingredient's (round 61: every shooter has art)...
+    expect(projectileEffect(traits('hybrid__staple_gun__pump_soaker'))).toBe(WEAPON_EFFECT_ART.ammoStaple);
     // ...and a root with its own art keeps it (the hose has its water since V3).
     expect(projectileEffect(traits('hybrid__garden_hose__pump_soaker'))).toBe(WEAPON_EFFECT_ART.hose);
-    expect(projectileEffect(traits('hybrid__gumball_launcher__pump_soaker'))).toBeNull();
+    expect(projectileEffect(traits('hybrid__gumball_launcher__pump_soaker'))).toBe(WEAPON_EFFECT_ART.ammoGumball);
   });
 
-  it('never overwrites converted bubbles or unsupported weapon families', () => {
+  it('never overwrites converted bubbles, and draws nothing for an unknown shooter', () => {
     expect(projectileEffect(traits('pump_soaker', 'drifting_bubble'))).toBeNull();
     expect(projectileEffect(traits('nail_gun', 'drifting_bubble'))).toBeNull();
-    expect(projectileEffect(traits('gumball_launcher'))).toBeNull();
+    expect(projectileEffect(traits('gumball_launcher', 'drifting_bubble'))).toBeNull();
     expect(projectileEffect(traits('unknown'))).toBeNull();
   });
 
@@ -34,7 +34,8 @@ describe('first-slice native weapon effect selection', () => {
     expect(meleeEffect('janitor_mop')).toBe(WEAPON_EFFECT_ART.mop);
     expect(meleeEffect('hybrid__(hybrid__janitor_mop__pump_soaker)__gel_pens')).toBe(WEAPON_EFFECT_ART.mop);
     expect(meleeEffect('hybrid__golden_mop__nail_gun')).toBe(WEAPON_EFFECT_ART.goldenMop);
-    expect(meleeEffect('pizza_cutter')).toBeNull();
+    expect(meleeEffect('pizza_cutter')).toBe(WEAPON_EFFECT_ART.glintCutter);
+    expect(meleeEffect('unknown')).toBeNull();
   });
 
   it('preloads every exact sheet contract as a local effect image', () => {
@@ -92,7 +93,7 @@ describe('second-slice native material contracts', () => {
     expect(projectileEffect(traits(`hybrid__box_cutter__(hybrid__${id}__pump_soaker)`))).toMatchObject(expected);
     expect(projectileEffect(traits(`hybrid__${id}__pump_soaker`))).toMatchObject(expected);
     expect(projectileEffect(traits(`hybrid__pump_soaker__${id}`))).toBe(WEAPON_EFFECT_ART.soaker);
-    expect(projectileEffect(traits(`hybrid__gumball_launcher__${id}`))).toBeNull();
+    expect(projectileEffect(traits(`hybrid__gumball_launcher__${id}`))).toBe(WEAPON_EFFECT_ART.ammoGumball);
     expect(projectileEffect(traits(id, 'drifting_bubble'))).toBeNull();
   });
 

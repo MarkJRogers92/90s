@@ -1,5 +1,20 @@
 # Status
 
+## 2026-10-07 — Round 61: every weapon has its own effect (branch `claude/weapon-fx-melee-mech`)
+
+Built on `origin/main` (`7e845ab`, round 60).
+- Roadmap V3 is complete: the last 41 weapons (29 melee, 12 shooters) now have effects,
+  drawn by one script.
+- Melee:
+  - blunt weapons leave a motion smear in their own material;
+  - blades a steel glint;
+  - instruments throw notes;
+  - pokes and whips streak or lash.
+- Shooters fire their own ammunition.
+- Swing trails reach past the weapon and hold through mid-swing.
+
+Presentation only. Not merged or pushed.
+
 ## 2026-10-07 — Round 60: per-floor colour grading and energy weapon effects (branch `claude/grading-energy-fx`)
 
 Built on `origin/main` (`f1eaa42`, round 59). Two visual roadmap items, done:

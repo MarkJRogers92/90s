@@ -1,5 +1,10 @@
 # Next session
 
+## Round 61 (2026-10-07): every weapon has its own effect
+
+Branch `claude/weapon-fx-melee-mech`, not merged. Roadmap V3 is done. Open roadmap visuals:
+V5 (Alex portrait), V6 (CRT filter), V7 (roof weather), V9 (colourblind telegraphs).
+
 ## Round 60 (2026-10-07): colour grading and energy effects
 
 Branch `claude/grading-energy-fx`, not merged. Roadmap V8 (per-floor colour grading)

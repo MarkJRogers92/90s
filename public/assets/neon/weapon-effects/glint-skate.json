@@ -1,0 +1,22 @@
+{
+  "name": "glint-skate",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    384,
+    64
+  ],
+  "pivotPixels": [
+    46,
+    32
+  ],
+  "originNormalized": [
+    0.71875,
+    0.5
+  ],
+  "direction": "+X",
+  "colours": 4,
+  "source": "art/weapon-effects/derived/build_weapon_families.py"
+}

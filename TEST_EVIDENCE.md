@@ -1,5 +1,22 @@
 # Test evidence
 
+## 2026-10-07 — Round 61: every weapon has its own effect
+
+- **Unit tests:** `npx vitest run` gives 189 files and 1995 tests, all passing. The new
+  `remaining-weapon-effects.test.ts` (9 tests) checks:
+  - every weapon maps to its own distinct sheet, fusions included;
+  - the roster is empty;
+  - pokes and whips use thrust sheets;
+  - each sheet stays within 6 colours;
+  - the trail fade curve.
+
+  `weapon-effects` and `weapon-effect-view` now expect the root weapon's own art where they
+  used to use a weapon without art as their null example.
+- **Live:** 14 weapons mid-attack, plus 4 swing sequences, in `artifacts/live-qa/families/`.
+  This caught the swing trails vanishing after the first frame (too small, linear fade), and
+  the trails were fixed.
+
+
 ## 2026-10-07 — Round 60: colour grading (V8) and energy weapon effects (V3)
 
 - **Unit tests:** `npx vitest run` gives 188 files and 1986 tests, all passing.
