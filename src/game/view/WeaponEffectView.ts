@@ -7,7 +7,7 @@ import type Phaser from 'phaser';
 import type { ProjectileState } from '../../sim/model';
 import { usableTextureKey } from '../presentation/assetFallback';
 import { presentationDepth } from '../presentation/depth';
-import { meleeEffect, projectileEffect, projectileEffectPose, thrownIconEffect, thrownIconPose, WEAPON_EFFECT_ART, type WeaponEffectArt } from './weaponEffects';
+import { meleeEffectAlpha, meleeEffect, projectileEffect, projectileEffectPose, thrownIconEffect, thrownIconPose, WEAPON_EFFECT_ART, type WeaponEffectArt } from './weaponEffects';
 import { itemIconKey } from '../presentation/assets';
 
 type ProjectileImage = { readonly image: Phaser.GameObjects.Image; born: number };
@@ -129,7 +129,7 @@ export class WeaponEffectView {
     const frame = Math.min(art.frames - 1, Math.floor(progress * art.frames));
     this.cropFrame(image, art, frame)
       .setPosition(pose.head.x, pose.head.y).setRotation(pose.angle).setFlipY(art.trails ? false : pose.flipY)
-      .setScale(art.baseScale).setAlpha(1 - progress).setVisible(true)
+      .setScale(art.baseScale).setAlpha(meleeEffectAlpha(art, progress)).setVisible(true)
       .setDepth(presentationDepth('effect', 2));
   }
 

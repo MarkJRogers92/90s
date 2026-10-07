@@ -40,7 +40,7 @@ or start something; keep items small enough for one PR.
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **done** 2026-10-04 for every enemy kind (`feat/hurt-reactions`) | — |
 | V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy (Bargain Hunter PR #59; Elf, Poodle, Goon `feat/district-attacks`); Static needs code first | L |
-| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray + energy done** (26); 41 left | M per family |
+| V3 | Native effects for the 67 remaining weapons (by family) | **done** 2026-10-07: every weapon has its own effect (round 61) | — |
 | V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
@@ -243,7 +243,25 @@ preview `energy-preview.png`):
   Power Glove's impact star blooms past the knuckles.
 - Live: `artifacts/live-qa/energy/`.
 
-Next: **mechanical** shooters could reuse their icons the way the thrown family does.
+**Every other weapon: done 2026-10-07 (round 61).** One script,
+`art/weapon-effects/derived/build_weapon_families.py`, draws all 41 remaining sheets and
+writes `src/game/view/generatedWeaponEffects.ts` (do not edit by hand), so a new weapon is
+one line in that script. Families:
+- **smear:** blunt weapons leave a solid motion band in their own material, with an impact
+  flash at the tip. The bat, wrench, hammer and rolling pin leave a thicker band; the golf
+  club, foam sword, chicken and pretzel rod a thinner one. Candy stripes, salt flecks and a
+  net mesh as accents.
+- **glint:** blades leave a thin steel arc with sparkles.
+- **notes:** instruments throw music notes and a sound ring.
+- **thrust / lash:** the narrow pokes (tripod, mic stand) streak straight out. The whips
+  (yo-yo, leash, laces) leave a wavy line ending in a knot.
+- **ammunition:** each launcher fires its own: tennis balls, gumballs, pebbles, pepperoni,
+  marshmallows, paint/slush/cocoa teardrops, staples, seeds, boombox sound waves and a Tesla
+  bolt.
+
+Every melee sheet is `trails: true`. It is never mirrored, reaches past the head (1.05x),
+and fades on a curve (`meleeEffectAlpha`), so it holds through mid-swing. Live captures are
+in `artifacts/live-qa/families/`. `remaining-effect-roster.json` is now empty.
 
 Keep the 240 fixed-seed replay
 (`diagnostics/weapon-visuals/replay.test.ts`) unchanged.

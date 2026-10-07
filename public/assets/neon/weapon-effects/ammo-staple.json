@@ -1,0 +1,22 @@
+{
+  "name": "ammo-staple",
+  "frameWidth": 16,
+  "frameHeight": 8,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    64,
+    8
+  ],
+  "pivotPixels": [
+    12,
+    4
+  ],
+  "originNormalized": [
+    0.75,
+    0.5
+  ],
+  "direction": "+X",
+  "colours": 4,
+  "source": "art/weapon-effects/derived/build_weapon_families.py"
+}

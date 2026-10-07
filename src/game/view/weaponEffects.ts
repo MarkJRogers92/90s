@@ -1,6 +1,7 @@
 /** Native weapon-specific attack art. These choices never feed the simulation. */
 import { rootItemId } from '../../sim/fusion/hybrid';
 import { projectileSourceItemId } from './projectileStyle';
+import { GENERATED_MELEE, GENERATED_PROJECTILES, generatedEffectArt } from './generatedWeaponEffects';
 
 export type WeaponEffectArt = {
   readonly key: string; readonly file: string;
@@ -49,7 +50,22 @@ export const WEAPON_EFFECT_ART = {
   lava: art('lava-blob', 24, 24, 4, 12, 12, false, 8, 1.3, 11),
   saber: { ...art('saber-swing', 64, 64, 6, 46, 32, true, 1, 0.75, 12), trails: true },
   glovePunch: art('glove-punch', 48, 48, 6, 14, 24, true, 1, 1.1, 10),
+  // Round 61: every remaining weapon, drawn by art/weapon-effects/derived/build_weapon_families.py.
+  ...generatedEffectArt(art),
 } as const;
+
+type EffectName = keyof typeof WEAPON_EFFECT_ART;
+const generated = (table: Readonly<Record<string, string>>, id: string): WeaponEffectArt | null =>
+  (table[id] ? WEAPON_EFFECT_ART[table[id] as EffectName] : null) ?? null;
+
+/**
+ * How opaque a melee effect is through its swing. A one-sided trail (round 61)
+ * holds near full strength through the middle of the swing, where the motion
+ * reads, and fades fast at the end; a symmetric sweep fades evenly as before.
+ */
+export function meleeEffectAlpha(art: WeaponEffectArt, progress: number): number {
+  return art.trails ? 1 - progress * progress : 1 - progress;
+}
 
 export function meleeEffect(definitionId: string): WeaponEffectArt | null {
   const root = rootItemId(definitionId);
@@ -58,7 +74,8 @@ export function meleeEffect(definitionId: string): WeaponEffectArt | null {
     : root === 'broken_broom_handle' ? WEAPON_EFFECT_ART.broom
     : root === 'box_cutter' ? WEAPON_EFFECT_ART.cutter
     : root === 'lightsaber_toy' ? WEAPON_EFFECT_ART.saber
-    : root === 'power_glove' ? WEAPON_EFFECT_ART.glovePunch : null;
+    : root === 'power_glove' ? WEAPON_EFFECT_ART.glovePunch
+    : generated(GENERATED_MELEE, root);
 }
 
 const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
@@ -79,7 +96,8 @@ const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
 
 export function projectileEffect(traits: { readonly sourceItemId: string; readonly delivery: string }): WeaponEffectArt | null {
   if (traits.delivery === 'drifting_bubble') return null;
-  return PROJECTILE_ART[projectileSourceItemId(traits.sourceItemId) ?? ''] ?? null;
+  const id = projectileSourceItemId(traits.sourceItemId) ?? '';
+  return PROJECTILE_ART[id] ?? generated(GENERATED_PROJECTILES, id);
 }
 
 export function projectileEffectPose(art: WeaponEffectArt,
