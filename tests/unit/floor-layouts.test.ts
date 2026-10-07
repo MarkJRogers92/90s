@@ -6,7 +6,7 @@ import { SECRET_MACHINE } from '../../src/sim/run/secretRoom';
 import { SHORTCUT_HATCH } from '../../src/sim/run/shortcut';
 import { generateWing } from '../../src/sim/wing/generateWing';
 import type { FloorNumber } from '../../src/sim/wing/floorSpecs';
-import { COMBAT_ROOM_ROLES, ROOM_VARIANTS, bossArenaFor, roomVariantsFor, type AuthoredRoomVariant } from '../../src/sim/wing/templates';
+import { COMBAT_ROOM_ROLES, ROOM_VARIANTS, bossArenaFor, findRoomVariant, roomVariantsFor, type AuthoredRoomVariant, type CombatRoomRole } from '../../src/sim/wing/templates';
 import { mirrorVariant } from '../../src/sim/wing/generateWing';
 
 /**
@@ -165,9 +165,15 @@ describe('round 58: each floor lays its rooms out its own way', () => {
     expect(ids.size).toBe(8);
   });
 
-  it('keeps floor 1 drawing exactly the wings it drew before (layouts, slots and monsters)', () => {
-    const before = [[["service-corridor-utility-row",[]],["storefront-open-plan",[]],["food-court-scattered-tables",["food-court-tables-mixed-west:spitter","food-court-tables-hanger-east:hanger","food-court-tables-spitter-north:spitter","food-court-tables-mixed-south:hanger"]],["storefront-open-plan",[]],["back-hall-crate-corners",["back-hall-crates-mixed-south:hanger","back-hall-crates-spitter-east:spitter","back-hall-crates-mixed-west:spitter"]],["security-office-desk-grid",[]]],[["service-corridor-utility-row",[]],["storefront-open-plan",[]],["food-court-scattered-tables",["food-court-tables-mixed-west:hanger","food-court-tables-hanger-east:hanger","food-court-tables-spitter-north:spitter","food-court-tables-mixed-south:spitter"]],["storefront-open-plan",[]],["back-hall-pillar-pairs",["back-hall-pillars-spitter-northeast:spitter","back-hall-pillars-hanger-southwest:hanger","back-hall-pillars-mixed-southeast:spitter"]],["security-office-desk-grid",[]]],[["service-corridor-utility-row",[]],["storefront-open-plan",[]],["food-court-scattered-tables",["food-court-tables-mixed-west:hanger","food-court-tables-hanger-east:hanger","food-court-tables-mixed-south:spitter"]],["storefront-open-plan",[]],["back-hall-crate-corners",["back-hall-crates-mixed-south:spitter","back-hall-crates-spitter-east:spitter","back-hall-crates-mixed-west:spitter"]],["security-office-desk-grid",[]]]];
-    expect([23, 0, 7].map((seed) => generateWing(seed).rooms.map((room) => [room.variantId, room.enemySpawns.map((spawn) => `${spawn.slotId}:${spawn.kind}`)]))).toEqual(before);
+  it('keeps floor 1\'s boss-wing layouts, now always at full strength (round 59)', () => {
+    const layouts = [['service-corridor-utility-row', 'storefront-open-plan', 'food-court-scattered-tables', 'storefront-open-plan', 'back-hall-crate-corners', 'security-office-desk-grid'], ['service-corridor-utility-row', 'storefront-open-plan', 'food-court-scattered-tables', 'storefront-open-plan', 'back-hall-pillar-pairs', 'security-office-desk-grid'], ['service-corridor-utility-row', 'storefront-open-plan', 'food-court-scattered-tables', 'storefront-open-plan', 'back-hall-crate-corners', 'security-office-desk-grid']];
+    expect([23, 0, 7].map((seed) => generateWing(seed).rooms.map((room) => room.variantId))).toEqual(layouts);
+    for (const seed of [23, 0, 7]) {
+      for (const room of generateWing(seed).rooms) {
+        const variant = findRoomVariant(room.id as CombatRoomRole, room.variantId);
+        if (variant && variant.enemyCount.max > 0) expect(room.enemySpawns.length, `${seed} ${room.id}`).toBe(variant.enemyCount.max);
+      }
+    }
   });
 });
 

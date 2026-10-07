@@ -66,9 +66,11 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: ROOM_NAMES,
     firstWingNames: { service_corridor: 'Opening Concourse', storefront_a: 'Fountain Court', food_court: 'Kiosk Alley', storefront_b: 'Garden Court', back_hall: 'Freight Hall', security_office: 'Customer Service' },
     bossKind: 'lp_manager',
+    // Round 59 (owner: "currently too easy"): floor 1's boss wing fights at full strength too.
+    // Health stays 1: a Hanger or Spitter still drops in three mop hits (difficulty-tuning.test.ts).
     enemyHealthScale: 1,
     rareOnShelf: false,
-    fullStrength: false,
+    fullStrength: true,
     enemyKind: (kind) => kind,
     seedFrom: (seed) => seed,
   },
@@ -77,7 +79,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: FLOOR_TWO_ROOM_NAMES,
     firstWingNames: { service_corridor: 'Mezzanine', storefront_a: 'Skybridge West', food_court: 'Gallery Walk', storefront_b: 'Skybridge East', back_hall: 'Elevator Bank', security_office: 'Mezzanine Office' },
     bossKind: 'manager',
-    enemyHealthScale: 1.15,
+    enemyHealthScale: 1.25,
     rareOnShelf: false,
     fullStrength: true,
     enemyKind: (kind, rng) => {
@@ -93,7 +95,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: FLOOR_THREE_ROOM_NAMES,
     firstWingNames: { service_corridor: 'Snack Bar', storefront_a: 'Dessert Row', food_court: 'Ball Pit', storefront_b: 'Prep Kitchen', back_hall: 'Freezer Aisle', security_office: 'Walk-In Cooler' },
     bossKind: 'owner',
-    enemyHealthScale: 1.3,
+    enemyHealthScale: 1.45,
     rareOnShelf: true,
     fullStrength: true,
     enemyKind: (kind, rng) => {
@@ -109,7 +111,7 @@ const FLOOR_SPECS: Readonly<Record<FloorNumber, FloorSpec>> = {
     roomNames: ROOF_ROOM_NAMES,
     firstWingNames: { service_corridor: 'Service Ladder', storefront_a: 'Antenna Row', food_court: 'Duct Maze', storefront_b: 'Satellite Deck', back_hall: 'Gravel Yard', security_office: 'Elevator Housing' },
     bossKind: 'developer',
-    enemyHealthScale: 1.5,
+    enemyHealthScale: 1.65,
     rareOnShelf: true,
     fullStrength: true,
     enemyKind: (kind, rng) => {

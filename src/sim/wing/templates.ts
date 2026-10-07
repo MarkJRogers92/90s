@@ -573,6 +573,7 @@ export function roomVariantsFor(role: CombatRoomRole, floor: FloorNumber, part?:
 
 /** Any floor's layout for a room, by id (the wing records only the id). */
 export function findRoomVariant(role: CombatRoomRole, id: string): AuthoredRoomVariant | undefined {
+  if (!(role in ROOM_VARIANTS)) return undefined;
   const floors = [1, 2, 3, 4] as const;
   return [
     ROOM_VARIANTS[role],

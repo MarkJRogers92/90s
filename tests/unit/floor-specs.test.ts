@@ -11,7 +11,8 @@ describe('the floor table', () => {
   });
 
   it('names each floor’s rooms and boss', () => {
-    expect(floorSpec(1)).toMatchObject({ roomNames: ROOM_NAMES, bossKind: 'lp_manager', fullStrength: false });
+    // Round 59: floor 1's boss wing fights at full strength too (the owner found it too easy).
+    expect(floorSpec(1)).toMatchObject({ roomNames: ROOM_NAMES, bossKind: 'lp_manager', fullStrength: true });
     expect(floorSpec(2)).toMatchObject({ roomNames: FLOOR_TWO_ROOM_NAMES, bossKind: 'manager', fullStrength: true });
     expect(floorSpec(3)).toMatchObject({ roomNames: FLOOR_THREE_ROOM_NAMES, bossKind: 'owner', fullStrength: true });
   });
