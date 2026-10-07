@@ -128,7 +128,7 @@ export class WeaponEffectView {
     if (image.texture.key !== art.key) image.setTexture(art.key);
     const frame = Math.min(art.frames - 1, Math.floor(progress * art.frames));
     this.cropFrame(image, art, frame)
-      .setPosition(pose.head.x, pose.head.y).setRotation(pose.angle).setFlipY(pose.flipY)
+      .setPosition(pose.head.x, pose.head.y).setRotation(pose.angle).setFlipY(art.trails ? false : pose.flipY)
       .setScale(art.baseScale).setAlpha(1 - progress).setVisible(true)
       .setDepth(presentationDepth('effect', 2));
   }

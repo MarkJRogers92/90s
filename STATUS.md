@@ -1,5 +1,19 @@
 # Status
 
+## 2026-10-07 — Round 60: per-floor colour grading and energy weapon effects (branch `claude/grading-energy-fx`)
+
+Built on `origin/main` (`f1eaa42`, round 59). Two visual roadmap items, done:
+- **V8: colour grading.** Each floor has its own mood over every room: a
+  warm-magenta mall, cool management blue, food-court amber, and a cold roof
+  with sodium haze. Shops and districts keep their own look.
+- **V3: the energy weapons.** The laser pointer, laser tag rifle, studio flash,
+  camcorder, lava lamp and Game Brick, plus the laser sword and Power Glove
+  swings, now have their own effects.
+- **Dev fixtures.** `mvp-room` gains `&arm=`, `&tough=1` and `&clean=1` (from
+  the trailer branch).
+
+Presentation only; no balance change. Not merged or pushed.
+
 ## 2026-10-07 — Round 59: rooms as named, mirrored nights, placed decor (branch `claude/round59-named-rooms`)
 
 Built on `origin/main` (`6d3f90d`). The owner found the floors samey and the decor

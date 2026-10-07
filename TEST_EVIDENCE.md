@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-10-07 — Round 60: colour grading (V8) and energy weapon effects (V3)
+
+- **Unit tests:** `npx vitest run` gives 188 files and 1986 tests, all passing.
+  - New: `color-grade.test.ts` (5) and `energy-weapon-effects.test.ts` (7, including that the
+    sword trail is never mirrored).
+  - `thrown-weapon-effects` now pins the Game Brick as a thrown icon.
+- **Live:**
+  - The same room on all four floors (`artifacts/floor-sweep/grade/`).
+  - Every energy weapon mid-attack (`artifacts/live-qa/energy/`). This caught three things,
+    all fixed: faint lasers and flashes, a punch star hidden inside the glove, and the sword
+    crescent's anchor.
+- **Browser gate:** not run (presentation only, and no spec covers these effects).
+
+
 ## 2026-10-07 — Round 59: rooms as named, mirrored nights, placed decor
 
 Branch `claude/round59-named-rooms` on `origin/main` `6d3f90d`.

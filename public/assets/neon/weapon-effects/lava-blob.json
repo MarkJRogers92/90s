@@ -1,0 +1,22 @@
+{
+  "name": "lava-blob",
+  "description": "A wobbling lava-lamp blob, magenta rim and orange body with a glowing swirl.",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    96,
+    24
+  ],
+  "pivotPixels": [
+    12,
+    12
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "source": "art/weapon-effects/derived/build_energy_effects.py"
+}

@@ -1056,6 +1056,11 @@ export class MvpRunScene extends Phaser.Scene {
     if (!this.killCam && !this.bossIntro) centreCameraOn(this, this.run.room.combat.player.x, this.run.room.combat.player.y);
     this.hud?.sync(this.run, this.checkpointStatus);
     this.gameHud?.sync(this.run);
+    // Dev capture (&clean=1, the trailer): the room alone, no HUD or PA ticker.
+    if (this.cleanCapture) {
+      this.gameHud?.setHidden(true);
+      this.paTicker?.clear();
+    }
     const pointer = this.input.activePointer;
     this.shiftCard?.hover(pointer.x, pointer.y);
     this.benchCard?.hover(pointer.x, pointer.y);
@@ -1096,6 +1101,9 @@ export class MvpRunScene extends Phaser.Scene {
     }
     this.runView?.heartbeat(interval !== null, now - this.lastHeartbeat);
   }
+
+  private readonly cleanCapture = import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true'
+    && new URLSearchParams(window.location.search).get('clean') === '1';
 
   private applyDevFixture(state: MvpRunState): MvpRunState {
     if (!(import.meta.env.DEV && import.meta.env.VITE_ENABLE_DEBUG_BRIDGE === 'true')) {
@@ -1473,6 +1481,23 @@ export class MvpRunScene extends Phaser.Scene {
       const shop = Number(params.get('store') ?? 0);
       if (shop > 0) enterStore(run, shop - 1);
       if (params.get('enemies') !== '1') run.room.combat.enemies = [];
+      // &arm=<item id>,<item id> hands the janitor those (the first in hand), or one hero fusion by its id.
+      const arm = (params.get('arm') ?? '').split(',').filter(Boolean);
+      if (arm.length > 0) {
+        const leaf = (id: string): InventoryLeaf => ({ kind: 'leaf', instanceId: `dev-${id}`, itemDefinitionId: id, acquisitionKind: 'purchased', sourceLocationId: 'dev-fixture', sourceStockId: `dev-${id}-offer`, acquisitionTick: run.tick });
+        const hero = HERO_FUSIONS.find((entry) => entry.id === arm[0]);
+        const items = hero
+          ? [((): HybridComposite => {
+            const [a, b] = hero.pair;
+            const [base, ingredient] = isHybridPair(a, b) ? [a, b] : [b, a];
+            return { kind: 'composite', instanceId: 'dev-hero', recipeId: 'hybrid', createdTick: run.tick, transactionId: 'dev-hero-fusion', primary: leaf(base), carrier: leaf(ingredient) };
+          })()]
+          : arm.map(leaf);
+        run.inventory = { ...run.inventory, inventory: [...run.inventory.inventory, ...items], selectedPrimaryInstanceId: items[0]!.instanceId, revision: run.inventory.revision + 1 };
+        refreshRunLoadout(run);
+      }
+      // &tough=1: a janitor who can take a whole take's worth of hits.
+      if (params.get('tough') === '1') run.room.combat.player.health = 99;
       return run;
     }
     if (fixture === 'mvp-district') {

@@ -7,6 +7,11 @@ export type WeaponEffectArt = {
   readonly width: number; readonly height: number; readonly frames: number;
   readonly pivotX: number; readonly pivotY: number;
   readonly flightAligned: boolean; readonly baseRadius: number; readonly baseScale: number; readonly coreRadius: number;
+  /**
+   * A one-sided swing trail (round 60). Swings always turn the same way, so it is
+   * never mirrored with a weapon held upright (`flipY`); a symmetric sweep does not care.
+   */
+  readonly trails?: true;
 };
 const art = (name: string, width: number, height: number, frames: number, pivotX: number, pivotY: number,
   flightAligned: boolean, baseRadius: number, baseScale: number, coreRadius: number): WeaponEffectArt => ({
@@ -36,6 +41,14 @@ export const WEAPON_EFFECT_ART = {
   flea: art('flea-mist', 32, 24, 6, 16, 12, true, 5, 0.6, 6),
   ketchup: art('ketchup-squirt', 32, 24, 6, 16, 12, true, 4, 0.55, 5),
   whoopee: art('whoopee-puff', 32, 24, 6, 16, 12, true, 8, 0.75, 8),
+  // Round 60: the energy family, drawn by art/weapon-effects/derived/build_energy_effects.py.
+  laserRed: art('laser-red', 32, 16, 4, 16, 8, true, 3, 1.5, 8),
+  laserGreen: art('laser-green', 32, 16, 4, 16, 8, true, 4, 1.5, 9),
+  flash: art('camera-flash', 24, 24, 4, 12, 12, false, 6, 1.6, 12),
+  recFlash: art('rec-flash', 24, 24, 4, 12, 12, false, 6, 1.6, 12),
+  lava: art('lava-blob', 24, 24, 4, 12, 12, false, 8, 1.3, 11),
+  saber: { ...art('saber-swing', 64, 64, 6, 46, 32, true, 1, 0.75, 12), trails: true },
+  glovePunch: art('glove-punch', 48, 48, 6, 14, 24, true, 1, 1.1, 10),
 } as const;
 
 export function meleeEffect(definitionId: string): WeaponEffectArt | null {
@@ -43,7 +56,9 @@ export function meleeEffect(definitionId: string): WeaponEffectArt | null {
   return root === 'janitor_mop' ? WEAPON_EFFECT_ART.mop
     : root === 'golden_mop' ? WEAPON_EFFECT_ART.goldenMop
     : root === 'broken_broom_handle' ? WEAPON_EFFECT_ART.broom
-    : root === 'box_cutter' ? WEAPON_EFFECT_ART.cutter : null;
+    : root === 'box_cutter' ? WEAPON_EFFECT_ART.cutter
+    : root === 'lightsaber_toy' ? WEAPON_EFFECT_ART.saber
+    : root === 'power_glove' ? WEAPON_EFFECT_ART.glovePunch : null;
 }
 
 const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
@@ -57,6 +72,9 @@ const PROJECTILE_ART: Readonly<Record<string, WeaponEffectArt>> = {
   watering_can: WEAPON_EFFECT_ART.shower,
   hairspray: WEAPON_EFFECT_ART.hairspray, flea_spray: WEAPON_EFFECT_ART.flea,
   ketchup_bottle: WEAPON_EFFECT_ART.ketchup, whoopee_cushion: WEAPON_EFFECT_ART.whoopee,
+  laser_pointer: WEAPON_EFFECT_ART.laserRed, laser_tag_rifle: WEAPON_EFFECT_ART.laserGreen,
+  flash_camera: WEAPON_EFFECT_ART.flash, camcorder: WEAPON_EFFECT_ART.recFlash,
+  lava_lamp: WEAPON_EFFECT_ART.lava,
 };
 
 export function projectileEffect(traits: { readonly sourceItemId: string; readonly delivery: string }): WeaponEffectArt | null {
@@ -105,6 +123,8 @@ const THROWN: Readonly<Record<string, Omit<ThrownIconEffect, 'iconItemId'>>> = {
   hockey_puck: { baseRadius: 4, size: 14, motion: 'spin', spinPerTick: 0.45, headingOffset: 0 },
   // A lobbed balloon wobbles more than it spins.
   water_balloons: { baseRadius: 8, size: 20, motion: 'spin', spinPerTick: 0.08, headingOffset: 0 },
+  // A handheld game console, tumbling end over end.
+  game_brick: { baseRadius: 8, size: 22, motion: 'spin', spinPerTick: 0.22, headingOffset: 0 },
 };
 export const THROWN_ICON_IDS: readonly string[] = Object.keys(THROWN);
 

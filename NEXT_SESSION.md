@@ -1,5 +1,10 @@
 # Next session
 
+## Round 60 (2026-10-07): colour grading and energy effects
+
+Branch `claude/grading-energy-fx`, not merged. Roadmap V8 (per-floor colour grading)
+and V3's energy family are done. Next V3 family: mechanical shooters (reuse icons).
+
 ## Round 59 (2026-10-07): start here
 
 Branch `claude/round59-named-rooms` (not merged or pushed): rooms laid out as named,

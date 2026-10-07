@@ -1,0 +1,22 @@
+{
+  "name": "rec-flash",
+  "description": "The camcorder flash: the studio burst inside a red REC ring.",
+  "frameWidth": 24,
+  "frameHeight": 24,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    96,
+    24
+  ],
+  "pivotPixels": [
+    12,
+    12
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "source": "art/weapon-effects/derived/build_energy_effects.py"
+}
