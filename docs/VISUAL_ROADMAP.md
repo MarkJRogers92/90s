@@ -40,12 +40,12 @@ or start something; keep items small enough for one PR.
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **done** 2026-10-04 for every enemy kind (`feat/hurt-reactions`) | — |
 | V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy (Bargain Hunter PR #59; Elf, Poodle, Goon `feat/district-attacks`); Static needs code first | L |
-| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray done** (18); 49 left | M per family |
+| V3 | Native effects for the 67 remaining weapons (by family) | **thrown + water + spray + energy done** (26); 41 left | M per family |
 | V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
 | V7 | Skylight/roof weather | open | M |
-| V8 | Per-floor colour grading | open | S |
+| V8 | Per-floor colour grading | **done** 2026-10-07 (`colorGrade.ts`) | S |
 | V9 | Colourblind-safe telegraph shapes | open | M |
 | V10 | Elite trait glyphs (Swift / Volatile) | **done** 2026-10-03 | S |
 | V11 | Remaining vector rooms and earlier modes to the neon kit | open | L |
@@ -229,9 +229,21 @@ the shooter inside them.
 - Dev fixture `?fixture=mvp-spray`. They read as short puffs, like the
   extinguisher.
 
-Next: **energy** (laser pointer, lightsaber, laser tag rifle and others) needs
-a new beam sheet. **Mechanical** shooters could reuse their icons the way the
-thrown family does.
+**Energy: done 2026-10-07.** Drawn in code by
+`art/weapon-effects/derived/build_energy_effects.py` (five-colour palettes,
+preview `energy-preview.png`):
+- The laser pointer (red) and laser tag rifle (green) fire one beam shape: a
+  white-hot core and a bright head.
+- The studio flash and the camcorder (a red REC ring) burst with turning rays
+  over a dark rim, so they read on a bright floor.
+- The lava lamp lobs a wobbling blob, and the Game Brick tumbles as its own icon.
+- Melee: the laser sword leaves a solid crescent of light behind its blade.
+  The sheet is anchored at the tip and centred on the hand. It is
+  `trails: true`, so it is never mirrored: swings always turn clockwise. The
+  Power Glove's impact star blooms past the knuckles.
+- Live: `artifacts/live-qa/energy/`.
+
+Next: **mechanical** shooters could reuse their icons the way the thrown family does.
 
 Keep the 240 fixed-seed replay
 (`diagnostics/weapon-visuals/replay.test.ts`) unchanged.
@@ -282,6 +294,15 @@ seed so it is deterministic in captures. Presentation only: rain must not make
 anything Wet.
 
 ## V8 — Per-floor colour grading
+
+**Done 2026-10-07.** `src/game/presentation/lighting/colorGrade.ts` holds one grade per floor:
+- a tint multiplied over the lightmap, every channel at least 0xb0 and one channel full;
+- a faint additive haze over the stage (alpha at most 0.08), which lifts the shadows toward the
+  floor's colour.
+
+The floors: a warm-magenta mall (1), cool management blue (2), the food court's amber (3), and a
+cold roof with sodium haze (4). Shops and district wings are not graded. The side-by-side capture
+is `artifacts/floor-sweep/grade/`.
 
 Add a multiply/overlay tint per floor on top of the existing lightmap: warm
 food court (3), cool management (2), sodium-orange roof (4). One table entry

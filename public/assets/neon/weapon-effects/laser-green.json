@@ -1,0 +1,22 @@
+{
+  "name": "laser-green",
+  "description": "The laser-tag rifle beam: the red beam's shape, thicker, in green.",
+  "frameWidth": 32,
+  "frameHeight": 16,
+  "frameCount": 4,
+  "layout": "horizontal",
+  "sheetSize": [
+    128,
+    16
+  ],
+  "pivotPixels": [
+    16,
+    8
+  ],
+  "originNormalized": [
+    0.5,
+    0.5
+  ],
+  "direction": "+X",
+  "source": "art/weapon-effects/derived/build_energy_effects.py"
+}

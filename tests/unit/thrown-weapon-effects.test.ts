@@ -17,8 +17,8 @@ const shot = (sourceItemId: string, over: Partial<ProjectileState> = {}): Projec
 
 describe('thrown weapons fly as their own spinning icon (roadmap V3)', () => {
   it('covers exactly the eight thrown weapons that still used the procedural blob', () => {
-    // Plus the lobbed water balloons (water-weapon-effects.test.ts).
-    expect([...THROWN_ICON_IDS].sort()).toEqual([...THROWN, 'water_balloons'].sort());
+    // Plus the lobbed water balloons (water-weapon-effects.test.ts) and the Game Brick (energy-weapon-effects.test.ts).
+    expect([...THROWN_ICON_IDS].sort()).toEqual([...THROWN, 'water_balloons', 'game_brick'].sort());
     for (const id of THROWN) expect(thrownIconEffect(id)?.iconItemId).toBe(id);
     // The roster lists what still uses prior art: it must never name a covered weapon.
     for (const id of diagnostics.projectile) expect(thrownIconEffect(id), id).toBeNull();

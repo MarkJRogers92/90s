@@ -18,6 +18,7 @@ import { CIVILIAN_TEXTURE_KEYS, ENVIRONMENT_TEXTURE_KEYS, NEON_CIVILIAN_KEYS, ch
 import { presentationDepth } from '../presentation/depth';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
 import { GLOW_DEPTH, LightingLayer, type PointLight } from '../presentation/lighting/LightingLayer';
+import { colorGradeFor } from '../presentation/lighting/colorGrade';
 import { applyBackHallLightingPilot, BACK_HALL_PILOT_STYLE, ensureBackHallContactShadow, isBackHallLightingPilot } from '../presentation/lighting/backHallLightingPilot';
 import { FX_TEXTURES, ensureFxTextures, ensureNeonSign, ensurePixelLabel, floorTextureKey, type NeonSignSpec } from '../presentation/neon/proceduralTextures';
 import {
@@ -146,6 +147,8 @@ export class MallRoomView {
     this.lighting = new LightingLayer(scene, { x: 0, y: STAGE_TOP, width: STAGE_WIDTH, height: STAGE_HEIGHT });
     this.lighting.setAmbient(this.plan.ambient);
     this.lighting.setStaticLights(this.plan.lights);
+    // Roadmap V8: the floor's colour grade over every room but a shop or a district's own.
+    this.lighting.setGrade(colorGradeFor(state.wing.floor ?? 1, { insideStore: this.interior, district: state.wing.district !== undefined }));
     // Civilians stroll around the opening room's own collision (planters, fountain).
     this.ambience = this.plan.civilians ? new ConcourseAmbience(state.seed, state.wing.rooms[0]?.walls ?? []) : null;
     this.actorLayer.add(actors);

@@ -1,0 +1,22 @@
+{
+  "name": "saber-swing",
+  "description": "A light-up laser sword swing: a white-hot blade with a solid cyan crescent of light swept behind it, fading as the swing closes.",
+  "frameWidth": 64,
+  "frameHeight": 64,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    384,
+    64
+  ],
+  "pivotPixels": [
+    46,
+    32
+  ],
+  "originNormalized": [
+    0.71875,
+    0.5
+  ],
+  "direction": "+X",
+  "source": "art/weapon-effects/derived/build_energy_effects.py"
+}

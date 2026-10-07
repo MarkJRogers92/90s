@@ -1,0 +1,22 @@
+{
+  "name": "glove-punch",
+  "description": "A Power Glove punch: magenta speed lines and an impact star blooming at the fist.",
+  "frameWidth": 48,
+  "frameHeight": 48,
+  "frameCount": 6,
+  "layout": "horizontal",
+  "sheetSize": [
+    288,
+    48
+  ],
+  "pivotPixels": [
+    14,
+    24
+  ],
+  "originNormalized": [
+    0.2916666666666667,
+    0.5
+  ],
+  "direction": "+X",
+  "source": "art/weapon-effects/derived/build_energy_effects.py"
+}
