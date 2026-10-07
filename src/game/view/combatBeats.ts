@@ -19,7 +19,7 @@ import {
   isBossKind,
 } from '../../sim/combat/boss';
 import { SPITTER_RECOVER_TICKS, SPITTER_TELEGRAPH_TICKS } from '../../sim/combat/enemies';
-import { STATIC_BURST_RADIUS, STATIC_TELEGRAPH_TICKS } from '../../sim/combat/staticEnemy';
+import { STATIC_BURST_RADIUS, STATIC_RECOVER_TICKS, STATIC_TELEGRAPH_TICKS } from '../../sim/combat/staticEnemy';
 import { SHOPPER_CHARGE_TICKS, SHOPPER_TELEGRAPH_TICKS } from '../../sim/combat/shopper';
 import { MASCOT_CHARGE_SPEED_PER_TICK, MASCOT_CHARGE_TICKS, MASCOT_TELEGRAPH_TICKS } from '../../sim/combat/mascot';
 import { ROOFER_LOB_TICKS, TAR_SPLASH_RADIUS } from '../../sim/combat/roofer';
@@ -335,6 +335,15 @@ export function attackFrameFor(enemy: EnemyState, windups: readonly Windup[], fr
   if (enemy.kind === 'hanger') {
     const reach = windups.find((windup) => windup.kind === 'reach');
     return reach && reach.progress > 0.55 ? Math.floor(tick / 3) % frames : null;
+  }
+  if (enemy.kind === 'static') {
+    // Roadmap V2: it glitches and dissolves through the lock-on, then re-forms on the mark.
+    const blink = windups.find((windup) => windup.kind === 'blink');
+    if (blink) return Math.min(windupFrames - 1, Math.floor(blink.progress * windupFrames));
+    if (enemy.phase !== 'recover') return null;
+    const since = STATIC_RECOVER_TICKS - enemy.phaseTicks;
+    if (since < 0 || since >= ATTACK_RELEASE_TICKS) return null;
+    return Math.min(frames - 1, windupFrames + Math.floor((since / ATTACK_RELEASE_TICKS) * release));
   }
   const charge = windups.find((windup) => windup.kind === 'spit' || windup.kind === 'slam');
   if (charge) return Math.min(windupFrames - 1, Math.floor(charge.progress * windupFrames));

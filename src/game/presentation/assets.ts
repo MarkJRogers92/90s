@@ -302,6 +302,8 @@ export const NEON_ASSETS: readonly PresentationAsset[] = [
   neon(ENEMY_TEXTURE_KEYS.mannequinPlasticImpact, 'enemies/mannequin-plastic-impact.png'),
   neon(ENEMY_TEXTURE_KEYS.staticIdle, 'enemies/static-idle.png'),
   neon(ENEMY_TEXTURE_KEYS.staticWalk, 'enemies/static-walk.png'),
+  // Roadmap V2: the blink, derived from the walk by art/enemy-attacks/static/build_static_attack.py.
+  neon('neon:enemy:static-attack', 'enemies/static-attack.png'),
   neon(ENEMY_TEXTURE_KEYS.staticDeath, 'enemies/static-death.png'),
   neon(ENEMY_TEXTURE_KEYS.staticHurt, 'enemies/static-hurt.png'),
   neon(ENEMY_TEXTURE_KEYS.staticCrtImpact, 'enemies/static-crt-impact.png'),

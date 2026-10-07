@@ -39,7 +39,7 @@ or start something; keep items small enough for one PR.
 |---|---|---|---|
 | V0 | Live visual QA of the 2026-10-03 batch (PRs #47–#50) | **done** 2026-10-03 (`scripts/live-qa-sweep.mjs`) | S |
 | V1 | Native hurt reactions for the remaining enemies | **done** 2026-10-04 for every enemy kind (`feat/hurt-reactions`) | — |
-| V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy (Bargain Hunter PR #59; Elf, Poodle, Goon `feat/district-attacks`); Static needs code first | L |
+| V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy, the Static's blink last (round 62) | — |
 | V3 | Native effects for the 67 remaining weapons (by family) | **done** 2026-10-07: every weapon has its own effect (round 61) | — |
 | V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
@@ -182,7 +182,16 @@ capture, and `npm run balance:reaction` unchanged (presentation only).
   palette, and per-facing generations would drift, so derived art won for
   now.
 
-Still open: Bargain Hunter, Poodle, Elf and Goon, and the bosses.
+**The Static: done 2026-10-07 (round 62).** `static-attack.png` is derived from its own walk
+sheet by `art/enemy-attacks/static/build_static_attack.py`, using only the walk's colours.
+- Wind-up: the screen flares, the picture tears, the body breaks up into static snow, then is
+  almost all noise.
+- Release: it re-forms on the mark in a rim of light, then settles.
+
+`attackFrameFor` maps the blink's 34-tick lock-on to the wind-up frames, and the first
+ATTACK_RELEASE_TICKS of its 60-tick recovery to the release frames. A live probe saw the
+renderer draw columns 0-3 in `telegraph` and 4-5 in `recover`
+(`artifacts/live-qa/static-blink/`). Every wind-up enemy now has its own attack sheet.
 
 ## V3 — Native effects for the remaining weapons (49 of 67 left)
 
@@ -287,8 +296,9 @@ Flashes: Reduced.
   Live QA caught the first version leaning toward the mouse.
 - Preview: `art/derived-poses/preview.png`.
 
-**Aim pose still open.** Re-posing cannot invent forward arms: this one
-needs a generation or hand-pixelled frames.
+**Aim pose done** (PixelLab, `alex-aim.png`, PR #56). The game draws it while a ranged
+weapon fires (`playerBodySheet === 'aim'`). This note said "open" until 2026-10-07 while the
+status table already said done.
 
 ## V5 — Purpose-made Alex portrait
 
