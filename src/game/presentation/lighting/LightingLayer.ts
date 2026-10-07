@@ -15,6 +15,7 @@
 import Phaser from 'phaser';
 import { presentationDepth } from '../depth';
 import { FX_TEXTURES } from '../neon/proceduralTextures';
+import type { ColorGrade } from './colorGrade';
 
 export type PointLight = {
   readonly x: number;
@@ -56,6 +57,8 @@ export class LightingLayer {
   private ambient = 0x404050;
   private staticLights: PointLight[] = [];
   private dynamicLights: PointLight[] = [];
+  /** The floor's colour grade (roadmap V8): a faint additive haze over the stage. */
+  private haze: Phaser.GameObjects.Graphics | null = null;
 
   public constructor(scene: Phaser.Scene, stage: StageRect) {
     this.scene = scene;
@@ -69,6 +72,20 @@ export class LightingLayer {
 
   public setAmbient(color: number): void {
     this.ambient = color;
+  }
+
+  /** Tints the lightmap with a floor's grade and lays its haze over the stage; null clears both. */
+  public setGrade(grade: ColorGrade | null): void {
+    if (!grade) {
+      this.lightmap.setTint(0xffffff);
+      this.haze?.setVisible(false);
+      return;
+    }
+    this.lightmap.setTint(grade.tint);
+    if (!this.haze) {
+      this.haze = this.scene.add.graphics().setDepth(LIGHTMAP_DEPTH + 1).setBlendMode(Phaser.BlendModes.ADD);
+    }
+    this.haze.clear().fillStyle(grade.haze, grade.hazeAlpha).fillRect(this.stage.x, this.stage.y, this.stage.width, this.stage.height).setVisible(true);
   }
 
   public setStaticLights(lights: readonly PointLight[]): void {
@@ -103,10 +120,13 @@ export class LightingLayer {
 
   public setVisible(visible: boolean): void {
     this.lightmap.setVisible(visible);
+    this.haze?.setVisible(visible && this.haze.visible);
   }
 
   public destroy(): void {
     this.lightmap.destroy();
+    this.haze?.destroy();
+    this.haze = null;
     this.staticLights = [];
     this.dynamicLights = [];
     void this.scene;
