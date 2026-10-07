@@ -41,10 +41,10 @@ or start something; keep items small enough for one PR.
 | V1 | Native hurt reactions for the remaining enemies | **done** 2026-10-04 for every enemy kind (`feat/hurt-reactions`) | — |
 | V2 | Authored attack sheets for wind-up enemies and bosses | **done** for every wind-up enemy, the Static's blink last (round 62) | — |
 | V3 | Native effects for the 67 remaining weapons (by family) | **done** 2026-10-07: every weapon has its own effect (round 61) | — |
-| V4 | Alex: dash and ranged-aim animations | **dash + aim done (PixelLab, PR #56)**; live-checked | M |
+| V4 | Alex: dash and ranged-aim animations | **done** (dash + aim, PixelLab, PR #56); live-checked | — |
 | V5 | Purpose-made Alex HUD portrait (56 px) | open | S |
 | V6 | CRT/VHS post-process toggle | open | M |
-| V7 | Skylight/roof weather | open | M |
+| V7 | Skylight/roof weather | **done** 2026-10-07 (round 62, `roofWeather.ts`) | — |
 | V8 | Per-floor colour grading | **done** 2026-10-07 (`colorGrade.ts`) | S |
 | V9 | Colourblind-safe telegraph shapes | open | M |
 | V10 | Elite trait glyphs (Swift / Volatile) | **done** 2026-10-03 | S |
@@ -315,6 +315,20 @@ the frame time stays the same in a live capture on the roof (the busiest
 lighting).
 
 ## V7 — Skylight and roof weather
+
+**Done 2026-10-07 (round 62).** `src/game/view/roofWeather.ts` is pure, a function of the
+tick and the room's seed, drawn by `MallRoomView.renderWeather`. It has four parts:
+- wind-slanted rain, falling in front of everything and unlit;
+- splash rings on the gravel;
+- up to five seeded puddles with shimmering glints, kept off walls and the side-door lanes;
+- a double-strike lightning flash every 8-15 s that lights the whole roof. It never flashes
+  under Flashes: Reduced; `roof-weather.test.ts` checks this, and a mutation check showed the
+  test catches the guard's removal.
+
+It rains on Floor 4's open-air rooms only: not in shops, and not in the indoor Skate Arena.
+Presentation only, so rain makes nothing Wet. Captures are in
+`artifacts/live-qa/roof-weather/`. Skylit rooms indoors are not done; there are none outside
+the Roof.
 
 Rain streaks and puddle glints on Floor 4 and in rooms with skylights, plus an
 occasional lightning flicker (suppressed under Reduced). Drive it from the

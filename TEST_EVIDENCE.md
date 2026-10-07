@@ -1,5 +1,17 @@
 # Test evidence
 
+## 2026-10-07 — Round 62: the Static's blink (V2) and roof weather (V7)
+
+- **Unit tests:** `npx vitest run` gives 192 files and 2006 tests, all passing.
+  - New: `static-attack.test.ts` (3) and `roof-weather.test.ts` (5).
+  - The weather test was written alongside the module rather than first. A mutation check
+    removed the Reduced-flashes guard, the test failed, and the guard was restored.
+- **Live:**
+  - A probe in a real Floor 2 fight saw the renderer draw `static-attack` columns 0-3 during
+    the `telegraph` phase and 4-5 at the start of `recover` (`artifacts/live-qa/static-blink/`).
+  - The Roof's HVAC Yard in rain and mid-strike (`artifacts/live-qa/roof-weather/`).
+
+
 ## 2026-10-07 — Round 61: every weapon has its own effect
 
 - **Unit tests:** `npx vitest run` gives 189 files and 1995 tests, all passing. The new

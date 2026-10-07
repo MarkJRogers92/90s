@@ -1,5 +1,16 @@
 # Status
 
+## 2026-10-07 — Round 62: the Static's blink, rain on the Roof (branch `claude/static-aim-weather`)
+
+Built on `origin/main` (`f09eaad`, round 61).
+- **V2:** the Static's teleport now has its own animation (glitch, dissolve, re-form). Every
+  wind-up enemy now has its own attack sheet.
+- **V7:** the Roof rains, with splashes, glinting puddles and lightning; there is no
+  lightning under Reduced flashes.
+- **V4** (Alex's aim pose) was already done in PR #56, and the roadmap note is corrected.
+
+Presentation only. Not merged or pushed.
+
 ## 2026-10-07 — Round 61: every weapon has its own effect (branch `claude/weapon-fx-melee-mech`)
 
 Built on `origin/main` (`7e845ab`, round 60).
