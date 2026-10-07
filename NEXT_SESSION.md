@@ -1,5 +1,10 @@
 # Next session
 
+## Round 62 (2026-10-07): the Static's blink and rain on the Roof
+
+Branch `claude/static-aim-weather`, not merged. V2, V3, V4, V7 and V8 are done. Still open:
+V5 (Alex portrait), V6 (CRT filter), V9 (colourblind telegraphs), V11 (old modes).
+
 ## Round 61 (2026-10-07): every weapon has its own effect
 
 Branch `claude/weapon-fx-melee-mech`, not merged. Roadmap V3 is done. Open roadmap visuals:

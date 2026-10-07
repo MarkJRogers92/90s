@@ -19,6 +19,7 @@ import { presentationDepth } from '../presentation/depth';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
 import { GLOW_DEPTH, LightingLayer, type PointLight } from '../presentation/lighting/LightingLayer';
 import { colorGradeFor } from '../presentation/lighting/colorGrade';
+import { lightningAt, puddlesFor, rainStreaks, splashesAt, weatherFor } from './roofWeather';
 import { applyBackHallLightingPilot, BACK_HALL_PILOT_STYLE, ensureBackHallContactShadow, isBackHallLightingPilot } from '../presentation/lighting/backHallLightingPilot';
 import { FX_TEXTURES, ensureFxTextures, ensureNeonSign, ensurePixelLabel, floorTextureKey, type NeonSignSpec } from '../presentation/neon/proceduralTextures';
 import {
@@ -93,6 +94,8 @@ export class MallRoomView {
   private readonly effectLayer: Phaser.GameObjects.Layer;
   private readonly sortedProps: Phaser.GameObjects.Image[] = [];
   private readonly blockFaces: Phaser.GameObjects.Graphics[] = [];
+  /** Roadmap V7: the Roof's rain, splashes, puddle glints and lightning (null indoors). */
+  private readonly weather: { readonly seed: number; readonly rain: Phaser.GameObjects.Graphics; readonly floorFx: Phaser.GameObjects.Graphics; readonly flash: Phaser.GameObjects.Graphics; readonly puddles: ReturnType<typeof puddlesFor> } | null;
   private readonly pulsing: Array<{ object: Phaser.GameObjects.Image; base: number; seed: number }> = [];
   /** Props with ambient life (see propAmbience.ts), animated in `render`. */
   private readonly animatedProps: Array<{
@@ -147,6 +150,19 @@ export class MallRoomView {
     this.lighting = new LightingLayer(scene, { x: 0, y: STAGE_TOP, width: STAGE_WIDTH, height: STAGE_HEIGHT });
     this.lighting.setAmbient(this.plan.ambient);
     this.lighting.setStaticLights(this.plan.lights);
+    // Roadmap V7: rain on the Roof's open-air rooms.
+    const room0 = state.wing.rooms[state.roomIndex]!;
+    this.weather = weatherFor(state.wing.floor ?? 1, { insideStore: this.interior, ...(state.wing.district ? { district: state.wing.district } : {}) })
+      ? {
+        seed: state.seed + state.roomIndex * 7919,
+        // Splashes and glints lie on the floor, under the actors and lit with the room...
+        floorFx: this.graphics(this.decal),
+        // ...the rain falls in front of everything, unlit, and the flash washes the whole stage.
+        rain: scene.add.graphics().setDepth(presentationDepth('effect', 0.5)),
+        flash: scene.add.graphics().setDepth(presentationDepth('effect', 0.6)).setBlendMode(Phaser.BlendModes.ADD),
+        puddles: puddlesFor(state.seed + state.roomIndex * 7919, room0.walls),
+      }
+      : null;
     // Roadmap V8: the floor's colour grade over every room but a shop or a district's own.
     this.lighting.setGrade(colorGradeFor(state.wing.floor ?? 1, { insideStore: this.interior, district: state.wing.district !== undefined }));
     // Civilians stroll around the opening room's own collision (planters, fountain).
@@ -550,6 +566,7 @@ export class MallRoomView {
       entry.object.setAlpha(entry.base * (0.82 + 0.18 * Math.sin((snapshot.tick + entry.seed * 41) / 17)));
     }
     this.renderProps(snapshot.tick);
+    this.renderWeather(snapshot.tick);
     this.renderAmbience(snapshot);
   }
 
@@ -600,6 +617,32 @@ export class MallRoomView {
           this.renderFountain(entry, tick);
           break;
       }
+    }
+  }
+
+  /** Roadmap V7: rain falling, rings on the gravel, puddles glinting, and lightning now and then. */
+  private renderWeather(tick: number): void {
+    const weather = this.weather;
+    if (!weather) return;
+    const floor = weather.floorFx.clear();
+    for (const puddle of weather.puddles) {
+      floor.fillStyle(0x0a1020, 0.55).fillEllipse(puddle.x, puddle.y, puddle.width, puddle.height);
+      floor.fillStyle(0x6a88c0, 0.18).fillEllipse(puddle.x - puddle.width * 0.12, puddle.y - 1, puddle.width * 0.6, puddle.height * 0.4);
+      const glint = 0.5 + 0.5 * Math.sin(tick / 9 + puddle.glintPhase);
+      floor.fillStyle(0xd8e8ff, 0.25 + 0.5 * glint).fillRect(Math.round(puddle.x - puddle.width * 0.2 + glint * 6), Math.round(puddle.y - 2), 3, 1);
+    }
+    for (const splash of splashesAt(tick, weather.seed)) {
+      floor.lineStyle(1, 0xb8d0ff, splash.alpha).strokeEllipse(splash.x, splash.y, splash.radius * 2.4, splash.radius);
+    }
+    const rain = weather.rain.clear();
+    for (const streak of rainStreaks(tick, weather.seed)) {
+      rain.lineStyle(1, 0xa8c4f0, streak.alpha).lineBetween(streak.x, streak.y, streak.x + streak.dx, streak.y + streak.dy);
+    }
+    const strike = lightningAt(tick, weather.seed, flashAllowed(gameSettings().get()));
+    const flash = weather.flash.clear();
+    if (strike > 0) {
+      flash.fillStyle(0xc8d8ff, 0.32 * strike).fillRect(0, STAGE_TOP, STAGE_WIDTH, STAGE_HEIGHT);
+      this.lighting.addDynamic({ x: 480, y: 120, radius: 900, color: 0xb8ccff, intensity: 0.85 * strike });
     }
   }
 
@@ -817,6 +860,8 @@ export class MallRoomView {
     }
     for (const image of this.sortedProps) image.destroy();
     for (const face of this.blockFaces) face.destroy();
+    this.weather?.rain.destroy();
+    this.weather?.flash.destroy();
     this.blockFaces.length = 0;
     this.sortedProps.length = 0;
     this.animatedProps.length = 0;

@@ -3748,5 +3748,15 @@
       30
     ],
     "sha256": "c418f33c74b67e55b3a18127b38016e6e7c9fb235bb1add54b35d72670524916"
+  },
+  {
+    "path": "public/assets/neon/enemies/static-attack.png",
+    "source": "art/enemy-attacks/static/build_static_attack.py",
+    "generator": "derived from static-walk.png (frame 0 of each facing)",
+    "size": [
+      576,
+      768
+    ],
+    "sha256": "edbb45c669c54cd9310d7083410e4ffbdac376e1f793ba5b8cc6afb3c333d045"
   }
 ]
