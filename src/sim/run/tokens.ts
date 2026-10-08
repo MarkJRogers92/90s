@@ -15,7 +15,7 @@ import { publishRunFeedback } from './economy';
 import { ELITE_SNACK_CHANCE, ELITE_TOKEN_MULTIPLIER, SNACK_CHANCE, luck } from './luck';
 import { runMaxHealth, tokenMagnetReach } from './perks';
 import type { MvpRunState } from './types';
-import type { FusionInventoryNode } from '../fusion/types';
+import type { FusionInventoryNode, FusionTransactionRecord } from '../fusion/types';
 import { snackChance } from './perks';
 
 export type MallTokenPickup = {
@@ -28,6 +28,8 @@ export type MallTokenPickup = {
   readonly rare?: boolean;
   /** Round 36: an item the janitor dropped, exactly as it was held (provenance and fusion intact). */
   readonly node?: FusionInventoryNode;
+  /** The ledger receipts detached with a dropped fusion, restored atomically on pickup. */
+  readonly detachedTransactions?: readonly FusionTransactionRecord[];
   /** Round 36: a dropped item waits for the janitor to step out of reach before it can be picked back up. */
   readonly awaitingStepOff?: boolean;
   readonly x: number;

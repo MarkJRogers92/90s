@@ -9,7 +9,7 @@
  */
 import { compositeLeaves, freshLeafInstanceId } from '../fusion/inventory';
 import { definitionFor } from '../items/registry';
-import type { InventoryLeaf } from '../fusion/types';
+import type { FusionInventoryNode, InventoryLeaf } from '../fusion/types';
 import { ITEM_CATALOG } from '../items/catalog';
 import type { ItemCapability, ItemDefinition, ItemId } from '../items/types';
 import type { Vec2 } from '../model';
@@ -241,9 +241,12 @@ export function buyRunOffer(state: MvpRunState, offerId: string): MvpCommandResu
   }
 
   const room = roomOfOffer(state, offer.id);
+  // Ids inside dropped trees on the floor stay reserved, or a purchase could
+  // reuse one and a later pickup would bring back a duplicate.
+  const droppedRoots: FusionInventoryNode[] = state.room.tokens.flatMap((pickup) => (pickup.node ? [pickup.node] : []));
   const leaf: InventoryLeaf = {
     kind: 'leaf',
-    instanceId: freshLeafInstanceId(state.inventory, `mvp-purchased-${offer.id}`),
+    instanceId: freshLeafInstanceId(state.inventory, `mvp-purchased-${offer.id}`, droppedRoots),
     itemDefinitionId: offer.itemDefinitionId,
     acquisitionKind: 'purchased',
     sourceLocationId: offer.storeId,
@@ -322,10 +325,11 @@ export function secureRunThefts(
   }
 
   const leaves: InventoryLeaf[] = [];
+  const theftDroppedRoots: FusionInventoryNode[] = state.room.tokens.flatMap((pickup) => (pickup.node ? [pickup.node] : []));
   for (const theft of held) leaves.push({
     kind: 'leaf',
     // Fresh against what is owned and what is already in this haul.
-    instanceId: freshLeafInstanceId({ ...state.inventory, inventory: [...state.inventory.inventory, ...leaves] }, `mvp-stolen-${theft.sourceOfferId}`),
+    instanceId: freshLeafInstanceId({ ...state.inventory, inventory: [...state.inventory.inventory, ...leaves] }, `mvp-stolen-${theft.sourceOfferId}`, theftDroppedRoots),
     itemDefinitionId: theft.itemDefinitionId,
     acquisitionKind: 'stolen',
     sourceLocationId: store.templateId,

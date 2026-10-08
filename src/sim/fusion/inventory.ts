@@ -155,7 +155,7 @@ function nextCompositeIdIsFresh(state: FusionInventoryState, forestIds: Readonly
  * reuse an id inside a fused weapon, and every fusion after it failed the
  * inventory check.
  */
-export function freshLeafInstanceId(state: Pick<FusionInventoryState, 'inventory' | 'committedTransactions'>, base: string): string {
+export function freshLeafInstanceId(state: Pick<FusionInventoryState, 'inventory' | 'committedTransactions'>, base: string, reservedRoots: readonly FusionInventoryNode[] = []): string {
   const used = new Set<string>();
   const walk = (node: FusionInventoryNode): void => {
     used.add(node.instanceId);
@@ -165,6 +165,7 @@ export function freshLeafInstanceId(state: Pick<FusionInventoryState, 'inventory
     }
   };
   state.inventory.forEach(walk);
+  reservedRoots.forEach(walk);
   for (const record of state.committedTransactions) {
     used.add(record.primaryInstanceId);
     used.add(record.carrierInstanceId);

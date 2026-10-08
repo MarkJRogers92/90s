@@ -8,6 +8,7 @@
  */
 import { createMvpRun } from './createMvpRun';
 import { cloneFusionInventory } from './checkpoint';
+import type { FusionInventoryNode, FusionInventoryState, FusionPart, InventoryLeaf } from '../fusion/types';
 import { refreshRunLoadout } from './loadout';
 import { syncRunCarrier } from './carrier';
 import type { MvpRunState } from './types';
@@ -39,6 +40,53 @@ export function nextIsBossWing(state: MvpRunState): boolean {
 }
 
 /**
+ * Already namespaced at an earlier ascend (`<originSeed>:<offerId>`), so a
+ * second trip up never wraps it again. Shelf ids never contain a colon.
+ */
+function isQualifiedSourceStockId(sourceStockId: string): boolean {
+  return sourceStockId.includes(':');
+}
+
+/**
+ * What the janitor carries up the stairs keeps its instance ids, receipts and
+ * provenance. Raw shelf ids are qualified at the first carry boundary with
+ * the wing they came from, before another wing can restock them. Anything
+ * already qualified, or not from the originating wing's shelves, stays as is.
+ */
+function qualifyCarriedStockIds(
+  inventory: FusionInventoryState,
+  originSeed: number,
+  originatingOfferIds: ReadonlySet<string>,
+): FusionInventoryState {
+  const qualifyLeaf = (leaf: InventoryLeaf): InventoryLeaf => {
+    if (
+      (leaf.acquisitionKind === 'purchased' || leaf.acquisitionKind === 'stolen') &&
+      !isQualifiedSourceStockId(leaf.sourceStockId) &&
+      originatingOfferIds.has(leaf.sourceStockId)
+    ) {
+      return { ...leaf, sourceStockId: `${originSeed}:${leaf.sourceStockId}` };
+    }
+    return leaf;
+  };
+  const qualifyPart = (part: FusionPart): FusionPart => {
+    if (part.kind === 'leaf') return qualifyLeaf(part);
+    return {
+      ...part,
+      primary: qualifyPart(part.primary),
+      carrier: qualifyPart(part.carrier),
+    };
+  };
+  const qualifyNode = (node: FusionInventoryNode): FusionInventoryNode => {
+    if (node.kind === 'leaf') return qualifyLeaf(node);
+    if (node.recipeId === 'emitter_mount') {
+      return { ...node, primary: qualifyLeaf(node.primary), carrier: qualifyLeaf(node.carrier) };
+    }
+    return qualifyPart(node);
+  };
+  return { ...inventory, inventory: inventory.inventory.map(qualifyNode) };
+}
+
+/**
  * On to the next wing, carrying gear, cash, stats and perks: a first wing's
  * stairs lead to the same floor's boss wing, a boss wing's escalator to the
  * next floor's first wing (round 45).
@@ -54,6 +102,8 @@ export function ascend(state: MvpRunState): MvpRunState {
     perks: state.perks,
     ...(state.rule !== undefined ? { rule: state.rule } : {}),
   });
+  const originatingOfferIds = new Set(state.wing.rooms.flatMap((room) => room.offers.map((offer) => offer.id)));
+  next.inventory = qualifyCarriedStockIds(next.inventory, state.seed, originatingOfferIds);
   refreshRunLoadout(next);
   syncRunCarrier(next);
   return next;
