@@ -4,6 +4,12 @@ Developer-side pixel-art authoring, rig animation, checked exports, and native A
 
 Source: the `pixel-forge-rig` snapshot at [e8ec6ee555711375b134d4c2bffad9ecf47ab0e2](https://github.com/MarkJRogers92/90s/commit/e8ec6ee555711375b134d4c2bffad9ecf47ab0e2), integrated as a scoped directory instead of merging the standalone snapshot over the game. See `PROVENANCE.json`, `NOTICE.md`, and `VERIFICATION.md`.
 
+## Community model-quality review (open to contributors)
+
+We're inviting targeted improvements to the **existing Pixel Forge pipeline**, not a ground-up model rewrite. See [Pixel Forge improvement discussion and submissions, issue #80](https://github.com/MarkJRogers92/90s/issues/80). Useful work includes model/adapter refinement, consistent 3/4 sprite viewpoint and scale, pixel-grid/palette/alpha fidelity, animation alignment, and reproducible QA. Provide a small working change with synthetic before/after tests. Review [NOTICE.md](NOTICE.md) before reusing or distributing code or art; public readability is not a general redistribution license.
+
+**Funding status:** The proposed five-by-$1 cash pilot has **not** been funded or opened. Contributions here are currently voluntary; no cash award is promised.
+
 ## Start
 
 Use Python with the dependencies recorded in `requirements-tested.txt`. This integration includes no environment or dependencies and installs nothing automatically. Aseprite must be an existing executable you are licensed to use.
