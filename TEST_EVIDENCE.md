@@ -2890,3 +2890,10 @@ Archive checks verified 19 native PNGs with binary transparency and at most 32 o
   This is Chromium/local visual verification, not a full human night playthrough
   or verification on other browsers/devices. Fresh captures and a cloud-sync
   patch accompany the handoff.
+
+## 2026-10-07 — Boombox and weighing-scale art archive
+
+- Archived corrected boombox (48×32) and coin-operated weighing scale (32×64), each with an 8× PNG preview, under `art/pixel-forge/dead-mall-boombox-weighing-scale-20261007/`.
+- Verified native files byte-for-byte against the selected local candidates; SHA-256 values are recorded in `manifest.json`. Verified all four PNG hashes, dimensions, binary alpha, 18 opaque colors per native sprite, and profile-palette membership.
+- Pixel Forge lint scored both native sprites 100. Non-blocking notes remain: selective outlines and near-duplicate colors on both, a straight color boundary on the scale. Original prepare QA counted 138 isolated single pixels for the boombox before its padding correction; the unchanged scale prepare output counted 68. These are texture metrics, not a claim that every counted pixel is a stray.
+- Archive-only scope: no gameplay/runtime changes, so game tests were not run. No in-game readiness is claimed.

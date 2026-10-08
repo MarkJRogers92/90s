@@ -1387,3 +1387,7 @@ Round 56 (2026-10-02): leaner economy from the 2026-10-01 night. Token values
 about halved and elites pay double (was triple): a floor of fights now buys ~3
 shelf items (was 5-8). Each upstairs floor store shelves a $45 rare. 1189 unit
 tests and the build pass.
+
+## 2026-10-07 — Boombox and weighing-scale art archived
+
+Archived two selected standalone sprites under [art/pixel-forge/dead-mall-boombox-weighing-scale-20261007](art/pixel-forge/dead-mall-boombox-weighing-scale-20261007/README.md), with native PNGs, 8× previews, provenance and hashes. Exact-copy and manifest-hash checks passed; no runtime files changed and the art is not wired into gameplay.

@@ -1,0 +1,55 @@
+{
+  "created_at": "2026-10-07",
+  "project": "DEAD MALL",
+  "profile_id": "dead-mall-current-props-20260930",
+  "scope": "archived art; not wired into gameplay",
+  "items": [
+    {
+      "name": "Portable boombox",
+      "library_id": "20261007-223024-boombox-with-2px-transparent-padding-12c4",
+      "native": {
+        "file": "boombox.png",
+        "dimensions": [48, 32],
+        "opaque_colors": 18,
+        "alpha": "binary",
+        "sha256": "a398cfee5b805a09d9b275369c5d3505645908e7c15f840c5d6a05d11675708e"
+      },
+      "preview": {
+        "file": "previews/boombox@8x.png",
+        "dimensions": [384, 256],
+        "scale": 8,
+        "sha256": "534613816faeabe722b4840460cbb7e935ad30c5770278085bbeee5eed6fba6e"
+      },
+      "provenance": "Pixel Forge GPT reference, free RD neural fixer and conservative cleanup; then an immutable direct-pixel revision erased the rightmost opaque column and bottom opaque row to provide 2px margins.",
+      "qa": {
+        "lint_score": 100,
+        "nonblocking_notes": ["selective outline style", "one near-duplicate color pair"],
+        "source_prepare_isolated_single_pixel_metric": 138
+      }
+    },
+    {
+      "name": "Coin-operated weighing scale",
+      "library_id": "20261007-222712-one-vintage-coin-operated-mall-weighing--c293",
+      "native": {
+        "file": "weighing-scale.png",
+        "dimensions": [32, 64],
+        "opaque_colors": 18,
+        "alpha": "binary",
+        "sha256": "6bda6a99e3e5d7a7a0e5f78d03c8dabee8c56012e9acde90029fd4f4562cfa2a"
+      },
+      "preview": {
+        "file": "previews/weighing-scale@8x.png",
+        "dimensions": [256, 512],
+        "scale": 8,
+        "sha256": "5c9719d108f430f3f50974ea9064ccbcd553996e42d4d7741de2f8bd830ca463"
+      },
+      "provenance": "Pixel Forge GPT reference, free RD neural fixer and conservative cleanup; inspected at 1x, 2x and 8x.",
+      "qa": {
+        "lint_score": 100,
+        "nonblocking_notes": ["selective outline style", "one straight color boundary", "two near-duplicate color pairs"],
+        "isolated_single_pixel_metric": 68
+      }
+    }
+  ],
+  "notes": "Pixel Forge texture metrics count isolated single pixels; they are recorded as QA measurements, not a claim that every counted pixel is a stray. The boombox value is from its original prepare QA before the 16-pixel padding correction; the scale value is from its unchanged prepare output. This archive includes raster PNGs only, with no runtime wiring or gameplay-readiness claim."
+}

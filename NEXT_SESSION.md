@@ -1264,3 +1264,7 @@ presentation. Night Shift is the game.
 ## 2026-09-30 — Additional prop candidates
 
 The [asset handoff](docs/art/prop-packs/2026-09-30/HANDOFF.md) lists nine new prop candidates, both downloadable packs, and exact repository paths. Select sizes and check placement, render anchors and collision before integrating them through the existing asset pipeline.
+
+## 2026-10-07 — New standalone prop candidates
+
+The [boombox and weighing-scale archive](art/pixel-forge/dead-mall-boombox-weighing-scale-20261007/README.md) contains two selected sprites and 8× previews. They are not wired into gameplay. Before any future integration, decide placement and verify render anchors and collision footprint through the existing asset pipeline.
