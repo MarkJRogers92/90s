@@ -1,5 +1,14 @@
 # Status
 
+## 2026-10-07 — Continue/save fixes
+
+Based on `main` at `1244cbe`; verified and approved by the owner for push and merge.
+- Purchases and secured thefts carry their originating-wing shelf provenance up the stairs, including fused parts, while later wings restock normally.
+- Selling or dropping a fusion removes every receipt in its subtree from the live inventory ledger. A dropped fusion carries its receipts and restores them on pickup without another fee.
+- New purchases, secured thefts and found items reserve IDs inside room-local dropped trees.
+
+All 98 targeted tests in 11 files, the full 2021-test unit suite, and TypeScript checks pass. Sol reviewed the actual diff and accepted the provenance correction. Save schema and strict checkpoint validation are unchanged. Existing invalid saves were not migrated or repaired.
+
 ## 2026-10-07 — Round 63: Alex's portrait and a CRT filter (branch `claude/portrait-crt`)
 
 Built on `origin/main` (`5ba25f1`, round 62).

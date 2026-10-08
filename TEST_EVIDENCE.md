@@ -1,5 +1,16 @@
 # Test evidence
 
+## 2026-10-07 — Continue/save regressions
+
+- Before implementation, all three original regressions failed: a Floor 1 purchase carried up the stairs, a sold fusion, and a fusion left behind after a room transition each produced an unreadable checkpoint.
+- A review added a fourth observed failure: an item absent from the next wing kept an unqualified shelf ID instead of recording its originating wing.
+- Final parent verification: 11 targeted files, 98 tests passed. The new suite has 8 tests, including nested hybrids, emitter-mount pickup, unrelated fusion receipts, dropped ingredient ID reservations and stable provenance through multiple ascents.
+- Command: `./node_modules/.bin/vitest run tests/unit/save-continuation-regressions.test.ts tests/unit/sell-drop.test.ts tests/unit/checkpoint-holes.test.ts tests/unit/checkpoint.test.ts tests/unit/checkpoint-store.test.ts tests/unit/fusion-serialization.test.ts tests/unit/deep-fusion.test.ts tests/unit/fusion-transaction.test.ts tests/unit/fusion-repeat-ids.test.ts tests/unit/item-drops.test.ts tests/unit/floor-two.test.ts`.
+- `npm run typecheck` passed independently; `git diff --check` passed. Parent caught and corrected the worker's initially masked TypeScript failures before acceptance.
+- Publication verification: `npm test` passed all 194 files and 2021 tests; `npm run typecheck` passed. Source and regression-test hashes matched the reviewed, verified fix before committing.
+- Sol independently reviewed the six source diffs and regressions, requested the originating-offer correction, then accepted it after the fix.
+- Evidence covers simulation and the real checkpoint-store round trip. Browser play and the balance bot were not run; no balance values changed.
+
 ## 2026-10-07 — Round 63: Alex's portrait (V5) and the CRT filter (V6)
 
 - **Unit tests:** `npx vitest run` gives 193 files and 2013 tests, all passing.

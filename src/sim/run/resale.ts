@@ -13,7 +13,7 @@
  * The janitor always keeps at least one weapon. Pure rules over run data.
  */
 import { compositeLeaves, nodeDefinitionId } from '../fusion/inventory';
-import type { FusionInventoryNode } from '../fusion/types';
+import type { FusionInventoryNode, FusionTransactionRecord } from '../fusion/types';
 import { AUTHORED_OFFER_BANDS } from '../wing/templates';
 import { syncRunCarrier } from './carrier';
 import { itemDefinitionName, publishRunFeedback } from './economy';
@@ -33,16 +33,42 @@ export function resaleValue(node: FusionInventoryNode): number {
   }, 0);
 }
 
-/** Takes a node out of the inventory, re-equipping if it was the held weapon. */
-function remove(state: MvpRunState, instanceId: string): void {
-  const inventory = state.inventory.inventory.filter((node) => node.instanceId !== instanceId);
-  state.inventory = { ...state.inventory, inventory, revision: state.inventory.revision + 1 };
+/** Every ledger receipt issued for a composite in the removed subtree, at any depth. */
+function subtreeTransactionIds(node: FusionInventoryNode): Set<string> {
+  const ids = new Set<string>();
+  const walk = (part: FusionInventoryNode): void => {
+    if (part.kind !== 'composite') return;
+    ids.add(part.transactionId);
+    walk(part.primary);
+    walk(part.carrier);
+  };
+  walk(node);
+  return ids;
+}
+
+/**
+ * Takes a node out of the inventory, re-equipping if it was the held weapon.
+ * Returns the ledger receipts detached with it: every transaction in the
+ * removed subtree, and nothing else. The id counter never moves backwards.
+ */
+function remove(state: MvpRunState, instanceId: string): FusionTransactionRecord[] {
+  const node = state.inventory.inventory.find((candidate) => candidate.instanceId === instanceId);
+  const detachedIds = node ? subtreeTransactionIds(node) : new Set<string>();
+  const detached = state.inventory.committedTransactions.filter((record) => detachedIds.has(record.transactionId));
+  const inventory = state.inventory.inventory.filter((candidate) => candidate.instanceId !== instanceId);
+  state.inventory = {
+    ...state.inventory,
+    inventory,
+    committedTransactions: state.inventory.committedTransactions.filter((record) => !detachedIds.has(record.transactionId)),
+    revision: state.inventory.revision + 1,
+  };
   if (state.inventory.selectedPrimaryInstanceId === instanceId) {
     const next = runWeaponSlots(state)[0];
     if (next) state.inventory = { ...state.inventory, selectedPrimaryInstanceId: next.instanceId };
   }
   refreshRunLoadout(state);
   syncRunCarrier(state);
+  return detached;
 }
 
 function isLastWeapon(state: MvpRunState, instanceId: string): boolean {
@@ -86,13 +112,14 @@ export function dropRunWeapon(state: MvpRunState): MvpCommandResult {
     publishRunFeedback(state, reason);
     return rejected(reason);
   }
-  remove(state, node.instanceId);
+  const detached = remove(state, node.instanceId);
   const player = state.room.combat.player;
   state.room.tokens.push({
     id: `dropped-${state.tick}-${node.instanceId}`,
     kind: 'item',
     itemDefinitionId: nodeDefinitionId(node),
     node,
+    detachedTransactions: detached,
     awaitingStepOff: true,
     x: player.x,
     y: player.y + 18,

@@ -1,5 +1,13 @@
 # Next session
 
+## 2026-10-07 — Continue/save fixes ready for playtest
+
+The fixes were prepared on `codex/save-continue-fixes` from `main` at `1244cbe`. Use the current `/Users/markrogers/code/90s` checkout for playtesting; GitHub records the push and merge state.
+
+98 targeted tests, the full 2021-test unit suite, and TypeScript checks passed; the actual diff received independent Sol review. The owner authorized push and merge. Unrelated art work was preserved outside the commit.
+
+Playtest buying gear before the Floor 1 stairs, then Continue; also sell or drop a fused weapon, cross a doorway, and Continue. Dropped fusions should pick back up with their receipts; leaving them behind is intentional. Existing rejected saves still require a separate recovery decision.
+
 ## Round 63 (2026-10-07): Alex's portrait and the CRT filter
 
 Branch `claude/portrait-crt`, not merged. Visual roadmap left: V9 (colourblind telegraphs), V11

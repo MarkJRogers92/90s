@@ -68,7 +68,10 @@ function foundLeaf(state: MvpRunState, itemDefinitionId: string, source: string)
 
 function own(state: MvpRunState, leaf: InventoryLeaf): void {
   // Two finds in one tick, or the same tick in another wing, get distinct ids.
-  const instanceId = freshLeafInstanceId(state.inventory, leaf.instanceId);
+  // Ids inside dropped trees on the floor are reserved too, or a find could
+  // reuse one and the pickup would bring back a duplicate.
+  const dropped = state.room.tokens.flatMap((pickup) => (pickup.node ? [pickup.node] : []));
+  const instanceId = freshLeafInstanceId(state.inventory, leaf.instanceId, dropped);
   state.inventory = {
     ...state.inventory,
     inventory: [...state.inventory.inventory, { ...leaf, instanceId }],
@@ -121,8 +124,17 @@ export function collectItemDrops(state: MvpRunState): void {
     if (pickup.kind !== 'item' || !pickup.itemDefinitionId) return true;
     if (pickup.awaitingStepOff || !inReach(pickup)) return true;
     if (pickup.node) {
-      // Something the janitor dropped comes back exactly as it went down.
-      state.inventory = { ...state.inventory, inventory: [...state.inventory.inventory, pickup.node], revision: state.inventory.revision + 1 };
+      // Something the janitor dropped comes back exactly as it went down,
+      // atomically with the receipts detached alongside it. The id counter
+      // never moves backwards.
+      const held = new Set(state.inventory.committedTransactions.map((record) => record.transactionId));
+      const restored = (pickup.detachedTransactions ?? []).filter((record) => !held.has(record.transactionId));
+      state.inventory = {
+        ...state.inventory,
+        inventory: [...state.inventory.inventory, pickup.node],
+        committedTransactions: [...state.inventory.committedTransactions, ...restored],
+        revision: state.inventory.revision + 1,
+      };
       refreshRunLoadout(state);
       publishRunFeedback(state, `Picked up the ${itemDefinitionName(pickup.itemDefinitionId)}.`);
       return false;
