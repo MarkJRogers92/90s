@@ -119,7 +119,12 @@ export function cloneFusionInventory(state: FusionInventoryState): FusionInvento
   };
 }
 
+/** Throws for nonliving/invalid health so stores retain the previous resumable save. */
 export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
+  const playerHealth = state.room.combat.player.health;
+  if (!Number.isInteger(playerHealth) || playerHealth < 1) {
+    throw new Error('A checkpoint requires positive integer player health.');
+  }
   return {
     version: MVP_CHECKPOINT_VERSION,
     seed: state.seed,
@@ -130,7 +135,7 @@ export function serializeCheckpoint(state: MvpRunState): MvpCheckpoint {
     cash: state.cash,
     heat: state.heat,
     suspicion: state.suspicion,
-    playerHealth: state.room.combat.player.health,
+    playerHealth,
     enteredFrom: state.room.enteredFrom,
     clearedRoomIds: [...state.clearedRooms],
     inventory: cloneFusionInventory(state.inventory),

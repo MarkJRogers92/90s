@@ -704,7 +704,7 @@ export class MvpRunScene extends Phaser.Scene {
     while (this.accumulator >= STEP_MS && steps < MAX_STEPS) {
       const frame = this.inputAdapter.readFrame();
       tickMvpRun(this.run, frame);
-      this.runView?.observeLoot(this.run);
+      this.runView?.observeStep(this.run);
       this.accumulator -= STEP_MS;
       steps += 1;
       if (this.run.roomIndex !== roomBefore || this.run.status !== 'playing') {
@@ -947,6 +947,10 @@ export class MvpRunScene extends Phaser.Scene {
   };
 
   private syncCheckpoint(): void {
+    // Several sim ticks can precede this rendered frame. A marker from an
+    // earlier living tick cannot be saved using the later tick's dead state.
+    const playerHealth = this.run.room.combat.player.health;
+    if (this.run.checkpoint !== null && (!Number.isInteger(playerHealth) || playerHealth < 1)) return;
     const key = JSON.stringify(this.run.checkpoint);
     if (key === this.lastCheckpointKey) {
       return;

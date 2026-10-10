@@ -12,6 +12,7 @@ import Phaser from 'phaser';
 import { FACADE_TEXTURES, type FacadeId } from '../presentation/rooms/roomDressing';
 import { PLAYER_TEXTURE_KEYS } from '../presentation/assets';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
+import { croppedFrameOrigin } from '../view/ActorSpriteView';
 import { ESCALATOR, rideFrame, rideSkippable, type RideFrame } from './escalatorRideModel';
 import type { FloorNumber } from '../../sim/wing/floorSpecs';
 
@@ -46,7 +47,6 @@ const DEPTH = 20_700;
 const W = 960;
 const H = 600;
 const STEP = 22;
-const RIDER_FRAME = 'ride-northeast';
 /** How far the incline runs past each end, off the stage. */
 const RUN_OUT = 420;
 
@@ -129,10 +129,11 @@ export class EscalatorRide {
   private makeRider(): Phaser.GameObjects.Image | null {
     const key = PLAYER_TEXTURE_KEYS.idle;
     if (!this.scene.textures.exists(key)) return null;
-    const texture = this.scene.textures.get(key);
     // The idle strip holds eight 64px facings; north-east (index 5) rides up and right.
-    if (!texture.has(RIDER_FRAME)) texture.add(RIDER_FRAME, 0, 5 * 64, 0, 64, 64);
-    return this.scene.add.image(0, 0, key, RIDER_FRAME).setOrigin(0.5, 0.9).setScale(2);
+    // Crop the whole sheet: adding a frame changes its shared gameplay default.
+    const image = this.scene.add.image(0, 0, key, '__BASE');
+    const origin = croppedFrameOrigin({ row: 0, column: 5 }, image, { width: 64, height: 64 }, 64 * 0.9);
+    return image.setCrop(5 * 64, 0, 64, 64).setOrigin(origin.x, origin.y).setScale(2);
   }
 
   private draw(frame: RideFrame): void {

@@ -163,7 +163,7 @@ describe('scoped lighting on the real room and run views', () => {
       const control = structuredClone(observed);
       for (let tick = 0; tick < 240; tick++) {
         const input = { moveX: 0, moveY: 0, aimX: 740, aimY: 220, fire: tick % 3 === 0, interact: false, steal: false, recall: false };
-        tickMvpRun(observed, input); tickMvpRun(control, input); view.observeLoot(observed); view.sync(observed);
+        tickMvpRun(observed, input); tickMvpRun(control, input); view.observeStep(observed); view.sync(observed);
         expect(JSON.stringify(observed)).toBe(JSON.stringify(control));
       }
       view.destroy();
@@ -173,10 +173,10 @@ describe('scoped lighting on the real room and run views', () => {
   it('keeps pickup sprites stable when fixed-step loot observation alternates with render', () => {
     const renderer = backend(); const view = new MvpRunView(renderer.scene); const state = stateFor();
     state.room.tokens = [{ id: 'waiting', x: 650, y: 280, value: 4, droppedTick: 0 }];
-    view.observeLoot(state); view.sync(state);
+    view.observeStep(state); view.sync(state);
     const coin = renderer.roots.find(root => root.texture.key === FX_TEXTURES.token && !root.destroyed)!;
     expect(coin).toBeDefined();
-    state.tick++; view.observeLoot(state); view.sync(state);
+    state.tick++; view.observeStep(state); view.sync(state);
     expect(coin.destroyed).toBe(false);
     expect(renderer.roots.filter(root => root.texture.key === FX_TEXTURES.token && !root.destroyed)).toEqual([coin]);
     view.destroy();
@@ -184,12 +184,12 @@ describe('scoped lighting on the real room and run views', () => {
 
   it('retains a real pickup receipt through fixed-step observation and redraw', () => {
     const renderer = backend(); const view = new MvpRunView(renderer.scene); const state = stateFor();
-    view.observeLoot(state); view.sync(state);
+    view.observeStep(state); view.sync(state);
     state.room.tokens = [{ id: 'collected', x: 440, y: 300, value: 4, droppedTick: 0 }];
-    state.tick++; collectTokens(state); view.observeLoot(state); view.sync(state);
+    state.tick++; collectTokens(state); view.observeStep(state); view.sync(state);
     const receipt = renderer.roots.find(root => root.texture.key.startsWith('label:+$4|') && root.visible && !root.destroyed);
     expect(receipt).toBeDefined();
-    state.tick++; view.observeLoot(state); view.sync(state);
+    state.tick++; view.observeStep(state); view.sync(state);
     expect(receipt!.destroyed).toBe(false);
     expect(receipt!.visible).toBe(true);
     view.destroy();

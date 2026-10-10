@@ -27,6 +27,7 @@ import { refreshRunLoadout } from './loadout';
 import { luck } from './luck';
 import { TOKEN_PICKUP_RADIUS, type EnemyMarker, type MallTokenPickup } from './tokens';
 import type { MvpRunState } from './types';
+import { applyHeatFloor } from './wanted';
 
 /** A regular kill's chance to leave an item. */
 export const ITEM_DROP_CHANCE = 0.04;
@@ -135,6 +136,7 @@ export function collectItemDrops(state: MvpRunState): void {
         committedTransactions: [...state.inventory.committedTransactions, ...restored],
         revision: state.inventory.revision + 1,
       };
+      applyHeatFloor(state);
       refreshRunLoadout(state);
       publishRunFeedback(state, `Picked up the ${itemDefinitionName(pickup.itemDefinitionId)}.`);
       return false;

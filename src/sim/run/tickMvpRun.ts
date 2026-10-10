@@ -464,6 +464,9 @@ function evaluateTerminal(state: MvpRunState): void {
     }
     return;
   }
+  // Room-clear recovery or Second Wind can revive a fatal combat tick. The
+  // wrapped combat state must resume too, or it refuses every later tick.
+  if (state.room.combat.status === 'dead') state.room.combat.status = 'playing';
   if (bossDefeated(state)) {
     state.checkpoint = null;
     if (state.status === 'playing') {
@@ -493,6 +496,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
     return;
   }
 
+  const previousCheckpoint = state.checkpoint;
   state.tick += 1;
 
   // 1. Held-action update.
@@ -621,4 +625,7 @@ export function tickMvpRun(state: MvpRunState, input: MvpInputFrame): void {
 
   // 9. Terminal evaluation.
   evaluateTerminal(state);
+  // A boundary reached on a fatal tick must not replace the last resumable
+  // save. Decide after recovery and Second Wind, which may keep this clear alive.
+  if (state.room.combat.player.health < 1) state.checkpoint = previousCheckpoint;
 }
