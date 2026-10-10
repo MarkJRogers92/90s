@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-10-09 — Independent handoff review
+
+- Unmodified source: `npm test` passed all 194 files and 2,021 tests in about 25.1 s. Neither claimed T1 timeout reproduced; maximum individual test times were 2.278 s (`balance-bot`) and 3.629 s (`balance-expert`).
+- Final source: `npm test` passed all 200 files and 2,052 tests in about 24.3 s. Six new files add 31 regressions. Relevant failure states were observed before production changes; the review packet retains raw logs and full JSON reports.
+- `npm run typecheck`, `npm run build` and `git diff --check` passed.
+- Before/after `npm run balance`: default 40 seeds x six bot configurations in each version, using isolated original source for the baseline. The complete before/after balance reports are byte-for-byte identical, including per-wing health-loss and cash summaries.
+- H1 uses installed Phaser Texture/Frame code and verifies existing/new gameplay sprite crops plus original cutscene feet anchors. H2 uses real sim steps and production view logic, including skipped/repeated frames and shop scope.
+- M1 runs theft->exit->drop->actual authored fight clear->recollect without direct Heat assignment. M2 isolates the final return segment and checks penetration/deduplication. M3 covers same-tick and batched death with actual scene save logic, both persistence stores, completed-run clearing and movement after revival.
+- L3 covers service refusal, changed definitions/recipes and valid exactly-once hybrid commit. L4/L5 are comment-only corrections; no tests added merely for comment edits.
+- Browser tests were not run: Playwright's pinned Chromium download exhausted normal retries with empty/invalid ZIPs. This is a browser-runtime limitation, not a game-test result.
+- Publication preparation: remote `main` still matched the verified `7cb142a` base. All 18 changed source/test files matched the reviewed packet's SHA256 manifest; only publication wording in the notes was updated after owner authorization.
+
+See [full review](docs/reviews/2026-10-09/REVIEW.md), [balance before](docs/reviews/2026-10-09/balance-before.md) and [balance after](docs/reviews/2026-10-09/balance-after.md).
+
 ## 2026-10-07 — Continue/save regressions
 
 - Before implementation, all three original regressions failed: a Floor 1 purchase carried up the stairs, a sold fusion, and a fusion left behind after a room transition each produced an unreadable checkpoint.

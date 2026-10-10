@@ -110,8 +110,9 @@ export function ascend(state: MvpRunState): MvpRunState {
 }
 
 /**
- * Up to the next floor's boss wing, straight through its first wing: for
- * fixtures and tests that mean "the floor-N boss" (round 45).
+ * From a won boss wing to the next floor's boss wing, skipping that floor's
+ * first wing: for fixtures and tests that mean "the floor-N boss" (round 45).
+ * A won first-wing input only advances to its own floor's boss wing.
  */
 export function climbToBossWing(state: MvpRunState): MvpRunState {
   let next = ascend(state);
@@ -122,7 +123,7 @@ export function climbToBossWing(state: MvpRunState): MvpRunState {
   return next;
 }
 
-/** From a won Floor 1 to Floor 2's boss wing (tests and fixtures). */
+/** From a won Floor 1 boss wing to Floor 2's boss wing (tests and fixtures). */
 export function ascendToFloorTwo(state: MvpRunState): MvpRunState {
   if (floorOf(state) !== 1) throw new Error('Floor 2 is reached from Floor 1.');
   return climbToBossWing(state);

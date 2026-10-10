@@ -8,6 +8,7 @@
 import Phaser from 'phaser';
 import { PLAYER_TEXTURE_KEYS, SCENE_TEXTURE_KEYS } from '../presentation/assets';
 import { ensureNeonSign, ensurePixelLabel } from '../presentation/neon/proceduralTextures';
+import { croppedFrameOrigin } from '../view/ActorSpriteView';
 import { DAWN_LINES, ENDING_MS, endingFrame, endingSkippable, type EndingFrame } from './dawnEndingModel';
 
 // Under the end card (20 600), which opens over the last shot.
@@ -84,12 +85,8 @@ export class DawnEnding {
   private makeWalker(): Phaser.GameObjects.Image | null {
     const key = PLAYER_TEXTURE_KEYS.walk;
     if (!this.scene.textures.exists(key)) return null;
-    const texture = this.scene.textures.get(key);
-    for (let i = 0; i < 6; i += 1) {
-      const name = `dawn-walk-${i}`;
-      if (!texture.has(name)) texture.add(name, 0, i * 64, NORTH_ROW * 64, 64, 64);
-    }
-    return this.scene.add.image(0, 0, key, 'dawn-walk-0').setOrigin(0.5, 0.9);
+    // Keep gameplay's default frame intact; draw() crops and anchors each step.
+    return this.scene.add.image(0, 0, key, '__BASE');
   }
 
   private draw(frame: EndingFrame): void {
@@ -104,8 +101,10 @@ export class DawnEnding {
     if (this.walker) {
       const { x, y, scale, silhouette, frame: step } = frame.walker;
       const shade = Math.round(255 - (255 - 40) * silhouette);
+      const origin = croppedFrameOrigin({ row: NORTH_ROW, column: step }, this.walker, { width: 64, height: 64 }, 64 * 0.9);
       this.walker
-        .setFrame(`dawn-walk-${step}`)
+        .setCrop(step * 64, NORTH_ROW * 64, 64, 64)
+        .setOrigin(origin.x, origin.y)
         .setPosition(Math.round(x), Math.round(y))
         .setScale(scale)
         .setTint(Phaser.Display.Color.GetColor(shade, Math.round(shade * 0.85), Math.round(shade * 0.9)));

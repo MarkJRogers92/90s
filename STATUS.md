@@ -1,5 +1,17 @@
 # Status
 
+## 2026-10-09 — Independent handoff review
+
+Based on `main` at `7cb142a`; reviewed source is unchanged from the handoff's `77cba1e`. Prepared on `review/2026-10-09-verified-fixes`. The owner subsequently authorized push and merge; GitHub records the branch and pull request's publication state.
+
+- Confirmed and fixed Alex's cutscene texture corruption, dash-start feedback/hint counting, recollected stolen-goods Heat, final return-segment hits and fatal-clear Continue corruption.
+- Cross-review added protection for death on a later batched tick; testing exposed and fixed frozen combat after room-clear recovery or Second Wind.
+- Hybrid commits reuse existing resolver validation. Floor-helper/RNG comments corrected; tint and wall geometry left alone. Claimed balance-test timeouts did not reproduce, so no timeout changes.
+- Final: 2,052/2,052 tests in 200 files, TypeScript and production build pass. Before/after balance: 240 simulated nights per version. The complete before/after balance reports are byte-for-byte identical, including per-wing health-loss and cash summaries.
+- Browser verification is pending: pinned Chromium download failed before tests could run. Existing invalid saves were not repaired.
+
+Full findings, repros and balance reports: [independent review](docs/reviews/2026-10-09/REVIEW.md).
+
 ## 2026-10-07 — Continue/save fixes
 
 Based on `main` at `1244cbe`; verified and approved by the owner for push and merge.

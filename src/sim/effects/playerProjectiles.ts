@@ -513,15 +513,7 @@ function stepAlongReturnPath(state: RunState, projectile: PlayerProjectileState)
   // clear, so only entity impacts can end it early.
   const nextIndex = projectile.sampledPathIndex - 1;
   const node = nextIndex > 0 ? projectile.sampledPath[nextIndex] : projectile.sampledPath[0];
-  if (!node || nextIndex <= 0) {
-    if (node) {
-      projectile.previousX = projectile.x;
-      projectile.previousY = projectile.y;
-      projectile.x = node.x;
-      projectile.y = node.y;
-      projectile.velocityX = node.x - projectile.previousX;
-      projectile.velocityY = node.y - projectile.previousY;
-    }
+  if (!node) {
     projectile.sampledPathIndex = 0;
     projectile.remainingTicks = 0;
     terminateProjectile(state, projectile, 'completed its return pass');
@@ -534,12 +526,18 @@ function stepAlongReturnPath(state: RunState, projectile: PlayerProjectileState)
   projectile.y = node.y;
   projectile.velocityX = node.x - projectile.previousX;
   projectile.velocityY = node.y - projectile.previousY;
-  projectile.sampledPathIndex = nextIndex;
-  projectile.remainingTicks = nextIndex;
+  projectile.sampledPathIndex = Math.max(0, nextIndex);
+  projectile.remainingTicks = projectile.sampledPathIndex;
 
+  // The segment back into the spawn node can hit too; only burst once its
+  // impacts have used the same penetration rule and hit ledger as every step.
   const hit = applyPassHits(state, projectile, 'return');
   if (hit && !projectile.payload.penetrates) {
     terminateProjectile(state, projectile, 'hit an enemy on its return pass');
+    return true;
+  }
+  if (nextIndex <= 0) {
+    terminateProjectile(state, projectile, 'completed its return pass');
     return true;
   }
   return false;

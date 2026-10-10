@@ -197,6 +197,11 @@ export class MvpRunView {
   private enemyScope = '';
   /** Dashes this run, so the SPACE DASH hint retires once it is learned. */
   private dashesThisRun = 0;
+  private lastDashStart: { combat: MvpRunState['room']['combat']; tick: number } | null = null;
+  private readonly pendingDashPuffs: Array<{
+    combat: MvpRunState['room']['combat']; scope: string;
+    x: number; y: number; dx: number; dy: number; tick: number;
+  }> = [];
   private lastReadiness = 1;
   private readyFlashTick = -100;
   private dashHint: Phaser.GameObjects.Image | null = null;
@@ -218,10 +223,24 @@ export class MvpRunView {
   }
 
   /** Presentation observation only; called after each authoritative fixed step. */
-  public observeLoot(state: MvpRunState): void {
+  public observeStep(state: MvpRunState): void {
     const room = state.wing.rooms[state.roomIndex];
     if (!room) return;
-    this.loot.observe(state, `${state.seed}:${state.wing.floor ?? 1}:${state.roomIndex}:${room.id}:${state.room.interior ? `inside-${state.room.storeIndex}` : 'concourse'}`);
+    const roomKey = `${state.roomIndex}:${room.id}:${state.room.interior ? `inside-${state.room.storeIndex}` : 'concourse'}`;
+    const combat = state.room.combat;
+    const player = combat.player;
+    // startDash and advanceDash run in the same step, so 11 is the first
+    // observable value. Observe every step: a rendered frame may skip it or
+    // show it repeatedly during hit stop. The room-local tick also stays put
+    // when an interaction opens a paused panel before combat can advance.
+    if (player.dashTicks === DASH_TICKS - 1
+      && (this.lastDashStart?.combat !== combat || this.lastDashStart.tick !== combat.tick)) {
+      this.lastDashStart = { combat, tick: combat.tick };
+      this.dashesThisRun += 1;
+      this.pendingDashPuffs.push({ combat, scope: roomKey, x: player.x, y: player.y,
+        dx: player.dashX ?? 0, dy: player.dashY ?? 0, tick: this.effectsTick(state) });
+    }
+    this.loot.observe(state, `${state.seed}:${state.wing.floor ?? 1}:${roomKey}`);
   }
 
   /** Where the janitor stood last frame, for effects fired from outside a sync. */
@@ -458,7 +477,7 @@ export class MvpRunView {
       // Isaac-style: the janitor looks where the pointer aims, even while backpedalling.
       faceX: player.facing.x, faceY: player.facing.y,
     }, state.tick, playerDepth, combinePoses(this.feedback.poseFor('player', fxTick), bodyAction?.sheet === 'dash' ? REST_POSE : dashPose(player)), null, bodyAction);
-    this.syncDashTrail(state, fxTick);
+    this.syncDashTrail(state, fxTick, roomKey);
     const playerEffects = opening?.effectGraphics('player') ?? this.effectGraphics;
     this.drawDashReadiness(state, playerEffects, fxTick);
     this.drawGazeCone(state, playerEffects);
@@ -2132,7 +2151,6 @@ export class MvpRunView {
     const player = state.room.combat.player;
     const live = state.status === 'playing' && !state.paused;
     const readiness = dashReadiness(player, runDashCooldown(state));
-    if ((player.dashTicks ?? 0) === DASH_TICKS) this.dashesThisRun += 1;
     if (readiness >= 1 && this.lastReadiness < 1) this.readyFlashTick = fxTick;
     this.lastReadiness = readiness;
     if (live && readiness < 1) {
@@ -2177,13 +2195,18 @@ export class MvpRunView {
    * the current frame, tinted cyan and fading over ten ticks, plus a dust puff
    * on the first tick of the dash.
    */
-  private syncDashTrail(state: MvpRunState, fxTick: number): void {
+  private syncDashTrail(state: MvpRunState, fxTick: number, roomKey: string): void {
     const player = state.room.combat.player;
     const dashTicks = player.dashTicks ?? 0;
     const sprite = this.actorSprites.get('player');
-    if (dashTicks === DASH_TICKS) {
-      this.feedback.puff(player.x, player.y, fxTick, player.dashX ?? 0, player.dashY ?? 0);
+    for (const puff of this.pendingDashPuffs) {
+      // A doorway can be crossed between observing and rendering. Count the
+      // dash, but keep its dust in the room where it happened.
+      if (puff.combat === state.room.combat && puff.scope === roomKey) {
+        this.feedback.puff(puff.x, puff.y, puff.tick, puff.dx, puff.dy);
+      }
     }
+    this.pendingDashPuffs.length = 0;
     if (dashTicks > 0 && fxTick % 2 === 0 && sprite && !this.dashGhosts.some((ghost) => ghost.born === fxTick)) {
       const image = sprite.ghost();
       if (image) {
@@ -2558,6 +2581,8 @@ export class MvpRunView {
     this.weaponEffects.reset();
     this.clearDashGhosts();
     this.dashesThisRun = 0;
+    this.lastDashStart = null;
+    this.pendingDashPuffs.length = 0;
     this.enemyFirstSeen.clear();
     this.enemyScope = '';
     this.mallRoomKey = '';

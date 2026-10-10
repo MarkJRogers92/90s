@@ -1,5 +1,13 @@
 # Next session
 
+## 2026-10-09 — Independent handoff review
+
+Verified fixes were prepared on `review/2026-10-09-verified-fixes`, based on `7cb142a`. The owner subsequently authorized push and merge; GitHub records publication state. Update the Mac checkout from `main` after the review PR is merged, preserving any unrelated local work. The downloadable packet is a prepublication snapshot; do not reapply its patch on top of the merged changes.
+
+The full 2,052-test suite, TypeScript, production build and before/after balance runs pass. Details and exact claim dispositions: [independent review](docs/reviews/2026-10-09/REVIEW.md).
+
+Next concrete checks are a real browser/Mac playtest of Alex after escalator/dawn scenes, dash dust and hint retirement within a wing, Continue after fatal clears, and movement/attacks after revival. Local Chromium installation failed before browser tests could run. Existing invalid saves remain a separate recovery task.
+
 ## 2026-10-07 — Continue/save fixes ready for playtest
 
 The fixes were prepared on `codex/save-continue-fixes` from `main` at `1244cbe`. Use the current `/Users/markrogers/code/90s` checkout for playtesting; GitHub records the push and merge state.

@@ -3,15 +3,17 @@
  *
  * Exact draw order:
  *   1. one authored layout variant per combat room, in WING_ROOM_ORDER;
- *   2. one Fisher-Yates shuffle of the four authored store templates;
+ *   2. one Fisher-Yates shuffle of all authored store templates;
  *   3. one four-offer window start for storefront_a, then storefront_b;
  *   4. for service_corridor, food_court, and back_hall in room order: one
- *      enemy-count draw, one Fisher-Yates shuffle of that variant's slots, then
- *      one kind draw per selected slot that authors more than one kind.
+ *      enemy-count draw, then (if nonempty) one Fisher-Yates shuffle of that
+ *      variant's slots. Per selected slot: an authored-kind draw if it has
+ *      multiple kinds, a floor-substitution draw on floors 2-4, then a
+ *      district-substitution draw on district wings.
  *
  * No step performs free-form geometry or unbounded enemy selection. Side draws
- * on their own salted rngs (the floor store, round 55; which rooms are mirrored,
- * round 59) never move the main sequence.
+ * on their own salted rngs (the district choice, the floor store, and which
+ * rooms are mirrored) never move the main sequence.
  */
 import { freezeDeep } from '../items/types';
 import type { Rect } from '../model';

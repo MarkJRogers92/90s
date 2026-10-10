@@ -186,10 +186,10 @@ export function commitFusion(
   if (input.expectedRevision !== state.revision) {
     return refuse('stale_revision', 'Something changed since the preview: pick the items again.');
   }
-  const resolution = resolveHybrid(state, input.primaryInstanceId, input.carrierInstanceId, createdTick);
+  const resolution = resolveFusion(state, input.primaryInstanceId, input.carrierInstanceId, createdTick);
   if (!resolution.accepted) return refuse(resolution.reason, resolution.message);
   const fresh = resolution.proposal;
-  if (fresh.transactionId !== input.transactionId) {
+  if (fresh.recipeId !== 'hybrid' || fresh.transactionId !== input.transactionId) {
     return refuse('invalid_transaction', 'The proposal no longer matches the bench.');
   }
   const record: FusionTransactionRecord = freezeDeep({
