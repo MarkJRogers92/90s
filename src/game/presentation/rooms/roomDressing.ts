@@ -110,6 +110,7 @@ export const PROP_TEXTURES = {
   pizzaOven: { key: 'neon:prop:pizza-oven', file: 'props/pizza-oven.png', width: 72, height: 67 },
   // Round 53: the props you can knock over (PixelLab pixflux).
   sodaMachine: { key: 'neon:prop:soda-machine', file: 'props/soda-machine.png', width: 44, height: 78 },
+  sodaMachineAnim: { key: 'neon:prop:soda-machine-anim', file: 'props/soda-machine-anim.png', width: 44, height: 78, frames: 4 },
   sodaMachineBroken: { key: 'neon:prop:soda-machine-broken', file: 'props/soda-machine-broken.png', width: 57, height: 86 },
   rackOfClothes: { key: 'neon:prop:rack-of-clothes', file: 'props/rack-of-clothes.png', width: 60, height: 75 },
   mallCart: { key: 'neon:prop:mall-cart', file: 'props/mall-cart.png', width: 37, height: 44 },

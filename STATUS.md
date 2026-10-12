@@ -1,5 +1,19 @@
 # Status
 
+## 2026-10-12 — Flickering soda machine (Pixel Forge strip)
+
+The standing soda machine's lit front hums now: a four-cell horizontal strip (still machine ->
+display brighter -> brightest -> dim) built by Pixel Forge `forge animate` from the existing art
+(cell 0 byte-identical) and drawn by `HeroPropView` via a shared `ensureStripFrames` helper. The
+strip honours the Reduced Flashes setting (holds cell 0); the broken machine is unchanged. No
+simulation, gameplay or balance values changed.
+
+Evidence: 189 files / 1951 unit tests passed; `npm run typecheck` and `npm run build` passed. New
+`tests/unit/soda-machine-view.test.ts`. Confirmed end to end in a headless Chromium run of seed 9,
+room 3 (Kiosk Alley): the machine's front alternately brightens and dims (its own pixels' mean
+luminance ~50 <-> ~80 frame to frame).
+
+
 ## 2026-10-09 — Independent handoff review
 
 Based on `main` at `7cb142a`; reviewed source is unchanged from the handoff's `77cba1e`. Prepared on `review/2026-10-09-verified-fixes`. The owner subsequently authorized push and merge; GitHub records the branch and pull request's publication state.

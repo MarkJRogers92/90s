@@ -1,5 +1,19 @@
 # Test evidence
 
+## 2026-10-12 — Flickering soda machine
+
+- Before implementation the new checks failed for the intended reason: `PROP_TEXTURES.sodaMachineAnim`
+  did not exist and `HeroPropView` never changed a frame, so the frame-name assertions failed 3/3.
+- After implementation: `npx vitest run tests/unit/soda-machine-view.test.ts` = 3 passed (frame steps
+  0->1->2->3; Reduced Flashes holds 0). `npx vitest run tests/unit` = 189 files / 1951 passed.
+  `npm run typecheck` and `npm run build` passed.
+- The strip comes from Pixel Forge: `forge animate frame0..3 --game phaser` -> `sheet.png` 176x78
+  (4 x 44x78); asset SHA-256 recorded in `public/assets/neon/manifest.json`.
+- Live confirmation: Playwright/headless Chromium, seed 9 -> room 3; the machine's front brightens
+  and dims across frames. (The interactive desktop tab had its rAF frozen while not visible, which is
+  why earlier visual checks showed no change.)
+
+
 ## 2026-10-09 — Independent handoff review
 
 - Unmodified source: `npm test` passed all 194 files and 2,021 tests in about 25.1 s. Neither claimed T1 timeout reproduced; maximum individual test times were 2.278 s (`balance-bot`) and 3.629 s (`balance-expert`).

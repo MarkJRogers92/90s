@@ -15,6 +15,8 @@ import { usableItemIcon } from '../presentation/fusedIconTexture';
 import { toppledRackPose } from './toppledRack';
 import { PROP_TEST_ART } from '../presentation/propTestAssets';
 import { presentationOcclusionAlpha } from '../presentation/occlusion';
+import { ensureStripFrames } from '../presentation/stripFrames';
+import { framedPropFrame } from './propAmbience';
 
 export type HeroPropLayers = {
   /** On the floor, under everyone. */
@@ -43,11 +45,11 @@ export class HeroPropView {
   }
 
   /** Draws one frame; anything not drawn this frame is put away. */
-  public sync(combat: RunState, tick: number, layers: HeroPropLayers): void {
+  public sync(combat: RunState, tick: number, layers: HeroPropLayers, flashes = true): void {
     const used = new Set<string>();
     for (const prop of combat.props ?? []) {
       if (prop.kind === 'bakery' || prop.kind === 'monitors' || prop.kind === 'slush') this.drawTestProp(prop, PROP_TEST_ART[prop.kind], combat, layers, used);
-      else this.drawProp(prop, tick, layers, used);
+      else this.drawProp(prop, tick, layers, used, flashes);
     }
     if (combat.hero) this.drawHero(combat, combat.hero, tick, layers, used);
     for (const enemy of combat.enemies) {
@@ -91,7 +93,7 @@ export class HeroPropView {
     return [...this.images].map(([id, image]) => ({ id, texture: image.texture.key, x: image.x, y: image.y, originX: image.originX, originY: image.originY, scaleX: image.scaleX, scaleY: image.scaleY, depth: image.depth, alpha: image.alpha, effectFrame: image.getData('effectFrame') ?? null }));
   }
 
-  private drawProp(prop: MallProp, tick: number, layers: HeroPropLayers, used: Set<string>): void {
+  private drawProp(prop: MallProp, tick: number, layers: HeroPropLayers, used: Set<string>, flashes = true): void {
     const id = `prop:${prop.id}`;
     const { floor, effects } = layers;
     // A soft warm ring on the floor: this one can be knocked about.
@@ -121,13 +123,19 @@ export class HeroPropView {
 
     if (prop.kind === 'soda') {
       const broken = prop.state === 'broken';
-      const image = this.image(id, usableTextureKey(this.scene.textures, (broken ? PROP_TEXTURES.sodaMachineBroken : PROP_TEXTURES.sodaMachine).key));
+      const art = broken ? PROP_TEXTURES.sodaMachineBroken : PROP_TEXTURES.sodaMachineAnim;
+      const image = this.image(id, usableTextureKey(this.scene.textures, art.key));
       if (!image) return;
       used.add(id);
       image.setOrigin(0.5, 1).setScale(0.9).setPosition(Math.round(prop.x), Math.round(prop.y + 16))
         .setDepth(presentationDepth('actor', prop.y));
       layers.shadow(id, prop.x, prop.y + 12, 1.2);
       if (!broken) {
+        // The lit front hums: its cells step through the display lighting up.
+        const frames = 'frames' in art ? art.frames : 0;
+        if (frames && ensureStripFrames(this.scene.textures, image.texture.key, art.width, art.height, frames)) {
+          image.setFrame(String(framedPropFrame('soda', tick, prop.id, frames, flashes)), false, false);
+        }
         layers.light(prop.x, prop.y - 30, 70, 0x3ff0ff, 0.45);
         return;
       }
