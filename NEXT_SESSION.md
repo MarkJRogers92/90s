@@ -1,5 +1,13 @@
 # Next session
 
+## 2026-10-12 — Flickering soda machine
+
+The standing soda machine (`neon:prop:soda-machine-anim`, 4 cells) pulses its lit front wherever a
+fight spawns one. Playtest a fight, and confirm Reduce Flashes on the Settings panel holds it
+steady. Regenerate the strip with Pixel Forge `forge animate` from the still machine if the art
+changes.
+
+
 ## 2026-10-09 — Independent handoff review
 
 Verified fixes were prepared on `review/2026-10-09-verified-fixes`, based on `7cb142a`. The owner subsequently authorized push and merge; GitHub records publication state. Update the Mac checkout from `main` after the review PR is merged, preserving any unrelated local work. The downloadable packet is a prepublication snapshot; do not reapply its patch on top of the merged changes.

@@ -210,3 +210,16 @@ export function damagedVendingFrame(tick: number, flashes = true): number {
   const localMs = ((tick % (TICKS_PER_SECOND * 0.8)) * 1000) / TICKS_PER_SECOND;
   return localMs < 280 ? 0 : localMs < 370 ? 1 : localMs < 460 ? 2 : 3;
 }
+
+/**
+ * Which cell of an animated strip is showing. Cell 0 is the still rest sprite.
+ * A strip steps through its cells about eight times a second, each prop out of
+ * step with the next; the hand-timed vending flicker keeps its own clock.
+ * Reduced Flashes holds every strip on cell 0 (no flicker for photosensitive
+ * players).
+ */
+export function framedPropFrame(prop: string, tick: number, seed: number, frames: number, flashes = true): number {
+  if (prop === 'damagedVending') return damagedVendingFrame(tick, flashes);
+  if (!frames || !flashes) return 0;
+  return Math.floor((tick + (seed % 97)) / 7) % frames;
+}

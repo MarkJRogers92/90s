@@ -347,7 +347,7 @@ export class MvpRunView {
       effects: this.effectGraphics,
       light: (x, y, radius, color, intensity) => this.openingConcourse?.addLight({ x, y, radius, color, intensity }),
       shadow: (id, x, y, scale) => this.contactShadow(id, x, y, scale),
-    });
+    }, flashAllowed(gameSettings().get()));
 
     const hangerEvidence: ActorPresentationDebugSnapshot['hangers'] = [];
     const enemyEvidence: ActorPresentationDebugSnapshot['enemies'] = [];
