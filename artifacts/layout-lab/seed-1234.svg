@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="1397" viewBox="0 0 1280 1397">
+<rect width="100%" height="100%" fill="#161318"/>
+<g transform="translate(40,80)">
+<rect x="0" y="0" width="1200.00" height="1252.55" fill="#241f26" stroke="#4a4350" stroke-width="2"/>
+<rect x="10.95" y="442.34" width="1178.10" height="157.66" fill="#3a3a44"/>
+<rect x="10.95" y="10.95" width="210.22" height="420.44" fill="#8a8f98" fill-opacity="0.9" stroke="#2a2530" stroke-width="1.5"/>
+<text x="116.06" y="218.17" font-family="monospace" font-size="11" fill="#101014" text-anchor="middle">Service passage</text>
+<text x="116.06" y="232.17" font-family="monospace" font-size="10" fill="#101014" text-anchor="middle">n0 192x384</text>
+<rect x="232.12" y="10.95" width="367.88" height="420.44" fill="#5f9ea0" fill-opacity="0.55" stroke="#2a2530" stroke-width="1.5"/>
+<text x="416.06" y="218.17" font-family="monospace" font-size="11" fill="#101014" text-anchor="middle">Atrium</text>
+<text x="416.06" y="232.17" font-family="monospace" font-size="10" fill="#101014" text-anchor="middle">n1 336x384</text>
+<rect x="610.95" y="10.95" width="578.10" height="420.44" fill="#b06a3b" fill-opacity="0.9" stroke="#2a2530" stroke-width="1.5"/>
+<text x="900.00" y="218.17" font-family="monospace" font-size="11" fill="#101014" text-anchor="middle">Anchor store</text>
+<text x="900.00" y="232.17" font-family="monospace" font-size="10" fill="#101014" text-anchor="middle">n2 528x384</text>
+<rect x="10.95" y="610.95" width="210.22" height="630.66" fill="#c9a227" fill-opacity="0.9" stroke="#2a2530" stroke-width="1.5"/>
+<text x="116.06" y="923.28" font-family="monospace" font-size="11" fill="#101014" text-anchor="middle">Food court</text>
+<text x="116.06" y="937.28" font-family="monospace" font-size="10" fill="#101014" text-anchor="middle">s0 192x576</text>
+<rect x="232.12" y="610.95" width="683.21" height="630.66" fill="#b06a3b" fill-opacity="0.9" stroke="#2a2530" stroke-width="1.5"/>
+<text x="573.72" y="923.28" font-family="monospace" font-size="11" fill="#101014" text-anchor="middle">Anchor store</text>
+<text x="573.72" y="937.28" font-family="monospace" font-size="10" fill="#101014" text-anchor="middle">s1 624x576</text>
+<rect x="926.28" y="610.95" width="262.77" height="630.66" fill="#d8b184" fill-opacity="0.9" stroke="#2a2530" stroke-width="1.5"/>
+<text x="1057.66" y="923.28" font-family="monospace" font-size="11" fill="#101014" text-anchor="middle">Shop</text>
+<text x="1057.66" y="937.28" font-family="monospace" font-size="10" fill="#101014" text-anchor="middle">s2 240x576</text>
+<rect x="63.50" y="431.39" width="105.1094890510949" height="10.94890510948905" fill="#f2f2f2"/>
+<rect x="284.67" y="431.39" width="262.77372262773724" height="10.94890510948905" fill="#f2f2f2"/>
+<rect x="873.72" y="431.39" width="105.1094890510949" height="10.94890510948905" fill="#f2f2f2"/>
+<rect x="63.50" y="600.00" width="105.1094890510949" height="10.94890510948905" fill="#f2f2f2"/>
+<rect x="547.45" y="600.00" width="105.1094890510949" height="10.94890510948905" fill="#f2f2f2"/>
+<rect x="978.83" y="600.00" width="105.1094890510949" height="10.94890510948905" fill="#f2f2f2"/>
+<rect x="600.00" y="63.50" width="10.94890510948905" height="105.1094890510949" fill="#ffe66d"/>
+<rect x="221.17" y="168.61" width="10.94890510948905" height="105.1094890510949" fill="#ffe66d"/>
+<circle cx="89.78" cy="521.17" r="7" fill="#6cf07a" stroke="#0d0d10" stroke-width="2"/>
+<text x="99.78" y="525.17" font-family="monospace" font-size="11" fill="#6cf07a">ENTRANCE</text>
+<circle cx="1170" cy="1223" r="10.94890510948905" fill="#ff5aa8" stroke="#0d0d10" stroke-width="1.5"/>
+<text x="1170" y="1241" font-family="monospace" font-size="10" fill="#ff5aa8" text-anchor="middle">player r=10</text>
+</g>
+<text x="40" y="26" font-family="monospace" font-size="16" fill="#f2f2f2">DEAD MALL — floor plan lab · seed 1234 · 6 rooms · 8 doors · loop rank 2</text>
+<text x="40" y="1349" font-family="monospace" font-size="11" fill="#a89fb0">white = storefront · yellow = staff loop door · teal = atrium (open to spine) · pink = player scale</text>
+</svg>
